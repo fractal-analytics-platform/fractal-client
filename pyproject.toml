@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "fractal"
+version = "0.1.0"
+description = ""
+authors = ["Jacopo Nespolo <jacopo.nespolo@exact-lab.it>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.0.3"
+pydantic = "^1.9.0"
+pandas = "^1.4.0"
+numpy = "^1.22.1"
+Pillow = "^9.0.0"
+tifffile = "^2021.11.2"
+luigi = "^3.0.3"
+devtools = "^0.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
