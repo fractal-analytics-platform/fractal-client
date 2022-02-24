@@ -2,7 +2,8 @@
 name = "fractal"
 version = "0.1.0"
 description = ""
-authors = ["Jacopo Nespolo <jacopo.nespolo@exact-lab.it>"]
+authors = ["Jacopo Nespolo <jacopo.nespolo@exact-lab.it>",
+           "Marco Franzon <marco.franzon@exact-lab.it>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -15,6 +16,10 @@ Pillow = "^9.0.0"
 tifffile = "^2021.11.2"
 luigi = "^3.0.3"
 devtools = "^0.8.0"
+SQLAlchemy = "^1.4.31"
+dask = "^2022.2.0"
+imagecodecs = "^2022.2.22"
+zarr = "^2.11.0"
 
 [build-system]
 requires = ["poetry-core"]
