@@ -99,7 +99,7 @@ python fractal.py dataset list mwe-test
 
 The tasks executable are in ```tasks/``` folder
 
-Add a task, in this case, we have just a single task for tif compression:
+Add a task; tasks are into the tasks folder. To add one or more just copy the filename without extension, example:
 
 ```
 python fractal.py task add compression_tif tif tif
@@ -182,6 +182,19 @@ To deploy the .yaml file just use podman-compose :
 podman-compose -f docker-slurm.yaml up -d
 ```
 
+
+## Misc
+
+To easily load all channels of the 2D example in Napari you can just run this piece of code in a cell of a Jupyter notebook or run it as an executable.
+
+```
+import napari
+import zarr
+
+x = zarr.open('path/to/201703012-NUPfollowup.zarr')
+viewer = napari.Viewer()
+[viewer.add_image(zarr.open(f'path/to/201703012-NUPfollowup.zarr/C22/{n}', 'r'), name=f'{n}', blending="additive") for n in x.C22]
+```
 
 ## Commands cli
 

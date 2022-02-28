@@ -206,67 +206,95 @@ class ConversionTaskWrap(luigi.Task):
 
     def run(self):
 
+        rows_cols = self.other_param["dims"]
+        rows = rows_cols.split(",")[0]
+        cols = rows_cols.split(",")[1]
         chl = []
         well = []
         plate = []
         for i in glob(self.in_path + "*.tif"):
-            chl.append(self.metadata(os.path.basename(i))[2])
-            well.append(self.metadata(os.path.basename(i))[0])
             plate.append(self.metadata(os.path.basename(i))[3])
 
-        chl_unique = self.unique(chl)
-        well_unique = self.unique(well)
         plate_unique = self.unique(plate)
+
         if self.sclr == "local":
             cmd = ["python"]
         else:
             cmd = ["srun", "python"]
 
-        # at the moment we consider just one well.
-        # then it will be necessary iterate over plate/s
-        # and well/s (2 for loops)
-
-        # for loop plates
-        group_plate = zarr.group(self.out_path + f"{plate_unique[0]}.zarr")
-        group_plate.attrs["plate"] = {
-            "acquisition": [
-                {"id": id_, "name": name}
-                for id_, name in enumerate(plate_unique)
-            ],
-            "columns": [],
-            "rows": [],
-            "wells": [
-                {"path": well_unique[0], "rowIndex": None, "columnIndex": None}
-            ],
-        }
-
-        # for loop wells and each well have n channels
-        group_well = group_plate.create_group(f"{well_unique[0]}")
-        group_well.attrs["well"] = {
-            "images": [
-                {"acquisition": 0, "path": path}  # id_ of plate
-                for path in chl_unique
+        # loop over plate, each plate could have n wells
+        for plate in plate_unique:
+            group_plate = zarr.group(self.out_path + f"{plate}.zarr")
+            well = [
+                self.metadata(os.path.basename(fn))[0]
+                for fn in glob(self.in_path + f"{plate}_*.tif")
             ]
-        }
+            well_unique = self.unique(well)
 
-        cmd.extend(
-            [
-                self.tasks_path + self.task_name + ".py",
-                self.in_path,
-                self.out_path
-                + f"{plate_unique[0]}.zarr/"
-                + f"{well_unique[0]}",
-                self.delete_in,
+            well_rows_columns = [
+                ind
+                for ind in enumerate(
+                    sorted([(n[0], n[1:]) for n in well_unique])
+                )
             ]
-        )
 
-        p = Pool()
-        do_proc_part = partial(self.do_proc, cmd)
-        p.map_async(do_proc_part, chl_unique)
-        p.close()
-        p.join()
+            group_plate.attrs["plate"] = {
+                "acquisitions": [
+                    {"id": id_, "name": name}
+                    for id_, name in enumerate(plate_unique)
+                ],
+                "columns": [
+                    {"name": well_row_column[1][1]}
+                    for well_row_column in well_rows_columns
+                ],
+                "rows": [
+                    {"name": well_row_column[1][0]}
+                    for well_row_column in well_rows_columns
+                ],
+                "wells": [
+                    {
+                        "path": well_row_column[1][0] + well_row_column[1][1],
+                        "rowIndex": well_row_column[0],
+                        "columnIndex": well_row_column[1][1],
+                    }
+                    for well_row_column in well_rows_columns
+                ],
+            }
 
-        debug(cmd)
+            # for loop wells and each well have n channels
+            for well in well_unique:
+                group_well = group_plate.create_group(f"{well}")
+                chl = [
+                    self.metadata(os.path.basename(fn))[2]
+                    for fn in glob(self.in_path + f"{plate}_{well}_*.tif")
+                ]
+
+                chl_unique = self.unique(chl)
+
+                group_well.attrs["well"] = {
+                    "images": [
+                        {"acquisition": 0, "path": path} for path in chl_unique
+                    ]
+                }
+
+                cmd.extend(
+                    [
+                        self.tasks_path + self.task_name + ".py",
+                        self.in_path,
+                        self.out_path + f"{plate}.zarr/" + f"{well}",
+                        self.delete_in,
+                        rows,
+                        cols,
+                    ]
+                )
+
+                p = Pool()
+                do_proc_part = partial(self.do_proc, cmd)
+                p.map_async(do_proc_part, chl_unique)
+                p.close()
+                p.join()
+
+                debug(cmd)
 
         self.done = True
 
@@ -274,6 +302,7 @@ class ConversionTaskWrap(luigi.Task):
 DICT_TASK = {
     "compression_tif": CompressionTaskWrap,
     "tif_to_zarr": ConversionTaskWrap,
+    "yokogawa_tif_to_zarr": ConversionTaskWrap,
 }
 
 

@@ -7,7 +7,7 @@ import imagecodecs
 import tifffile
 
 
-def tiffs2zarr(in_path, zarrurl, delete_in, chl, **kwargs):
+def tif_to_zarr(in_path, zarrurl, delete_in, chl, **kwargs):
 
     chunksize = 100
     filenames = sorted([f for f in glob(in_path + f"*C{chl}*.tif")])
@@ -39,4 +39,4 @@ if __name__ == "__main__":
     out_path = sys.argv[2]
     delete_in = sys.argv[3]
     chl = sys.argv[4]
-    tiffs2zarr(in_path, out_path, delete_in, chl)
+    tif_to_zarr(in_path, out_path, delete_in, chl)

@@ -2,10 +2,10 @@
      "workflow_name": "wftest",
       "input_dataset": ["dstest", "dstest"],
       "output_dataset": ["dstest", "dstest"],
-      "resource_in": ["/path/to/images", "/path/to/compress_images"],
-      "resource_out": ["/path/to/compress_images", "/path/to/zarr_file"],
+      "resource_in": ["/path/to/images/", "/path/to/saved/images/"],
+      "resource_out": ["/path/to/saved/images", "/path/to/zarr/"],
       "delete": ["False", "False"],
       "scheduler": "local",
-      "other_params": {"batch_size" : 10}
+      "other_params": {"batch_size" : 10, "dims" : "4,3"}
       }
      }

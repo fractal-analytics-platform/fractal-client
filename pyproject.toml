@@ -20,6 +20,7 @@ SQLAlchemy = "^1.4.31"
 dask = "^2022.2.0"
 imagecodecs = "^2022.2.22"
 zarr = "^2.11.0"
+scikit-image = "^0.19.2"
 
 [build-system]
 requires = ["poetry-core"]
