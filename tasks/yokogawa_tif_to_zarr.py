@@ -20,7 +20,6 @@ def yokogawa_tif_to_zarr(
     filenames = sorted(
         glob(in_path + f"{plate}_{well}_T{tims}F*Z{z_ind}C{channel}*." + ext)
     )
-    print(in_path + f"{plate}_{well}_T{tims}F*Z{z_ind}C{channel}*." + ext)
     # assuming that all files have same shape and type
     sample = imread(filenames[0])
 

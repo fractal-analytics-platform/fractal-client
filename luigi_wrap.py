@@ -303,7 +303,11 @@ class ConversionTaskWrap(luigi.Task):
 
                 # TODO hard coded acquisition to 0, id of the plate
                 for tm in time_unique:
+                    group_tm = group_well.create_group(f"{tm}")
+
                     for ch in chl_unique:
+                        group_ch = group_tm.create_group(f"{ch}")  # noqa: F841
+
                         zattrs.extend(
                             [
                                 {
