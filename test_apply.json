@@ -6,6 +6,7 @@
       "resource_out": ["/path/to/saved/images", "/path/to/zarr/"],
       "delete": ["False", "False"],
       "scheduler": "local",
+      "ext": "tif",
       "other_params": {"batch_size" : 10, "dims" : "4,3"}
       }
      }

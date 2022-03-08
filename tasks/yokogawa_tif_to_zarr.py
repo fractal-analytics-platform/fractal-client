@@ -9,11 +9,18 @@ from skimage.io import imread
 
 # TODO use kwargs not args
 def yokogawa_tif_to_zarr(
-    in_path, zarrurl, delete_in, chl, cols, rows, **kwargs
+    in_path, zarrurl, zarr_f, delete_in, z_ind, cols, rows, ext
 ):
 
-    filenames = sorted(glob(in_path + f"*C{chl}*.tif"))
-    print(glob(in_path + f"*C{chl}*.tif"))
+    plate = zarr_f.split("/")[0][:-5]
+    well = zarr_f.split("/")[1]
+    tims = zarr_f.split("/")[2]
+    channel = zarr_f.split("/")[3]
+
+    filenames = sorted(
+        glob(in_path + f"{plate}_{well}_T{tims}F*Z{z_ind}C{channel}*." + ext)
+    )
+    print(in_path + f"{plate}_{well}_T{tims}F*Z{z_ind}C{channel}*." + ext)
     # assuming that all files have same shape and type
     sample = imread(filenames[0])
 
@@ -36,7 +43,7 @@ def yokogawa_tif_to_zarr(
         all_rows.append(l_rows)
     f_matrix = da.concatenate(all_rows, axis=0)
 
-    f_matrix.to_zarr(zarrurl + f"/{chl}", **kwargs)
+    f_matrix.to_zarr(zarrurl + zarr_f + f"{z_ind}")
 
     if delete_in == "True":
         for f in filenames:
@@ -49,9 +56,13 @@ def yokogawa_tif_to_zarr(
 if __name__ == "__main__":
     in_path = sys.argv[1]
     out_path = sys.argv[2]
-    delete_in = sys.argv[3]
-    cols = sys.argv[4]
-    rows = sys.argv[5]
-    chl = sys.argv[6]
+    zarr_f = sys.argv[3]
+    delete_in = sys.argv[4]
+    cols = sys.argv[5]
+    rows = sys.argv[6]
+    ext = sys.argv[7]
+    z_ind = sys.argv[8]
 
-    yokogawa_tif_to_zarr(in_path, out_path, delete_in, chl, cols, rows)
+    yokogawa_tif_to_zarr(
+        in_path, out_path, zarr_f, delete_in, z_ind, cols, rows, ext
+    )

@@ -1,3 +1,4 @@
+import copy
 import datetime
 import json
 import os
@@ -51,6 +52,8 @@ class CompressionTaskWrap(luigi.Task):
 
     sclr = luigi.parameter.Parameter()
 
+    ext = luigi.parameter.Parameter()
+
     other_param = luigi.parameter.DictParameter()
 
     tasks_path = os.getcwd() + "/tasks/"
@@ -96,7 +99,7 @@ class CompressionTaskWrap(luigi.Task):
             cmd = ["srun", "python"]
 
         batch_size = self.other_param["batch_size"]
-        l_file = glob(self.in_path + "*.tif")
+        l_file = glob(self.in_path + "*." + self.ext)
 
         batch = len(l_file) // batch_size
 
@@ -117,6 +120,7 @@ class CompressionTaskWrap(luigi.Task):
                 self.in_path,
                 self.out_path,
                 self.delete_in,
+                self.ext,
             ]
         )
 
@@ -150,6 +154,8 @@ class ConversionTaskWrap(luigi.Task):
 
     sclr = luigi.parameter.Parameter()
 
+    ext = luigi.parameter.Parameter()
+
     other_param = luigi.parameter.DictParameter()
 
     tasks_path = os.getcwd() + "/tasks/"
@@ -164,7 +170,9 @@ class ConversionTaskWrap(luigi.Task):
         well = f_s[1]
         site = re.findall(r"F(.*)L", f_s[2])[0]
         chl = re.findall(r"C(.*)", f_s[2])[0]
-        return [well, site, chl, plate]
+        time_s = re.findall(r"T(.*)F", f_s[2])[0]
+        z_ind = re.findall(r"Z(.*)C", f_s[2])[0]
+        return [plate, well, time_s, chl, z_ind, site]
 
     def unique(self, list1):
 
@@ -212,22 +220,22 @@ class ConversionTaskWrap(luigi.Task):
         chl = []
         well = []
         plate = []
-        for i in glob(self.in_path + "*.tif"):
-            plate.append(self.metadata(os.path.basename(i))[3])
+        for i in glob(self.in_path + "*." + self.ext):
+            plate.append(self.metadata(os.path.basename(i))[0])
 
         plate_unique = self.unique(plate)
 
         if self.sclr == "local":
-            cmd = ["python"]
+            run = ["python"]
         else:
-            cmd = ["srun", "python"]
+            run = ["srun", "python"]
 
         # loop over plate, each plate could have n wells
         for plate in plate_unique:
             group_plate = zarr.group(self.out_path + f"{plate}.zarr")
             well = [
-                self.metadata(os.path.basename(fn))[0]
-                for fn in glob(self.in_path + f"{plate}_*.tif")
+                self.metadata(os.path.basename(fn))[1]
+                for fn in glob(self.in_path + f"{plate}_*." + self.ext)
             ]
             well_unique = self.unique(well)
 
@@ -261,40 +269,76 @@ class ConversionTaskWrap(luigi.Task):
                 ],
             }
 
-            # for loop wells and each well have n channels
+            # for loop wells and each well have n timepoints
             for well in well_unique:
+
                 group_well = group_plate.create_group(f"{well}")
-                chl = [
+
+                zattrs = []
+
+                time_s = [
                     self.metadata(os.path.basename(fn))[2]
-                    for fn in glob(self.in_path + f"{plate}_{well}_*.tif")
+                    for fn in glob(
+                        self.in_path + f"{plate}_{well}_*." + self.ext
+                    )
+                ]
+
+                chl = [
+                    self.metadata(os.path.basename(fn))[3]
+                    for fn in glob(
+                        self.in_path + f"{plate}_{well}_*." + self.ext
+                    )
+                ]
+
+                z_ind = [
+                    self.metadata(os.path.basename(fn))[4]
+                    for fn in glob(
+                        self.in_path + f"{plate}_{well}_*." + self.ext
+                    )
                 ]
 
                 chl_unique = self.unique(chl)
+                time_unique = self.unique(time_s)
+                z_ind_unique = self.unique(z_ind)
 
-                group_well.attrs["well"] = {
-                    "images": [
-                        {"acquisition": 0, "path": path} for path in chl_unique
-                    ]
-                }
+                # TODO hard coded acquisition to 0, id of the plate
+                for tm in time_unique:
+                    for ch in chl_unique:
+                        zattrs.extend(
+                            [
+                                {
+                                    "acquisition": 0,
+                                    "path": tm + "/" + ch + "/" + z,
+                                }
+                                for z in z_ind_unique
+                            ]
+                        )
 
-                cmd.extend(
-                    [
-                        self.tasks_path + self.task_name + ".py",
-                        self.in_path,
-                        self.out_path + f"{plate}.zarr/" + f"{well}",
-                        self.delete_in,
-                        rows,
-                        cols,
-                    ]
-                )
+                        cmd = copy.copy(run)
+                        cmd.extend(
+                            [
+                                self.tasks_path + self.task_name + ".py",
+                                self.in_path,
+                                self.out_path,
+                                f"{plate}.zarr/"
+                                + f"{well}/"
+                                + f"{tm}/"
+                                + f"{ch}/",
+                                self.delete_in,
+                                rows,
+                                cols,
+                                self.ext,
+                            ]
+                        )
 
-                p = Pool()
-                do_proc_part = partial(self.do_proc, cmd)
-                p.map_async(do_proc_part, chl_unique)
-                p.close()
-                p.join()
+                        p = Pool()
+                        do_proc_part = partial(self.do_proc, cmd)
+                        p.map_async(do_proc_part, z_ind_unique)
+                        debug(z_ind_unique)
+                        p.close()
+                        p.join()
 
-                debug(cmd)
+                group_well.attrs["well"] = {"images": zattrs}
 
         self.done = True
 
@@ -321,6 +365,7 @@ class WorkflowTask(luigi.Task):
         ]
         delete_ins = [d for d in self.flags["arguments"]["delete"]]
         sclr = self.flags["arguments"]["scheduler"]
+        ext = self.flags["arguments"]["ext"]
         other_params = self.flags["arguments"]["other_params"]
 
         for i, task_name in enumerate(task_names):
@@ -330,6 +375,7 @@ class WorkflowTask(luigi.Task):
                 out_path=out_paths[i],
                 delete_in=delete_ins[i],
                 sclr=sclr,
+                ext=ext,
                 other_param=other_params,
             )
 
