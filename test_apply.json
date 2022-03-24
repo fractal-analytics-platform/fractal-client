@@ -5,7 +5,8 @@
       "resource_in": ["/path/to/images/", "/path/to/saved/images/"],
       "resource_out": ["/path/to/saved/images", "/path/to/zarr/"],
       "delete": ["False", "False"],
-      "scheduler": "local",
+      "scheduler": "slurm",
+      "slurm_params": {"mem" : 1, "cores": 1, "nodes":1},
       "ext": "tif",
       "other_params": {"batch_size" : 10, "dims" : "4,3"}
       }

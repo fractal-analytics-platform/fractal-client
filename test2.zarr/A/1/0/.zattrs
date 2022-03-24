@@ -1,0 +1,28 @@
+{  "multiscales": [
+    {
+        "version": "0.3",
+        "axes": [
+            {"name": "y", "type": "space", "unit": "centimeter"},
+            {"name": "x", "type": "space", "unit": "centimeter"}
+
+        ],
+
+        "datasets": [
+        {
+        "path": "0"
+        },
+        {
+            "path": "1"
+        }
+        ],
+"metadata": {
+    "kwargs": {
+        "axes_names": [
+            "y",
+            "x"
+        ]
+    }
+}
+}
+]
+}

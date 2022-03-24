@@ -1,0 +1,26 @@
+#!/bin/bash
+{% block arguments -%}
+#SBATCH --job-name={{ job_name }}
+#SBATCH --nodes={{ nodes|default(1) }}
+#SBATCH --core-spec={{ cores|default(1) }}
+#SBATCH --mem={{mem|default(512}}
+{% endblock -%}
+
+{% block header -%}
+#########################
+#
+# Job: {{ job_name }}
+#
+#########################
+{% endblock %}
+
+
+{% block body -%}
+
+{% block cmd -%}
+##### Run Command
+# run script with arguments
+{{ command }}
+{% endblock %}
+
+{% endblock %}

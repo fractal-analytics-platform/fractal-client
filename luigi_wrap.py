@@ -11,6 +11,7 @@ from multiprocessing import Pool
 from subprocess import PIPE  # nosec
 from subprocess import Popen  # nosec
 
+import jinja2
 import luigi
 import zarr
 from devtools import debug
@@ -44,6 +45,8 @@ class CompressionTaskWrap(luigi.Task):
 
     task_name = luigi.parameter.Parameter(significant=True)
 
+    wf_name = luigi.parameter.Parameter(significant=True)
+
     in_path = luigi.parameter.Parameter(significant=True)
 
     out_path = luigi.parameter.Parameter(significant=True)
@@ -53,6 +56,8 @@ class CompressionTaskWrap(luigi.Task):
     sclr = luigi.parameter.Parameter()
 
     ext = luigi.parameter.Parameter()
+
+    slurm_param = luigi.parameter.DictParameter()
 
     other_param = luigi.parameter.DictParameter()
 
@@ -93,11 +98,6 @@ class CompressionTaskWrap(luigi.Task):
 
         self.done = True
 
-        if self.sclr == "local":
-            cmd = ["python"]
-        else:
-            cmd = ["srun", "python"]
-
         batch_size = self.other_param["batch_size"]
         l_file = glob(self.in_path + "*." + self.ext)
 
@@ -110,26 +110,75 @@ class CompressionTaskWrap(luigi.Task):
             tmp_s = tmp_e
 
         if self.sclr == "local":
+
             cmd = ["python"]
-        else:
-            cmd = ["srun", "python"]
 
-        cmd.extend(
-            [
-                self.tasks_path + self.task_name + ".py",
-                self.in_path,
-                self.out_path,
-                self.delete_in,
-                self.ext,
-            ]
-        )
+            cmd.extend(
+                [
+                    self.tasks_path + self.task_name + ".py",
+                    self.in_path,
+                    self.out_path,
+                    self.delete_in,
+                    self.ext,
+                ]
+            )
 
-        debug(intervals)
-        p = Pool()
-        do_comp_part = partial(self.do_comp, cmd)
-        p.map_async(do_comp_part, intervals)
-        p.close()
-        p.join()
+            p = Pool()
+            do_comp_part = partial(self.do_comp, cmd)
+            p.map_async(do_comp_part, intervals)
+            p.close()
+            p.join()
+
+        elif self.sclr == "slurm":
+
+            cores = str(self.slurm_param["cores"])  # "4" #slurm_param["cores"]
+            mem = str(self.slurm_param["mem"])  # "1024" #slurm_param["mem"]
+            nodes = str(self.slurm_param["nodes"])
+
+            env = jinja2.Environment( nosec
+                loader=jinja2.PackageLoader("fractal", "templates") # nosec
+            ) # nosec
+            t = env.get_template("job.default.j2")
+            job = self.wf_name + "_" + self.task_name
+
+            srun = ""
+            for interval0, interval1 in intervals:
+
+                srun += " ".join(
+                    [
+                        " srun python",
+                        self.tasks_path + self.task_name + ".py ",
+                        self.in_path,
+                        self.out_path,
+                        self.delete_in,
+                        self.ext,
+                        f"{interval0}",
+                        f"{interval1}",
+                        "&",
+                    ]
+                )
+
+            srun = srun + " wait"
+
+            with open(f"./jobs/{job}", "w") as f:
+                f.write(
+                    t.render(
+                        job_name="test1",
+                        nodes=nodes,
+                        cores=cores,
+                        mem=mem + "MB",
+                        command=srun,
+                    )
+                )
+
+            cmd = ["sbatch", f"./templates/{job}"]
+            debug(cmd)
+            process = Popen(cmd, stderr=PIPE)
+            stdout, stderr = process.communicate()
+            debug([stdout, stderr])
+            with self.output().open("w") as outfile:
+                outfile.write(f"{stderr}\n")
+            return process
 
         debug(cmd)
 
@@ -146,6 +195,8 @@ class ConversionTaskWrap(luigi.Task):
 
     task_name = luigi.parameter.Parameter(significant=True)
 
+    wf_name = luigi.parameter.Parameter(significant=True)
+
     in_path = luigi.parameter.Parameter(significant=True)
 
     out_path = luigi.parameter.Parameter(significant=True)
@@ -155,6 +206,8 @@ class ConversionTaskWrap(luigi.Task):
     sclr = luigi.parameter.Parameter()
 
     ext = luigi.parameter.Parameter()
+
+    slurm_param = luigi.parameter.DictParameter()
 
     other_param = luigi.parameter.DictParameter()
 
@@ -227,96 +280,69 @@ class ConversionTaskWrap(luigi.Task):
 
         if self.sclr == "local":
             run = ["python"]
-        else:
-            run = ["srun", "python"]
+            for plate in plate_unique:
+                group_plate = zarr.group(self.out_path + f"{plate}.zarr")
+                well = [
+                    self.metadata(os.path.basename(fn))[1]
+                    for fn in glob(self.in_path + f"{plate}_*." + self.ext)
+                ]
+                well_unique = self.unique(well)
 
-        # loop over plate, each plate could have n wells
-        for plate in plate_unique:
-            group_plate = zarr.group(self.out_path + f"{plate}.zarr")
-            well = [
-                self.metadata(os.path.basename(fn))[1]
-                for fn in glob(self.in_path + f"{plate}_*." + self.ext)
-            ]
-            well_unique = self.unique(well)
-
-            well_rows_columns = [
-                ind
-                for ind in enumerate(
-                    sorted([(n[0], n[1:]) for n in well_unique])
-                )
-            ]
-
-            group_plate.attrs["plate"] = {
-                "acquisitions": [
-                    {"id": id_, "name": name}
-                    for id_, name in enumerate(plate_unique)
-                ],
-                "columns": [
-                    {"name": well_row_column[1][1]}
-                    for well_row_column in well_rows_columns
-                ],
-                "rows": [
-                    {"name": well_row_column[1][0]}
-                    for well_row_column in well_rows_columns
-                ],
-                "wells": [
-                    {
-                        "path": well_row_column[1][0] + well_row_column[1][1],
-                        "rowIndex": well_row_column[0],
-                        "columnIndex": well_row_column[1][1],
-                    }
-                    for well_row_column in well_rows_columns
-                ],
-            }
-
-            # for loop wells and each well have n timepoints
-            for well in well_unique:
-
-                group_well = group_plate.create_group(f"{well}")
-
-                zattrs = []
-
-                time_s = [
-                    self.metadata(os.path.basename(fn))[2]
-                    for fn in glob(
-                        self.in_path + f"{plate}_{well}_*." + self.ext
+                well_rows_columns = [
+                    ind
+                    for ind in enumerate(
+                        sorted([(n[0], n[1:]) for n in well_unique])
                     )
                 ]
 
-                chl = [
-                    self.metadata(os.path.basename(fn))[3]
-                    for fn in glob(
-                        self.in_path + f"{plate}_{well}_*." + self.ext
-                    )
-                ]
+                group_plate.attrs["plate"] = {
+                    "acquisitions": [
+                        {"id": id_, "name": name}
+                        for id_, name in enumerate(plate_unique)
+                    ],
+                    "columns": [
+                        {"name": well_row_column[1][1]}
+                        for well_row_column in well_rows_columns
+                    ],
+                    "rows": [
+                        {"name": well_row_column[1][0]}
+                        for well_row_column in well_rows_columns
+                    ],
+                    "wells": [
+                        {
+                            "path": well_row_column[1][0]
+                            + well_row_column[1][1],
+                            "rowIndex": well_row_column[0],
+                            "columnIndex": well_row_column[1][1],
+                        }
+                        for well_row_column in well_rows_columns
+                    ],
+                }
 
-                z_ind = [
-                    self.metadata(os.path.basename(fn))[4]
-                    for fn in glob(
-                        self.in_path + f"{plate}_{well}_*." + self.ext
-                    )
-                ]
+                # for loop wells and each well have n timepoints
+                for well in well_unique:
+                    chl = [
+                        self.metadata(os.path.basename(fn))[3]
+                        for fn in glob(
+                            self.in_path + f"{plate}_{well}_*." + self.ext
+                        )
+                    ]
 
-                chl_unique = self.unique(chl)
-                time_unique = self.unique(time_s)
-                z_ind_unique = self.unique(z_ind)
-
-                # TODO hard coded acquisition to 0, id of the plate
-                for tm in time_unique:
-                    group_tm = group_well.create_group(f"{tm}")
+                    chl_unique = self.unique(chl)
 
                     for ch in chl_unique:
-                        group_ch = group_tm.create_group(f"{ch}")  # noqa: F841
+                        # group_well =
+                        # group_plate.create_group(f"{well}_{ch}")  # noqa: F841
 
-                        zattrs.extend(
-                            [
-                                {
-                                    "acquisition": 0,
-                                    "path": tm + "/" + ch + "/" + z,
-                                }
-                                for z in z_ind_unique
-                            ]
-                        )
+                        # zattrs.extend(
+                        #         [
+                        #             {
+
+                        #                 "path":  ch
+                        #             }
+
+                        #         ]
+                        #     )
 
                         cmd = copy.copy(run)
                         cmd.extend(
@@ -324,25 +350,138 @@ class ConversionTaskWrap(luigi.Task):
                                 self.tasks_path + self.task_name + ".py",
                                 self.in_path,
                                 self.out_path,
-                                f"{plate}.zarr/"
-                                + f"{well}/"
-                                + f"{tm}/"
-                                + f"{ch}/",
+                                f"{plate}.zarr/" + f"{well}_{ch}/",
                                 self.delete_in,
                                 rows,
                                 cols,
                                 self.ext,
                             ]
                         )
+                        process = Popen(
+                            cmd + [f"{ch}"], stdout=PIPE, stderr=PIPE
+                        )
+                        stdout, stderr = process.communicate()
+                        debug(process.communicate())
+                        with self.output().open("w") as outfile:
+                            outfile.write(f"{stderr}\n")
 
-                        p = Pool()
-                        do_proc_part = partial(self.do_proc, cmd)
-                        p.map_async(do_proc_part, z_ind_unique)
-                        debug(z_ind_unique)
-                        p.close()
-                        p.join()
+        else:
 
-                group_well.attrs["well"] = {"images": zattrs}
+            # loop over plate, each plate could have n wells
+            for plate in plate_unique:
+                group_plate = zarr.group(self.out_path + f"{plate}.zarr")
+                well = [
+                    self.metadata(os.path.basename(fn))[1]
+                    for fn in glob(self.in_path + f"{plate}_*." + self.ext)
+                ]
+                well_unique = self.unique(well)
+
+                well_rows_columns = [
+                    ind
+                    for ind in enumerate(
+                        sorted([(n[0], n[1:]) for n in well_unique])
+                    )
+                ]
+
+                group_plate.attrs["plate"] = {
+                    "acquisitions": [
+                        {"id": id_, "name": name}
+                        for id_, name in enumerate(plate_unique)
+                    ],
+                    "columns": [
+                        {"name": well_row_column[1][1]}
+                        for well_row_column in well_rows_columns
+                    ],
+                    "rows": [
+                        {"name": well_row_column[1][0]}
+                        for well_row_column in well_rows_columns
+                    ],
+                    "wells": [
+                        {
+                            "path": well_row_column[1][0]
+                            + well_row_column[1][1],
+                            "rowIndex": well_row_column[0],
+                            "columnIndex": well_row_column[1][1],
+                        }
+                        for well_row_column in well_rows_columns
+                    ],
+                }
+
+                # for loop wells and each well have n timepoints
+                for well in well_unique:
+                    chl = [
+                        self.metadata(os.path.basename(fn))[3]
+                        for fn in glob(
+                            self.in_path + f"{plate}_{well}_*." + self.ext
+                        )
+                    ]
+
+                    chl_unique = self.unique(chl)
+
+                    for ch in chl_unique:
+                        # group_well =
+                        # group_plate.create_group(f"{well}_{ch}")  # noqa: F841
+
+                        # zattrs.extend(
+                        #         [
+                        #             {
+
+                        #                 "path":  ch
+                        #             }
+
+                        #         ]
+                        #     )
+
+                        cores = str(
+                            self.slurm_param["cores"]
+                        )  # "4" #slurm_param["cores"]
+                        mem = str(
+                            self.slurm_param["mem"]
+                        )  # "1024" #slurm_param["mem"]
+                        nodes = str(self.slurm_param["nodes"])
+
+                        env = jinja2.Environment( # nosec
+                            loader=jinja2.PackageLoader("fractal", "templates") # nosec
+                        ) # nosec
+                        t = env.get_template("job.default.j2")
+                        job = self.wf_name + "_" + self.task_name
+
+                        srun = ""
+                        srun += " ".join(
+                            [
+                                " srun python",
+                                self.tasks_path + self.task_name + ".py ",
+                                self.in_path,
+                                self.out_path,
+                                f"{plate}.zarr/" + f"{well}_{ch}/",
+                                self.delete_in,
+                                rows,
+                                cols,
+                                self.ext,
+                                f"{ch}",
+                                "&",
+                            ]
+                        )
+
+                srun = srun + " wait"
+
+                with open(f"./jobs/{job}", "w") as f:
+                    f.write(
+                        t.render(
+                            job_name="test1",
+                            nodes=nodes,
+                            cores=cores,
+                            mem=mem + "MB",
+                            command=srun,
+                        )
+                    )
+
+                cmd = ["sbatch", f"./templates/{job}"]
+                debug(cmd)
+                process = Popen(cmd, stderr=PIPE)
+                stdout, stderr = process.communicate()
+                debug([stdout, stderr])
+            # group_well.attrs["well"] = {"images": zattrs}
 
         self.done = True
 
@@ -364,6 +503,8 @@ class WorkflowTask(luigi.Task):
 
         task_names = self.flags["tasks"].keys()
         in_paths = [r_in for r_in in self.flags["arguments"]["resource_in"]]
+        wf_name = self.flags["arguments"]["workflow_name"]
+
         out_paths = [
             r_out for r_out in self.flags["arguments"]["resource_out"]
         ]
@@ -371,16 +512,19 @@ class WorkflowTask(luigi.Task):
         sclr = self.flags["arguments"]["scheduler"]
         ext = self.flags["arguments"]["ext"]
         other_params = self.flags["arguments"]["other_params"]
+        slurm_params = self.flags["arguments"]["slurm_params"]
 
         for i, task_name in enumerate(task_names):
             yield DICT_TASK[task_name](
                 task_name=task_name,
+                wf_name=wf_name,
                 in_path=in_paths[i],
                 out_path=out_paths[i],
                 delete_in=delete_ins[i],
                 sclr=sclr,
                 ext=ext,
                 other_param=other_params,
+                slurm_param=slurm_params,
             )
 
         self._complete = True

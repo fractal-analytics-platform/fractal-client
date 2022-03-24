@@ -21,6 +21,8 @@ dask = "^2022.2.0"
 imagecodecs = "^2022.2.22"
 zarr = "^2.11.0"
 scikit-image = "^0.19.2"
+Jinja2 = "^3.0.3"
+templates = "^0.0.5"
 
 [build-system]
 requires = ["poetry-core"]
