@@ -1,4 +1,5 @@
 import copy
+import random
 import datetime
 import json
 import os
@@ -172,7 +173,7 @@ class CompressionTaskWrap(luigi.Task):
                     )
                 )
 
-            cmd = ["sbatch", f"./templates/{job}"]
+            cmd = ["sbatch", f"./jobs/{job}"]
             debug(cmd)
             process = Popen(cmd, stderr=PIPE)
             stdout, stderr = process.communicate()
@@ -380,6 +381,7 @@ class ConversionTaskWrap(luigi.Task):
 
         elif self.sclr == "slurm":
 
+            srun = ""
             # loop over plate, each plate could have n wells
             for plate in plate_unique:
                 group_plate = zarr.group(self.out_path + f"{plate}.zarr")
@@ -438,8 +440,6 @@ class ConversionTaskWrap(luigi.Task):
                     }
                     
 
-                    srun = ""
-
                     for ch in chl_unique:
                         group_field = group_well.create_group(f"{int(ch)-1}/")  # noqa: F841
                     
@@ -469,7 +469,7 @@ class ConversionTaskWrap(luigi.Task):
                         env = jinja2.Environment(
                         loader=loader)
                         t = env.get_template("job.default.j2")
-                        job = self.wf_name+"_"+self.task_name
+                        job = self.wf_name+"_"+self.task_name+str(random.randrange(0, 101, 5))
 
                         srun +=  " ".join(["  python",
                             self.tasks_path + self.task_name + ".py ",
@@ -487,7 +487,7 @@ class ConversionTaskWrap(luigi.Task):
                 srun = srun+" wait"
                 
                 with open(f"./jobs/{job}", "w") as f:
-                    f.write(t.render(job_name="test1", nodes=nodes, 
+                    f.write(t.render(job_name="test".str(random.randrange(0, 101, 5)), nodes=nodes, 
                                      cores=cores, mem=mem+"MB", command = srun ))
                 
                 cmd = ["sbatch", f"./jobs/{job}"]
