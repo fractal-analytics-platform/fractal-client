@@ -280,6 +280,7 @@ class ConversionTaskWrap(luigi.Task):
 
         if self.sclr == "local":
             run = ["python"]
+
             for plate in plate_unique:
                 group_plate = zarr.group(self.out_path + f"{plate}.zarr")
                 well = [
@@ -290,9 +291,9 @@ class ConversionTaskWrap(luigi.Task):
 
                 well_rows_columns = [
                     ind
-                    for ind in enumerate(
+                    for ind in 
                         sorted([(n[0], n[1:]) for n in well_unique])
-                    )
+                    
                 ]
 
                 group_plate.attrs["plate"] = {
@@ -301,48 +302,59 @@ class ConversionTaskWrap(luigi.Task):
                         for id_, name in enumerate(plate_unique)
                     ],
                     "columns": [
-                        {"name": well_row_column[1][1]}
+                        {"name": well_row_column[1]}
                         for well_row_column in well_rows_columns
                     ],
                     "rows": [
-                        {"name": well_row_column[1][0]}
+                        {"name": well_row_column[0]}
                         for well_row_column in well_rows_columns
                     ],
                     "wells": [
                         {
-                            "path": well_row_column[1][0]
-                            + well_row_column[1][1],
-                            "rowIndex": well_row_column[0],
-                            "columnIndex": well_row_column[1][1],
+                            "path": well_row_column[0] + "/" + well_row_column[1],
+
                         }
                         for well_row_column in well_rows_columns
                     ],
                 }
 
-                # for loop wells and each well have n timepoints
-                for well in well_unique:
+                for row, column in well_rows_columns:
+                    
+                    group_well = group_plate.create_group(f"{row}/{column}/")
+                   
                     chl = [
                         self.metadata(os.path.basename(fn))[3]
                         for fn in glob(
-                            self.in_path + f"{plate}_{well}_*." + self.ext
+                            self.in_path + f"{plate}_{row+column}_*." + self.ext
                         )
                     ]
 
                     chl_unique = self.unique(chl)
-
+                    
+                    group_well.attrs["well"] = {
+                        
+                        "images":[{"path":f"{int(chl)-1}"} for chl in chl_unique],
+                        "version":"0.3"
+                    }
+                    
                     for ch in chl_unique:
-                        # group_well =
-                        # group_plate.create_group(f"{well}_{ch}")  # noqa: F841
-
-                        # zattrs.extend(
-                        #         [
-                        #             {
-
-                        #                 "path":  ch
-                        #             }
-
-                        #         ]
-                        #     )
+                        group_field = group_well.create_group(f"{int(ch)-1}/")  # noqa: F841
+                    
+                        group_field.attrs["multiscales"] = [
+                                    {
+                                        "version": "0.3",
+                                        "axes": [{"name":"y", "type":"space"},
+                                                 {"name":"x", "type":"space"}
+                                                ],
+                                        
+                                    
+                                        "datasets":[{"path":"0"}],
+                                        "metadata":{"kwargs":{"axes_names":[
+                                            "y","x"
+                                        ]}}
+                                        
+                                    }
+                                    ]
 
                         cmd = copy.copy(run)
                         cmd.extend(
@@ -365,7 +377,7 @@ class ConversionTaskWrap(luigi.Task):
                         with self.output().open("w") as outfile:
                             outfile.write(f"{stderr}\n")
 
-        else:
+        elif self.sclr == "slurm":
 
             # loop over plate, each plate could have n wells
             for plate in plate_unique:
@@ -378,9 +390,9 @@ class ConversionTaskWrap(luigi.Task):
 
                 well_rows_columns = [
                     ind
-                    for ind in enumerate(
+                    for ind in 
                         sorted([(n[0], n[1:]) for n in well_unique])
-                    )
+                    
                 ]
 
                 group_plate.attrs["plate"] = {
@@ -389,99 +401,98 @@ class ConversionTaskWrap(luigi.Task):
                         for id_, name in enumerate(plate_unique)
                     ],
                     "columns": [
-                        {"name": well_row_column[1][1]}
+                        {"name": well_row_column[1]}
                         for well_row_column in well_rows_columns
                     ],
                     "rows": [
-                        {"name": well_row_column[1][0]}
+                        {"name": well_row_column[0]}
                         for well_row_column in well_rows_columns
                     ],
                     "wells": [
                         {
-                            "path": well_row_column[1][0]
-                            + well_row_column[1][1],
-                            "rowIndex": well_row_column[0],
-                            "columnIndex": well_row_column[1][1],
+                            "path": well_row_column[0] + "/" + well_row_column[1],
+
                         }
                         for well_row_column in well_rows_columns
                     ],
                 }
 
-                # for loop wells and each well have n timepoints
-                for well in well_unique:
+                for row, column in well_rows_columns:
+                    
+                    group_well = group_plate.create_group(f"{row}/{column}/")
+                   
                     chl = [
                         self.metadata(os.path.basename(fn))[3]
                         for fn in glob(
-                            self.in_path + f"{plate}_{well}_*." + self.ext
+                            self.in_path + f"{plate}_{row+column}_*." + self.ext
                         )
                     ]
 
                     chl_unique = self.unique(chl)
+                    
+                    group_well.attrs["well"] = {
+                        
+                        "images":[{"path":f"{int(chl)-1}"} for chl in chl_unique],
+                        "version":"0.3"
+                    }
+                    
+
+                    srun = ""
 
                     for ch in chl_unique:
-                        # group_well =
-                        # group_plate.create_group(f"{well}_{ch}")  # noqa: F841
+                        group_field = group_well.create_group(f"{int(ch)-1}/")  # noqa: F841
+                    
+                        group_field.attrs["multiscales"] = [
+                                    {
+                                        "version": "0.3",
+                                        "axes": [{"name":"y", "type":"space"},
+                                                 {"name":"x", "type":"space"}
+                                                ],
+                                        
+                                    
+                                        "datasets":[{"path":"0"}],
+                                        "metadata":{"kwargs":{"axes_names":[
+                                            "y","x"
+                                        ]}}
+                                        
+                                    }
+                                    ]
 
-                        # zattrs.extend(
-                        #         [
-                        #             {
+                                
+                            
+                        cores = str(self.slurm_param["cores"]) #"4" #slurm_param["cores"]
+                        mem = str(self.slurm_param["mem"]) #"1024" #slurm_param["mem"]
+                        nodes = str(self.slurm_param['nodes'])
 
-                        #                 "path":  ch
-                        #             }
-
-                        #         ]
-                        #     )
-
-                        cores = str(
-                            self.slurm_param["cores"]
-                        )  # "4" #slurm_param["cores"]
-                        mem = str(
-                            self.slurm_param["mem"]
-                        )  # "1024" #slurm_param["mem"]
-                        nodes = str(self.slurm_param["nodes"])
-
-                        env = jinja2.Environment( # nosec
-                            loader=jinja2.PackageLoader("fractal", "templates") # nosec
-                        ) # nosec
+                        env = jinja2.Environment(
+                        loader=jinja2.PackageLoader('fractal', 'templates'))
                         t = env.get_template("job.default.j2")
-                        job = self.wf_name + "_" + self.task_name
+                        job = self.wf_name+"_"+self.task_name
 
-                        srun = ""
-                        srun += " ".join(
-                            [
-                                " srun python",
-                                self.tasks_path + self.task_name + ".py ",
-                                self.in_path,
-                                self.out_path,
-                                f"{plate}.zarr/" + f"{well}_{ch}/",
-                                self.delete_in,
-                                rows,
-                                cols,
-                                self.ext,
-                                f"{ch}",
-                                "&",
-                            ]
-                        )
+                        srun +=  " ".join([" srun python",
+                            self.tasks_path + self.task_name + ".py ",
+                            self.in_path,
+                            self.out_path,
+                            f"{plate}.zarr/" 
+                            + f"{row}/{column}/{int(ch)-1}/0",
+                            self.delete_in,
+                            rows,
+                            cols,
+                            self.ext,
+                            f'{ch}',
+                            "&"])
 
-                srun = srun + " wait"
-
+                srun = srun+" wait"
+                
                 with open(f"./jobs/{job}", "w") as f:
-                    f.write(
-                        t.render(
-                            job_name="test1",
-                            nodes=nodes,
-                            cores=cores,
-                            mem=mem + "MB",
-                            command=srun,
-                        )
-                    )
-
-                cmd = ["sbatch", f"./templates/{job}"]
+                    f.write(t.render(job_name="test1", nodes=nodes, 
+                                     cores=cores, mem=mem+"MB", command = srun ))
+                
+                cmd = ["sbatch", f"./jobs/{job}"]
                 debug(cmd)
                 process = Popen(cmd, stderr=PIPE)
                 stdout, stderr = process.communicate()
                 debug([stdout, stderr])
-            # group_well.attrs["well"] = {"images": zattrs}
 
         self.done = True
 
