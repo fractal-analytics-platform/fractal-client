@@ -3,7 +3,7 @@
 #SBATCH --job-name={{ job_name }}
 #SBATCH --nodes={{ nodes|default(1) }}
 #SBATCH --core-spec={{ cores|default(1) }}
-#SBATCH --mem={{mem|default(512}}
+#SBATCH --mem={{mem|default(512)}}
 {% endblock -%}
 
 {% block header -%}

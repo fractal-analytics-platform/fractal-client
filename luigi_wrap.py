@@ -135,8 +135,9 @@ class CompressionTaskWrap(luigi.Task):
             mem = str(self.slurm_param["mem"])  # "1024" #slurm_param["mem"]
             nodes = str(self.slurm_param["nodes"])
 
+            loader = jinja2.FileSystemLoader(searchpath="./")
             env = jinja2.Environment( #nosec
-                loader=jinja2.PackageLoader("fractal", "templates") # nosec
+                loader=loader # nosec
             ) # nosec
             t = env.get_template("job.default.j2")
             job = self.wf_name + "_" + self.task_name
@@ -146,7 +147,7 @@ class CompressionTaskWrap(luigi.Task):
 
                 srun += " ".join(
                     [
-                        " srun python",
+                        "  python",
                         self.tasks_path + self.task_name + ".py ",
                         self.in_path,
                         self.out_path,
@@ -220,11 +221,11 @@ class ConversionTaskWrap(luigi.Task):
         f = filename.rsplit(".", 1)[0]
         f_s = f.split("_")
         plate = f_s[0]
-        well = f_s[1]
-        site = re.findall(r"F(.*)L", f_s[2])[0]
-        chl = re.findall(r"C(.*)", f_s[2])[0]
-        time_s = re.findall(r"T(.*)F", f_s[2])[0]
-        z_ind = re.findall(r"Z(.*)C", f_s[2])[0]
+        well = f_s[3]
+        site = re.findall(r"F(.*)L", f_s[4])[0]
+        chl = re.findall(r"C(.*)", f_s[4])[0]
+        time_s = re.findall(r"T(.*)F", f_s[4])[0]
+        z_ind = re.findall(r"Z(.*)C", f_s[4])[0]
         return [plate, well, time_s, chl, z_ind, site]
 
     def unique(self, list1):
@@ -464,12 +465,13 @@ class ConversionTaskWrap(luigi.Task):
                         mem = str(self.slurm_param["mem"]) #"1024" #slurm_param["mem"]
                         nodes = str(self.slurm_param['nodes'])
 
+                        loader = jinja2.FileSystemLoader(searchpath="./")
                         env = jinja2.Environment(
-                        loader=jinja2.PackageLoader('fractal', 'templates'))
+                        loader=loader)
                         t = env.get_template("job.default.j2")
                         job = self.wf_name+"_"+self.task_name
 
-                        srun +=  " ".join([" srun python",
+                        srun +=  " ".join(["  python",
                             self.tasks_path + self.task_name + ".py ",
                             self.in_path,
                             self.out_path,
