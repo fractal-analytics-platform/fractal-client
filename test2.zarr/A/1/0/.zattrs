@@ -10,9 +10,6 @@
         "datasets": [
         {
         "path": "0"
-        },
-        {
-            "path": "1"
         }
         ],
 "metadata": {
@@ -24,5 +21,28 @@
     }
 }
 }
-]
+],
+"omero": {"id":1,
+           "version":"0.3"},
+           "channels":[
+               {
+                   "active": true,
+                   "coefficient": 1,
+                   "color": "0000FF",
+                   "family": "linear",
+                   "inverted": false,
+                   "label": "LaminB1",
+                   "window": {
+                       "end": 1500,
+                       "max": 65535,
+                       "min": 0,
+                       "start": 0
+                   }
+               }
+           ],
+           "rdefs": {
+            "defaultT": 0,                    
+            "defaultZ": 118,                  
+            "model": "color"                 
+        }
 }

@@ -135,7 +135,7 @@ class CompressionTaskWrap(luigi.Task):
             mem = str(self.slurm_param["mem"])  # "1024" #slurm_param["mem"]
             nodes = str(self.slurm_param["nodes"])
 
-            env = jinja2.Environment( nosec
+            env = jinja2.Environment( #nosec
                 loader=jinja2.PackageLoader("fractal", "templates") # nosec
             ) # nosec
             t = env.get_template("job.default.j2")
