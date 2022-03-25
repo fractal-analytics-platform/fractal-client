@@ -427,7 +427,7 @@ class ConversionTaskWrap(luigi.Task):
                     chl = [
                         self.metadata(os.path.basename(fn))[3]
                         for fn in glob(
-                            self.in_path + f"{plate}_{row+column}_*." + self.ext
+                            self.in_path + f"{plate}_*_*_{row+column}_*." + self.ext
                         )
                     ]
 
