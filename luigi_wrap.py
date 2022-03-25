@@ -439,6 +439,16 @@ class ConversionTaskWrap(luigi.Task):
                         "version":"0.3"
                     }
                     
+                            
+                    cores = str(self.slurm_param["cores"]) #"4" #slurm_param["cores"]
+                    mem = str(self.slurm_param["mem"]) #"1024" #slurm_param["mem"]
+                    nodes = str(self.slurm_param['nodes'])
+
+                    loader = jinja2.FileSystemLoader(searchpath="./")
+                    env = jinja2.Environment(
+                    loader=loader)
+                    t = env.get_template("job.default.j2")
+                    job = self.wf_name+"_"+self.task_name+str(random.randrange(0, 101, 5))
 
                     for ch in chl_unique:
                         group_field = group_well.create_group(f"{int(ch)-1}/")  # noqa: F841
@@ -460,16 +470,7 @@ class ConversionTaskWrap(luigi.Task):
                                     ]
 
                                 
-                            
-                        cores = str(self.slurm_param["cores"]) #"4" #slurm_param["cores"]
-                        mem = str(self.slurm_param["mem"]) #"1024" #slurm_param["mem"]
-                        nodes = str(self.slurm_param['nodes'])
 
-                        loader = jinja2.FileSystemLoader(searchpath="./")
-                        env = jinja2.Environment(
-                        loader=loader)
-                        t = env.get_template("job.default.j2")
-                        job = self.wf_name+"_"+self.task_name+str(random.randrange(0, 101, 5))
 
                         srun +=  " ".join(["  python",
                             self.tasks_path + self.task_name + ".py ",
