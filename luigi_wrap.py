@@ -488,7 +488,7 @@ class ConversionTaskWrap(luigi.Task):
                 srun = srun+" wait"
                 
                 with open(f"./jobs/{job}", "w") as f:
-                    f.write(t.render(job_name="test".str(random.randrange(0, 101, 5)), nodes=nodes, 
+                    f.write(t.render(job_name="test"+str(random.randrange(0, 101, 5)), nodes=nodes, 
                                      cores=cores, mem=mem+"MB", command = srun ))
                 
                 cmd = ["sbatch", f"./jobs/{job}"]
