@@ -14,7 +14,7 @@ def yokogawa_tif_to_zarr(
 
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
-    filenames = sorted(glob(in_path + f"*_{r+c}_*C{chl}*." + ext))
+    filenames = sorted(glob(in_path + f"*_*_*_{r+c}_*C{chl}*." + ext))
     # print(in_path + f"*C{chl}*."+ ext)
     # assuming that all files have same shape and type
     sample = imread(filenames[0])
