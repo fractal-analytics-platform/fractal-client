@@ -26,18 +26,7 @@ def yokogawa_tif_to_zarr(
         for delayed_reader in lazy_arrays
     ]
 
-    interval = len(dask_arrays) // int(rows)
-    all_rows = []
-
-#    for j in range(int(rows)):
-#        t = j * interval
-#        tmp_row = []
-#        for i in range(int(cols)):
-#            tmp_row.append(dask_arrays[i + t])
-##        l_rows = da.concatenate(tmp_row, axis=1)
- #       all_rows.append(l_rows)
-    stack = da.stack(dask_arrays, axis=0) 
- #  f_matrix = da.concatenate(all_rows, axis=0)
+    stack = da.stack(dask_arrays, axis=0)
 
     stack.to_zarr(out_path + zarrurl, dimension_separator="/")
 
@@ -62,4 +51,3 @@ if __name__ == "__main__":
     yokogawa_tif_to_zarr(
         in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl
     )
-
