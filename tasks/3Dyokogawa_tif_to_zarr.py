@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from glob import glob
 
@@ -7,28 +8,52 @@ from dask import delayed
 from skimage.io import imread
 
 
-# TODO use kwargs not args
+def sort_fun(s):
+    site = re.findall(r"F(.*)L", s)[0]
+    zind = re.findall(r"Z(.*)C", s)[0]
+    return [site, zind]
+
+
 def yokogawa_tif_to_zarr(
-    in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl, **kwargs
+    in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl
 ):
 
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
-    filenames = sorted(glob(in_path + f"*_{r+c}_*C{chl}*." + ext))
-    # print(in_path + f"*C{chl}*."+ ext)
-    # assuming that all files have same shape and type
+    filenames = sorted(
+        glob(in_path + f"*_{r+c}_*C{chl}*." + ext), key=sort_fun
+    )
+
+    max_z = max([re.findall(r"Z(.*)C", s)[0] for s in filenames])
+
     sample = imread(filenames[0])
 
-    lazy_imread = delayed(imread)  # lazy reader
-    lazy_arrays = [lazy_imread(fn) for fn in filenames]
-    dask_arrays = [
-        da.from_delayed(delayed_reader, shape=sample.shape, dtype=sample.dtype)
-        for delayed_reader in lazy_arrays
-    ]
+    lazy_imread = delayed(imread)
 
-    stack = da.stack(dask_arrays, axis=0)
+    s = int(max_z)
+    e = 0
+    l_rows = []
+    all_rows = []
 
-    stack.to_zarr(out_path + zarrurl, dimension_separator="/")
+    for j in range(int(rows)):
+        cell = []
+        for i in range(int(cols)):
+            lazy_arrays = [lazy_imread(fn) for fn in filenames[s:e]]
+            s += int(max_z)
+            e += int(max_z)
+            dask_arrays = [
+                da.from_delayed(
+                    delayed_reader, shape=sample.shape, dtype=sample.dtype
+                )
+                for delayed_reader in lazy_arrays
+            ]
+            z_stack = da.stack(dask_arrays, axis=0)
+            cell.append(z_stack)
+        l_rows = da.block(cell)
+        all_rows.append(l_rows)
+    f_matrix = da.concatenate(all_rows, axis=1)
+
+    f_matrix.to_zarr(out_path + zarrurl, dimension_separator="/")
 
     if delete_in == "True":
         for f in filenames:

@@ -19,9 +19,6 @@ class ConversionTaskWrap(luigi.Task):
         super().__init__(*args, **kwargs)
         self.complete_flag = False
 
-    retry_count = 5
-    # accepts_messages = True
-
     task_name = luigi.parameter.Parameter(significant=True)
 
     wf_name = luigi.parameter.Parameter(significant=True)
@@ -48,7 +45,7 @@ class ConversionTaskWrap(luigi.Task):
         ##
         f = filename.rsplit(".", 1)[0]
         plate = f.split("_")[0]
-        well = re.findall(r"_(.*)_F", f)[0].split("_")[-1]
+        well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
         site = re.findall(r"F(.*)L", f)[0]
         chl = re.findall(r"C(.*)", f)[0]
         time_s = re.findall(r"T(.*)F", f)[0]
