@@ -47,7 +47,7 @@ class ConversionTaskWrap(luigi.Task):
         plate = f.split("_")[0]
         well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
         site = re.findall(r"F(.*)L", f)[0]
-        chl = re.findall(r"C(.*)", f)[0]
+        chl = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0].split("_")[0]
         time_s = re.findall(r"T(.*)F", f)[0]
         z_ind = re.findall(r"Z(.*)C", f)[0]
         return [plate, well, time_s, chl, z_ind, site]
@@ -153,13 +153,12 @@ class ConversionTaskWrap(luigi.Task):
                         self.metadata(os.path.basename(fn))[3]
                         for fn in glob(
                             self.in_path
-                            + f"{plate}_*_*_{row+column}_*."
+                            + f"{plate}*_{row+column}*."
                             + self.ext
                         )
                     ]
 
                     chl_unique = self.unique(chl)
-
                     group_well.attrs["well"] = {
                         "images": [
                             {"path": f"{int(chl)-1}"} for chl in chl_unique
@@ -203,7 +202,11 @@ class ConversionTaskWrap(luigi.Task):
                             cmd + [f"{ch}"], stdout=PIPE, stderr=PIPE
                         )
                         stdout, stderr = process.communicate()
-                        debug(process.communicate())
+                        if not stderr:
+                            print("--No errors--\n")
+                        else:
+                            print("--Error--\n", stderr.decode())
+
                         with self.output().open("w") as outfile:
                             outfile.write(f"{stderr}\n")
 
@@ -211,6 +214,7 @@ class ConversionTaskWrap(luigi.Task):
 
             srun = ""
             # loop over plate, each plate could have n wells
+            # debug(plate_unique)
             for plate in plate_unique:
                 group_plate = zarr.group(self.out_path + f"{plate}.zarr")
                 well = [
@@ -245,7 +249,7 @@ class ConversionTaskWrap(luigi.Task):
                         for well_row_column in well_rows_columns
                     ],
                 }
-
+                # debug(well_rows_columns)
                 for row, column in well_rows_columns:
 
                     group_well = group_plate.create_group(f"{row}/{column}/")
@@ -254,13 +258,13 @@ class ConversionTaskWrap(luigi.Task):
                         self.metadata(os.path.basename(fn))[3]
                         for fn in glob(
                             self.in_path
-                            + f"{plate}_*_*_{row+column}_*."
+                            + f"{plate}*_{row+column}*."
                             + self.ext
                         )
                     ]
 
                     chl_unique = self.unique(chl)
-
+                    # debug(chl_unique)
                     group_well.attrs["well"] = {
                         "images": [
                             {"path": f"{int(chl)-1}"} for chl in chl_unique
@@ -337,12 +341,12 @@ class ConversionTaskWrap(luigi.Task):
                     )
 
                 cmd = ["sbatch", f"./jobs/{job}"]
-                debug(cmd)
+                # debug(cmd)
                 process = Popen(cmd, stderr=PIPE)
                 stdout, stderr = process.communicate()
                 if not stderr:
-                    debug("--No errors--\n", stdout.decode())
+                    print("--No errors--\n")
                 else:
-                    debug("--Error--\n", stderr.decode())
+                    print("--Error--\n", stderr.decode())
 
         self.done = True
