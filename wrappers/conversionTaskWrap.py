@@ -103,7 +103,10 @@ class ConversionTaskWrap(luigi.Task):
         well = []
         plate = []
         for i in glob(self.in_path + "*." + self.ext):
-            plate.append(self.metadata(os.path.basename(i))[0])
+            try:
+                plate.append(self.metadata(os.path.basename(i))[0])
+            except IndexError:
+                pass
 
         plate_unique = self.unique(plate)
 
