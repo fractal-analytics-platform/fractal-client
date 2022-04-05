@@ -311,7 +311,7 @@ class ConversionTaskWrap(luigi.Task):
 
                         srun += " ".join(
                             [
-                                " srun python",
+                                " python",
                                 self.tasks_path + self.task_name + ".py ",
                                 self.in_path,
                                 self.out_path,
