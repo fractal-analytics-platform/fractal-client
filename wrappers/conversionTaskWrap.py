@@ -281,7 +281,7 @@ class ConversionTaskWrap(luigi.Task):
                     nodes = str(self.slurm_param["nodes"])
 
                     loader = jinja2.FileSystemLoader(searchpath="./")
-                    env = jinja2.Environment(loader=loader, autoescape=True)
+                    env = jinja2.Environment(loader=loader)  # nosec
                     t = env.get_template("job.default.j2")
                     job = (
                         self.wf_name
