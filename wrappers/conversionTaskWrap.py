@@ -336,6 +336,7 @@ class ConversionTaskWrap(luigi.Task):
                             nodes=nodes,
                             cores=cores,
                             mem=mem + "MB",
+                            array=len(chl_unique),
                             command=srun,
                         )
                     )
