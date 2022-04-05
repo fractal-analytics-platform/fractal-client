@@ -30,8 +30,8 @@ def yokogawa_tif_to_zarr(
 
     lazy_imread = delayed(imread)
 
-    s = int(max_z)
-    e = 0
+    s = 0
+    e = int(max_z)
     l_rows = []
     all_rows = []
 
