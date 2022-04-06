@@ -312,24 +312,22 @@ class ConversionTaskWrap(luigi.Task):
                             }
                         ]
 
-                        srun += " ".join(
-                            [
-                                " python",
-                                self.tasks_path + self.task_name + ".py ",
-                                self.in_path,
-                                self.out_path,
-                                f"{plate}.zarr/"
-                                + f"{row}/{column}/{int(ch)-1}/0",
-                                self.delete_in,
-                                rows,
-                                cols,
-                                self.ext,
-                                f"{ch}",
-                                "&",
-                            ]
-                        )
-
-                srun = srun + " wait"
+                srun += " ".join(
+                    [
+                        "python",
+                        self.tasks_path + self.task_name + ".py ",
+                        self.in_path,
+                        self.out_path,
+                        f"{plate}.zarr/"
+                        + f"{row}/{column}/"
+                        + "${SLURM_ARRAY_TASK_ID}/0/",
+                        self.delete_in,
+                        rows,
+                        cols,
+                        self.ext,
+                        "${SAMPLE[*]}",
+                    ]
+                )
 
                 with open(f"./jobs/{job}", "w") as f:
                     f.write(
@@ -340,6 +338,7 @@ class ConversionTaskWrap(luigi.Task):
                             cores=cores,
                             mem=mem + "MB",
                             array=len(chl_unique),
+                            channels=str(tuple(chl_unique)).replace(",", ""),
                             command=srun,
                         )
                     )

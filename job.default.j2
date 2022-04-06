@@ -5,6 +5,8 @@
 #SBATCH --core-spec={{ cores|default(1) }}
 #SBATCH --mem={{mem|default(512)}}
 #SBATCH --array 0-{{array}}
+input={{channels}}
+
 {% endblock -%}
 
 {% block header -%}
@@ -15,6 +17,8 @@
 #########################
 {% endblock %}
 
+SAMPLE_LIST=(${input[@]})
+SAMPLE=${SAMPLE_LIST[${SLURM_ARRAY_TASK_ID}]}
 
 {% block body -%}
 
