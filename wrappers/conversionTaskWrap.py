@@ -337,7 +337,7 @@ class ConversionTaskWrap(luigi.Task):
                             nodes=nodes,
                             cores=cores,
                             mem=mem + "MB",
-                            array=len(chl_unique),
+                            array=len(chl_unique) - 1,
                             channels=str(tuple(chl_unique)).replace(",", ""),
                             command=srun,
                         )
