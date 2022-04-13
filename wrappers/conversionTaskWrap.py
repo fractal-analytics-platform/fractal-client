@@ -319,7 +319,7 @@ class ConversionTaskWrap(luigi.Task):
                         self.in_path,
                         self.out_path,
                         f"{plate}.zarr/"
-                        + f"{row}/{column}/"
+                        + "$R/$C/"
                         + "${SLURM_ARRAY_TASK_ID}/0/",
                         self.delete_in,
                         rows,
@@ -339,6 +339,14 @@ class ConversionTaskWrap(luigi.Task):
                             mem=mem + "MB",
                             array=len(chl_unique) - 1,
                             channels=str(tuple(chl_unique)).replace(",", ""),
+                            rows=str([r[0] for r in well_rows_columns])
+                            .replace("'", "")
+                            .replace("[", "")
+                            .replace("]", ""),
+                            columns=str([c[1] for c in well_rows_columns])
+                            .replace("'", "")
+                            .replace("[", "")
+                            .replace("]", ""),
                             command=srun,
                         )
                     )

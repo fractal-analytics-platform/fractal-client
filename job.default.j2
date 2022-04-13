@@ -25,7 +25,21 @@ SAMPLE=${SAMPLE_LIST[${SLURM_ARRAY_TASK_ID}]}
 {% block cmd -%}
 ##### Run Command
 # run script with arguments
-{{ command }}
+
+for R in {{rows}} :
+
+  do
+
+    for C in {{columns}} :
+
+      do
+
+        {{ command }}
+
+      done
+
+  done
+
 {% endblock %}
 
 {% endblock %}
