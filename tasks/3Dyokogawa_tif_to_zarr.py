@@ -15,45 +15,53 @@ def sort_fun(s):
 
 
 def yokogawa_tif_to_zarr(
-    in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl
+    in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl_list
 ):
 
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
-    filenames = sorted(
-        glob(in_path + f"*_{r+c}_*C{chl}*." + ext), key=sort_fun
-    )
-
-    max_z = max([re.findall(r"Z(.*)C", s)[0] for s in filenames])
-
-    sample = imread(filenames[0])
 
     lazy_imread = delayed(imread)
+    tt = []
 
-    s = 0
-    e = int(max_z)
-    l_rows = []
-    all_rows = []
+    for ch in chl_list:
 
-    for j in range(int(rows)):
-        cell = []
-        for i in range(int(cols)):
-            lazy_arrays = [lazy_imread(fn) for fn in filenames[s:e]]
-            s += int(max_z)
-            e += int(max_z)
-            dask_arrays = [
-                da.from_delayed(
-                    delayed_reader, shape=sample.shape, dtype=sample.dtype
-                )
-                for delayed_reader in lazy_arrays
-            ]
-            z_stack = da.stack(dask_arrays, axis=0)
-            cell.append(z_stack)
-        l_rows = da.block(cell)
-        all_rows.append(l_rows)
-    f_matrix = da.concatenate(all_rows, axis=1)
+        l_rows = []
+        all_rows = []
 
-    f_matrix.to_zarr(out_path + zarrurl, dimension_separator="/")
+        filenames = sorted(
+            glob(in_path + f"*_{r+c}_*C{ch}*." + ext), key=sort_fun
+        )
+        print(in_path + f"*_{r+c}_*C{ch}*." + ext)
+        max_z = max([re.findall(r"Z(.*)C", s)[0] for s in filenames])
+
+        sample = imread(filenames[0])
+
+        s = 0
+        e = int(max_z)
+
+        for j in range(int(rows)):
+            cell = []
+
+            for i in range(int(cols)):
+                lazy_arrays = [lazy_imread(fn) for fn in filenames[s:e]]
+                s += int(max_z)
+                e += int(max_z)
+                dask_arrays = [
+                    da.from_delayed(
+                        delayed_reader, shape=sample.shape, dtype=sample.dtype
+                    )
+                    for delayed_reader in lazy_arrays
+                ]
+                z_stack = da.stack(dask_arrays, axis=0)
+                cell.append(z_stack)
+            l_rows = da.block(cell)
+            all_rows.append(l_rows)
+        f_matrix = da.concatenate(all_rows, axis=1)
+        tt.append(f_matrix)
+    tt_f = da.stack(tt, axis=0)
+
+    tt_f.to_zarr(out_path + zarrurl, dimension_separator="/")
 
     if delete_in == "True":
         for f in filenames:
@@ -71,8 +79,8 @@ if __name__ == "__main__":
     rows = sys.argv[5]
     cols = sys.argv[6]
     ext = sys.argv[7]
-    chl = sys.argv[8]
+    chl_list = sys.argv[8:]
 
     yokogawa_tif_to_zarr(
-        in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl
+        in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl_list
     )

@@ -169,15 +169,21 @@ class ConversionTaskWrap(luigi.Task):
                         "version": "0.3",
                     }
 
-                    for ch in chl_unique:
+                    for ch in ["0"]:
                         group_field = group_well.create_group(
-                            f"{int(ch)-1}/"
+                            f"{int(ch)}/"
                         )  # noqa: F841
 
                         group_field.attrs["multiscales"] = [
                             {
                                 "version": "0.3",
                                 "axes": [
+                                    {"name": "c", "type": "channel"},
+                                    {
+                                        "name": "z",
+                                        "type": "space",
+                                        "unit": "micrometer",
+                                    },
                                     {"name": "y", "type": "space"},
                                     {"name": "x", "type": "space"},
                                 ],
@@ -295,20 +301,23 @@ class ConversionTaskWrap(luigi.Task):
 
                     for ch in chl_unique:
                         group_field = group_well.create_group(
-                            f"{int(ch)-1}/"
+                            f"{int(ch)}/"
                         )  # noqa: F841
 
                         group_field.attrs["multiscales"] = [
                             {
                                 "version": "0.3",
                                 "axes": [
+                                    {"name": "c", "type": "channel"},
+                                    {
+                                        "name": "z",
+                                        "type": "space",
+                                        "unit": "micrometer",
+                                    },
                                     {"name": "y", "type": "space"},
                                     {"name": "x", "type": "space"},
                                 ],
                                 "datasets": [{"path": "0"}],
-                                "metadata": {
-                                    "kwargs": {"axes_names": ["y", "x"]}
-                                },
                             }
                         ]
 
@@ -318,14 +327,12 @@ class ConversionTaskWrap(luigi.Task):
                         self.tasks_path + self.task_name + ".py ",
                         self.in_path,
                         self.out_path,
-                        f"{plate}.zarr/"
-                        + "$R/$C/"
-                        + "${SLURM_ARRAY_TASK_ID}/0/",
+                        f"{plate}.zarr/" + "$R/$C/0/0/",
                         self.delete_in,
                         rows,
                         cols,
                         self.ext,
-                        "${SAMPLE[*]}",
+                        "${input[@]}",
                     ]
                 )
 
@@ -337,7 +344,7 @@ class ConversionTaskWrap(luigi.Task):
                             nodes=nodes,
                             cores=cores,
                             mem=mem + "MB",
-                            array=len(chl_unique) - 1,
+                            array=len(well_unique) - 1,
                             channels=str(tuple(chl_unique)).replace(",", ""),
                             rows=str([r[0] for r in well_rows_columns])
                             .replace("'", "")
