@@ -299,7 +299,7 @@ class ConversionTaskWrap(luigi.Task):
                         + str(random.randrange(0, 101, 5))  # nosec
                     )
 
-                    for ch in chl_unique:
+                    for ch in ["0"]:
                         group_field = group_well.create_group(
                             f"{int(ch)}/"
                         )  # noqa: F841
@@ -327,7 +327,7 @@ class ConversionTaskWrap(luigi.Task):
                         self.tasks_path + self.task_name + ".py ",
                         self.in_path,
                         self.out_path,
-                        f"{plate}.zarr/" + "$R/$C/0/0/",
+                        f"{plate}.zarr/$R/$C/0/0/",
                         self.delete_in,
                         rows,
                         cols,
