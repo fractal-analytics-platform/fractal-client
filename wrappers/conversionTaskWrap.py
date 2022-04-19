@@ -276,7 +276,9 @@ class ConversionTaskWrap(luigi.Task):
                     # debug(chl_unique)
                     group_well.attrs["well"] = {
                         "images": [
-                            {"path": f"{int(chl)-1}"} for chl in chl_unique
+                            {
+                                "path": "0"
+                            }  # multiscale level, until pyramids just 0
                         ],
                         "version": "0.3",
                     }
