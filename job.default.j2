@@ -17,9 +17,6 @@ input={{channels}}
 #########################
 {% endblock %}
 
-SAMPLE_LIST=(${input[@]})
-SAMPLE=${SAMPLE_LIST[${SLURM_ARRAY_TASK_ID}]}
-
 {% block body -%}
 
 {% block cmd -%}
