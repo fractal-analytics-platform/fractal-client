@@ -4,6 +4,7 @@ import sys
 from glob import glob
 
 import dask.array as da
+import numpy as np
 from dask import delayed
 from skimage.io import imread
 
@@ -22,7 +23,11 @@ def yokogawa_tif_to_zarr(
     c = zarrurl.split("/")[2]
 
     lazy_imread = delayed(imread)
-    tt = []
+    fc_list = []
+    fc1_list = []
+    fc2_list = []
+    fc3_list = []
+    fc4_list = []
 
     for ch in chl_list:
 
@@ -57,11 +62,29 @@ def yokogawa_tif_to_zarr(
                 cell.append(z_stack)
             l_rows = da.block(cell)
             all_rows.append(l_rows)
-        f_matrix = da.concatenate(all_rows, axis=1)
-        tt.append(f_matrix)
-    tt_f = da.stack(tt, axis=0)
 
-    tt_f.to_zarr(out_path + zarrurl, dimension_separator="/")
+        f_matrix = da.concatenate(all_rows, axis=1)
+        f1_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f_matrix]
+        f2_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f1_matrix]
+        f3_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f2_matrix]
+        f4_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f3_matrix]
+
+        fc_list.append(f_matrix)
+        fc1_list.append(f1_matrix)
+        fc2_list.append(f2_matrix)
+        fc3_list.append(f3_matrix)
+        fc4_list.append(f4_matrix)
+
+    fc_stack = da.stack(fc_list, axis=0)
+    fc1_stack = da.stack(fc1_list, axis=0)
+    fc2_stack = da.stack(fc2_list, axis=0)
+    fc3_stack = da.stack(fc3_list, axis=0)
+    fc4_stack = da.stack(fc4_list, axis=0)
+
+    tmp_lvl = [fc_stack, fc1_stack, fc2_stack, fc3_stack, fc4_stack]
+
+    for i, level in enumerate(tmp_lvl):
+        level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
 
     if delete_in == "True":
         for f in filenames:

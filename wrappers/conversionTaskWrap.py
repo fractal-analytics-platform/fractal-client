@@ -301,27 +301,28 @@ class ConversionTaskWrap(luigi.Task):
                         + str(random.randrange(0, 101, 5))  # nosec
                     )
 
-                    for ch in ["0"]:
-                        group_field = group_well.create_group(
-                            f"{int(ch)}/"
-                        )  # noqa: F841
+                    levels = ["0", "1", "2", "3", "4"]
 
-                        group_field.attrs["multiscales"] = [
-                            {
-                                "version": "0.3",
-                                "axes": [
-                                    {"name": "c", "type": "channel"},
-                                    {
-                                        "name": "z",
-                                        "type": "space",
-                                        "unit": "micrometer",
-                                    },
-                                    {"name": "y", "type": "space"},
-                                    {"name": "x", "type": "space"},
-                                ],
-                                "datasets": [{"path": "0"}],
-                            }
-                        ]
+                    group_field = group_well.create_group("0/")  # noqa: F841
+
+                    group_field.attrs["multiscales"] = [
+                        {
+                            "version": "0.3",
+                            "axes": [
+                                {"name": "c", "type": "channel"},
+                                {
+                                    "name": "z",
+                                    "type": "space",
+                                    "unit": "micrometer",
+                                },
+                                {"name": "y", "type": "space"},
+                                {"name": "x", "type": "space"},
+                            ],
+                            "datasets": [
+                                {"path": f"{level}"} for level in levels
+                            ],
+                        }
+                    ]
 
                 srun += " ".join(
                     [
@@ -329,7 +330,7 @@ class ConversionTaskWrap(luigi.Task):
                         self.tasks_path + self.task_name + ".py ",
                         self.in_path,
                         self.out_path,
-                        f"{plate}.zarr/$R/$C/0/0/",
+                        f"{plate}.zarr/$R/$C/0/",
                         self.delete_in,
                         rows,
                         cols,
@@ -351,11 +352,13 @@ class ConversionTaskWrap(luigi.Task):
                             rows=str([r[0] for r in well_rows_columns])
                             .replace("'", "")
                             .replace("[", "")
-                            .replace("]", ""),
+                            .replace("]", "")
+                            .replace(",", ""),
                             columns=str([c[1] for c in well_rows_columns])
                             .replace("'", "")
                             .replace("[", "")
-                            .replace("]", ""),
+                            .replace("]", "")
+                            .replace(",", ""),
                             command=srun,
                         )
                     )
