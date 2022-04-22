@@ -6,6 +6,8 @@
 #SBATCH --mem={{mem|default(512)}}
 #SBATCH --array 0-{{array}}
 input={{channels}}
+R=({{rows}})
+C=({{columns}})
 
 {% endblock -%}
 
@@ -23,19 +25,8 @@ input={{channels}}
 ##### Run Command
 # run script with arguments
 
-for R in {{rows}}
+{{ command }}
 
-  do
-
-    for C in {{columns}}
-
-      do
-
-        {{ command }}
-
-      done
-
-  done
 
 {% endblock %}
 

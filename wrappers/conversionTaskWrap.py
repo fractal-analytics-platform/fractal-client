@@ -330,7 +330,9 @@ class ConversionTaskWrap(luigi.Task):
                         self.tasks_path + self.task_name + ".py ",
                         self.in_path,
                         self.out_path,
-                        f"{plate}.zarr/$R/$C/0/",
+                        f"{plate}.zarr/"
+                        + "${R[$SLURM_ARRAY_TASK_ID]}/"
+                        + "${C[$SLURM_ARRAY_TASK_ID]}/0/",
                         self.delete_in,
                         rows,
                         cols,
