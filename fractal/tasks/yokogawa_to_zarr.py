@@ -15,9 +15,22 @@ def sort_fun(s):
     return [site, zind]
 
 
-def yokogawa_tif_to_zarr(
+def yokogawa_to_zarr(
     in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl_list
 ):
+    """
+    Convert Yokogawa output (png, tif) to zarr file
+
+    :param str in_path: directory containing the input files
+    :param str out_path: directory containing the output files
+    :param str zarrurl : structure of the zarr folder
+    :param bool delete_in: delete input files, and folder if empty
+    :param int rows: number of rows of the plate
+    :param int cols: number of columns of the plate
+    :param str ext: source images extension 
+    :param list chl_list: list of the channels 
+    
+    """
 
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
@@ -28,6 +41,8 @@ def yokogawa_tif_to_zarr(
     fc2_list = []
     fc3_list = []
     fc4_list = []
+    
+    print(chl_list)
 
     for ch in chl_list:
 
@@ -93,17 +108,69 @@ def yokogawa_tif_to_zarr(
             except OSError as e:
                 print("Error: %s : %s" % (f, e.strerror))
 
-
+    
 if __name__ == "__main__":
-    in_path = sys.argv[1]
-    out_path = sys.argv[2]
-    zarrurl = sys.argv[3]
-    delete_in = sys.argv[4]
-    rows = sys.argv[5]
-    cols = sys.argv[6]
-    ext = sys.argv[7]
-    chl_list = sys.argv[8:]
+    from argparse import ArgumentParser
 
-    yokogawa_tif_to_zarr(
-        in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl_list
+    parser = ArgumentParser(prog="Yokogawa_to_zarr")
+    
+    parser.add_argument(
+        "-i",
+        "--in_path",
+        help="directory containing the input files")
+    
+    parser.add_argument(
+        "-o",
+        "--out_path", 
+        help="directory containing the output files"
+    )
+    
+    parser.add_argument(
+        "-z",
+        "--zarrurl",
+        help="structure of the zarr folder",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--delete_in",
+        help="Delete input files and folder",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--rows",
+        help="Number of rows of final image",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--cols",
+        help="Number of columns of final image",
+    )
+
+    parser.add_argument(
+        "-e",
+        "--ext",
+        help="source images extension",
+    )
+    
+    parser.add_argument(
+        "-C",
+        "--chl_list",
+        nargs='+',
+        help="list of channels ",
+    )
+
+    args = parser.parse_args()
+
+    yokogawa_to_zarr(
+        args.in_path,
+        args.out_path,
+        args.zarrurl, 
+        args.delete_in, 
+        args.rows, 
+        args.cols,
+        args.ext, 
+        args.chl_list
     )

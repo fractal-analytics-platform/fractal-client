@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --job-name=test95
+#SBATCH --nodes=1
+#SBATCH --core-spec=1
+#SBATCH --mem=1MB
+#SBATCH --array 0-0
+input=('01' '03' '02')
+R=(B)
+C=(03)
+
+#########################
+#
+# Job: test95
+#
+#########################
+
+
+##### Run Command
+# run script with arguments
+
+python /home/admin/mwe_fractal/fractal/tasks/yokogawa_to_zarr.py  -i /home/admin/Cycle1_subset/ -o /home/admin/results/ -z 20200812-CardiomyocyteDifferentiation14-Cycle1.zarr/${R[$SLURM_ARRAY_TASK_ID]}/${C[$SLURM_ARRAY_TASK_ID]}/0/ -d False -r 6 -c 6 -e png -C ${input[@]}
+
+
+
+

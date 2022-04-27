@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>fractal.tasks package &#8212; Fractal 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="fractal-tasks-package">
+<h1>fractal.tasks package<a class="headerlink" href="#fractal-tasks-package" title="Permalink to this headline">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-fractal.tasks.compression_tif">
+<span id="fractal-tasks-compression-tif-module"></span><h2>fractal.tasks.compression_tif module<a class="headerlink" href="#module-fractal.tasks.compression_tif" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.tasks.compression_tif.compress">
+<span class="sig-prename descclassname"><span class="pre">fractal.tasks.compression_tif.</span></span><span class="sig-name descname"><span class="pre">compress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_in</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.tasks.compression_tif.compress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compress tiff files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_path</strong> (<em>str</em>) – directory containing the input files</p></li>
+<li><p><strong>out_path</strong> (<em>str</em>) – directory containing the output files</p></li>
+<li><p><strong>start</strong> (<em>int</em>) – index of first file to process</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – index of last file to process</p></li>
+<li><p><strong>delete_in</strong> (<em>bool</em>) – delete input files, and folder if empty</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-fractal.tasks.yokogawa_to_zarr">
+<span id="fractal-tasks-yokogawa-to-zarr-module"></span><h2>fractal.tasks.yokogawa_to_zarr module<a class="headerlink" href="#module-fractal.tasks.yokogawa_to_zarr" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.tasks.yokogawa_to_zarr.sort_fun">
+<span class="sig-prename descclassname"><span class="pre">fractal.tasks.yokogawa_to_zarr.</span></span><span class="sig-name descname"><span class="pre">sort_fun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.tasks.yokogawa_to_zarr.sort_fun" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.tasks.yokogawa_to_zarr.yokogawa_to_zarr">
+<span class="sig-prename descclassname"><span class="pre">fractal.tasks.yokogawa_to_zarr.</span></span><span class="sig-name descname"><span class="pre">yokogawa_to_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zarrurl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chl_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.tasks.yokogawa_to_zarr.yokogawa_to_zarr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Yokogawa output (png, tif) to zarr file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_path</strong> (<em>str</em>) – directory containing the input files</p></li>
+<li><p><strong>out_path</strong> (<em>str</em>) – directory containing the output files</p></li>
+</ul>
+</dd>
+</dl>
+<p>:param str zarrurl : structure of the zarr folder
+:param bool delete_in: delete input files, and folder if empty
+:param int rows: number of rows of the plate
+:param int cols: number of columns of the plate
+:param str ext: source images extension 
+:param list chl_list: list of the channels</p>
+</dd></dl>
+
+</section>
+<section id="module-fractal.tasks">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-fractal.tasks" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Fractal</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Marco Franzon, Jacopo Nespolo.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/fractal.tasks.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -3,8 +3,8 @@ import sys
 
 import luigi
 
-from wrappers.compressionTaskWrap import CompressionTaskWrap
-from wrappers.conversionTaskWrap import ConversionTaskWrap
+from fractal.wrappers.compressionTaskWrap import CompressionTaskWrap
+from fractal.wrappers.conversionTaskWrap import ConversionTaskWrap
 
 # TODO add task to clean old logs.
 # class CleanLogs(luigi.Task):
@@ -13,9 +13,7 @@ from wrappers.conversionTaskWrap import ConversionTaskWrap
 
 DICT_TASK = {
     "compression_tif": CompressionTaskWrap,
-    "tif_to_zarr": ConversionTaskWrap,
-    "yokogawa_tif_to_zarr": ConversionTaskWrap,
-    "3Dyokogawa_tif_to_zarr": ConversionTaskWrap,
+    "yokogawa_to_zarr": ConversionTaskWrap,
 }
 
 
