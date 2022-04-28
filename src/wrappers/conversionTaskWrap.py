@@ -37,7 +37,7 @@ class ConversionTaskWrap(luigi.Task):
 
     other_param = luigi.parameter.DictParameter()
 
-    tasks_path = os.getcwd() + "/fractal/tasks/"
+    tasks_path = os.getcwd() + "/src/tasks/"
 
     done = False
 
@@ -334,7 +334,7 @@ class ConversionTaskWrap(luigi.Task):
                         + "${R[$SLURM_ARRAY_TASK_ID]}/"
                         + "${C[$SLURM_ARRAY_TASK_ID]}/0/",
                         "-d " + self.delete_in,
-                        "-r "+ rows,
+                        "-r " + rows,
                         "-c " + cols,
                         "-e " + self.ext,
                         "-C " + "${input[@]}",

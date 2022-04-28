@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 from glob import glob
 
 import dask.array as da
@@ -27,9 +26,9 @@ def yokogawa_to_zarr(
     :param bool delete_in: delete input files, and folder if empty
     :param int rows: number of rows of the plate
     :param int cols: number of columns of the plate
-    :param str ext: source images extension 
-    :param list chl_list: list of the channels 
-    
+    :param str ext: source images extension
+    :param list chl_list: list of the channels
+
     """
 
     r = zarrurl.split("/")[1]
@@ -41,7 +40,7 @@ def yokogawa_to_zarr(
     fc2_list = []
     fc3_list = []
     fc4_list = []
-    
+
     print(chl_list)
 
     for ch in chl_list:
@@ -108,23 +107,20 @@ def yokogawa_to_zarr(
             except OSError as e:
                 print("Error: %s : %s" % (f, e.strerror))
 
-    
+
 if __name__ == "__main__":
     from argparse import ArgumentParser
 
     parser = ArgumentParser(prog="Yokogawa_to_zarr")
-    
+
     parser.add_argument(
-        "-i",
-        "--in_path",
-        help="directory containing the input files")
-    
-    parser.add_argument(
-        "-o",
-        "--out_path", 
-        help="directory containing the output files"
+        "-i", "--in_path", help="directory containing the input files"
     )
-    
+
+    parser.add_argument(
+        "-o", "--out_path", help="directory containing the output files"
+    )
+
     parser.add_argument(
         "-z",
         "--zarrurl",
@@ -154,11 +150,11 @@ if __name__ == "__main__":
         "--ext",
         help="source images extension",
     )
-    
+
     parser.add_argument(
         "-C",
         "--chl_list",
-        nargs='+',
+        nargs="+",
         help="list of channels ",
     )
 
@@ -167,10 +163,10 @@ if __name__ == "__main__":
     yokogawa_to_zarr(
         args.in_path,
         args.out_path,
-        args.zarrurl, 
-        args.delete_in, 
-        args.rows, 
+        args.zarrurl,
+        args.delete_in,
+        args.rows,
         args.cols,
-        args.ext, 
-        args.chl_list
+        args.ext,
+        args.chl_list,
     )

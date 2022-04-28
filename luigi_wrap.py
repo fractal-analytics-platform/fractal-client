@@ -3,8 +3,8 @@ import sys
 
 import luigi
 
-from fractal.wrappers.compressionTaskWrap import CompressionTaskWrap
-from fractal.wrappers.conversionTaskWrap import ConversionTaskWrap
+from src.wrappers.compressionTaskWrap import CompressionTaskWrap
+from src.wrappers.conversionTaskWrap import ConversionTaskWrap
 
 # TODO add task to clean old logs.
 # class CleanLogs(luigi.Task):

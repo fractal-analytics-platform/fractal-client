@@ -1,6 +1,5 @@
 import glob
 import os
-import sys
 
 from PIL import Image
 
@@ -44,7 +43,6 @@ def compress(in_path, start, end, out_path, delete_in):
                     os.remove(f)
                 except OSError as e:
                     print("Error: %s : %s" % (f, e.strerror))
-
 
 
 if __name__ == "__main__":

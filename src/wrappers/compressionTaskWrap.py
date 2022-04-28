@@ -37,7 +37,7 @@ class CompressionTaskWrap(luigi.Task):
 
     other_param = luigi.parameter.DictParameter()
 
-    tasks_path = os.getcwd() + "/tasks/"
+    tasks_path = os.getcwd() + "/src/tasks/"
 
     done = False
 
