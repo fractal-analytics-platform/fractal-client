@@ -78,10 +78,10 @@ def yokogawa_to_zarr(
         s = 0
         e = int(max_z)
 
-        for r in range(int(rows)):
+        for ro in range(int(rows)):
             cell = []
 
-            for c in range(int(cols)):
+            for co in range(int(cols)):
                 lazy_arrays = [lazy_imread(fn) for fn in filenames[s:e]]
                 s += int(max_z)
                 e += int(max_z)
