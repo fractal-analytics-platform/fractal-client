@@ -5,14 +5,20 @@ from PIL import Image
 
 
 def compress(in_path, start, end, out_path, delete_in):
+
     """
     Compress tiff files
 
-    :param str in_path: directory containing the input files
-    :param str out_path: directory containing the output files
-    :param int start: index of first file to process
-    :param int end: index of last file to process
-    :param bool delete_in: delete input files, and folder if empty
+    :param in_path: directory containing the input files
+    :type in_path: str
+    :param out_path: directory containing the output files
+    :type out_path: str
+    :param start: index of first file to process
+    :type start: int
+    :param end: index of last file to process
+    :type end: int
+    :param delete_in: delete input files, and folder if empty
+    :type delete_in: str
     """
 
     if not os.path.exists(out_path):

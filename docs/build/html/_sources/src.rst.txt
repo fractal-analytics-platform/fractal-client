@@ -1,5 +1,5 @@
-fractal package
-===============
+src package
+===========
 
 Subpackages
 -----------
@@ -7,13 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   fractal.tasks
-   fractal.wrappers
+   src.tasks
+   src.wrappers
 
 Module contents
 ---------------
 
-.. automodule:: fractal
+.. automodule:: src
    :members:
    :undoc-members:
    :show-inheritance:

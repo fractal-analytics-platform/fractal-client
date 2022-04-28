@@ -24,6 +24,7 @@ scikit-image = "^0.19.2"
 Jinja2 = "^3.0.3"
 templates = "^0.0.5"
 Sphinx = "^4.5.0"
+sphinx-rtd-theme = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]

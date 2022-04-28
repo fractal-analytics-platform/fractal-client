@@ -9,6 +9,16 @@ from skimage.io import imread
 
 
 def sort_fun(s):
+
+    """
+    sort_fun takes a string (filename of a yokogawa images),
+    extract site and z-index metadata and returns them as a list.
+
+    :param s: filename
+    :type s: str
+
+    """
+
     site = re.findall(r"F(.*)L", s)[0]
     zind = re.findall(r"Z(.*)C", s)[0]
     return [site, zind]
@@ -17,17 +27,26 @@ def sort_fun(s):
 def yokogawa_to_zarr(
     in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl_list
 ):
+
     """
     Convert Yokogawa output (png, tif) to zarr file
 
-    :param str in_path: directory containing the input files
-    :param str out_path: directory containing the output files
-    :param str zarrurl : structure of the zarr folder
-    :param bool delete_in: delete input files, and folder if empty
-    :param int rows: number of rows of the plate
-    :param int cols: number of columns of the plate
-    :param str ext: source images extension
-    :param list chl_list: list of the channels
+    :param in_path: directory containing the input files
+    :type in_path: str
+    :param out_path: directory containing the output files
+    :type out_path: str
+    :param zarrurl: structure of the zarr folder
+    :type zarrurl: str
+    :param delete_in: delete input files, and folder if empty
+    :type delete_in: bool
+    :param rows: number of rows of the plate
+    :type rows: int
+    :param cols: number of columns of the plate
+    :type cols: int
+    :param ext: source images extension
+    :type ext: str
+    :param chl_list: list of the channels
+    :type chl_list: list
 
     """
 
@@ -59,10 +78,10 @@ def yokogawa_to_zarr(
         s = 0
         e = int(max_z)
 
-        for j in range(int(rows)):
+        for r in range(int(rows)):
             cell = []
 
-            for i in range(int(cols)):
+            for c in range(int(cols)):
                 lazy_arrays = [lazy_imread(fn) for fn in filenames[s:e]]
                 s += int(max_z)
                 e += int(max_z)

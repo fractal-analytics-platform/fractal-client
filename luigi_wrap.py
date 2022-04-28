@@ -19,11 +19,21 @@ DICT_TASK = {
 
 class WorkflowTask(luigi.Task):
 
+    """
+    WorkflowTask class takes a dictionary as input in which
+    are stored all the inputs for tasks.
+    It is an extension of the luigi.Task class.
+    """
+
     flags = luigi.parameter.DictParameter()
 
     _complete = False
 
     def run(self):
+
+        """
+        Method from base class. Here return a generator of tasks.
+        """
 
         task_names = self.flags["tasks"].keys()
         in_paths = [r_in for r_in in self.flags["arguments"]["resource_in"]]
@@ -54,6 +64,11 @@ class WorkflowTask(luigi.Task):
         self._complete = True
 
     def complete(self):
+
+        """
+        Method from base class to check if run method has finished.
+        """
+
         return self._complete
 
 
