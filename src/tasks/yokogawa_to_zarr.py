@@ -68,9 +68,9 @@ def yokogawa_to_zarr(
         all_rows = []
 
         filenames = sorted(
-            glob(in_path + f"*_{r+c}_*C{ch}*." + ext), key=sort_fun
+            glob(in_path + f"*_{r+c}_*C{ch}." + ext), key=sort_fun
         )
-        print(in_path + f"*_{r+c}_*C{ch}*." + ext)
+        print(in_path + f"*_{r+c}_*C{ch}." + ext)
         max_z = max([re.findall(r"Z(.*)C", s)[0] for s in filenames])
 
         sample = imread(filenames[0])

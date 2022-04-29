@@ -36,8 +36,7 @@ def compress(in_path, start, end, out_path, delete_in):
                 image.save(
                     os.path.join(
                         out_path,
-                        os.path.basename(filename).strip(".tif")
-                        + "_compressed.tif",
+                        os.path.basename(filename).strip(".tif") + ".tif",
                     ),
                     format="tiff",
                     compression="tiff_lzw",
