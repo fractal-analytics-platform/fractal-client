@@ -14,9 +14,9 @@ def compress(in_path, start, end, out_path, delete_in):
     :param out_path: directory containing the output files
     :type out_path: str
     :param start: index of first file to process
-    :type start: int
+    :type start: str
     :param end: index of last file to process
-    :type end: int
+    :type end: str
     :param delete_in: delete input files, and folder if empty
     :type delete_in: str
     """
@@ -39,6 +39,7 @@ def compress(in_path, start, end, out_path, delete_in):
                         os.path.basename(filename).strip(".tif")
                         + "_compressed.tif",
                     ),
+                    format="tiff",
                     compression="tiff_lzw",
                 )
             file_list.append(filename)
@@ -49,6 +50,8 @@ def compress(in_path, start, end, out_path, delete_in):
                     os.remove(f)
                 except OSError as e:
                     print("Error: %s : %s" % (f, e.strerror))
+
+        return image.encoderinfo["compression"]
 
 
 if __name__ == "__main__":

@@ -115,9 +115,10 @@ def yokogawa_to_zarr(
     fc4_stack = da.stack(fc4_list, axis=0)
 
     tmp_lvl = [fc_stack, fc1_stack, fc2_stack, fc3_stack, fc4_stack]
-
+    shape_list = []
     for i, level in enumerate(tmp_lvl):
         level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
+        shape_list.append(level.shape)
 
     if delete_in == "True":
         for f in filenames:
@@ -125,6 +126,7 @@ def yokogawa_to_zarr(
                 os.remove(f)
             except OSError as e:
                 print("Error: %s : %s" % (f, e.strerror))
+    return shape_list
 
 
 if __name__ == "__main__":
