@@ -1,1 +1,0 @@
-{"datasets": {"dstest": {"resources": ["/home/admin/Cycle1_subset/"], "type": "png"}}, "workflows": {"wftest": {"tasks": [{"name": "yokogawa_to_zarr", "depends_on": null, "input_type": "tif", "output_type": "zarr"}]}}}
