@@ -1,7 +1,7 @@
-src
-===
+fractal
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   src
+   fractal

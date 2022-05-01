@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.tasks.yokogawa_to_zarr import yokogawa_to_zarr
+from fractal.tasks.yokogawa_to_zarr import yokogawa_to_zarr
 
 
 f1 = "plate_well_T0001F001L01A01Z01C01.png"

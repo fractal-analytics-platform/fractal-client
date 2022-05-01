@@ -55,7 +55,7 @@ class ConversionTaskWrap(luigi.Task):
     other_param = luigi.parameter.DictParameter()
 
     #: path in which are stored the tasks executable
-    tasks_path = os.getcwd() + "/src/tasks/"
+    tasks_path = os.getcwd() + "/tasks/"
 
     #: complete or not the luigi task
     done = False

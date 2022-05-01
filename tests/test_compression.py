@@ -2,7 +2,7 @@ from io import BytesIO
 
 from PIL import Image
 
-from src.tasks.compression_tif import compress
+from fractal.tasks.compression_tif import compress
 
 in_path = ""
 out_path = ""

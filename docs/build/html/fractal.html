@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fractal package &mdash; Fractal 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Fractal
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">fractal package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-fractal.fractal_cmd">fractal.fractal_cmd module</a></li>
+<li><a class="reference internal" href="#module-fractal.luigi_wrap">fractal.luigi_wrap module</a></li>
+<li><a class="reference internal" href="#module-fractal">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Fractal</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>fractal package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/fractal.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="fractal-package">
+<h1>fractal package<a class="headerlink" href="#fractal-package" title="Permalink to this headline"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fractal.tasks.html">fractal.tasks package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fractal.tasks.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fractal.tasks.html#module-fractal.tasks.compression_tif">fractal.tasks.compression_tif module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fractal.tasks.html#module-fractal.tasks.yokogawa_to_zarr">fractal.tasks.yokogawa_to_zarr module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fractal.tasks.html#module-fractal.tasks">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fractal.wrappers.html">fractal.wrappers package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fractal.wrappers.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fractal.wrappers.html#module-fractal.wrappers.compressionTaskWrap">fractal.wrappers.compressionTaskWrap module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fractal.wrappers.html#module-fractal.wrappers.conversionTaskWrap">fractal.wrappers.conversionTaskWrap module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fractal.wrappers.html#module-fractal.wrappers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-fractal.fractal_cmd">
+<span id="fractal-fractal-cmd-module"></span><h2>fractal.fractal_cmd module<a class="headerlink" href="#module-fractal.fractal_cmd" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.TaskModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">TaskModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depends_on</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.TaskModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.TaskModel.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fractal.fractal_cmd.TaskModel.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.TaskModel.depends_on">
+<span class="sig-name descname"><span class="pre">depends_on</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#fractal.fractal_cmd.TaskModel.depends_on" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.TaskModel.input_type">
+<span class="sig-name descname"><span class="pre">input_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fractal.fractal_cmd.TaskModel.input_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.TaskModel.output_type">
+<span class="sig-name descname"><span class="pre">output_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fractal.fractal_cmd.TaskModel.output_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.Workflow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">Workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fractal.fractal_cmd.TaskModel" title="fractal.fractal_cmd.TaskModel"><span class="pre">fractal.fractal_cmd.TaskModel</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.Workflow" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.Workflow.tasks">
+<span class="sig-name descname"><span class="pre">tasks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fractal.fractal_cmd.TaskModel" title="fractal.fractal_cmd.TaskModel"><span class="pre">fractal.fractal_cmd.TaskModel</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#fractal.fractal_cmd.Workflow.tasks" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.db_load">
+<span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">db_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.db_load" title="Permalink to this definition"></a></dt>
+<dd><p>Mocks read from global fractal database</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.db_save">
+<span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">db_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.db_save" title="Permalink to this definition"></a></dt>
+<dd><p>Mocks writes to the global fractal database</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.get_project">
+<span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">get_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.get_project" title="Permalink to this definition"></a></dt>
+<dd><p>Loads a single project from the mock database</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.project_file_load">
+<span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">project_file_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.project_file_load" title="Permalink to this definition"></a></dt>
+<dd><p>Loads a project file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.get_ds_names">
+<span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">get_ds_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.get_ds_names" title="Permalink to this definition"></a></dt>
+<dd><p>Returns datasets information from the project file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.save_project_file">
+<span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">save_project_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prj_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.save_project_file" title="Permalink to this definition"></a></dt>
+<dd><p>Writes project file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fractal.fractal_cmd.check_I_O">
+<span class="sig-prename descclassname"><span class="pre">fractal.fractal_cmd.</span></span><span class="sig-name descname"><span class="pre">check_I_O</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.fractal_cmd.check_I_O" title="Permalink to this definition"></a></dt>
+<dd><p>Checks compatibility of tasks input/output</p>
+</dd></dl>
+
+</section>
+<section id="module-fractal.luigi_wrap">
+<span id="fractal-luigi-wrap-module"></span><h2>fractal.luigi_wrap module<a class="headerlink" href="#module-fractal.luigi_wrap" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="fractal.luigi_wrap.WorkflowTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fractal.luigi_wrap.</span></span><span class="sig-name descname"><span class="pre">WorkflowTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fractal.luigi_wrap.WorkflowTask" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">luigi.task.Task</span></code></p>
+<p>WorkflowTask class takes a dictionary as input in which
+are stored all the inputs for tasks.
+It is an extension of the luigi.Task class.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fractal.luigi_wrap.WorkflowTask.flags">
+<span class="sig-name descname"><span class="pre">flags</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;luigi.parameter.DictParameter</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#fractal.luigi_wrap.WorkflowTask.flags" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fractal.luigi_wrap.WorkflowTask.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fractal.luigi_wrap.WorkflowTask.run" title="Permalink to this definition"></a></dt>
+<dd><p>Method from base class. Here return a generator of tasks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fractal.luigi_wrap.WorkflowTask.complete">
+<span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fractal.luigi_wrap.WorkflowTask.complete" title="Permalink to this definition"></a></dt>
+<dd><p>Method from base class to check if run method has finished.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-fractal">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-fractal" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Marco Franzon, Jacopo Nespolo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
