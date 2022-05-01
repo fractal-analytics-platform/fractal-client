@@ -3,8 +3,8 @@ import sys
 
 import luigi
 
-from wrappers.compressionTaskWrap import CompressionTaskWrap
-from wrappers.conversionTaskWrap import ConversionTaskWrap
+from src.wrappers.compressionTaskWrap import CompressionTaskWrap
+from src.wrappers.conversionTaskWrap import ConversionTaskWrap
 
 # TODO add task to clean old logs.
 # class CleanLogs(luigi.Task):
@@ -13,19 +13,27 @@ from wrappers.conversionTaskWrap import ConversionTaskWrap
 
 DICT_TASK = {
     "compression_tif": CompressionTaskWrap,
-    "tif_to_zarr": ConversionTaskWrap,
-    "yokogawa_tif_to_zarr": ConversionTaskWrap,
-    "3Dyokogawa_tif_to_zarr": ConversionTaskWrap,
+    "yokogawa_to_zarr": ConversionTaskWrap,
 }
 
 
 class WorkflowTask(luigi.Task):
+
+    """
+    WorkflowTask class takes a dictionary as input in which
+    are stored all the inputs for tasks.
+    It is an extension of the luigi.Task class.
+    """
 
     flags = luigi.parameter.DictParameter()
 
     _complete = False
 
     def run(self):
+
+        """
+        Method from base class. Here return a generator of tasks.
+        """
 
         task_names = self.flags["tasks"].keys()
         in_paths = [r_in for r_in in self.flags["arguments"]["resource_in"]]
@@ -56,6 +64,11 @@ class WorkflowTask(luigi.Task):
         self._complete = True
 
     def complete(self):
+
+        """
+        Method from base class to check if run method has finished.
+        """
+
         return self._complete
 
 

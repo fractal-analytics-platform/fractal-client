@@ -7,7 +7,7 @@
       "delete": ["False"],
       "scheduler": "slurm",
       "slurm_params": {"mem" : 1, "cores": 1, "nodes":1},
-      "ext": "tif",
-      "other_params": {"dims" : "4,3"}
+      "ext": "png",
+      "other_params": {"dims" : "6,6"}
       }
      }

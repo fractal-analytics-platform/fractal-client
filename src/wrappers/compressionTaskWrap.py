@@ -17,36 +17,54 @@ class CompressionTaskWrap(luigi.Task):
         super().__init__(*args, **kwargs)
         self.complete_flag = False
 
-    # accepts_messages = True
-
+    #: name of the task, it must be the same of one of the tasks into
+    #: tasks folder
     task_name = luigi.parameter.Parameter(significant=True)
 
+    #: name of the workflow
     wf_name = luigi.parameter.Parameter(significant=True)
 
+    #: input path
     in_path = luigi.parameter.Parameter(significant=True)
 
+    #: output path
     out_path = luigi.parameter.Parameter(significant=True)
 
+    #: delete the input files
     delete_in = luigi.parameter.Parameter()
 
+    #: scheduler, local or slurm
     sclr = luigi.parameter.Parameter()
 
+    #: extension of the input files
     ext = luigi.parameter.Parameter()
 
+    #: slurm configs parameters
     slurm_param = luigi.parameter.DictParameter()
 
+    #: extra parameters rquired by tasks
     other_param = luigi.parameter.DictParameter()
 
-    tasks_path = os.getcwd() + "/tasks/"
+    #: path in which are stored the tasks executable
+    tasks_path = os.getcwd() + "/src/tasks/"
 
+    #: complete or not the luigi task
     done = False
 
     def complete(self):
+        """
+        Method from base class, if return False
+        luigi task is running, if True it ends.
+        """
         if self.done:
             return True
         return False
 
     def output(self):
+        """
+        Method from base class to write logs of the
+        luigi task
+        """
 
         f_log = (
             f"./log/{self.task_name}_"
@@ -58,7 +76,17 @@ class CompressionTaskWrap(luigi.Task):
         return luigi.LocalTarget(f_log)
 
     def do_comp(self, cmd, interval):
+        """
+        This function is used when local scheduler is selected.
+        It takes as input the cmd and and the interval
+        between the compression task had to make the compression.
+        The it executes the task executable  passing the channel as parameter.
 
+        :param cmd: command bash
+        :type cmd: str
+        :param interval: list of intervals
+        :type interval: list
+        """
         process = Popen(  # nosec
             cmd + [f"{interval[0]}"] + [f"{interval[1]}"],  # nosec
             stderr=PIPE,  # nosec
@@ -76,7 +104,10 @@ class CompressionTaskWrap(luigi.Task):
         return process
 
     def run(self):
-
+        """
+        Method from base class. Here checks the number of images,
+        than create intervals using the batch size as dividend.
+        """
         self.done = True
 
         batch_size = self.other_param["batch_size"]

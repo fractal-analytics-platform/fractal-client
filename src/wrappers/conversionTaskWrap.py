@@ -15,34 +15,59 @@ from devtools import debug
 
 
 class ConversionTaskWrap(luigi.Task):
+
+    """
+    This class is a wrapper for the conversions task. It initialiazes the
+    zarr folder then call the conversion task to populate the new zarr file
+    with the arrays.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.complete_flag = False
 
+    #: name of the task, it must be the same of one of the tasks into
+    #: tasks folder
     task_name = luigi.parameter.Parameter(significant=True)
 
+    #: name of the workflow
     wf_name = luigi.parameter.Parameter(significant=True)
 
+    #: input path
     in_path = luigi.parameter.Parameter(significant=True)
 
+    #: output path
     out_path = luigi.parameter.Parameter(significant=True)
 
+    #: delete the input files
     delete_in = luigi.parameter.Parameter()
 
+    #: scheduler, local or slurm
     sclr = luigi.parameter.Parameter()
 
+    #: extension of the input files
     ext = luigi.parameter.Parameter()
 
+    #: slurm configs parameters
     slurm_param = luigi.parameter.DictParameter()
 
+    #: extra parameters rquired by tasks
     other_param = luigi.parameter.DictParameter()
 
-    tasks_path = os.getcwd() + "/tasks/"
+    #: path in which are stored the tasks executable
+    tasks_path = os.getcwd() + "/src/tasks/"
 
+    #: complete or not the luigi task
     done = False
 
     def metadata(self, filename):
-        ##
+        """
+        function to extract all the metadata stored
+        in image's filename. Return a list with all params.
+
+        :param filename: name of the image
+        :type filename: str
+        """
         f = filename.rsplit(".", 1)[0]
         plate = f.split("_")[0]
         well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
@@ -52,11 +77,15 @@ class ConversionTaskWrap(luigi.Task):
         z_ind = re.findall(r"Z(.*)C", f)[0]
         return [plate, well, time_s, chl, z_ind, site]
 
-    def unique(self, list1):
+    def unique(self, list_):
+        """
+        Giving a list with double values,
+        return a list with unique values.
+        """
 
         unique_list = []
 
-        for x in list1:
+        for x in list_:
             if x not in unique_list:
                 unique_list.append(x)
         ch = []
@@ -65,11 +94,20 @@ class ConversionTaskWrap(luigi.Task):
         return ch
 
     def complete(self):
+        """
+        Method from base class, if return False
+        luigi task is running, if True it ends.
+        """
         if self.done:
             return True
         return False
 
     def output(self):
+
+        """
+        Method from base class to write logs of the
+        luigi task
+        """
 
         f_log = (
             f"./log/{self.task_name}_"
@@ -81,6 +119,18 @@ class ConversionTaskWrap(luigi.Task):
         return luigi.LocalTarget(f_log)
 
     def do_proc(self, cmd, c):
+
+        """
+        This function is used when local scheduler is selected.
+        It takes as input the cmd and a channel.
+        It executes the task executable,
+        passing the channel as parameter.
+
+        :param cmd: command bash
+        :type cmd: str
+        :param c: channel
+        :type c: str
+        """
 
         process = Popen(cmd + [f"{c}"], stdout=PIPE, stderr=PIPE)
 
@@ -95,7 +145,10 @@ class ConversionTaskWrap(luigi.Task):
         return process
 
     def run(self):
-
+        """
+        Method from base class. Here create the hierarchy of
+        the zarr folder than launch the conversion task.
+        """
         rows_cols = self.other_param["dims"]
         rows = rows_cols.split(",")[0]
         cols = rows_cols.split(",")[1]
@@ -328,16 +381,16 @@ class ConversionTaskWrap(luigi.Task):
                     [
                         "python",
                         self.tasks_path + self.task_name + ".py ",
-                        self.in_path,
-                        self.out_path,
-                        f"{plate}.zarr/"
+                        "-i " + self.in_path,
+                        "-o " + self.out_path,
+                        f"-z {plate}.zarr/"
                         + "${R[$SLURM_ARRAY_TASK_ID]}/"
                         + "${C[$SLURM_ARRAY_TASK_ID]}/0/",
-                        self.delete_in,
-                        rows,
-                        cols,
-                        self.ext,
-                        "${input[@]}",
+                        "-d " + self.delete_in,
+                        "-r " + rows,
+                        "-c " + cols,
+                        "-e " + self.ext,
+                        "-C " + "${input[@]}",
                     ]
                 )
 
