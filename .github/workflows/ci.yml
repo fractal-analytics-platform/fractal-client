@@ -42,5 +42,4 @@ jobs:
         run: poetry run black . --check
 
       - name: Test with pytest
-        env:
         run: poetry run pytest --cov . -n 2
