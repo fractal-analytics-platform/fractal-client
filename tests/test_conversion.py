@@ -21,13 +21,13 @@ chl_list = ["01"]
 def test_yokogawa_to_zarr(mocker):
 
     mocker.patch(
-        "src.tasks.yokogawa_to_zarr.sorted", return_value=[f1, f2, f3, f4]
+        "fractal.tasks.yokogawa_to_zarr.sorted", return_value=[f1, f2, f3, f4]
     )
 
-    mocker.patch("src.tasks.yokogawa_to_zarr.max", return_value="01")
+    mocker.patch("fractal.tasks.yokogawa_to_zarr.max", return_value="01")
 
     mocker.patch(
-        "src.tasks.yokogawa_to_zarr.imread", return_value=np.ones((64, 64))
+        "fractal.tasks.yokogawa_to_zarr.imread", return_value=np.ones((64, 64))
     )
 
     mocker.patch(
