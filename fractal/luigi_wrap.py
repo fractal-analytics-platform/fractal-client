@@ -2,9 +2,8 @@ import json
 import sys
 
 import luigi
-
-from fractal.wrappers.compressionTaskWrap import CompressionTaskWrap
-from fractal.wrappers.conversionTaskWrap import ConversionTaskWrap
+from wrappers.compressionTaskWrap import CompressionTaskWrap
+from wrappers.conversionTaskWrap import ConversionTaskWrap
 
 # TODO add task to clean old logs.
 # class CleanLogs(luigi.Task):
