@@ -26,24 +26,26 @@ luigid
 
 On the previous terminal window, create the first project.
 
+Move into the fractal folder.
+
 First of all have a look on all the possible
 commands:
 
 ```
-python fractal.py
+python fractal_cmd.py
 ```
 
 Typing ```--help``` after each command like:
 
 ```
-python fractal.py project --help
+python fractal_cmd.py project --help
 ```
 you will see the arguments you had to pass.
 
 ### Let's create new project:
 
 ```
-python fractal.py project new mwe-test $PWD/../test-proj dstest
+python fractal_cmd.py project new mwe-test $PWD/../test-proj dstest
 ```
    - In which mwe-test is the name on the project
    - Than the path in which I want to put all the config files of my project (in this case I create a folder in the parent of the current folder, called ```test-proj```)
@@ -65,7 +67,7 @@ python fractal.py project new mwe-test $PWD/../test-proj dstest
 With
 
 ```
-python fractal.py project list
+python fractal_cmd.py project list
 ```
 now you can see your projects.
 
@@ -73,7 +75,7 @@ now you can see your projects.
 Add resources to the dataset we have already created.
 
 ```
-python fractal.py dataset add-resources mwe-test dstest absolute/path/of/resource
+python fractal_cmd.py dataset add-resources mwe-test dstest absolute/path/of/resource
 ```
 
 arguments are:
@@ -84,13 +86,13 @@ arguments are:
  Then you can update the type of the dataset, for example set it as ```tif```
 
 ```
-python fractal.py dataset update-type mwe-test dstest tif
+python fractal_cmd.py dataset update-type mwe-test dstest tif
 ```
 
 Now you can see the dataset object using list command passing as argument the project name:
 
 ```
-python fractal.py dataset list mwe-test
+python fractal_cmd.py dataset list mwe-test
 ```
 
 ### Tasks
@@ -102,13 +104,13 @@ The tasks executable are in ```tasks/``` folder
 Add a task; tasks are into the tasks folder. To add one or more just copy the filename without extension, example:
 
 ```
-python fractal.py task add compression_tif tif tif
+python fractal_cmd.py task add compression_tif tif tif
 ```
 
 There is also the "Depends_on" argument which is optional, but for the moment we do not want to have dependencies on other tasks.
 
 ```
-python fractal.py task list
+python fractal_cmd.py task list
 ```
 Now you should see the new task.
 
@@ -116,7 +118,7 @@ Now you should see the new task.
 Let's create a workflow :
 
 ```
-python fractal.py workflow new mwe-test wftest compression_tif
+python fractal_cmd.py workflow new mwe-test wftest compression_tif
 ```
 
  - project name
@@ -138,7 +140,7 @@ After that all the corrects names and paths are inserted, it is necessary add ot
 
 
 ```
-python fractal.py apply test_apply.json
+python fractal_cmd.py apply test_apply.json
 ```
 
 ***PAY ATTENTION:
