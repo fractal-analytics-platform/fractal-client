@@ -188,8 +188,13 @@ class ConversionTaskWrap(luigi.Task):
                         for well_row_column in well_rows_columns
                     ],
                     "rows": [
-                        {"name": well_row_column[0]}
-                        for well_row_column in well_rows_columns
+                        {"name": u_row}
+                        for u_row in set(
+                            [
+                                well_row_column[0]
+                                for well_row_column in well_rows_columns
+                            ]
+                        )
                     ],
                     "wells": [
                         {
