@@ -1,3 +1,9 @@
 fractal.json
 apply.json
 .pytest_cache/
+__pycache__
+*.cpython-*.pyc
+
+# parsl-related
+cmd_parsl.slurm.*.sh
+runinfo
