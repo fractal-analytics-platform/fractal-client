@@ -23,8 +23,9 @@ def initialize_SlurmProvider():
         mem_per_node=1,  # specified in GB
         parallelism=0,
         partition="main",
-        worker_init="source"
-        + " /opt/easybuild/software/Anaconda3/2019.07/"
+        worker_init="SQUEUE_FORMAT="
+        + '"%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"'
+        + "source /opt/easybuild/software/Anaconda3/2019.07/"
         + "etc/profile.d/conda.sh\n"
         + "conda activate fractal",
         launcher=SrunLauncher(debug=True),
