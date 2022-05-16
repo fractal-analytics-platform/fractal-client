@@ -304,9 +304,15 @@ class ConversionTaskWrap(luigi.Task):
                         {"name": well_row_column[1]}
                         for well_row_column in well_rows_columns
                     ],
+                    # takes unique rows from (row,col) tuples
                     "rows": [
-                        {"name": well_row_column[0]}
-                        for well_row_column in well_rows_columns
+                        {"name": u_row}
+                        for u_row in set(
+                            [
+                                well_row_column[0]
+                                for well_row_column in well_rows_columns
+                            ]
+                        )
                     ],
                     "wells": [
                         {
