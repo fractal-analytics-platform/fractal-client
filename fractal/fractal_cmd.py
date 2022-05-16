@@ -350,12 +350,38 @@ def workflow_add_task(project_name, workflow_name, tasks):
 
 
 @cli.command()
-@click.argument("filename", required=True, nargs=1)
-def apply(filename):
+@click.argument("project_name", required=True, nargs=1)
+@click.argument("workflow_name", required=True, nargs=1)
+@click.argument("input_dataset", required=True, nargs=1)
+@click.argument("output_dataset", required=True, nargs=1)
+@click.argument("resource_in", required=True, nargs=1)
+@click.argument("resource_out", required=True, nargs=1)
+def apply(
+    project_name,
+    workflow_name,
+    input_dataset,
+    output_dataset,
+    resource_in,
+    resource_out,
+):
 
-    with open(filename, "r") as jsonfile:
-        f = json.load(jsonfile)
-        jsonfile.close()
+    # Put everything in a dictionary, to be used with luigi_wrap.py
+    f = dict(
+        arguments=dict(
+            project_name=project_name,
+            workflow_name=workflow_name,
+            input_dataset=input_dataset,
+            output_dataset=output_dataset,
+            resource_in=resource_in,
+            resource_out=resource_out,
+            # What follows is specific for luigi_wrap.py
+            delete=[False],
+            scheduler="slurm",
+            slurm_params={"mem": 10000, "cores": 1, "nodes": 1},
+            ext="png",
+            other_params={"dims": "1,1"},
+        )
+    )
 
     project_name = f["arguments"]["project_name"]
     workflow_name = f["arguments"]["workflow_name"]
