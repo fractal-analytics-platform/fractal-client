@@ -389,9 +389,7 @@ class ConversionTaskWrap(luigi.Task):
                         self.tasks_path + self.task_name + ".py ",
                         "-i " + self.in_path,
                         "-o " + self.out_path,
-                        f"-z {plate}.zarr/"
-                        + "${R[$SLURM_ARRAY_TASK_ID]}/"
-                        + "${C[$SLURM_ARRAY_TASK_ID]}/0/",
+                        f"-z {plate}.zarr/" + "$RO/" + "$CO/0/",
                         "-d " + self.delete_in,
                         "-r " + rows,
                         "-c " + cols,
@@ -410,16 +408,20 @@ class ConversionTaskWrap(luigi.Task):
                             mem=mem + "MB",
                             array=len(well_unique) - 1,
                             channels=str(tuple(chl_unique)).replace(",", ""),
-                            rows=str([r[0] for r in well_rows_columns])
+                            wells=str(
+                                [
+                                    unique_r
+                                    for unique_r in set(
+                                        [r for r in well_rows_columns]
+                                    )
+                                ]
+                            )
                             .replace("'", "")
                             .replace("[", "")
                             .replace("]", "")
-                            .replace(",", ""),
-                            columns=str([c[1] for c in well_rows_columns])
-                            .replace("'", "")
-                            .replace("[", "")
-                            .replace("]", "")
-                            .replace(",", ""),
+                            .replace(",", "")
+                            .replace("(", '"')
+                            .replace(")", '"'),
                             command=srun,
                         )
                     )

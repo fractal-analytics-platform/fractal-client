@@ -6,9 +6,7 @@
 #SBATCH --mem={{mem|default(512)}}
 #SBATCH --array 0-{{array}}
 input={{channels}}
-R=({{rows}})
-C=({{columns}})
-
+W=({{wells}})
 {% endblock -%}
 
 {% block header -%}
@@ -25,8 +23,9 @@ C=({{columns}})
 ##### Run Command
 # run script with arguments
 
-{{ command }}
-
+RO=$(echo ${W[$SLURM_ARRAY_TASK_ID]} | cut -d' ' -f 1)
+CO=$(echo ${W[$SLURM_ARRAY_TASK_ID]} | cut -d' ' -f 2 | cut -d'[' -f 1)
+{{command}}
 
 {% endblock %}
 
