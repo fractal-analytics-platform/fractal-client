@@ -1,7 +1,6 @@
 import os
 import sys
 
-from fractal_cmd import apply as _apply
 from fractal_cmd import dataset_update_type
 from fractal_cmd import datasets_add_resources
 from fractal_cmd import datasets_list
@@ -9,6 +8,7 @@ from fractal_cmd import project_new
 from fractal_cmd import projects_list
 from fractal_cmd import task_add
 from fractal_cmd import task_list
+from fractal_cmd import workflow_apply
 from fractal_cmd import workflow_list
 from fractal_cmd import workflow_new
 
@@ -36,7 +36,7 @@ task_add = task_add.__dict__["callback"]
 task_list = task_list.__dict__["callback"]
 workflow_new = workflow_new.__dict__["callback"]
 workflow_list = workflow_list.__dict__["callback"]
-_apply = _apply.__dict__["callback"]
+workflow_apply = workflow_apply.__dict__["callback"]
 
 
 # Check that tmp_path folder is not there
@@ -62,5 +62,5 @@ dataset_update_type(project_name, dataset_name, ds_type)
 task_add(task_name, input_type, output_type)
 workflow_new(project_name, workflow_name, [task_name])
 workflow_list(project_name)
-# _apply(project_name, workflow_name, [dataset_name], [dataset_name],
-#        [resource_in], [resource_out])
+# workflow_apply(project_name, workflow_name, [dataset_name], [dataset_name],
+#                [resource_in], [resource_out])
