@@ -62,7 +62,7 @@ def db_save(db):
     Mocks writes to the global fractal database
     """
     with open("./fractal.json", "w") as f:
-        json.dump(db, f)
+        json.dump(db, f, indent=4)
 
 
 def get_project(project_name):
@@ -110,7 +110,7 @@ def save_project_file(project_name, prj_dict):
     project_path, ds_names = get_project(project_name)
     pj_file = project_name + ".json"
     with open(project_path / pj_file, "w") as f:
-        json.dump(prj_dict, f)
+        json.dump(prj_dict, f, indent=4)
 
 
 def check_I_O(task_p, task_n):
