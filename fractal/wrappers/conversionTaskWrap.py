@@ -301,8 +301,13 @@ class ConversionTaskWrap(luigi.Task):
                         for id_, name in enumerate(plate_unique)
                     ],
                     "columns": [
-                        {"name": well_row_column[1]}
-                        for well_row_column in well_rows_columns
+                        {"name": u_col}
+                        for u_col in set(
+                            [
+                                well_row_column[1]
+                                for well_row_column in well_rows_columns
+                            ]
+                        )
                     ],
                     # takes unique rows from (row,col) tuples
                     "rows": [
