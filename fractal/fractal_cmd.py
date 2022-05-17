@@ -349,7 +349,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
     save_project_file(project_name, prj)
 
 
-@workflow.command(name="apply")
+@cli.command(name="apply")
 @click.argument("project_name", required=True, nargs=1)
 @click.argument("workflow_name", required=True, nargs=1)
 @click.argument("input_dataset", required=True, nargs=1)
@@ -385,28 +385,29 @@ def workflow_apply(
 
     project_name = f["arguments"]["project_name"]
     workflow_name = f["arguments"]["workflow_name"]
-    input_dataset = [ds for ds in f["arguments"]["input_dataset"]]
-    output_dataset = [ds for ds in f["arguments"]["output_dataset"]]
-    resource_in = [r_in for r_in in f["arguments"]["resource_in"]]
-    resource_out = [r_out for r_out in f["arguments"]["resource_out"]]
+    input_dataset = f["arguments"]["input_dataset"]
+    output_dataset = f["arguments"]["output_dataset"]
+    resource_in = f["arguments"]["resource_in"]
+    resource_out = f["arguments"]["resource_out"]
 
     prj, _ = project_file_load(project_name)
 
-    for in_ds in input_dataset:
-        path_in = [p for p in prj["datasets"][in_ds]["resources"]]
-        # debug(path_in)
-    if not any(p in resource_in for p in path_in):
-        raise
+    path_in = prj["datasets"][input_dataset]["resources"]
+    try:
+        print(path_in)
+        print(resource_in)
+        assert resource_in in path_in
+    except:
+        raise #FIXME
 
-    resources_out = [Path(r_out) for r_out in resource_out]
-    for i, res_out in enumerate(resources_out):
-        if not res_out.exists():
-            res_out = get_project(project_name)[0] / output_dataset[i]
-            os.mkdir(res_out)
-            prj["datasets"][output_dataset[i]]["resources"].extend(
-                [res_out.resolve().as_posix()]
-            )
-            save_project_file(project_name, prj)
+
+    # FIXME change name
+    xxx = Path(resource_out)
+    if not xxx.exists():
+        xxx = get_project(project_name)[0] / output_dataset
+        os.mkdir(xxx)
+        prj["datasets"][output_dataset]["resources"].extend([xxx.resolve().as_posix()])
+        save_project_file(project_name, prj)
 
     task_names = [t["name"] for t in prj["workflows"][workflow_name]["tasks"]]
     # debug(task_names)
