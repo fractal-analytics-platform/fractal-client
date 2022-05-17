@@ -136,9 +136,9 @@ class ConversionTaskWrap(luigi.Task):
 
         stdout, stderr = process.communicate()
         if not stderr:
-            debug("--No errors--\n", stdout.decode())
+            debug("--No errors (in ConversionTaskWrap)--\n", stdout.decode())
         else:
-            debug("--Error--\n", stderr.decode())
+            debug("--Error (in ConversionTaskWrap)--\n", stderr.decode())
 
         with self.output().open("w") as outfile:
             outfile.write(f"{stderr}\n")
