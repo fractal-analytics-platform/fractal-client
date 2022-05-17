@@ -300,25 +300,32 @@ class ConversionTaskWrap(luigi.Task):
                         {"id": id_, "name": name}
                         for id_, name in enumerate(plate_unique)
                     ],
-                    "columns": [
-                        {"name": u_col}
-                        for u_col in set(
-                            [
-                                well_row_column[1]
-                                for well_row_column in well_rows_columns
-                            ]
-                        )
-                    ],
+                    # takes unique cols from (row,col) tuples
+                    "columns": sorted(
+                        [
+                            {"name": u_col}
+                            for u_col in set(
+                                [
+                                    well_row_column[1]
+                                    for well_row_column in well_rows_columns
+                                ]
+                            )
+                        ],
+                        key=lambda key: key["name"],
+                    ),
                     # takes unique rows from (row,col) tuples
-                    "rows": [
-                        {"name": u_row}
-                        for u_row in set(
-                            [
-                                well_row_column[0]
-                                for well_row_column in well_rows_columns
-                            ]
-                        )
-                    ],
+                    "rows": sorted(
+                        [
+                            {"name": u_row}
+                            for u_row in set(
+                                [
+                                    well_row_column[0]
+                                    for well_row_column in well_rows_columns
+                                ]
+                            )
+                        ],
+                        key=lambda key: key["name"],
+                    ),
                     "wells": [
                         {
                             "path": well_row_column[0]
