@@ -349,7 +349,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
     save_project_file(project_name, prj)
 
 
-@workflow.command(name="apply")
+@cli.command(name="apply")
 @click.argument("project_name", required=True, nargs=1)
 @click.argument("workflow_name", required=True, nargs=1)
 @click.argument("input_dataset", required=True, nargs=1)
