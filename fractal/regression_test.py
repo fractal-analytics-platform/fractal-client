@@ -18,7 +18,7 @@ resource_in = (
     "/data/active/fractal-temp/3D/PelkmansLab/"
     + "CardiacMultiplexing/Cycle1_subset_extras/"
 )
-tmp_path = os.getcwd() + "/Temporary_folder_for_tests/"
+tmp_path = os.getcwd() + "/Temporary_folder_for_regression_test/"
 resource_out = tmp_path + "result/"
 
 
@@ -57,10 +57,24 @@ output_type = "zarr"
 
 # Prepare and execute a workflow
 project_new(project_name, tmp_path, dataset_name)
+projects_list()
+print()
+
 datasets_add_resources(project_name, dataset_name, [resource_in])
 dataset_update_type(project_name, dataset_name, ds_type)
+datasets_list(project_name)
+print()
+
 task_add(task_name, input_type, output_type)
 workflow_new(project_name, workflow_name, [task_name])
 workflow_list(project_name)
-# workflow_apply(project_name, workflow_name, [dataset_name], [dataset_name],
-#                [resource_in], [resource_out])
+print()
+
+workflow_apply(
+    project_name,
+    workflow_name,
+    dataset_name,
+    dataset_name,
+    resource_in,
+    resource_out,
+)
