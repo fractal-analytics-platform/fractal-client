@@ -379,7 +379,13 @@ def workflow_apply(
             scheduler="slurm",
             slurm_params={"mem": 10000, "cores": 1, "nodes": 1},
             ext="png",
-            other_params={"dims": "1,1"},
+            # other_params={"dims": "1,1", "num_levels": 5},
+            other_params={
+                "dims": "1,1",
+                "num_levels": 5,
+                "coarsening_xy": 3,
+                "coarsening_z": 2,
+            },
         )
     )
 

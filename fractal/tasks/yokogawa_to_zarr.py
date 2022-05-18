@@ -33,8 +33,9 @@ def yokogawa_to_zarr(
     cols,
     ext,
     chl_list,
-    coarsening_factor=2,
-    num_levels=5,
+    num_levels,
+    coarsening_factor_xy,
+    coarsening_factor_z,
 ):
 
     """
@@ -48,19 +49,20 @@ def yokogawa_to_zarr(
     :type zarrurl: str
     :param delete_in: delete input files, and folder if empty
     :type delete_in: str
-    :param rows: number of rows of the plate
+    :param rows: number of rows of the well
     :type rows: int
-    :param cols: number of columns of the plate
+    :param cols: number of columns of the well
     :type cols: int
     :param ext: source images extension
     :type ext: str
     :param chl_list: list of the channels
     :type chl_list: list
-
-    :param coarsening_factor: .... FIXME (default=2)
-    :type int
-    :param num_levels: .... FIXME (default=2)
-    :type int
+    :param num_levels: number of levels in the zarr pyramid
+    :type num_levels: int
+    :param coarsening_factor_xy: coarsening factor along X,Y
+    :type coarsening_factor_xy: int
+    :param coarsening_factor_z: coarsening factor along Z
+    :type coarsening_factor_z: int
 
     """
 
@@ -105,24 +107,32 @@ def yokogawa_to_zarr(
                 cell.append(z_stack)
             l_rows = da.block(cell)
             all_rows.append(l_rows)
+        # At this point, all_rows has four dimensions: z,site,y,x
 
-        coarsening = {0: coarsening_factor, 1: coarsening_factor}
-
+        # Define coarsening options
+        coarsening = {1: coarsening_factor_xy, 2: coarsening_factor_xy}
         f_matrices = {}
         for level in range(num_levels):
             if level == 0:
                 f_matrices[level] = da.concatenate(all_rows, axis=1)
+                # After concatenate, f_matrices[0] has three dimensions: z,y,x
+                if coarsening_factor_z > 1:
+                    f_matrices[level] = da.coarsen(
+                        np.min,
+                        f_matrices[level],
+                        {0: coarsening_factor_z},
+                        trim_excess=True,
+                    )
             else:
-                f_matrices[level] = [
-                    da.coarsen(np.min, x, coarsening, trim_excess=True)
-                    for x in f_matrices[level - 1]
-                ]
+                f_matrices[level] = da.coarsen(
+                    np.min, f_matrices[level - 1], coarsening, trim_excess=True
+                )
             fc_list[level].append(f_matrices[level])
 
-    tmp_lvl = [da.stack(fc_list[level], axis=0) for level in range(num_levels)]
+    levels = [da.stack(fc_list[level], axis=0) for level in range(num_levels)]
 
     shape_list = []
-    for i, level in enumerate(tmp_lvl):
+    for i, level in enumerate(levels):
         level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
         shape_list.append(level.shape)
 
@@ -185,6 +195,29 @@ if __name__ == "__main__":
         help="list of channels ",
     )
 
+    parser.add_argument(
+        "-nl",
+        "--num_levels",
+        type=int,
+        help="number of levels in the Zarr pyramid",
+    )
+
+    parser.add_argument(
+        "-cxy",
+        "--coarsening_xy",
+        default=2,
+        type=int,
+        help="coarsening factor along X and Y (optional, defaults to 2)",
+    )
+
+    parser.add_argument(
+        "-cz",
+        "--coarsening_z",
+        default=1,
+        type=int,
+        help="coarsening factor along Z (optional, defaults to 1)",
+    )
+
     args = parser.parse_args()
 
     yokogawa_to_zarr(
@@ -196,4 +229,7 @@ if __name__ == "__main__":
         args.cols,
         args.ext,
         args.chl_list,
+        args.num_levels,
+        args.coarsening_xy,
+        args.coarsening_z,
     )
