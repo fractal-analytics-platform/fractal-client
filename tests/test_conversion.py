@@ -16,6 +16,9 @@ rows = "2"
 cols = "2"
 ext = "png"
 chl_list = ["01"]
+num_levels = 5
+coarsening_factor_xy = 2
+coarsening_factor_z = 1
 
 
 def test_yokogawa_to_zarr(mocker):
@@ -46,7 +49,17 @@ def test_yokogawa_to_zarr(mocker):
     )
 
     res = yokogawa_to_zarr(
-        in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl_list
+        in_path,
+        out_path,
+        zarrurl,
+        delete_in,
+        rows,
+        cols,
+        ext,
+        chl_list,
+        num_levels,
+        coarsening_factor_xy,
+        coarsening_factor_z,
     )
 
     assert res == [
