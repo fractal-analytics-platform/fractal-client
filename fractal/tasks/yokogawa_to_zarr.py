@@ -25,7 +25,16 @@ def sort_fun(s):
 
 
 def yokogawa_to_zarr(
-    in_path, out_path, zarrurl, delete_in, rows, cols, ext, chl_list
+    in_path,
+    out_path,
+    zarrurl,
+    delete_in,
+    rows,
+    cols,
+    ext,
+    chl_list,
+    coarsening_factor=2,
+    num_levels=5,
 ):
 
     """
@@ -38,7 +47,7 @@ def yokogawa_to_zarr(
     :param zarrurl: structure of the zarr folder
     :type zarrurl: str
     :param delete_in: delete input files, and folder if empty
-    :type delete_in: bool
+    :type delete_in: str
     :param rows: number of rows of the plate
     :type rows: int
     :param cols: number of columns of the plate
@@ -48,17 +57,18 @@ def yokogawa_to_zarr(
     :param chl_list: list of the channels
     :type chl_list: list
 
+    :param coarsening_factor: .... FIXME (default=2)
+    :type int
+    :param num_levels: .... FIXME (default=2)
+    :type int
+
     """
 
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
 
     lazy_imread = delayed(imread)
-    fc_list = []
-    fc1_list = []
-    fc2_list = []
-    fc3_list = []
-    fc4_list = []
+    fc_list = {level: [] for level in range(num_levels)}
 
     print(chl_list)
 
@@ -96,25 +106,21 @@ def yokogawa_to_zarr(
             l_rows = da.block(cell)
             all_rows.append(l_rows)
 
-        f_matrix = da.concatenate(all_rows, axis=1)
-        f1_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f_matrix]
-        f2_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f1_matrix]
-        f3_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f2_matrix]
-        f4_matrix = [da.coarsen(np.min, x, {0: 2, 1: 2}) for x in f3_matrix]
+        coarsening = {0: coarsening_factor, 1: coarsening_factor}
 
-        fc_list.append(f_matrix)
-        fc1_list.append(f1_matrix)
-        fc2_list.append(f2_matrix)
-        fc3_list.append(f3_matrix)
-        fc4_list.append(f4_matrix)
+        f_matrices = {}
+        for level in range(num_levels):
+            if level == 0:
+                f_matrices[level] = da.concatenate(all_rows, axis=1)
+            else:
+                f_matrices[level] = [
+                    da.coarsen(np.min, x, coarsening, trim_excess=True)
+                    for x in f_matrices[level - 1]
+                ]
+            fc_list[level].append(f_matrices[level])
 
-    fc_stack = da.stack(fc_list, axis=0)
-    fc1_stack = da.stack(fc1_list, axis=0)
-    fc2_stack = da.stack(fc2_list, axis=0)
-    fc3_stack = da.stack(fc3_list, axis=0)
-    fc4_stack = da.stack(fc4_list, axis=0)
+    tmp_lvl = [da.stack(fc_list[level], axis=0) for level in range(num_levels)]
 
-    tmp_lvl = [fc_stack, fc1_stack, fc2_stack, fc3_stack, fc4_stack]
     shape_list = []
     for i, level in enumerate(tmp_lvl):
         level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
