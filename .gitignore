@@ -7,3 +7,4 @@ __pycache__
 # parsl-related
 cmd_parsl.slurm.*.sh
 runinfo
+.*.swp

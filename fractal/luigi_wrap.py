@@ -35,25 +35,23 @@ class WorkflowTask(luigi.Task):
         """
 
         task_names = self.flags["tasks"].keys()
-        in_paths = [r_in for r_in in self.flags["arguments"]["resource_in"]]
+        in_path = self.flags["arguments"]["resource_in"]
         wf_name = self.flags["arguments"]["workflow_name"]
 
-        out_paths = [
-            r_out for r_out in self.flags["arguments"]["resource_out"]
-        ]
-        delete_ins = [d for d in self.flags["arguments"]["delete"]]
+        out_path = self.flags["arguments"]["resource_out"]
+        delete_in = self.flags["arguments"]["delete"]
         sclr = self.flags["arguments"]["scheduler"]
         ext = self.flags["arguments"]["ext"]
         other_params = self.flags["arguments"]["other_params"]
         slurm_params = self.flags["arguments"]["slurm_params"]
 
-        for i, task_name in enumerate(task_names):
+        for task_name in task_names:
             yield DICT_TASK[task_name](
                 task_name=task_name,
                 wf_name=wf_name,
-                in_path=in_paths[i],
-                out_path=out_paths[i],
-                delete_in=delete_ins[i],
+                in_path=in_path,
+                out_path=out_path,
+                delete_in=delete_in,
                 sclr=sclr,
                 ext=ext,
                 other_param=other_params,

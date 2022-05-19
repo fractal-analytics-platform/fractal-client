@@ -62,7 +62,7 @@ def db_save(db):
     Mocks writes to the global fractal database
     """
     with open("./fractal.json", "w") as f:
-        json.dump(db, f)
+        json.dump(db, f, indent=4)
 
 
 def get_project(project_name):
@@ -110,7 +110,7 @@ def save_project_file(project_name, prj_dict):
     project_path, ds_names = get_project(project_name)
     pj_file = project_name + ".json"
     with open(project_path / pj_file, "w") as f:
-        json.dump(prj_dict, f)
+        json.dump(prj_dict, f, indent=4)
 
 
 def check_I_O(task_p, task_n):
@@ -349,62 +349,87 @@ def workflow_add_task(project_name, workflow_name, tasks):
     save_project_file(project_name, prj)
 
 
-@cli.command()
-@click.argument("filename", required=True, nargs=1)
-def apply(filename):
+@workflow.command(name="apply")
+@click.argument("project_name", required=True, nargs=1)
+@click.argument("workflow_name", required=True, nargs=1)
+@click.argument("input_dataset", required=True, nargs=1)
+@click.argument("output_dataset", required=True, nargs=1)
+@click.argument("resource_in", required=True, nargs=1)
+@click.argument("resource_out", required=True, nargs=1)
+def workflow_apply(
+    project_name,
+    workflow_name,
+    input_dataset,
+    output_dataset,
+    resource_in,
+    resource_out,
+):
 
-    with open(filename, "r") as jsonfile:
-        f = json.load(jsonfile)
-        jsonfile.close()
-
-    project_name = f["arguments"]["project_name"]
-    workflow_name = f["arguments"]["workflow_name"]
-    input_dataset = [ds for ds in f["arguments"]["input_dataset"]]
-    output_dataset = [ds for ds in f["arguments"]["output_dataset"]]
-    resource_in = [r_in for r_in in f["arguments"]["resource_in"]]
-    resource_out = [r_out for r_out in f["arguments"]["resource_out"]]
+    # Put everything in a dictionary, to be used with luigi_wrap.py
+    f = dict(
+        arguments=dict(
+            project_name=project_name,
+            workflow_name=workflow_name,
+            input_dataset=input_dataset,
+            output_dataset=output_dataset,
+            resource_in=resource_in,
+            resource_out=resource_out,
+            # What follows is specific for luigi_wrap.py
+            delete="False",
+            scheduler="slurm",
+            slurm_params={"mem": 10000, "cores": 1, "nodes": 1},
+            ext="png",
+            # other_params={"dims": "1,1", "num_levels": 5},
+            other_params={
+                "dims": "1,1",
+                "num_levels": 5,
+                "coarsening_xy": 3,
+                "coarsening_z": 2,
+            },
+        )
+    )
 
     prj, _ = project_file_load(project_name)
 
-    for in_ds in input_dataset:
-        path_in = [p for p in prj["datasets"][in_ds]["resources"]]
-        # debug(path_in)
-    if not any(p in resource_in for p in path_in):
+    # Verify that resource_in has been added to the resources of input_dataset
+    dataset_resources = prj["datasets"][input_dataset]["resources"]
+    if resource_in not in dataset_resources:
         raise
 
-    resources_out = [Path(r_out) for r_out in resource_out]
-    for i, res_out in enumerate(resources_out):
-        if not res_out.exists():
-            res_out = get_project(project_name)[0] / output_dataset[i]
-            os.mkdir(res_out)
-            prj["datasets"][output_dataset[i]]["resources"].extend(
-                [res_out.resolve().as_posix()]
-            )
-            save_project_file(project_name, prj)
+    # If the resource_out folder is not there, create it
+    path_resource_out = Path(resource_out)
+    if not path_resource_out.exists():
+        os.mkdir(path_resource_out)
+        prj["datasets"][output_dataset]["resources"].extend(
+            [path_resource_out.resolve().as_posix()]
+        )
+        save_project_file(project_name, prj)
 
+    # Collect tasks
     task_names = [t["name"] for t in prj["workflows"][workflow_name]["tasks"]]
-    # debug(task_names)
+    debug(task_names)
 
+    # Update the dictionary to be passed to luigi_wrap.py
     db = db_load()
     f.update({"tasks": {}})
     for task in task_names:
         dependencies = db["fractal"]["tasks"][task]["depends_on"]
         f["tasks"].update({task: {"dependencies": dependencies}})
 
-    # os.chdir("fractal")
-
+    # Prepare command to be called via subprocess
     cmd = ["python", os.getcwd() + "/luigi_wrap.py"]
     cmd.extend([json.dumps(f)])
-    # debug(cmd)
+    debug(cmd)
 
     process = Popen(cmd, stderr=PIPE)  # nosec
     stdout, stderr = process.communicate()
     if not stderr:
-        print("--No errors--\n")
+        print("--No errors (in workflow_apply)--")
     else:
-        print("--Error--\n", stderr.decode())
+        print("--Error (in workflow_apply)--")
+        print(stderr.decode())
 
-    return stderr
+    # return stderr
 
 
 @cli.group()

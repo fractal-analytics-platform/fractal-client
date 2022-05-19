@@ -136,9 +136,9 @@ class ConversionTaskWrap(luigi.Task):
 
         stdout, stderr = process.communicate()
         if not stderr:
-            debug("--No errors--\n", stdout.decode())
+            debug("--No errors (in ConversionTaskWrap)--\n", stdout.decode())
         else:
-            debug("--Error--\n", stderr.decode())
+            debug("--Error (in ConversionTaskWrap)--\n", stderr.decode())
 
         with self.output().open("w") as outfile:
             outfile.write(f"{stderr}\n")
@@ -149,6 +149,7 @@ class ConversionTaskWrap(luigi.Task):
         Method from base class. Here create the hierarchy of
         the zarr folder than launch the conversion task.
         """
+        num_levels = self.other_param["num_levels"]
         rows_cols = self.other_param["dims"]
         rows = rows_cols.split(",")[0]
         cols = rows_cols.split(",")[1]
@@ -378,7 +379,7 @@ class ConversionTaskWrap(luigi.Task):
                         + str(random.randrange(0, 101, 5))  # nosec
                     )
 
-                    levels = ["0", "1", "2", "3", "4"]
+                    levels = [f"{level}" for level in range(num_levels)]
 
                     group_field = group_well.create_group("0/")  # noqa: F841
 
@@ -401,6 +402,16 @@ class ConversionTaskWrap(luigi.Task):
                         }
                     ]
 
+                coarsening_params = ""
+                if "coarsening_xy" in self.other_param.keys():
+                    coarsening_params += (
+                        f"-cxy {self.other_param['coarsening_xy']} "
+                    )
+                if "coarsening_z" in self.other_param.keys():
+                    coarsening_params += (
+                        f"-cz {self.other_param['coarsening_z']} "
+                    )
+
                 srun += " ".join(
                     [
                         "python",
@@ -412,6 +423,8 @@ class ConversionTaskWrap(luigi.Task):
                         "-r " + rows,
                         "-c " + cols,
                         "-e " + self.ext,
+                        "-nl " + str(num_levels),
+                        coarsening_params,
                         "-C " + "${input[@]}",
                     ]
                 )
