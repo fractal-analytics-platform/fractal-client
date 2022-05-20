@@ -66,6 +66,12 @@ def yokogawa_to_zarr(
 
     """
 
+    # Hard-coded values (by now) of how chunk size to be passed to rechunk, both
+    # at level 0 (before coarsening) and at levels 1,2,.. (after repeated
+    # coarsening). Note that balance=True may override these values.
+    chunk_size_x = 1280
+    chunk_size_y = 1080
+
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
 
@@ -114,7 +120,9 @@ def yokogawa_to_zarr(
         f_matrices = {}
         for level in range(num_levels):
             if level == 0:
-                f_matrices[level] = da.concatenate(all_rows, axis=1)
+                f_matrices[level] = da.concatenate(all_rows, axis=1).rechunk({1: chunk_size_x,
+                                                                              2: chunk_size_y
+								             }, balance=True)
                 # After concatenate, f_matrices[0] has three dimensions: z,y,x
                 if coarsening_factor_z > 1:
                     f_matrices[level] = da.coarsen(
@@ -125,14 +133,16 @@ def yokogawa_to_zarr(
                     )
             else:
                 f_matrices[level] = da.coarsen(
-                    np.min, f_matrices[level - 1], coarsening, trim_excess=True
-                )
+                    np.min, f_matrices[level - 1], coarsening, trim_excess=True,
+                ).rechunk({1: max(1, chunk_size_x // (coarsening_factor_xy ** level)),
+                           2: max(1, chunk_size_y // (coarsening_factor_xy ** level))
+                          }, balance=True)
             fc_list[level].append(f_matrices[level])
 
-    levels = [da.stack(fc_list[level], axis=0) for level in range(num_levels)]
+    level_data = [da.stack(fc_list[level], axis=0) for level in range(num_levels)]
 
     shape_list = []
-    for i, level in enumerate(levels):
+    for i, level in enumerate(level_data):
         level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
         shape_list.append(level.shape)
 

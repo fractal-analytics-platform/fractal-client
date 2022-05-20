@@ -1,5 +1,5 @@
-PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_subset_extras/
-AUXDIR=/data/homes/rmurri/mwe_fractal/fractal/Temporary_folder_for_regression_test/
+PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_testSubset/
+AUXDIR=/data/homes/fractal/mwe_fractal_tommaso/fractal/Temporary_folder_for_regression_test/
 PATH_OUTPUT=${AUXDIR}/result/
 CMD=fractal_cmd.py
 
