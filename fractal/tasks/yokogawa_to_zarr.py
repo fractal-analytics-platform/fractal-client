@@ -8,20 +8,19 @@ from dask import delayed
 from skimage.io import imread
 
 
-def sort_fun(s):
+def sort_by_z(s):
 
     """
-    sort_fun takes a string (filename of a yokogawa images),
-    extract site and z-index metadata and returns them as a list.
+    sort_by_z takes a string (filename of a yokogawa images),
+    extract z-index metadata and returns it.
 
     :param s: filename
     :type s: str
 
     """
 
-    site = re.findall(r"F(.*)L", s)[0]
     zind = re.findall(r"Z(.*)C", s)[0]
-    return [site, zind]
+    return zind
 
 
 def yokogawa_to_zarr(
@@ -29,8 +28,7 @@ def yokogawa_to_zarr(
     out_path,
     zarrurl,
     delete_in,
-    rows,
-    cols,
+    sites_list,
     ext,
     chl_list,
     num_levels,
@@ -49,10 +47,8 @@ def yokogawa_to_zarr(
     :type zarrurl: str
     :param delete_in: delete input files, and folder if empty
     :type delete_in: str
-    :param rows: number of rows of the well
-    :type rows: int
-    :param cols: number of columns of the well
-    :type cols: int
+    :param sites_list: list of sites
+    :type sites_list: list
     :param ext: source images extension
     :type ext: str
     :param chl_list: list of the channels
@@ -66,85 +62,82 @@ def yokogawa_to_zarr(
 
     """
 
-    # Hard-coded values (by now) of how chunk size to be passed to rechunk, both
-    # at level 0 (before coarsening) and at levels 1,2,.. (after repeated
-    # coarsening). Note that balance=True may override these values.
-    chunk_size_x = 1280
-    chunk_size_y = 1080
-
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
 
     lazy_imread = delayed(imread)
-    fc_list = {level: [] for level in range(num_levels)}
 
-    print(chl_list)
+    print("channels:", chl_list)
+    print("sites:", sites_list)
 
-    for ch in chl_list:
+    # Loop over sites and channels
+    for index_site, site in enumerate(sites_list):
+        zarrurl_site = f"{zarrurl}{index_site}/"
 
-        l_rows = []
-        all_rows = []
+        matrix_level_channel = {}
 
-        filenames = sorted(
-            glob(in_path + f"*_{r+c}_*C{ch}." + ext), key=sort_fun
-        )
-        print(in_path + f"*_{r+c}_*C{ch}." + ext)
-        max_z = max([re.findall(r"Z(.*)C", s)[0] for s in filenames])
+        for channel in chl_list:
 
-        sample = imread(filenames[0])
+            # Find all images for a given (site,channel)
+            filenames = sorted(
+                glob(in_path + f"*_{r+c}_*F{site}*C{channel}." + ext),
+                key=sort_by_z,
+            )
+            print(in_path + f"*_{r+c}_*F{site}*C{channel}." + ext)
 
-        s = 0
-        e = int(max_z)
+            # Build three-dimensional array for a given (site,channel)
+            sample = imread(filenames[0])
+            lazy_arrays = [lazy_imread(fn) for fn in filenames]
+            dask_arrays = [
+                da.from_delayed(
+                    delayed_reader, shape=sample.shape, dtype=sample.dtype
+                )
+                for delayed_reader in lazy_arrays
+            ]
+            matrix_site_channel = da.stack(dask_arrays, axis=0)
 
-        for ro in range(int(rows)):
-            cell = []
-
-            for co in range(int(cols)):
-                lazy_arrays = [lazy_imread(fn) for fn in filenames[s:e]]
-                s += int(max_z)
-                e += int(max_z)
-                dask_arrays = [
-                    da.from_delayed(
-                        delayed_reader, shape=sample.shape, dtype=sample.dtype
+            # Create pyramid
+            coarsening = {
+                1: coarsening_factor_xy,  # Y dimension
+                2: coarsening_factor_xy,  # X dimension
+            }
+            for level in range(num_levels):
+                if level == 0:
+                    matrices_site_channel_levels = [matrix_site_channel]
+                    if coarsening_factor_z > 1:
+                        matrices_site_channel_levels[level] = da.coarsen(
+                            np.min,
+                            matrices_site_channel_levels[level],
+                            {0: coarsening_factor_z},
+                            trim_excess=True,
+                        )
+                else:
+                    matrices_site_channel_levels.append(
+                        da.coarsen(
+                            np.min,
+                            matrices_site_channel_levels[level - 1],
+                            coarsening,
+                            trim_excess=True,
+                        )
                     )
-                    for delayed_reader in lazy_arrays
-                ]
-                z_stack = da.stack(dask_arrays, axis=0)
-                cell.append(z_stack)
-            l_rows = da.block(cell)
-            all_rows.append(l_rows)
-        # At this point, all_rows has four dimensions: z,site,y,x
 
-        # Define coarsening options
-        coarsening = {1: coarsening_factor_xy, 2: coarsening_factor_xy}
-        f_matrices = {}
+                matrix_level_channel[
+                    (level, channel)
+                ] = matrices_site_channel_levels[level]
+
         for level in range(num_levels):
-            if level == 0:
-                f_matrices[level] = da.concatenate(all_rows, axis=1).rechunk({1: chunk_size_x,
-                                                                              2: chunk_size_y
-								             }, balance=True)
-                # After concatenate, f_matrices[0] has three dimensions: z,y,x
-                if coarsening_factor_z > 1:
-                    f_matrices[level] = da.coarsen(
-                        np.min,
-                        f_matrices[level],
-                        {0: coarsening_factor_z},
-                        trim_excess=True,
-                    )
-            else:
-                f_matrices[level] = da.coarsen(
-                    np.min, f_matrices[level - 1], coarsening, trim_excess=True,
-                ).rechunk({1: max(1, chunk_size_x // (coarsening_factor_xy ** level)),
-                           2: max(1, chunk_size_y // (coarsening_factor_xy ** level))
-                          }, balance=True)
-            fc_list[level].append(f_matrices[level])
-
-    level_data = [da.stack(fc_list[level], axis=0) for level in range(num_levels)]
+            level_list = [
+                matrix_level_channel[key]
+                for key in matrix_level_channel.keys()
+                if key[0] == level
+            ]
+            level_stack = da.stack(level_list, axis=0)
+            level_stack.to_zarr(
+                out_path + zarrurl_site + f"{level}/", dimension_separator="/"
+            )
+            # shape_list.append(level.shape)
 
     shape_list = []
-    for i, level in enumerate(level_data):
-        level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
-        shape_list.append(level.shape)
 
     if delete_in == "True":
         for f in filenames:
@@ -181,15 +174,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-r",
-        "--rows",
-        help="Number of rows of final image",
-    )
-
-    parser.add_argument(
-        "-c",
-        "--cols",
-        help="Number of columns of final image",
+        "-S",
+        "--sites_list",
+        nargs="+",
+        help="list of sites ",
     )
 
     parser.add_argument(
@@ -235,8 +223,7 @@ if __name__ == "__main__":
         args.out_path,
         args.zarrurl,
         args.delete_in,
-        args.rows,
-        args.cols,
+        args.sites_list,
         args.ext,
         args.chl_list,
         args.num_levels,

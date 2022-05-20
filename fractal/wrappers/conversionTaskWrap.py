@@ -150,9 +150,7 @@ class ConversionTaskWrap(luigi.Task):
         the zarr folder than launch the conversion task.
         """
         num_levels = self.other_param["num_levels"]
-        rows_cols = self.other_param["dims"]
-        rows = rows_cols.split(",")[0]
-        cols = rows_cols.split(",")[1]
+        sites = []
         chl = []
         well = []
         plate = []
@@ -165,6 +163,8 @@ class ConversionTaskWrap(luigi.Task):
         plate_unique = self.unique(plate)
 
         if self.sclr == "local":
+            # FIXME: is sclr=local deprecated?
+
             run = ["python"]
 
             for plate in plate_unique:
@@ -262,9 +262,9 @@ class ConversionTaskWrap(luigi.Task):
                                 self.out_path,
                                 f"{plate}.zarr/" + f"{well}_{ch}/",
                                 self.delete_in,
-                                rows,
-                                cols,
+                                # FIXME: here 'sites' argument is missing
                                 self.ext,
+                                # FIXME: here 'num_levels' argument is missing
                             ]
                         )
                         process = Popen(
@@ -301,32 +301,20 @@ class ConversionTaskWrap(luigi.Task):
                         {"id": id_, "name": name}
                         for id_, name in enumerate(plate_unique)
                     ],
-                    # takes unique cols from (row,col) tuples
-                    "columns": sorted(
-                        [
-                            {"name": u_col}
-                            for u_col in set(
-                                [
-                                    well_row_column[1]
-                                    for well_row_column in well_rows_columns
-                                ]
-                            )
-                        ],
-                        key=lambda key: key["name"],
-                    ),
+                    "columns": [
+                        {"name": well_row_column[1]}
+                        for well_row_column in well_rows_columns
+                    ],
                     # takes unique rows from (row,col) tuples
-                    "rows": sorted(
-                        [
-                            {"name": u_row}
-                            for u_row in set(
-                                [
-                                    well_row_column[0]
-                                    for well_row_column in well_rows_columns
-                                ]
-                            )
-                        ],
-                        key=lambda key: key["name"],
-                    ),
+                    "rows": [
+                        {"name": u_row}
+                        for u_row in set(
+                            [
+                                well_row_column[0]
+                                for well_row_column in well_rows_columns
+                            ]
+                        )
+                    ],
                     "wells": [
                         {
                             "path": well_row_column[0]
@@ -341,6 +329,18 @@ class ConversionTaskWrap(luigi.Task):
 
                     group_well = group_plate.create_group(f"{row}/{column}/")
 
+                    # Find number of sites / fields of view
+                    sites = [
+                        self.metadata(os.path.basename(fn))[5]
+                        for fn in glob(
+                            self.in_path
+                            + f"{plate}*_{row+column}*."
+                            + self.ext
+                        )
+                    ]
+                    sites_unique = sorted(self.unique(sites))
+
+                    # Find channels
                     chl = [
                         self.metadata(os.path.basename(fn))[3]
                         for fn in glob(
@@ -349,14 +349,14 @@ class ConversionTaskWrap(luigi.Task):
                             + self.ext
                         )
                     ]
+                    chl_unique = sorted(self.unique(chl))
 
-                    chl_unique = self.unique(chl)
-                    # debug(chl_unique)
                     group_well.attrs["well"] = {
                         "images": [
                             {
-                                "path": "0"
+                                "path": f"{index_site}"
                             }  # multiscale level, until pyramids just 0
+                            for index_site, site in enumerate(sites_unique)
                         ],
                         "version": "0.3",
                     }
@@ -381,26 +381,28 @@ class ConversionTaskWrap(luigi.Task):
 
                     levels = [f"{level}" for level in range(num_levels)]
 
-                    group_field = group_well.create_group("0/")  # noqa: F841
-
-                    group_field.attrs["multiscales"] = [
-                        {
-                            "version": "0.3",
-                            "axes": [
-                                {"name": "c", "type": "channel"},
-                                {
-                                    "name": "z",
-                                    "type": "space",
-                                    "unit": "micrometer",
-                                },
-                                {"name": "y", "type": "space"},
-                                {"name": "x", "type": "space"},
-                            ],
-                            "datasets": [
-                                {"path": f"{level}"} for level in levels
-                            ],
-                        }
-                    ]
+                    for index_site, site in enumerate(sites_unique):
+                        group_field = group_well.create_group(
+                            f"{index_site}/"
+                        )  # noqa: F841
+                        group_field.attrs["multiscales"] = [
+                            {
+                                "version": "0.3",
+                                "axes": [
+                                    {"name": "c", "type": "channel"},
+                                    {
+                                        "name": "z",
+                                        "type": "space",
+                                        "unit": "micrometer",
+                                    },
+                                    {"name": "y", "type": "space"},
+                                    {"name": "x", "type": "space"},
+                                ],
+                                "datasets": [
+                                    {"path": f"{level}"} for level in levels
+                                ],
+                            }
+                        ]
 
                 coarsening_params = ""
                 if "coarsening_xy" in self.other_param.keys():
@@ -418,10 +420,9 @@ class ConversionTaskWrap(luigi.Task):
                         self.tasks_path + self.task_name + ".py ",
                         "-i " + self.in_path,
                         "-o " + self.out_path,
-                        f"-z {plate}.zarr/" + "$RO/" + "$CO/0/",
+                        f"-z {plate}.zarr/" + "$RO/" + "$CO/",
                         "-d " + self.delete_in,
-                        "-r " + rows,
-                        "-c " + cols,
+                        "-S " + "${in_sites[@]}",
                         "-e " + self.ext,
                         "-nl " + str(num_levels),
                         coarsening_params,
@@ -439,6 +440,9 @@ class ConversionTaskWrap(luigi.Task):
                             mem=mem + "MB",
                             array=len(well_unique) - 1,
                             channels=str(tuple(chl_unique)).replace(",", ""),
+                            sites_cmd=str(tuple(sites_unique)).replace(
+                                ",", ""
+                            ),
                             wells=str(
                                 [
                                     unique_r

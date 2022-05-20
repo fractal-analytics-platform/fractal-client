@@ -6,6 +6,7 @@
 #SBATCH --mem={{mem|default(512)}}
 #SBATCH --array 0-{{array}}
 input={{channels}}
+in_sites={{sites_cmd}}
 W=({{wells}})
 {% endblock -%}
 

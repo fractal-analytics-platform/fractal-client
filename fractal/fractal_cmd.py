@@ -377,11 +377,15 @@ def workflow_apply(
             # What follows is specific for luigi_wrap.py
             delete="False",
             scheduler="slurm",
-            slurm_params={"mem": 10000, "cores": 4, "nodes": 4, "cpus_per_task": 4},
+            slurm_params={
+                "mem": 10000,
+                "cores": 4,
+                "nodes": 4,
+                "cpus_per_task": 4,
+            },
             ext="png",
-            # other_params={"dims": "1,1", "num_levels": 5},
+            # other_params={"num_levels": 5},
             other_params={
-                "dims": "2,2",
                 "num_levels": 5,
                 "coarsening_xy": 2,
                 "coarsening_z": 1,
