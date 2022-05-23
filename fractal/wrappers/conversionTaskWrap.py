@@ -75,27 +75,30 @@ class ConversionTaskWrap(luigi.Task):
 
         fields = tmp_plate.split("_")
 
-        if (len(fields) == 4 and
-            len(fields[0]) == 6 and
-            len(fields[1]) == 6 and
-            len(fields[2]) == 6):
+        if (
+            len(fields) == 4
+            and len(fields[0]) == 6
+            and len(fields[1]) == 6
+            and len(fields[2]) == 6
+        ):
             # FMI (failed barcode reading)
-            # Example filename: yymmdd_hhmmss_210416_164828_B11_T0001F006L01A04Z14C01.tif
+            # Example:
+            # yymmdd_hhmmss_210416_164828_B11_T0001F006L01A04Z14C01.tif
             scan_date, scan_time, img_date, img_time = fields[:]
             plate = f"RS{scan_date + scan_time}"
 
         elif len(fields) == 3:
-            #FMI (correct barcode reading)
-            # Example filename: 210305NAR005AAN_210416_164828_B11_T0001F006L01A04Z14C01.tif
+            # FMI (correct barcode reading)
+            # Example:
+            # 210305NAR005AAN_210416_164828_B11_T0001F006L01A04Z14C01.tif
             barcode, img_date, img_time = fields[:]
-            if len(date) != 6 or len(time) != 6:
+            if len(img_date) != 6 or len(img_time) != 6:
                 raise
             plate = barcode
 
         elif len(fields) == 1:
             # UZH
             plate = fields[0]
-        
 
         site = re.findall(r"F(.*)L", f)[0]
         chl = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0].split("_")[0]
