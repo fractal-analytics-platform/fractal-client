@@ -69,8 +69,8 @@ def yokogawa_to_zarr(
     # Hard-coded values (by now) of how chunk size to be passed to rechunk, both
     # at level 0 (before coarsening) and at levels 1,2,.. (after repeated
     # coarsening). Note that balance=True may override these values.
-    chunk_size_x = 1280
-    chunk_size_y = 1080
+    chunk_size_x = 256*5
+    chunk_size_y = 216*5
 
     r = zarrurl.split("/")[1]
     c = zarrurl.split("/")[2]
@@ -144,7 +144,9 @@ def yokogawa_to_zarr(
     shape_list = []
     for i, level in enumerate(level_data):
         level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
+        print(f"Chunks at level {i}:\n", level.chunks)
         shape_list.append(level.shape)
+    print()
 
     if delete_in == "True":
         for f in filenames:

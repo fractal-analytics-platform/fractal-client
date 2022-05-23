@@ -69,8 +69,34 @@ class ConversionTaskWrap(luigi.Task):
         :type filename: str
         """
         f = filename.rsplit(".", 1)[0]
-        plate = f.split("_")[0]
+
         well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
+        tmp_plate = f.split(f"_{well}_")[0]
+
+        fields = tmp_plate.split("_")
+
+        if (len(fields) == 4 and
+            len(fields[0]) == 6 and
+            len(fields[1]) == 6 and
+            len(fields[2]) == 6):
+            # FMI (failed barcode reading)
+            # Example filename: yymmdd_hhmmss_210416_164828_B11_T0001F006L01A04Z14C01.tif
+            scan_date, scan_time, img_date, img_time = fields[:]
+            plate = f"RS{scan_date + scan_time}"
+
+        elif len(fields) == 3:
+            #FMI (correct barcode reading)
+            # Example filename: 210305NAR005AAN_210416_164828_B11_T0001F006L01A04Z14C01.tif
+            barcode, img_date, img_time = fields[:]
+            if len(date) != 6 or len(time) != 6:
+                raise
+            plate = barcode
+
+        elif len(fields) == 1:
+            # UZH
+            plate = fields[0]
+        
+
         site = re.findall(r"F(.*)L", f)[0]
         chl = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0].split("_")[0]
         time_s = re.findall(r"T(.*)F", f)[0]
@@ -156,10 +182,14 @@ class ConversionTaskWrap(luigi.Task):
         chl = []
         well = []
         plate = []
+        if not self.in_path.endswith("/"):
+            self.in_path += "/"
+        print(self.in_path + "*." + self.ext)
         for i in glob(self.in_path + "*." + self.ext):
             try:
                 plate.append(self.metadata(os.path.basename(i))[0])
             except IndexError:
+                print("IndexError for ", i)
                 pass
 
         plate_unique = self.unique(plate)
