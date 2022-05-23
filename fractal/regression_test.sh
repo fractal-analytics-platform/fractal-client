@@ -1,7 +1,8 @@
 PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_testSubset/
-AUXDIR=/data/homes/fractal/mwe_fractal_tommaso/fractal/Temporary_folder_for_regression_test/
+AUXDIR=/data/homes/fractal/mwe_fractal_tommaso/fractal/Temporary_folder_for_regression_test
 PATH_OUTPUT=${AUXDIR}/result/
 CMD=fractal_cmd.py
+CMD=fractal_cmd_parsl.py
 
 #echo 'Re-install poetry'
 #poetry install
@@ -22,12 +23,12 @@ poetry run python $CMD dataset list mwe-test
 echo
 
 echo 'Update dataset type'
-poetry run python $CMD dataset update-type mwe-test dstest tif
+poetry run python $CMD dataset update-type mwe-test dstest png
 poetry run python $CMD dataset list mwe-test
 echo
 
 echo 'Add yokogawa_to_zarr task'
-poetry run python $CMD task add yokogawa_to_zarr tif zarr
+poetry run python $CMD task add yokogawa_to_zarr png zarr
 poetry run python $CMD task list
 echo
 
