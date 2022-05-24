@@ -27,7 +27,6 @@ def sort_fun(s):
 def yokogawa_to_zarr(
     zarrurl,
     in_path=None,
-    out_path=None,
     ext=None,
     dims=None,
     chl_list=None,
@@ -40,10 +39,10 @@ def yokogawa_to_zarr(
     """
     Convert Yokogawa output (png, tif) to zarr file
 
+    #FIXME docstring
+
     :param in_path: directory containing the input files
     :type in_path: str
-    :param out_path: directory containing the output files
-    :type out_path: str
     :param zarrurl: structure of the zarr folder
     :type zarrurl: str
     :param delete_in: delete input files, and folder if empty
@@ -71,12 +70,11 @@ def yokogawa_to_zarr(
     chunk_size_x = 256 * 5
     chunk_size_y = 216 * 5
 
-    print("I am in yokogawa_to_zarr")
-    return None
-
     # Define well
-    r = zarrurl.split("/")[1]
-    c = zarrurl.split("/")[2]
+    if not zarrurl.endswith("/"):
+        zarrurl += "/"
+    r = zarrurl.split("/")[-4]
+    c = zarrurl.split("/")[-3]
 
     # Define grid of sites (within the well)
     rows, cols = dims[:]
@@ -91,6 +89,7 @@ def yokogawa_to_zarr(
         l_rows = []
         all_rows = []
 
+        print(zarrurl, r, c)
         filenames = sorted(
             glob(in_path + f"*_{r+c}_*C{ch}." + ext), key=sort_fun
         )
@@ -138,6 +137,8 @@ def yokogawa_to_zarr(
                         trim_excess=True,
                     )
             else:
+                # FIXME: add here a threshold to avoid having a lot
+                # of minuscule chunks
                 f_matrices[level] = da.coarsen(
                     np.min,
                     f_matrices[level - 1],
@@ -162,7 +163,7 @@ def yokogawa_to_zarr(
 
     shape_list = []
     for i, level in enumerate(level_data):
-        level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
+        level.to_zarr(zarrurl + f"{i}/", dimension_separator="/")
         print(f"Chunks at level {i}:\n", level.chunks)
         shape_list.append(level.shape)
     print()
@@ -183,10 +184,6 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "-i", "--in_path", help="directory containing the input files"
-    )
-
-    parser.add_argument(
-        "-o", "--out_path", help="directory containing the output files"
     )
 
     parser.add_argument(
@@ -253,7 +250,6 @@ if __name__ == "__main__":
 
     yokogawa_to_zarr(
         args.in_path,
-        args.out_path,
         args.zarrurl,
         args.delete_in,
         args.rows,

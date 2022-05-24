@@ -7,14 +7,13 @@ from typing import Optional
 import click
 import parsl
 from devtools import debug
-from parsl.addresses import address_by_hostname
-from parsl.channels import LocalChannel
+from parsl import python_app
 from parsl.config import Config
-from parsl.executors import HighThroughputExecutor
-from parsl.launchers import SrunLauncher
-from parsl.providers import SlurmProvider
+from parsl_config import define_HighThroughputExecutor
+from parsl_config import define_MonitoringHub
+from parsl_config import define_SlurmProvider
 from pydantic import BaseModel
-from tasks.create_zarr_structure import create_zarr_structure
+
 
 # FIXME: import all from tasks (via __init__, probably)
 
@@ -39,37 +38,6 @@ from tasks.create_zarr_structure import create_zarr_structure
  "workflows" : [name : {}]
 }
 """
-
-
-def initialize_SlurmProvider():
-    slurm = SlurmProvider(
-        channel=LocalChannel(),
-        nodes_per_block=1,
-        cores_per_node=16,
-        mem_per_node=1,  # specified in GB
-        parallelism=0,
-        partition="main",
-        worker_init="export SQUEUE_FORMAT="
-        + '"%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"'
-        + "source /opt/easybuild/software/Anaconda3/2019.07/"
-        + "etc/profile.d/conda.sh\n"
-        + "conda activate fractal",
-        launcher=SrunLauncher(debug=True),
-        walltime="01:00:00",
-        cmd_timeout=60,
-    )
-    return slurm
-
-
-def initialize_HighThroughputExecutor(provider=None, max_workers=10):
-    htex = HighThroughputExecutor(
-        label="htex",
-        address=address_by_hostname(),
-        worker_debug=True,
-        max_workers=max_workers,
-        provider=provider,
-    )
-    return htex
 
 
 class TaskModel(BaseModel):
@@ -431,69 +399,107 @@ def workflow_apply(
     # Hard-coded parameters
     ext = prj["datasets"][input_dataset]["type"]
     num_levels = 5
-    dims = (1, 1)
-    coarsening_factor_xy = 2
+    # dims = (6, 6)
+    dims = (2, 2)
+    coarsening_factor_xy = 3
     coarsening_factor_z = 1
-
-    # Task 0: create zarr
-    zarrurl_list, chl_list = create_zarr_structure(
-        in_path=resource_in,
-        out_path=resource_out,
-        ext=ext,
-        num_levels=num_levels,
-        dims=dims,
-    )
-    print(f"zarrurl_list: {zarrurl_list}")
 
     # FIXME validate tasks somewhere
 
-    # FIXME: define slurm provider
-    provider = initialize_SlurmProvider()
-    htex = initialize_HighThroughputExecutor(provider=provider)
-    config = Config(executors=[htex])
+    # Hard-coded parsl options
+    fmt = '"%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"'
+    os.environ["SQUEUE_FORMAT"] = fmt
+    worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
+    worker_init += "etc/profile.d/conda.sh\n"
+    worker_init += "conda activate fractal"
+    provider = define_SlurmProvider(
+        nodes_per_block=1,
+        cores_per_node=16,
+        mem_per_node_GB=10,
+        partition="main",
+        worker_init=worker_init,
+    )
+    htex = define_HighThroughputExecutor(provider=provider)
+    monitoring = define_MonitoringHub()
+    config = Config(executors=[htex], monitoring=monitoring)
     parsl.clear()
     parsl.load(config)
 
-    # Loop over tasks
+    # Task 0
+    if task_names[0] == "create_zarr_structure":
+        kwargs = dict(
+            in_path=resource_in,
+            out_path=resource_out,
+            ext=ext,
+            num_levels=num_levels,
+            dims=dims,
+        )
+
+        @parsl.python_app
+        def app_create_zarr_structure(**kwargs_):
+            from fractal.tasks.create_zarr_structure import (
+                create_zarr_structure,
+            )  # isort:skip
+
+            return create_zarr_structure(**kwargs)
+
+        future = app_create_zarr_structure(**kwargs)
+        zarrurl_list, chl_list = future.result()
+    else:
+        print("ERROR: All workflows must start with create_zarr_structure.")
+        raise
+
+    # Tasks 1,2,...
     # db = db_load()
-    for task in task_names:
-        futures = []
+    for task in task_names[1:]:
 
         if task == "yokogawa_to_zarr":
             # FIXME: add task-specific wrapper
-            # QUESTION: where will parsl act? probably within the wrapper??
             kwargs = dict(
                 in_path=resource_in,
-                out_path=resource_out,
                 ext=ext,
                 dims=dims,
                 chl_list=chl_list,
+                num_levels=num_levels,
                 coarsening_factor_xy=coarsening_factor_xy,
                 coarsening_factor_z=coarsening_factor_z,
             )
             # function = yokogawa_to_zarr   # <-- how to do it more generally??
 
-            def function(zarrurl, **kwargs_):
-                from fractal.tasks.yokogawa_to_zarr import yokogawa_to_zarr
+            @python_app
+            def app(zarrurl, **kwargs_):
+                os.environ["OPENBLAS_NUM_THREADS"] = "4"  # FIXME
+                from fractal.tasks.yokogawa_to_zarr import (
+                    yokogawa_to_zarr,
+                )  # isort:skip
 
                 return yokogawa_to_zarr(zarrurl, **kwargs_)
 
-            # function = DICT_TASKS[task]  #FIXME
-        # elif task == "illumination":
-        #    kwargs = dict(..
-        #                  threshold=0.5)
-        #    function = illumination
+        elif task == "maximum_intensity_projection":
+            # FIXME: add task-specific wrapper
+            kwargs = dict(
+                chl_list=chl_list,
+            )
+            # function = yokogawa_to_zarr   # <-- how to do it more generally??
 
-        # app1 = parsl.python_app(function=task_increment)(1)
-        # app2 = PythonApp(task_increment)(2)
+            @python_app
+            def app(zarrurl, **kwargs_):
+                os.environ["OPENBLAS_NUM_THREADS"] = "4"  # FIXME
+                from fractal.tasks.maximum_intensity_projection import (
+                    maximum_intensity_projection,
+                )  # isort:skip
 
+                return maximum_intensity_projection(zarrurl, **kwargs_)
+
+        futures = []
         for zarrurl in zarrurl_list:
-            future = parsl.python_app(function=function)(zarrurl, **kwargs)
-            # future = function(zarrurl, **kwargs)
+            future = app(zarrurl, **kwargs)
             futures.append(future)
 
+        # function = DICT_TASKS[task]  #FIXME
+
         print(futures)
-        [app.result() for app in futures]
+        [future.result() for future in futures]
         print(futures)
         print()
 

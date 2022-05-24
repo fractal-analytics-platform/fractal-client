@@ -49,17 +49,15 @@ def test_yokogawa_to_zarr(mocker):
     )
 
     res = yokogawa_to_zarr(
-        in_path,
-        out_path,
         zarrurl,
-        delete_in,
-        rows,
-        cols,
-        ext,
-        chl_list,
-        num_levels,
-        coarsening_factor_xy,
-        coarsening_factor_z,
+        in_path="",
+        out_path="",
+        ext=ext,
+        dims=(2, 2),
+        chl_list=["01"],
+        num_levels=5,
+        coarsening_factor_xy=2,
+        coarsening_factor_z=1,
     )
 
     assert res == [
