@@ -15,9 +15,6 @@ from parsl_config import define_SlurmProvider
 from pydantic import BaseModel
 
 
-# FIXME: import all from tasks (via __init__, probably)
-
-
 """
 #fractal.json
 {
@@ -40,11 +37,19 @@ from pydantic import BaseModel
 """
 
 
+def add_slash_to_path(path):
+    if path.endswith("/"):
+        return path
+    else:
+        return path + "/"
+
+
 class TaskModel(BaseModel):
     name: str
     depends_on: Optional[str]
     input_type: str
     output_type: str
+    parallelization_level: str
 
 
 class Workflow(BaseModel):
@@ -145,6 +150,9 @@ def project():
 @click.argument("path", required=True, nargs=1)
 @click.argument("dataset", required=True, nargs=1)
 def project_new(project_name, path, dataset):
+
+    path = add_slash_to_path(path)
+
     path_obj = Path(path)
     if not path_obj.exists():
         try:
@@ -154,7 +162,9 @@ def project_new(project_name, path, dataset):
         else:
             print(f"Successfully created the directory {path}")
 
-    if not os.path.isfile(os.getcwd() + "/" + "fractal.json"):
+    if not os.path.isfile(
+        os.getcwd() + "/" + "fractal.json"
+    ):  # FIXME move it to path??
         with open(os.getcwd() + "/" + "fractal.json", "w") as f:
             json.dump(
                 {
@@ -201,6 +211,9 @@ def project_new(project_name, path, dataset):
 
     db_save(db)
 
+    with open("dictionary_tasks.py", "w") as out:
+        out.write("dict_tasks = {}\n\n")
+
 
 @project.command(name="list")
 def projects_list():
@@ -229,9 +242,12 @@ def datasets_list(project_name):
 @click.argument("resources", required=True, nargs=-1)
 @click.argument("ds_type", required=True, nargs=1)
 def dataset_new(project_name, dataset_name, resources, ds_type):
+
+    sanitized_resources = [add_slash_to_path(res) for res in resources]
+
     prj, _ = project_file_load(project_name)
     prj["datasets"].update(
-        {dataset_name: {"resources": resources, "type": ds_type}}
+        {dataset_name: {"resources": sanitized_resources, "type": ds_type}}
     )
     db = db_load()
     db["fractal"]["projects"][project_name]["datasets"].append(dataset_name)
@@ -245,8 +261,10 @@ def dataset_new(project_name, dataset_name, resources, ds_type):
 @click.argument("resources", required=True, nargs=-1)
 def datasets_add_resources(project_name, dataset_name, resources):
 
+    sanitized_resources = [add_slash_to_path(res) for res in resources]
+
     prj, _ = project_file_load(project_name)
-    prj["datasets"][dataset_name]["resources"].extend(resources)
+    prj["datasets"][dataset_name]["resources"].extend(sanitized_resources)
     save_project_file(project_name, prj)
 
 
@@ -277,19 +295,25 @@ def task_list():
 @click.argument("task_name", required=True, nargs=1)
 @click.argument("input_type", required=True, nargs=1)
 @click.argument("output_type", required=True, nargs=1)
+@click.argument("parallelization_level", required=True, nargs=1)
 @click.argument("depends_on", required=False)
-def task_add(task_name, input_type, output_type, depends_on=None):
+def task_add(
+    task_name, input_type, output_type, parallelization_level, depends_on=None
+):
     db = db_load()
     db["fractal"]["tasks"][task_name] = TaskModel(
         name=task_name,
         input_type=input_type,
         output_type=output_type,
         depends_on=depends_on,
-        # FIXME: path/function...
-        # alll we need to obtain the *python function* to call
+        parallelization_level=parallelization_level,
     ).dict()
-    # FIXME WRITE IN tasks/dict_tasks.py
-    # FIXME: re-import tasks/dict_tasks.py
+
+    with open("dictionary_tasks.py", "a") as out:  # FIXME add path
+        out.write(f"from fractal.tasks.{task_name} import {task_name}\n")
+        out.write(f'dict_tasks["{task_name}"] = {task_name}\n')
+        out.write("\n")
+
     db_save(db)
 
 
@@ -376,6 +400,9 @@ def workflow_apply(
     resource_out,
 ):
 
+    resource_in = add_slash_to_path(resource_in)
+    resource_out = add_slash_to_path(resource_out)
+
     prj, _ = project_file_load(project_name)
 
     # Verify that resource_in has been added to the resources of input_dataset
@@ -388,7 +415,7 @@ def workflow_apply(
     if not path_resource_out.exists():
         os.mkdir(path_resource_out)
         prj["datasets"][output_dataset]["resources"].extend(
-            [path_resource_out.resolve().as_posix()]
+            [add_slash_to_path(path_resource_out.resolve().as_posix())]
         )
         save_project_file(project_name, prj)
 
@@ -404,26 +431,35 @@ def workflow_apply(
     coarsening_factor_xy = 3
     coarsening_factor_z = 1
 
-    # FIXME validate tasks somewhere
+    # FIXME validate tasks somewhere?
 
     # Hard-coded parsl options
+    OPENBLAS_NUM_THREADS = "1"  # FIXME
     fmt = '"%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"'
     os.environ["SQUEUE_FORMAT"] = fmt
     worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
     worker_init += "etc/profile.d/conda.sh\n"
     worker_init += "conda activate fractal"
     provider = define_SlurmProvider(
-        nodes_per_block=1,
+        nodes_per_block=2,
         cores_per_node=16,
-        mem_per_node_GB=10,
+        mem_per_node_GB=64,
         partition="main",
         worker_init=worker_init,
     )
-    htex = define_HighThroughputExecutor(provider=provider)
+    htex = define_HighThroughputExecutor(provider=provider, max_workers=64)
     monitoring = define_MonitoringHub()
     config = Config(executors=[htex], monitoring=monitoring)
     parsl.clear()
     parsl.load(config)
+
+    from fractal.dictionary_tasks import dict_tasks
+
+    debug(dict_tasks)
+
+    @parsl.python_app
+    def collect_intermediate_results(inputs=[]):
+        return [x for x in inputs]
 
     # Task 0
     if task_names[0] == "create_zarr_structure":
@@ -437,24 +473,22 @@ def workflow_apply(
 
         @parsl.python_app
         def app_create_zarr_structure(**kwargs_):
-            from fractal.tasks.create_zarr_structure import (
-                create_zarr_structure,
-            )  # isort:skip
+            os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
+            import fractal.dictionary_tasks  # noqa: F401
 
-            return create_zarr_structure(**kwargs)
+            return dict_tasks[task_names[0]](**kwargs)
 
         future = app_create_zarr_structure(**kwargs)
-        zarrurl_list, chl_list = future.result()
+        zarrurls, chl_list = future.result()
     else:
         print("ERROR: All workflows must start with create_zarr_structure.")
         raise
 
     # Tasks 1,2,...
-    # db = db_load()
+    db = db_load()
     for task in task_names[1:]:
 
         if task == "yokogawa_to_zarr":
-            # FIXME: add task-specific wrapper
             kwargs = dict(
                 in_path=resource_in,
                 ext=ext,
@@ -464,44 +498,35 @@ def workflow_apply(
                 coarsening_factor_xy=coarsening_factor_xy,
                 coarsening_factor_z=coarsening_factor_z,
             )
-            # function = yokogawa_to_zarr   # <-- how to do it more generally??
-
-            @python_app
-            def app(zarrurl, **kwargs_):
-                os.environ["OPENBLAS_NUM_THREADS"] = "4"  # FIXME
-                from fractal.tasks.yokogawa_to_zarr import (
-                    yokogawa_to_zarr,
-                )  # isort:skip
-
-                return yokogawa_to_zarr(zarrurl, **kwargs_)
-
         elif task == "maximum_intensity_projection":
-            # FIXME: add task-specific wrapper
             kwargs = dict(
                 chl_list=chl_list,
             )
-            # function = yokogawa_to_zarr   # <-- how to do it more generally??
+        elif task == "replicate_zarr_structure_mip":
+            kwargs = {}
 
-            @python_app
-            def app(zarrurl, **kwargs_):
-                os.environ["OPENBLAS_NUM_THREADS"] = "4"  # FIXME
-                from fractal.tasks.maximum_intensity_projection import (
-                    maximum_intensity_projection,
-                )  # isort:skip
+        @python_app
+        def app(zarrurl, **kwargs_):
+            os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
+            import fractal.dictionary_tasks  # noqa: F401
 
-                return maximum_intensity_projection(zarrurl, **kwargs_)
+            return dict_tasks[task](zarrurl, **kwargs_)
 
         futures = []
-        for zarrurl in zarrurl_list:
+        parallelization_level = db["fractal"]["tasks"][task][
+            "parallelization_level"
+        ]
+        for zarrurl in zarrurls[parallelization_level]:
             future = app(zarrurl, **kwargs)
             futures.append(future)
 
-        # function = DICT_TASKS[task]  #FIXME
-
         print(futures)
-        [future.result() for future in futures]
+        collect_intermediate_results(inputs=futures).result()
         print(futures)
         print()
+
+        # FIXME task-specific "naming" of output
+        # FIXME to be validated
 
 
 @cli.group()

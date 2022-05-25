@@ -64,9 +64,13 @@ def yokogawa_to_zarr(
 
     """
 
-    # Hard-coded values (by now) of how chunk size to be passed to rechunk,
+    if not in_path.endswith("/"):
+        in_path += "/"
+
+    # Hard-coded values (by now) of chunk sizes to be passed to rechunk,
     # both at level 0 (before coarsening) and at levels 1,2,.. (after
-    # repeated coarsening). Note that balance=True may override these values.
+    # repeated coarsening).
+    # Note that balance=True may override these values.
     chunk_size_x = 256 * 5
     chunk_size_y = 216 * 5
 
@@ -137,8 +141,6 @@ def yokogawa_to_zarr(
                         trim_excess=True,
                     )
             else:
-                # FIXME: add here a threshold to avoid having a lot
-                # of minuscule chunks
                 f_matrices[level] = da.coarsen(
                     np.min,
                     f_matrices[level - 1],
@@ -146,12 +148,8 @@ def yokogawa_to_zarr(
                     trim_excess=True,
                 ).rechunk(
                     {
-                        1: max(
-                            1, chunk_size_x // (coarsening_factor_xy**level)
-                        ),
-                        2: max(
-                            1, chunk_size_y // (coarsening_factor_xy**level)
-                        ),
+                        1: max(1, chunk_size_x),
+                        2: max(1, chunk_size_y),
                     },
                     balance=True,
                 )

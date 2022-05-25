@@ -83,12 +83,13 @@ def create_zarr_structure(
     rows, cols = dims[:]
     well = []
 
-    zarrurls = []
+    zarrurls = {"plate": [], "well": []}
 
     # loop over plate, each plate could have n wells
     # debug(plate_unique)
     for plate in plate_unique:
         group_plate = zarr.group(out_path + f"{plate}.zarr")
+        zarrurls["plate"].append(out_path + f"{plate}.zarr")
         well = [
             metadata(os.path.basename(fn))["well"]
             for fn in glob(in_path + f"{plate}_*." + ext)
@@ -158,7 +159,9 @@ def create_zarr_structure(
             }
 
             group_field = group_well.create_group("0/")  # noqa: F841
-            zarrurls.append(out_path + f"{plate}.zarr/{row}/{column}/0/")
+            zarrurls["well"].append(
+                out_path + f"{plate}.zarr/{row}/{column}/0/"
+            )
 
             group_field.attrs["multiscales"] = [
                 {

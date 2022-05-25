@@ -1,4 +1,5 @@
 Temporary_folder_for_regression_test/
+dictionary_tasks.py
 monitoring.db
 jobs/wf*
 runinfo
