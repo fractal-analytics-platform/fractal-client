@@ -448,7 +448,9 @@ def workflow_apply(
         worker_init=worker_init,
     )
     htex = define_HighThroughputExecutor(provider=provider, max_workers=64)
-    monitoring = define_MonitoringHub()
+    monitoring = define_MonitoringHub(
+        workflow_name=f"{project_name}/{workflow_name}"
+    )
     config = Config(executors=[htex], monitoring=monitoring)
     parsl.clear()
     parsl.load(config)

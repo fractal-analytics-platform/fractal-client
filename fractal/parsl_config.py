@@ -6,13 +6,16 @@ from parsl.monitoring.monitoring import MonitoringHub
 from parsl.providers import SlurmProvider
 
 
-def define_MonitoringHub():
-    return MonitoringHub(
+def define_MonitoringHub(workflow_name=None):
+    kwargs = dict(
         hub_address=address_by_hostname(),
         hub_port=55055,
         monitoring_debug=True,
         resource_monitoring_interval=5,
     )
+    if workflow_name is not None:
+        kwargs["workflow_name"] = workflow_name
+    return MonitoringHub(**kwargs)
 
 
 def define_SlurmProvider(
