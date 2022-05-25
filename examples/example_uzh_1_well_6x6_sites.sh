@@ -1,15 +1,16 @@
-# 4 wells, 2x2 sites each (site numbers 1-4).
-PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_multiwell_testset/
+# 6x6, single well
+PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_subset/
 
 MWE_DIR=/data/homes/fractal/mwe_fractal_tommaso
-PATH_OUTPUT=${MWE_DIR}/examples/Temporary_data_UZH_2x2_well_2x2_sites
+PATH_OUTPUT=${MWE_DIR}/examples/Temporary_data_UZH_1_well_6x6_sites
 
 CMD='poetry run python ../fractal/fractal_cmd_parsl.py'
 
 #echo 'Re-install poetry'
 #poetry install
 
-echo 'Clean up old dstest folder'
+echo 'Clean up'
+rm fractal.json
 rm -rf $PATH_OUTPUT
 mkdir -p $PATH_OUTPUT
 

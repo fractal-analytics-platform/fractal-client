@@ -435,13 +435,13 @@ def workflow_apply(
 
     # Hard-coded parsl options
     OPENBLAS_NUM_THREADS = "1"  # FIXME
-    fmt = '"%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"'
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
     worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
     worker_init += "etc/profile.d/conda.sh\n"
     worker_init += "conda activate fractal"
     provider = define_SlurmProvider(
-        nodes_per_block=2,
+        nodes_per_block=1,
         cores_per_node=16,
         mem_per_node_GB=64,
         partition="main",
