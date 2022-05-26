@@ -25,26 +25,24 @@ def sort_fun(s):
 
 
 def yokogawa_to_zarr(
-    in_path,
-    out_path,
     zarrurl,
-    delete_in,
-    rows,
-    cols,
-    ext,
-    chl_list,
-    num_levels,
-    coarsening_factor_xy,
-    coarsening_factor_z,
+    in_path=None,
+    ext=None,
+    dims=None,
+    chl_list=None,
+    num_levels=5,
+    coarsening_factor_xy=2,
+    coarsening_factor_z=1,
+    delete_in=False,
 ):
 
     """
     Convert Yokogawa output (png, tif) to zarr file
 
+    #FIXME docstring
+
     :param in_path: directory containing the input files
     :type in_path: str
-    :param out_path: directory containing the output files
-    :type out_path: str
     :param zarrurl: structure of the zarr folder
     :type zarrurl: str
     :param delete_in: delete input files, and folder if empty
@@ -66,14 +64,24 @@ def yokogawa_to_zarr(
 
     """
 
-    # Hard-coded values (by now) of how chunk size to be passed to rechunk, both
-    # at level 0 (before coarsening) and at levels 1,2,.. (after repeated
-    # coarsening). Note that balance=True may override these values.
-    chunk_size_x = 256*5
-    chunk_size_y = 216*5
+    if not in_path.endswith("/"):
+        in_path += "/"
 
-    r = zarrurl.split("/")[1]
-    c = zarrurl.split("/")[2]
+    # Hard-coded values (by now) of chunk sizes to be passed to rechunk,
+    # both at level 0 (before coarsening) and at levels 1,2,.. (after
+    # repeated coarsening).
+    # Note that balance=True may override these values.
+    chunk_size_x = 256 * 5
+    chunk_size_y = 216 * 5
+
+    # Define well
+    if not zarrurl.endswith("/"):
+        zarrurl += "/"
+    r = zarrurl.split("/")[-4]
+    c = zarrurl.split("/")[-3]
+
+    # Define grid of sites (within the well)
+    rows, cols = dims[:]
 
     lazy_imread = delayed(imread)
     fc_list = {level: [] for level in range(num_levels)}
@@ -85,6 +93,7 @@ def yokogawa_to_zarr(
         l_rows = []
         all_rows = []
 
+        print(zarrurl, r, c)
         filenames = sorted(
             glob(in_path + f"*_{r+c}_*C{ch}." + ext), key=sort_fun
         )
@@ -120,9 +129,9 @@ def yokogawa_to_zarr(
         f_matrices = {}
         for level in range(num_levels):
             if level == 0:
-                f_matrices[level] = da.concatenate(all_rows, axis=1).rechunk({1: chunk_size_x,
-                                                                              2: chunk_size_y
-								             }, balance=True)
+                f_matrices[level] = da.concatenate(all_rows, axis=1).rechunk(
+                    {1: chunk_size_x, 2: chunk_size_y}, balance=True
+                )
                 # After concatenate, f_matrices[0] has three dimensions: z,y,x
                 if coarsening_factor_z > 1:
                     f_matrices[level] = da.coarsen(
@@ -133,17 +142,26 @@ def yokogawa_to_zarr(
                     )
             else:
                 f_matrices[level] = da.coarsen(
-                    np.min, f_matrices[level - 1], coarsening, trim_excess=True,
-                ).rechunk({1: max(1, chunk_size_x // (coarsening_factor_xy ** level)),
-                           2: max(1, chunk_size_y // (coarsening_factor_xy ** level))
-                          }, balance=True)
+                    np.min,
+                    f_matrices[level - 1],
+                    coarsening,
+                    trim_excess=True,
+                ).rechunk(
+                    {
+                        1: max(1, chunk_size_x),
+                        2: max(1, chunk_size_y),
+                    },
+                    balance=True,
+                )
             fc_list[level].append(f_matrices[level])
 
-    level_data = [da.stack(fc_list[level], axis=0) for level in range(num_levels)]
+    level_data = [
+        da.stack(fc_list[level], axis=0) for level in range(num_levels)
+    ]
 
     shape_list = []
     for i, level in enumerate(level_data):
-        level.to_zarr(out_path + zarrurl + f"{i}/", dimension_separator="/")
+        level.to_zarr(zarrurl + f"{i}/", dimension_separator="/")
         print(f"Chunks at level {i}:\n", level.chunks)
         shape_list.append(level.shape)
     print()
@@ -164,10 +182,6 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "-i", "--in_path", help="directory containing the input files"
-    )
-
-    parser.add_argument(
-        "-o", "--out_path", help="directory containing the output files"
     )
 
     parser.add_argument(
@@ -234,7 +248,6 @@ if __name__ == "__main__":
 
     yokogawa_to_zarr(
         args.in_path,
-        args.out_path,
         args.zarrurl,
         args.delete_in,
         args.rows,

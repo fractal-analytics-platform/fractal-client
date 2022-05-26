@@ -1,14 +1,21 @@
 import json
 import os
 from pathlib import Path
-from subprocess import PIPE  # nosec
-from subprocess import Popen  # nosec
 from typing import List
 from typing import Optional
 
 import click
+import parsl
 from devtools import debug
+from parsl import python_app
+from parsl.config import Config
+from parsl_config import define_HighThroughputExecutor
+from parsl_config import define_SlurmProvider
 from pydantic import BaseModel
+
+import fractal.fractal_config as fractal_config
+
+# from parsl_config import define_MonitoringHub
 
 
 """
@@ -33,11 +40,19 @@ from pydantic import BaseModel
 """
 
 
+def add_slash_to_path(path):
+    if path.endswith("/"):
+        return path
+    else:
+        return path + "/"
+
+
 class TaskModel(BaseModel):
     name: str
     depends_on: Optional[str]
     input_type: str
     output_type: str
+    parallelization_level: str
 
 
 class Workflow(BaseModel):
@@ -138,6 +153,9 @@ def project():
 @click.argument("path", required=True, nargs=1)
 @click.argument("dataset", required=True, nargs=1)
 def project_new(project_name, path, dataset):
+
+    path = add_slash_to_path(path)
+
     path_obj = Path(path)
     if not path_obj.exists():
         try:
@@ -147,7 +165,9 @@ def project_new(project_name, path, dataset):
         else:
             print(f"Successfully created the directory {path}")
 
-    if not os.path.isfile(os.getcwd() + "/" + "fractal.json"):
+    if not os.path.isfile(
+        os.getcwd() + "/" + "fractal.json"
+    ):  # FIXME move it to path??
         with open(os.getcwd() + "/" + "fractal.json", "w") as f:
             json.dump(
                 {
@@ -194,6 +214,9 @@ def project_new(project_name, path, dataset):
 
     db_save(db)
 
+    with open("dictionary_tasks.py", "w") as out:
+        out.write("dict_tasks = {}\n\n")
+
 
 @project.command(name="list")
 def projects_list():
@@ -222,9 +245,12 @@ def datasets_list(project_name):
 @click.argument("resources", required=True, nargs=-1)
 @click.argument("ds_type", required=True, nargs=1)
 def dataset_new(project_name, dataset_name, resources, ds_type):
+
+    sanitized_resources = [add_slash_to_path(res) for res in resources]
+
     prj, _ = project_file_load(project_name)
     prj["datasets"].update(
-        {dataset_name: {"resources": resources, "type": ds_type}}
+        {dataset_name: {"resources": sanitized_resources, "type": ds_type}}
     )
     db = db_load()
     db["fractal"]["projects"][project_name]["datasets"].append(dataset_name)
@@ -238,8 +264,10 @@ def dataset_new(project_name, dataset_name, resources, ds_type):
 @click.argument("resources", required=True, nargs=-1)
 def datasets_add_resources(project_name, dataset_name, resources):
 
+    sanitized_resources = [add_slash_to_path(res) for res in resources]
+
     prj, _ = project_file_load(project_name)
-    prj["datasets"][dataset_name]["resources"].extend(resources)
+    prj["datasets"][dataset_name]["resources"].extend(sanitized_resources)
     save_project_file(project_name, prj)
 
 
@@ -270,15 +298,25 @@ def task_list():
 @click.argument("task_name", required=True, nargs=1)
 @click.argument("input_type", required=True, nargs=1)
 @click.argument("output_type", required=True, nargs=1)
+@click.argument("parallelization_level", required=True, nargs=1)
 @click.argument("depends_on", required=False)
-def task_add(task_name, input_type, output_type, depends_on=None):
+def task_add(
+    task_name, input_type, output_type, parallelization_level, depends_on=None
+):
     db = db_load()
     db["fractal"]["tasks"][task_name] = TaskModel(
         name=task_name,
         input_type=input_type,
         output_type=output_type,
         depends_on=depends_on,
+        parallelization_level=parallelization_level,
     ).dict()
+
+    with open("dictionary_tasks.py", "a") as out:  # FIXME add path
+        out.write(f"from fractal.tasks.{task_name} import {task_name}\n")
+        out.write(f'dict_tasks["{task_name}"] = {task_name}\n')
+        out.write("\n")
+
     db_save(db)
 
 
@@ -356,6 +394,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
 @click.argument("output_dataset", required=True, nargs=1)
 @click.argument("resource_in", required=True, nargs=1)
 @click.argument("resource_out", required=True, nargs=1)
+@click.argument("json_worker_params", required=True, nargs=1)
 def workflow_apply(
     project_name,
     workflow_name,
@@ -363,31 +402,11 @@ def workflow_apply(
     output_dataset,
     resource_in,
     resource_out,
+    json_worker_params,
 ):
 
-    # Put everything in a dictionary, to be used with luigi_wrap.py
-    f = dict(
-        arguments=dict(
-            project_name=project_name,
-            workflow_name=workflow_name,
-            input_dataset=input_dataset,
-            output_dataset=output_dataset,
-            resource_in=resource_in,
-            resource_out=resource_out,
-            # What follows is specific for luigi_wrap.py
-            delete="False",
-            scheduler="slurm",
-            slurm_params={"mem": 10000, "cores": 4, "nodes": 4, "cpus_per_task": 4},
-            ext="png",
-            # other_params={"dims": "1,1", "num_levels": 5},
-            other_params={
-                "dims": "2,2",
-                "num_levels": 5,
-                "coarsening_xy": 2,
-                "coarsening_z": 1,
-            },
-        )
-    )
+    resource_in = add_slash_to_path(resource_in)
+    resource_out = add_slash_to_path(resource_out)
 
     prj, _ = project_file_load(project_name)
 
@@ -401,7 +420,7 @@ def workflow_apply(
     if not path_resource_out.exists():
         os.mkdir(path_resource_out)
         prj["datasets"][output_dataset]["resources"].extend(
-            [path_resource_out.resolve().as_posix()]
+            [add_slash_to_path(path_resource_out.resolve().as_posix())]
         )
         save_project_file(project_name, prj)
 
@@ -409,27 +428,115 @@ def workflow_apply(
     task_names = [t["name"] for t in prj["workflows"][workflow_name]["tasks"]]
     debug(task_names)
 
-    # Update the dictionary to be passed to luigi_wrap.py
-    db = db_load()
-    f.update({"tasks": {}})
-    for task in task_names:
-        dependencies = db["fractal"]["tasks"][task]["depends_on"]
-        f["tasks"].update({task: {"dependencies": dependencies}})
+    # Hard-coded parameters
+    ext = prj["datasets"][input_dataset]["type"]
+    with open(json_worker_params, "r") as file_params:
+        params = json.load(file_params)
+    coarsening_factor_xy = params["coarsening_factor_xy"]
+    coarsening_factor_z = params["coarsening_factor_z"]
+    num_levels = params["num_levels"]
+    dims = params["dims"]
+    workflow_name = params["workflow_name"]
 
-    # Prepare command to be called via subprocess
-    cmd = ["python", os.getcwd() + "/luigi_wrap.py"]
-    cmd.extend([json.dumps(f)])
-    debug(cmd)
+    # FIXME validate tasks somewhere?
 
-    process = Popen(cmd, stderr=PIPE)  # nosec
-    stdout, stderr = process.communicate()
-    if not stderr:
-        print("--No errors (in workflow_apply)--")
+    # Hard-coded parsl options
+    OPENBLAS_NUM_THREADS = "1"  # FIXME
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
+
+    # fractal_config has defined worker_init and some slurm options
+    provider = define_SlurmProvider(
+        nodes_per_block=fractal_config.nodes_per_block,
+        cores_per_node=fractal_config.cores_per_node,
+        mem_per_node_GB=fractal_config.mem_per_node_GB,
+        partition=fractal_config.partition,
+        worker_init=fractal_config.worker_init,
+    )
+    htex = define_HighThroughputExecutor(
+        provider=provider, max_workers=fractal_config.max_workers
+    )
+    # monitoring = define_MonitoringHub(workflow_name=workflow_name)
+    config = Config(executors=[htex])  # , monitoring=monitoring)
+    parsl.clear()
+    parsl.load(config)
+
+    from fractal.dictionary_tasks import dict_tasks
+
+    debug(dict_tasks)
+
+    @parsl.python_app
+    def collect_intermediate_results(inputs=[]):
+        return [x for x in inputs]
+
+    # Task 0
+    if task_names[0] == "create_zarr_structure":
+        kwargs = dict(
+            in_path=resource_in,
+            out_path=resource_out,
+            ext=ext,
+            num_levels=num_levels,
+            dims=dims,
+        )
+
+        @parsl.python_app
+        def app_create_zarr_structure(**kwargs_):
+            os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
+            import fractal.dictionary_tasks  # noqa: F401
+
+            return dict_tasks[task_names[0]](**kwargs)
+
+        future = app_create_zarr_structure(**kwargs)
+        zarrurls, chl_list = future.result()
     else:
-        print("--Error (in workflow_apply)--")
-        print(stderr.decode())
+        print("ERROR: All workflows must start with create_zarr_structure.")
+        raise
 
-    # return stderr
+    # Tasks 1,2,...
+    db = db_load()
+    for task in task_names[1:]:
+
+        if task == "yokogawa_to_zarr":
+            kwargs = dict(
+                in_path=resource_in,
+                ext=ext,
+                dims=dims,
+                chl_list=chl_list,
+                num_levels=num_levels,
+                coarsening_factor_xy=coarsening_factor_xy,
+                coarsening_factor_z=coarsening_factor_z,
+            )
+        elif task == "maximum_intensity_projection":
+            kwargs = dict(
+                chl_list=chl_list,
+                coarsening_factor_xy=coarsening_factor_xy,
+            )
+        elif task == "replicate_zarr_structure_mip":
+            kwargs = {}
+
+        @python_app
+        def app(zarrurl, **kwargs_):
+            os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
+            import fractal.dictionary_tasks  # noqa: F401
+
+            return dict_tasks[task](zarrurl, **kwargs_)
+
+        futures = []
+        parallelization_level = db["fractal"]["tasks"][task][
+            "parallelization_level"
+        ]
+        for zarrurl in zarrurls[parallelization_level]:
+            future = app(zarrurl, **kwargs)
+            futures.append(future)
+
+        print(futures)
+        # [future.result() for future in futures]
+        collect_intermediate_results(inputs=futures).result()
+        print(futures)
+        print()
+
+        # FIXME task-specific "naming" of output
+        # FIXME to be validated
 
 
 @cli.group()
