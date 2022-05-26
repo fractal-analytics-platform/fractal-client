@@ -1,13 +1,13 @@
 # Fractal
 ## Minimal working example
 
-### Requirements
+### Requirements and configuration
 
 - Install poetry, if you don't already have it. Here the official [guide](https://python-poetry.org/docs/)
 
 - Move into the the folder
 ```
-cd fractal/
+cd mwe_fractal/
 ```
 - In your working (virtual) environment install all the dependencies with
 
@@ -16,13 +16,23 @@ poetry install
 ```
 (takes few minutes)
 
-- Open a new terminal window, activate the working environment then start the luigi deamon
-
+- Define some global configuration parameters in `fractal/fractal_config.py`. The essential ones are `partition` (the name of the SLURM partition on your cluster) and `worker_init` (which typically includes the activation of a virtual environment). An example is:
 ```
-luigid
+# Parameters of parsl.executors.HighThroughputExecutor
+max_workers = 32
+# Parameters of parsl.providers.SlurmProvider
+# Note that worker_init is a command which is included at the beginning of
+# each SLURM submission scripts
+nodes_per_block = 1
+cores_per_node = 16
+mem_per_node_GB = 64
+partition = "main"
+worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
+worker_init += "etc/profile.d/conda.sh\n"
+worker_init += "conda activate fractal"
 ```
 
-## Playbook
+## `fractal_cmd.py` playbook
 
 On the previous terminal window, create the first project.
 
@@ -45,11 +55,11 @@ you will see the arguments you had to pass.
 ### Let's create new project:
 
 ```
-python fractal_cmd.py project new mwe-test $PWD/../test-proj dstest
+python fractal_cmd.py project new mwe-test path_output dstest
 ```
    - In which mwe-test is the name on the project
-   - Than the path in which I want to put all the config files of my project (in this case I create a folder in the parent of the current folder, called ```test-proj```)
-   - Last one is the name of the first dataset of the project (assuming that each project had to have at least one dataset)
+   - Then the path in which I want to put all the config files of my project (in this case I create a subfolder in the current folder, called ```path_output```)
+   - Last one is the name of the first dataset of the project (assuming that each project has least one dataset)
 
 - Now you should see two files:
    - One called fractal.json in the fractal/ directory
@@ -83,7 +93,7 @@ arguments are:
  - dstest, name of dataset
  - path to the folder in which are the files. For example the path to the folder in which there are tif images.
 
- Then you can update the type of the dataset, for example set it as ```tif```
+ Then you can update the type of the dataset, for example set it as ```tif``` or ```png```
 
 ```
 python fractal_cmd.py dataset update-type mwe-test dstest tif
@@ -104,10 +114,11 @@ The tasks executable are in ```tasks/``` folder
 Add a task; tasks are into the tasks folder. To add one or more just copy the filename without extension, example:
 
 ```
-python fractal_cmd.py task add compression_tif tif tif
+python fractal_cmd.py task add yokogawa_to_zarr zarr zarr well
 ```
+The last three arguments are the input/output type and the parallelization level. Each task should act at the level of a `plate` or `well`, while `none` means that the task is not parallelized over any of its arguments.
 
-There is also the "Depends_on" argument which is optional, but for the moment we do not want to have dependencies on other tasks.
+For the moment the "depends_on" argument is not used.
 
 ```
 python fractal_cmd.py task list
@@ -126,36 +137,38 @@ python fractal_cmd.py workflow new mwe-test wftest compression_tif
  - tasks to add, in this case just one
 
 
-Finally test the workflow.
-In this folder there is a file called ```test_apply.json``` which is the template of the file needed to apply command.
+### Workflow execution
 
-### test_apply.json
-This file containes the meta-information to correctly run the workflow
-After that all the corrects names and paths are inserted, it is necessary add other few arguments:
--  ```delete``` argument refers to the possibility to delete or not the resource input. If it is set to ```True```, in the compression case, it deletes the images after the compression.
-
-- ```scheduler```, which could be ```local``` or ```slurm```. If local, it will use just Luigi scheduler as backend.
-
-- ```other_params```, which is a dictionary in which stores all the extra parameters that could be useful for a task.
-
-
+First, we need to specify a set of workflow-dependent parameters, which by now should be stored in a dedicated JSON file. An example of this file (for a workflow that performs yokogawa-to-zarr conversion and maximum intensity projection) reads
 ```
-python fractal_cmd.py apply test_apply.json
+{
+"workflow_name": "uzh_1_well_2x2_sites",
+"dims": [2, 2],
+"coarsening_factor_xy": 3,
+"coarsening_factor_z": 1,
+"num_levels": 5
+}
 ```
 
-***PAY ATTENTION:
-resource_in should be a folder that is already
-inserted as resource in the input dataset, otherwise it raises an error.
-Instead, the output folder, will be created, if it not exists.***
+After saving these parameters in `wf_params.json`, we execute the workflow through
 
-When the workflow is finished, you should see a ```log/``` folder in which there are a ```.txt``` file in which there is the standard error, if something goes wrong should be written here.
+```
+python fractal_cmd.py workflow apply mwe-test wftest dstest dstest resource_in path_output wf_params.json
+```
 
-## Slurm integration
-To use slurm as backend just specify ```slurm``` as scheduler in the ```test_apply.json``` file. This will create a slurm job for each Luigi task you have in the workflow. Luigi workers wait until the slurm job has finished then they return the status.
+***PAY ATTENTION: `resource_in` should be a folder that is already inserted as resource in the input dataset, otherwise fractal_cmd will raise an error. Instead, the path_out folder will be created, if it does not exist.***
+
+This command will use [parsl](https://parsl.readthedocs.io/en/stable/index.html) to run the tasks on a SLURM cluster. When the `fractal_cmd.py` script is complete, you will see a `runinfo` folder, in the current directory, with subfolder for each run (`000`, `001`, `002`..). This subfolder includes all logs from parsl, whose structure will be described in detail at a later stage.
+
+
+### Setting up a local SLURM cluster
+
+*** WARNING: This part has not been tested with the new parsl version of fractal! ***
 
 To test slurm integration it is possible to run Fractal on a slurm node or to test it locally, creating a small slurm cluster using Docker/Podman
 
-### Docker setup
+#### Docker setup
+
 To create your testbed with a slurm cluster you have to install Docker :
 [Guide](https://docs.docker.com/get-docker/)
 
@@ -205,7 +218,6 @@ fractal project new [project_name] [path] [dataset_name] - creates new project i
 
 fractal project list - lists registered projects
 
-
 fractal dataset list [project_name] - lists datasets in project
 
 fractal dataset new [project_name] [dataset_name] [resources] [dataset_type] - create a new dataset, add resources and the dataset type
@@ -214,16 +226,16 @@ fractal dataset add-resources [project_name] [dataset_name] [resources] - add re
 
 fractal dataset update-type [project_name] [dataset_name] [dataset_type] - update type of dataset
 
-
 fractal task list - list all the existing task
 
-fractal task add [task_name] [input_type] [output_type] [depends_on] - create a new task
-
+fractal task add [task_name] [input_type] [output_type] [parallelization_level] - create a new task
 
 fractal workflow new [project_name] [workflow_name] [tasks] - create a new workflow to the project
+
 fractal workflow list [project_name] - list all the workflow to that project
+
 fractal workflow add-task [project_name] [workflow_name] [tasks_names] - add new tasks to the workflow
 
+fractal workflow apply [project_name] [workflow_name] [dataset_name] [resource_in] [resource_out] [wf_parameters_json_file] - run workflow using the parameters into the .json
 
-fractal apply [filename] - run workflow using the parameters into the .json
 ```
