@@ -5,7 +5,7 @@ WFPARAMS=wf_params_uzh_1_well_2x2_sites.json
 MWE_DIR=/data/homes/fractal/mwe_fractal_tommaso
 PATH_OUTPUT=${MWE_DIR}/examples/Temporary_data_UZH_1_well_2x2_sites
 
-CMD='poetry run python ../fractal/fractal_cmd_parsl.py'
+CMD='poetry run python ../fractal/fractal_cmd.py'
 
 #echo 'Re-install poetry'
 #poetry install
