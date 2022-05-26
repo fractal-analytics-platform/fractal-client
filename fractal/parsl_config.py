@@ -24,7 +24,9 @@ def define_SlurmProvider(
     mem_per_node_GB=10,
     partition="main",
     worker_init="",
+    max_blocks=1,
 ):
+
     slurm = SlurmProvider(
         channel=LocalChannel(),
         nodes_per_block=nodes_per_block,
@@ -33,14 +35,17 @@ def define_SlurmProvider(
         partition=partition,
         worker_init=worker_init,
         launcher=SrunLauncher(debug=True),
-        parallelism=0,
-        walltime="10:00:00",
+        walltime="23:00:00",
         cmd_timeout=60,
+        min_blocks=1,
+        max_blocks=max_blocks,
+        parallelism=1,
     )
     return slurm
 
 
 def define_HighThroughputExecutor(provider=None, max_workers=40):
+
     htex = HighThroughputExecutor(
         label="htex",
         address=address_by_hostname(),
