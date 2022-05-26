@@ -10,11 +10,12 @@ from devtools import debug
 from parsl import python_app
 from parsl.config import Config
 from parsl_config import define_HighThroughputExecutor
-from parsl_config import define_MonitoringHub
 from parsl_config import define_SlurmProvider
 from pydantic import BaseModel
 
 import fractal.fractal_config as fractal_config
+
+# from parsl_config import define_MonitoringHub
 
 
 """
@@ -455,10 +456,8 @@ def workflow_apply(
     htex = define_HighThroughputExecutor(
         provider=provider, max_workers=fractal_config.max_workers
     )
-    monitoring = define_MonitoringHub(
-        workflow_name=workflow_name,
-    )
-    config = Config(executors=[htex], monitoring=monitoring)
+    # monitoring = define_MonitoringHub(workflow_name=workflow_name)
+    config = Config(executors=[htex])  # , monitoring=monitoring)
     parsl.clear()
     parsl.load(config)
 

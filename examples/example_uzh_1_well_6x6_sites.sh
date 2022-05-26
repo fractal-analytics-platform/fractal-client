@@ -11,7 +11,6 @@ CMD='poetry run python ../fractal/fractal_cmd.py'
 #poetry install
 
 echo 'Clean up'
-rm fractal.json
 rm -rf $PATH_OUTPUT
 mkdir -p $PATH_OUTPUT
 

@@ -15,6 +15,7 @@ cd mwe_fractal/
 poetry install
 ```
 (takes few minutes)
+- Install `graphviz`. This can be done via `conda install -c anaconda graphviz`, for instance, or via `sudo apt-get install graphviz` (or equivalent commands on other systems).
 
 - Define some global configuration parameters in `fractal/fractal_config.py`. The essential ones are `partition` (the name of the SLURM partition on your cluster) and `worker_init` (which typically includes the activation of a virtual environment). An example is:
 ```
@@ -129,12 +130,15 @@ Now you should see the new task.
 Let's create a workflow :
 
 ```
-python fractal_cmd.py workflow new mwe-test wftest compression_tif
+python fractal_cmd.py workflow new mwe-test wftest create_zarr_structure
 ```
 
  - project name
  - workflow name
  - tasks to add, in this case just one
+
+
+*** Note: at the moment, all workflows must start with the `create_zarr_structure` task. ***
 
 
 ### Workflow execution
