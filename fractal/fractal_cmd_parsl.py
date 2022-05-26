@@ -14,6 +14,8 @@ from parsl_config import define_MonitoringHub
 from parsl_config import define_SlurmProvider
 from pydantic import BaseModel
 
+import fractal.fractal_config as fractal_config
+
 
 """
 #fractal.json
@@ -391,6 +393,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
 @click.argument("output_dataset", required=True, nargs=1)
 @click.argument("resource_in", required=True, nargs=1)
 @click.argument("resource_out", required=True, nargs=1)
+@click.argument("json_worker_params", required=True, nargs=1)
 def workflow_apply(
     project_name,
     workflow_name,
@@ -398,6 +401,7 @@ def workflow_apply(
     output_dataset,
     resource_in,
     resource_out,
+    json_worker_params,
 ):
 
     resource_in = add_slash_to_path(resource_in)
@@ -425,11 +429,13 @@ def workflow_apply(
 
     # Hard-coded parameters
     ext = prj["datasets"][input_dataset]["type"]
-    num_levels = 5
-    # dims = (6, 6)
-    dims = (2, 2)
-    coarsening_factor_xy = 3
-    coarsening_factor_z = 1
+    with open(json_worker_params, "r") as file_params:
+        params = json.load(file_params)
+    coarsening_factor_xy = params["coarsening_factor_xy"]
+    coarsening_factor_z = params["coarsening_factor_z"]
+    num_levels = params["num_levels"]
+    dims = params["dims"]
+    workflow_name = params["workflow_name"]
 
     # FIXME validate tasks somewhere?
 
@@ -437,19 +443,20 @@ def workflow_apply(
     OPENBLAS_NUM_THREADS = "1"  # FIXME
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
-    worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
-    worker_init += "etc/profile.d/conda.sh\n"
-    worker_init += "conda activate fractal"
+
+    # fractal_config has defined worker_init and some slurm options
     provider = define_SlurmProvider(
-        nodes_per_block=1,
-        cores_per_node=16,
-        mem_per_node_GB=64,
-        partition="main",
-        worker_init=worker_init,
+        nodes_per_block=fractal_config.nodes_per_block,
+        cores_per_node=fractal_config.cores_per_node,
+        mem_per_node_GB=fractal_config.mem_per_node_GB,
+        partition=fractal_config.partition,
+        worker_init=fractal_config.worker_init,
     )
-    htex = define_HighThroughputExecutor(provider=provider, max_workers=64)
+    htex = define_HighThroughputExecutor(
+        provider=provider, max_workers=fractal_config.max_workers
+    )
     monitoring = define_MonitoringHub(
-        workflow_name=f"{project_name}/{workflow_name}"
+        workflow_name=workflow_name,
     )
     config = Config(executors=[htex], monitoring=monitoring)
     parsl.clear()
@@ -503,6 +510,7 @@ def workflow_apply(
         elif task == "maximum_intensity_projection":
             kwargs = dict(
                 chl_list=chl_list,
+                coarsening_factor_xy=coarsening_factor_xy,
             )
         elif task == "replicate_zarr_structure_mip":
             kwargs = {}
@@ -523,6 +531,7 @@ def workflow_apply(
             futures.append(future)
 
         print(futures)
+        # [future.result() for future in futures]
         collect_intermediate_results(inputs=futures).result()
         print(futures)
         print()

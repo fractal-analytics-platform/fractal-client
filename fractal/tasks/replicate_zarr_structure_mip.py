@@ -26,6 +26,9 @@ def replicate_zarr_structure_mip(
     well_rows_columns = sorted(
         [rc.split("/")[-2:] for rc in glob(zarrurl + "*/*")]
     )
+    levels = sorted(
+        list(set([rc.split("/")[-1] for rc in glob(zarrurl + "*/*/*/*")]))
+    )
 
     group_plate.attrs["plate"] = {
         "acquisitions": [{"id": 0, "name": plate}],
@@ -87,7 +90,7 @@ def replicate_zarr_structure_mip(
                     {"name": "y", "type": "space"},
                     {"name": "x", "type": "space"},
                 ],
-                "datasets": [{"path": "0"}],  # only use 0-th level
+                "datasets": [{"path": level} for level in levels],
             }
         ]
 

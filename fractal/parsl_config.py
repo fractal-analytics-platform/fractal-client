@@ -7,9 +7,9 @@ from parsl.providers import SlurmProvider
 
 
 def define_MonitoringHub(workflow_name=None):
+    # FIXME: scan ports and find one that is available
     kwargs = dict(
         hub_address=address_by_hostname(),
-        hub_port=55055,
         monitoring_debug=True,
         resource_monitoring_interval=5,
     )

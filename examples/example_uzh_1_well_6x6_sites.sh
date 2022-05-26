@@ -1,5 +1,6 @@
-# 6x6, single well
-PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_subset/
+#6x6, single well
+PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_subset
+WFPARAMS=wf_params_uzh_1_well_6x6_sites.json
 
 MWE_DIR=/data/homes/fractal/mwe_fractal_tommaso
 PATH_OUTPUT=${MWE_DIR}/examples/Temporary_data_UZH_1_well_6x6_sites
@@ -69,5 +70,5 @@ $CMD workflow list mwe-test
 echo
 
 echo 'Execute workflow'
-$CMD workflow apply mwe-test wftest dstest dstest $PATH_INPUT $PATH_OUTPUT
+$CMD workflow apply mwe-test wftest dstest dstest $PATH_INPUT $PATH_OUTPUT $WFPARAMS
 echo
