@@ -11,7 +11,7 @@ def define_MonitoringHub(workflow_name=None):
     kwargs = dict(
         hub_address=address_by_hostname(),
         monitoring_debug=True,
-        resource_monitoring_interval=5,
+        resource_monitoring_interval=30,
     )
     if workflow_name is not None:
         kwargs["workflow_name"] = workflow_name

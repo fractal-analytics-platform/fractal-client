@@ -1,13 +1,13 @@
 # Parameters of parsl.executors.HighThroughputExecutor
-max_workers = 2  # This is the maximum number of workers per block
+max_workers = 4  # This is the maximum number of workers per block
 
 # Parameters of parsl.providers.SlurmProvider
 # Note that worker_init is a command which is included at the beginning of
 # each SLURM submission scripts
 nodes_per_block = 1  # This implies that a block corresponds to a node
-max_blocks = 8  # Maximum number of blocks (=nodes) that parsl can use
+max_blocks = 15  # Maximum number of blocks (=nodes) that parsl can use
 cores_per_node = 16
-mem_per_node_GB = 64
+mem_per_node_GB = 32
 partition = "main"
 worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
 worker_init += "etc/profile.d/conda.sh\n"

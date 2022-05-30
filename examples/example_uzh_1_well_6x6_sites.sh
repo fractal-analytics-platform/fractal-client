@@ -2,7 +2,7 @@
 PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_subset
 WFPARAMS=wf_params_uzh_1_well_6x6_sites.json
 
-MWE_DIR=/data/homes/fractal/mwe_fractal_tommaso
+MWE_DIR=/data/homes/fractal/mwe_fractal
 PATH_OUTPUT=${MWE_DIR}/examples/Temporary_data_UZH_1_well_6x6_sites
 
 CMD='poetry run python ../fractal/fractal_cmd.py'

@@ -1,9 +1,9 @@
-# 4 wells, 2x2 sites each (site numbers 1-4).
-PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_multiwell_testset
-WFPARAMS=wf_params_uzh_4_well_2x2_sites.json
+# 23 wells, C9x8 sites2x2 sites each (site numbers 1-4).
+PATH_INPUT=/data/active/jluethi/20200810-CardiomyocyteDifferentiation14/Cycle1/images_renamed
+WFPARAMS=wf_params_uzh_23_well_9x8_sites.json
 
-MWE_DIR=/data/homes/fractal/mwe_fractal
-PATH_OUTPUT=${MWE_DIR}/examples/Temporary_data_UZH_4_well_2x2_sites
+MWE_DIR=/data/active/fractal/tests
+PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_23_well_9x8_sites
 
 CMD='poetry run python ../fractal/fractal_cmd.py'
 
