@@ -428,14 +428,15 @@ def workflow_apply(
     debug(task_names)
 
     # Hard-coded parameters
-    ext = prj["datasets"][input_dataset]["type"]
     with open(json_worker_params, "r") as file_params:
         params = json.load(file_params)
-    coarsening_factor_xy = params["coarsening_factor_xy"]
-    coarsening_factor_z = params["coarsening_factor_z"]
+    ext = prj["datasets"][input_dataset]["type"]
+    coarsening_xy = params["coarsening_xy"]
+    coarsening_z = params["coarsening_z"]
     num_levels = params["num_levels"]
-    dims = params["dims"]
+    rows, cols = params["dims"]
     workflow_name = params["workflow_name"]
+    delete_in = params.get("delete_in", "False")
 
     # FIXME validate tasks somewhere?
 
@@ -477,7 +478,6 @@ def workflow_apply(
             out_path=resource_out,
             ext=ext,
             num_levels=num_levels,
-            dims=dims,
         )
 
         @parsl.python_app
@@ -501,16 +501,18 @@ def workflow_apply(
             kwargs = dict(
                 in_path=resource_in,
                 ext=ext,
-                dims=dims,
+                delete_in=delete_in,
+                rows=rows,
+                cols=cols,
                 chl_list=chl_list,
                 num_levels=num_levels,
-                coarsening_factor_xy=coarsening_factor_xy,
-                coarsening_factor_z=coarsening_factor_z,
+                coarsening_xy=coarsening_xy,
+                coarsening_z=coarsening_z,
             )
         elif task == "maximum_intensity_projection":
             kwargs = dict(
                 chl_list=chl_list,
-                coarsening_factor_xy=coarsening_factor_xy,
+                coarsening_xy=coarsening_xy,
             )
         elif task == "replicate_zarr_structure_mip":
             kwargs = {}

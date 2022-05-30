@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #6x6, single well
-PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_subset
+PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_subset
 WFPARAMS=wf_params_uzh_1_well_6x6_sites.json
 
 MWE_DIR=/data/homes/fractal/mwe_fractal

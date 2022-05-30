@@ -59,7 +59,10 @@ def metadata(filename):
 
 
 def create_zarr_structure(
-    in_path=None, out_path=None, ext=None, num_levels=None, dims=None
+    in_path=None,
+    out_path=None,
+    ext=None,
+    num_levels=None,
 ):
 
     """
@@ -80,7 +83,6 @@ def create_zarr_structure(
     print("Find all plates in", in_path + "*." + ext)
     print(f"Plates: {plate_unique}")
 
-    rows, cols = dims[:]
     well = []
 
     zarrurls = {"plate": [], "well": []}

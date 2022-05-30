@@ -1,7 +1,7 @@
 {
 "workflow_name": "uzh_23_well_9x8_sites",
 "dims": [9, 8],
-"coarsening_factor_xy": 3,
-"coarsening_factor_z": 1,
+"coarsening_xy": 3,
+"coarsening_z": 1,
 "num_levels": 5
 }

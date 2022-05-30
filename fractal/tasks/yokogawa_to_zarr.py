@@ -28,39 +28,38 @@ def yokogawa_to_zarr(
     zarrurl,
     in_path=None,
     ext=None,
-    dims=None,
+    delete_in="False",
+    rows=None,
+    cols=None,
     chl_list=None,
     num_levels=5,
-    coarsening_factor_xy=2,
-    coarsening_factor_z=1,
-    delete_in=False,
+    coarsening_xy=2,
+    coarsening_z=1,
 ):
 
     """
     Convert Yokogawa output (png, tif) to zarr file
 
-    #FIXME docstring
-
-    :param in_path: directory containing the input files
-    :type in_path: str
     :param zarrurl: structure of the zarr folder
     :type zarrurl: str
+    :param in_path: directory containing the input files
+    :type in_path: str
+    :param ext: source images extension
+    :type ext: str
     :param delete_in: delete input files, and folder if empty
     :type delete_in: str
     :param rows: number of rows of the well
-    :type rows: int
+    :type rows: list
     :param cols: number of columns of the well
-    :type cols: int
-    :param ext: source images extension
-    :type ext: str
+    :type cols: list
     :param chl_list: list of the channels
     :type chl_list: list
     :param num_levels: number of levels in the zarr pyramid
     :type num_levels: int
-    :param coarsening_factor_xy: coarsening factor along X,Y
-    :type coarsening_factor_xy: int
-    :param coarsening_factor_z: coarsening factor along Z
-    :type coarsening_factor_z: int
+    :param coarsening_xy: coarsening factor along X,Y
+    :type coarsening_xy: int
+    :param coarsening_z: coarsening factor along Z
+    :type coarsening_z: int
 
     """
 
@@ -71,17 +70,14 @@ def yokogawa_to_zarr(
     # both at level 0 (before coarsening) and at levels 1,2,.. (after
     # repeated coarsening).
     # Note that balance=True may override these values.
-    chunk_size_x = 256 * 5
-    chunk_size_y = 216 * 5
+    chunk_size_x = 1280
+    chunk_size_y = 1080
 
     # Define well
     if not zarrurl.endswith("/"):
         zarrurl += "/"
     r = zarrurl.split("/")[-4]
     c = zarrurl.split("/")[-3]
-
-    # Define grid of sites (within the well)
-    rows, cols = dims[:]
 
     lazy_imread = delayed(imread)
     fc_list = {level: [] for level in range(num_levels)}
@@ -125,19 +121,19 @@ def yokogawa_to_zarr(
         # At this point, all_rows has four dimensions: z,site,y,x
 
         # Define coarsening options
-        coarsening = {1: coarsening_factor_xy, 2: coarsening_factor_xy}
+        coarsening = {1: coarsening_xy, 2: coarsening_xy}
         f_matrices = {}
         for level in range(num_levels):
             if level == 0:
                 f_matrices[level] = da.concatenate(all_rows, axis=1).rechunk(
-                    {1: chunk_size_x, 2: chunk_size_y}, balance=True
+                    {1: chunk_size_y, 2: chunk_size_x}, balance=True
                 )
                 # After concatenate, f_matrices[0] has three dimensions: z,y,x
-                if coarsening_factor_z > 1:
+                if coarsening_z > 1:
                     f_matrices[level] = da.coarsen(
                         np.min,
                         f_matrices[level],
-                        {0: coarsening_factor_z},
+                        {0: coarsening_z},
                         trim_excess=True,
                     )
             else:
@@ -148,8 +144,8 @@ def yokogawa_to_zarr(
                     trim_excess=True,
                 ).rechunk(
                     {
-                        1: max(1, chunk_size_x),
-                        2: max(1, chunk_size_y),
+                        1: chunk_size_y,
+                        2: chunk_size_x,
                     },
                     balance=True,
                 )
@@ -247,12 +243,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     yokogawa_to_zarr(
-        args.in_path,
         args.zarrurl,
+        args.in_path,
+        args.ext,
         args.delete_in,
         args.rows,
         args.cols,
-        args.ext,
         args.chl_list,
         args.num_levels,
         args.coarsening_xy,
