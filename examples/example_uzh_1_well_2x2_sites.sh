@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #2x2, single well
 PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_testSubset
 WFPARAMS=wf_params_uzh_1_well_2x2_sites.json

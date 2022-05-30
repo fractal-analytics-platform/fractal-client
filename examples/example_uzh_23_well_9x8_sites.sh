@@ -1,4 +1,6 @@
-# 23 wells, C9x8 sites2x2 sites each (site numbers 1-4).
+#!/bin/bash
+
+# 23 wells, 9x8 sites
 PATH_INPUT=/data/active/jluethi/20200810-CardiomyocyteDifferentiation14/Cycle1/images_renamed
 WFPARAMS=wf_params_uzh_23_well_9x8_sites.json
 

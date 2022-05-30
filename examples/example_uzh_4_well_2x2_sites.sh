@@ -1,4 +1,6 @@
-# 4 wells, 2x2 sites each (site numbers 1-4).
+#!/bin/bash
+
+# 4 wells, 2x2 sites each
 PATH_INPUT=/data/active/fractal-temp/3D/PelkmansLab/CardiacMultiplexing/Cycle1_multiwell_testset
 WFPARAMS=wf_params_uzh_4_well_2x2_sites.json
 
