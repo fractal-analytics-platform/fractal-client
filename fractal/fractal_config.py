@@ -6,7 +6,8 @@ max_workers = 4  # This is the maximum number of workers per block
 # each SLURM submission scripts
 nodes_per_block = 1  # This implies that a block corresponds to a node
 max_blocks = 15  # Maximum number of blocks (=nodes) that parsl can use
-cores_per_node = 16
+exclusive = False
+cores_per_node = 8
 mem_per_node_GB = 32
 partition = "main"
 worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
