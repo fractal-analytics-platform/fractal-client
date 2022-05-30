@@ -3,26 +3,25 @@ from glob import glob
 import zarr
 
 
-def replicate_zarr_structure_mip(
-    zarrurl,
-):
-
+def replicate_zarr_structure_mip(zarrurl):
     """
-    FIXME
-    input: file.zarr
+    Duplicate an input zarr structure to a new path, adapting it to host a
+    maximum-intensity projection (that is, with a single Z layer).
+
+    :param zarrurl: structure of the input zarr folder
+    :type zarrurl: str
     """
 
+    # Sanitize and check input zarr path
     if not zarrurl.endswith("/"):
         zarrurl += "/"
-
     if not zarrurl.endswith(".zarr/"):
         raise
 
+    # Filename for new zarr file
     zarrurl_mip = zarrurl.replace(".zarr/", "_mip.zarr/")
-    plate = zarrurl.replace(".zarr/", "").split("/")[-1]
 
-    group_plate = zarr.group(zarrurl_mip)
-
+    # Identify properties of input zarr file
     well_rows_columns = sorted(
         [rc.split("/")[-2:] for rc in glob(zarrurl + "*/*")]
     )
@@ -30,6 +29,8 @@ def replicate_zarr_structure_mip(
         list(set([rc.split("/")[-1] for rc in glob(zarrurl + "*/*/*/*")]))
     )
 
+    group_plate = zarr.group(zarrurl_mip)
+    plate = zarrurl.replace(".zarr/", "").split("/")[-1]
     group_plate.attrs["plate"] = {
         "acquisitions": [{"id": 0, "name": plate}],
         # takes unique cols from (row,col) tuples
@@ -65,7 +66,6 @@ def replicate_zarr_structure_mip(
             for well_row_column in well_rows_columns
         ],
     }
-    # debug(well_rows_columns)
 
     for row, column in well_rows_columns:
 

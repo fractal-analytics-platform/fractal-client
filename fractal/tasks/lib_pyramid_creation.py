@@ -12,6 +12,25 @@ def create_pyramid(
     chl_list=[],
 ):
 
+    """
+    Take a four-dimensional array and build a pyramid of coarsened levels
+
+    :param data_czyx: input data
+    :type data_czyx: dask array
+    :param coarsening_z: coarsening factor along Z
+    :type coarsening_z: int
+    :param coarsening_xy: coarsening factor along X and Y
+    :type coarsening_xy: int
+    :param num_levels: number of levels in the zarr pyramid
+    :type num_levels: int
+    :param chunk_size_x: chunk size along X
+    :type chunk_size_x: int
+    :param chunk_size_y: chunk size along Y
+    :type chunk_size_y: int
+    :param chl_list: list of the channels
+    :type chl_list: list
+    """
+
     # Check that input has the right shape
     if len(data_czyx.shape) != 4:
         raise

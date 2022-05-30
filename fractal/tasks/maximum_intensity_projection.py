@@ -12,8 +12,16 @@ def maximum_intensity_projection(
 ):
 
     """
-    #FIXME docstring
-    # zarrul = xxx.zarr/B/03/0/
+    Perform maximum-intensity projection along Z axis, and store the output in
+    a new zarr file.
+
+    :param zarrurl: input zarr file, at the site level (e.g. x.zarr/B/03/0/)
+    :type zarrurl: str
+    :param chl_list: list of channels
+    :type chl_list: list
+    :param coarsening_xy: coarsening factor along X and Y
+    :type coarsening_z: xy
+
     """
 
     # Hard-coded values (by now) of chunk sizes to be passed to rechunk,

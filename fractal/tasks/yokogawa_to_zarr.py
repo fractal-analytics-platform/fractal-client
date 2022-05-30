@@ -9,14 +9,12 @@ from skimage.io import imread
 
 
 def sort_fun(s):
-
     """
     sort_fun takes a string (filename of a yokogawa images),
     extract site and z-index metadata and returns them as a list.
 
     :param s: filename
     :type s: str
-
     """
 
     site = re.findall(r"F(.*)L", s)[0]
@@ -36,7 +34,6 @@ def yokogawa_to_zarr(
     coarsening_xy=2,
     coarsening_z=1,
 ):
-
     """
     Convert Yokogawa output (png, tif) to zarr file
 
@@ -56,11 +53,10 @@ def yokogawa_to_zarr(
     :type chl_list: list
     :param num_levels: number of levels in the zarr pyramid
     :type num_levels: int
-    :param coarsening_xy: coarsening factor along X,Y
+    :param coarsening_xy: coarsening factor along X and Y
     :type coarsening_xy: int
     :param coarsening_z: coarsening factor along Z
     :type coarsening_z: int
-
     """
 
     if not in_path.endswith("/"):

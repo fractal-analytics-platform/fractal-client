@@ -9,8 +9,17 @@ import zarr
 
 def metadata(filename):
     """
-    function to extract all the metadata stored
-    in image's filename. Return a list with all params.
+    Extract metadata by parsing image filename, return a parameter dictionary.
+    Three kinds of filenames are supported:
+    1) Filenames from UZH:
+       20200812-Cardio[...]Cycle1_B03_T0001F036L01A01Z18C01.png
+       with plate name 20200812-Cardio[...]Cycle1
+    2) Filenames from FMI, with successful barcode reading:
+       210305NAR005AAN_210416_164828_B11_T0001F006L01A04Z14C01.tif
+       with plate name 210305NAR005AAN
+    3) Filenames from FMI, with failed barcode reading:
+       yymmdd_hhmmss_210416_164828_B11_T0001F006L01A04Z14C01.tif
+       with plate name RS{yymmddhhmmss}
 
     :param filename: name of the image
     :type filename: str
@@ -29,20 +38,14 @@ def metadata(filename):
         and len(fields[2]) == 6
     ):
         # FMI (failed barcode reading)
-        # Example:
-        # yymmdd_hhmmss_210416_164828_B11_T0001F006L01A04Z14C01.tif
         scan_date, scan_time, img_date, img_time = fields[:]
         plate = f"RS{scan_date + scan_time}"
-
     elif len(fields) == 3:
         # FMI (correct barcode reading)
-        # Example:
-        # 210305NAR005AAN_210416_164828_B11_T0001F006L01A04Z14C01.tif
         barcode, img_date, img_time = fields[:]
         if len(img_date) != 6 or len(img_time) != 6:
             raise
         plate = barcode
-
     elif len(fields) == 1:
         # UZH
         plate = fields[0]
@@ -66,7 +69,17 @@ def create_zarr_structure(
 ):
 
     """
-    Here create the hierarchy of the zarr folder.
+    Create (and store) the zarr folder, without reading or writing data.
+
+
+    :param in_path: path of images
+    :type in_path: str
+    :param out_path: path for output zarr files
+    :type out_path: str
+    :param ext: extension of images (e.g. tiff, png, ..)
+    :type ext: str
+    :param num_levels: number of coarsening levels in the pyramid
+    :type num_levels: int
     """
 
     # Find all plates
@@ -185,3 +198,34 @@ def create_zarr_structure(
             ]
 
     return zarrurls, chl_unique
+
+
+if __name__ == "__main__":
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(prog="create_zarr_structure")
+    parser.add_argument(
+        "-i", "--in_path", help="directory containing the input files"
+    )
+    parser.add_argument(
+        "-o", "--out_path", help="directory for the outnput zarr files"
+    )
+    parser.add_argument(
+        "-e",
+        "--ext",
+        help="source images extension",
+    )
+    parser.add_argument(
+        "-nl",
+        "--num_levels",
+        type=int,
+        help="number of levels in the Zarr pyramid",
+    )
+
+    args = parser.parse_args()
+    create_zarr_structure(
+        in_path=args.in_path,
+        out_path=args.out_path,
+        ext=args.ext,
+        num_levels=args.num_levels,
+    )
