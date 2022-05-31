@@ -66,8 +66,8 @@ def yokogawa_to_zarr(
     # both at level 0 (before coarsening) and at levels 1,2,.. (after
     # repeated coarsening).
     # Note that balance=True may override these values.
-    chunk_size_x = 1280
-    chunk_size_y = 1080
+    chunk_size_x = 2560
+    chunk_size_y = 2160
 
     # Define well
     if not zarrurl.endswith("/"):
