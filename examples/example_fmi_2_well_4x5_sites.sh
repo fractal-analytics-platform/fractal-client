@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# 4 wells, 2x2 sites each
-PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_multiwell_testset
-WFPARAMS=wf_params_uzh_4_well_2x2_sites.json
+PATH_INPUT=/data/active/fractal/Liberali/FractalTesting20220124/210305NAR005AAN
+WFPARAMS=wf_params_fmi_2_well_4x5_sites.json
 
 MWE_DIR=/data/active/fractal/tests
-PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_4_well_2x2_sites
+PATH_OUTPUT=${MWE_DIR}/Temporary_data_FMI_2_well_4x5_sites
 
 CMD='poetry run python ../fractal/fractal_cmd.py'
 
@@ -26,12 +25,12 @@ $CMD dataset list mwe-test
 echo
 
 echo 'Update dataset type'
-$CMD dataset update-type mwe-test dstest png
+$CMD dataset update-type mwe-test dstest tif
 $CMD dataset list mwe-test
 echo
 
 echo 'Add create_zarr_structure task'
-$CMD task add create_zarr_structure png zarr none
+$CMD task add create_zarr_structure tif zarr none
 $CMD task list
 echo
 

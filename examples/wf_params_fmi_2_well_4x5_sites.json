@@ -1,0 +1,7 @@
+{
+"workflow_name": "fmi_2_well_4x5_sites",
+"dims": [4, 5],
+"coarsening_xy": 2,
+"coarsening_z": 1,
+"num_levels": 5
+}
