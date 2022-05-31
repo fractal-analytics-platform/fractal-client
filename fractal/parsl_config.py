@@ -25,6 +25,7 @@ def define_SlurmProvider(
     partition="main",
     worker_init="",
     max_blocks=1,
+    exclusive=False,
 ):
 
     slurm = SlurmProvider(
@@ -40,6 +41,7 @@ def define_SlurmProvider(
         min_blocks=1,
         max_blocks=max_blocks,
         parallelism=1,
+        exclusive=exclusive,
     )
     return slurm
 
