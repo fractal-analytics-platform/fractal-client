@@ -26,13 +26,13 @@ def yokogawa_to_zarr(
     zarrurl,
     in_path=None,
     ext=None,
-    delete_in="False",
     rows=None,
     cols=None,
     chl_list=None,
     num_levels=5,
     coarsening_xy=2,
     coarsening_z=1,
+    delete_input=False,
 ):
     """
     Convert Yokogawa output (png, tif) to zarr file
@@ -43,8 +43,8 @@ def yokogawa_to_zarr(
     :type in_path: str
     :param ext: source images extension
     :type ext: str
-    :param delete_in: delete input files, and folder if empty
-    :type delete_in: str
+    :param delete_input: delete input files
+    :type delete_input: bool
     :param rows: number of rows of the well
     :type rows: list
     :param cols: number of columns of the well
@@ -147,6 +147,13 @@ def yokogawa_to_zarr(
                 )
             fc_list[level].append(f_matrices[level])
 
+        if delete_input:
+            for f in filenames:
+                try:
+                    os.remove(f)
+                except OSError as e:
+                    print("Error: %s : %s" % (f, e.strerror))
+
     level_data = [
         da.stack(fc_list[level], axis=0) for level in range(num_levels)
     ]
@@ -158,12 +165,6 @@ def yokogawa_to_zarr(
         shape_list.append(level.shape)
     print()
 
-    if delete_in == "True":
-        for f in filenames:
-            try:
-                os.remove(f)
-            except OSError as e:
-                print("Error: %s : %s" % (f, e.strerror))
     return shape_list
 
 
@@ -180,12 +181,6 @@ if __name__ == "__main__":
         "-z",
         "--zarrurl",
         help="structure of the zarr folder",
-    )
-
-    parser.add_argument(
-        "-d",
-        "--delete_in",
-        help="Delete input files and folder",
     )
 
     parser.add_argument(
@@ -236,17 +231,24 @@ if __name__ == "__main__":
         help="coarsening factor along Z (optional, defaults to 1)",
     )
 
+    parser.add_argument(
+        "-d",
+        "--delete_input",
+        action="store_true",
+        help="Delete input files",
+    )
+
     args = parser.parse_args()
 
     yokogawa_to_zarr(
         args.zarrurl,
-        args.in_path,
-        args.ext,
-        args.delete_in,
-        args.rows,
-        args.cols,
-        args.chl_list,
-        args.num_levels,
-        args.coarsening_xy,
-        args.coarsening_z,
+        in_path=args.in_path,
+        ext=args.ext,
+        rows=args.rows,
+        cols=args.cols,
+        chl_list=args.chl_list,
+        num_levels=args.num_levels,
+        coarsening_xy=args.coarsening_xy,
+        coarsening_z=args.coarsening_z,
+        delete_input=args.delete_input,
     )

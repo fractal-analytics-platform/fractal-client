@@ -62,7 +62,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-d",
-        "--delete-input",
+        "--delete_input",
         action="store_true",
         help="Delete input files",
     )
