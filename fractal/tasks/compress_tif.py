@@ -27,6 +27,8 @@ def compress_tif(in_path, out_path, delete_input=False):
     if not os.path.exists(out_path):
         os.makedirs(out_path)
 
+    num_img_compressed = 0
+    num_img_deleted = 0
     for filename in glob.glob(in_path + "*.tif"):
         newfilename = os.path.join(out_path, os.path.basename(filename))
 
@@ -34,16 +36,20 @@ def compress_tif(in_path, out_path, delete_input=False):
         with Image.open(filename) as image:
             image.save(newfilename, format="tiff", compression="tiff_lzw")
         print(f"Raw:        {filename}\nCompressed: {newfilename}")
+        num_img_compressed += 1
 
         # Delete raw image, if needed
         if delete_input:
             try:
                 os.remove(filename)
                 print(f"Deleted:    {filename}")
+                num_img_deleted += 1
             except OSError as e:
                 print("ERROR: %s : %s" % (filename, e.strerror))
 
         print()
+
+    return num_img_compressed, num_img_deleted
 
 
 if __name__ == "__main__":

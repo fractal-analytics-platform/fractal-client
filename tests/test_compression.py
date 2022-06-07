@@ -2,23 +2,21 @@ from io import BytesIO
 
 from PIL import Image
 
-from fractal.tasks.compression_tif import compress
+from fractal.tasks.compress_tif import compress_tif
 
 in_path = ""
 out_path = ""
-start = "0"
-end = "1"
-delete_in = "False"
+delete_input = False
 
 
 def test_compress(mocker):
     def create_test_image(self):
-        file = BytesIO()
+        f = BytesIO()
         image = Image.new("RGBA", size=(20, 20), color=(155, 0, 0))
-        image.save(file, "tiff")
-        file.name = "test.tiff"
-        file.seek(0)
-        rtn = Image.frombytes("L", (10, 10), file.read())
+        image.save(f, "tiff")
+        f.name = "test.tiff"
+        f.seek(0)
+        rtn = Image.frombytes("L", (10, 10), f.read())
         return rtn
 
     mocker.patch("PIL.Image.open", create_test_image)
@@ -30,6 +28,6 @@ def test_compress(mocker):
     buf = BytesIO()
     mocker.patch("os.path.join", return_value=buf)
 
-    res = compress(in_path, start, end, out_path, delete_in)
+    res = compress_tif(in_path, out_path, delete_input=delete_input)
 
-    assert res == "tiff_lzw"
+    assert res == (1, 0)
