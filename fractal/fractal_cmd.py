@@ -490,13 +490,16 @@ def workflow_apply(
 
         future = app_create_zarr_structure(**kwargs)
         zarrurls, chl_list = future.result()
+        task_names = task_names[1:]  # FIXME
     else:
-        print("ERROR: All workflows must start with create_zarr_structure.")
+        print(
+            "ERROR/WARNING: Workflows must start with create_zarr_structure."
+        )
         raise
 
     # Tasks 1,2,...
     db = db_load()
-    for task in task_names[1:]:
+    for task in task_names:
 
         if task == "yokogawa_to_zarr":
             kwargs = dict(
@@ -517,6 +520,15 @@ def workflow_apply(
             )
         elif task == "replicate_zarr_structure_mip":
             kwargs = {}
+        elif task == "replicate_zarr_structure":
+            kwargs = dict(newzarrurl="new")
+        elif task == "illumination_correction":
+            kwargs = dict(
+                chl_list=chl_list,
+                coarsening_xy=coarsening_xy,
+                overwrite=True,
+                # background_threshold=background_threshold,
+            )
 
         @python_app
         def app(zarrurl, **kwargs_):
