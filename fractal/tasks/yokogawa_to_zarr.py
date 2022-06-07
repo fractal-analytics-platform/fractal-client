@@ -147,6 +147,7 @@ def yokogawa_to_zarr(
                 )
             fc_list[level].append(f_matrices[level])
 
+        delete_input = False  # FIXME
         if delete_input:
             for f in filenames:
                 try:
