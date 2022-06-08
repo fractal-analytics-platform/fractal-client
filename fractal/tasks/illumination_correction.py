@@ -32,9 +32,15 @@ def illumination_correction(
 
     # Check that only one output option is chosen
     if overwrite and (newzarrurl is not None):
-        raise
+        raise Exception(
+            "ERROR in illumination_correction: "
+            f"overwrite={overwrite} and newzarrurl={newzarrurl}."
+        )
     if newzarrurl is None and not overwrite:
-        raise
+        raise Exception(
+            "ERROR in illumination_correction: "
+            f"overwrite={overwrite} and newzarrurl={newzarrurl}."
+        )
 
     # Sanitize zarr paths
     if not zarrurl.endswith("/"):
@@ -68,7 +74,10 @@ def illumination_correction(
             path_correction_matrices + filenames[int(chl)]
         )
         if corrections[int(chl)].shape != (img_size_y, img_size_x):
-            raise
+            raise Exception(
+                "Error in illumination_correction, "
+                "correction matrix has wrong shape."
+            )
 
     # Read number of levels from .zattrs of original zarr file
     with open(zarrurl + ".zattrs", "r") as inputjson:
@@ -86,12 +95,19 @@ def illumination_correction(
         # Check that input array is made of images (in terms of shape/chunks)
         nz, ny, nx = data_zyx.shape
         if (ny % img_size_y != 0) or (nx % img_size_x != 0):
-            raise
+            raise Exception(
+                "Error in illumination_correction, "
+                f"data_zyx.shape: {data_zyx.shape}"
+            )
         chunks_z, chunks_y, chunks_x = data_zyx.chunks
         if len(set(chunks_y)) != 1 or chunks_y[0] != img_size_y:
-            raise
+            raise Exception(
+                f"Error in illumination_correction, chunks_y: {chunks_y}"
+            )
         if len(set(chunks_x)) != 1 or chunks_x[0] != img_size_x:
-            raise
+            raise Exception(
+                f"Error in illumination_correction, chunks_x: {chunks_x}"
+            )
 
         # Correction function to be applied on each chunk, for each Z level
         def correct(img):

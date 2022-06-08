@@ -33,7 +33,7 @@ def create_pyramid(
 
     # Check that input has the right shape
     if len(data_czyx.shape) != 4:
-        raise
+        raise Exception("Error in create_pyramid: data_czyx has wrong shape")
 
     # Check rechunking options
     apply_rechunking = True

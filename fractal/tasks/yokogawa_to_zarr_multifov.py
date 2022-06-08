@@ -47,9 +47,11 @@ def yokogawa_to_zarr_multifov(
         zarrurl += "/"
 
     # WARNING: the zarr file should point to a well, not to a plate
-    # FIXME: raise something useful
     if zarrurl.endswith(".zarr/"):
-        raise
+        raise Exception(
+            "Error in replicate_zarr_structure, "
+            f"zarrurl={zarrurl} does not end with .zarr/"
+        )
 
     r = zarrurl.split("/")[-3]
     c = zarrurl.split("/")[-2]

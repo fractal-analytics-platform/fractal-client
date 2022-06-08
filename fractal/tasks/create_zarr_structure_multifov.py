@@ -44,7 +44,10 @@ def metadata(filename):
         # FMI (correct barcode reading)
         barcode, img_date, img_time = fields[:]
         if len(img_date) != 6 or len(img_time) != 6:
-            raise
+            raise Exception(
+                f"Failure in metadata parsing of {tmp_plate}, with"
+                " img_date={img_date} and img_time={img_time}"
+            )
         plate = barcode
     elif len(fields) == 1:
         # UZH

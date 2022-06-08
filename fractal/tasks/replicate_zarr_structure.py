@@ -17,7 +17,10 @@ def replicate_zarr_structure(zarrurl, newzarrurl=None):
     if not zarrurl.endswith("/"):
         zarrurl += "/"
     if not zarrurl.endswith(".zarr/"):
-        raise
+        raise Exception(
+            "Error in replicate_zarr_structure, "
+            f"zarrurl={zarrurl} does not end with .zarr/"
+        )
 
     # Sanitize and check output zarr path
     if newzarrurl is None:
@@ -26,7 +29,10 @@ def replicate_zarr_structure(zarrurl, newzarrurl=None):
         if not newzarrurl.endswith("/"):
             newzarrurl += "/"
         if not newzarrurl.endswith(".zarr/"):
-            raise
+            raise Exception(
+                "Error in replicate_zarr_structure, "
+                f"newzarrurl={newzarrurl} does not end with .zarr/"
+            )
 
     # Identify properties of input zarr file
     well_rows_columns = sorted(

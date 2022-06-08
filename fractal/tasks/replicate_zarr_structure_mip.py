@@ -16,7 +16,10 @@ def replicate_zarr_structure_mip(zarrurl):
     if not zarrurl.endswith("/"):
         zarrurl += "/"
     if not zarrurl.endswith(".zarr/"):
-        raise
+        raise Exception(
+            "Error in replicate_zarr_structure, "
+            f"zarrurl={zarrurl} does not end with .zarr/"
+        )
 
     # Filename for new zarr file
     zarrurl_mip = zarrurl.replace(".zarr/", "_mip.zarr/")
