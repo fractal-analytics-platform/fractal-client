@@ -436,9 +436,7 @@ def workflow_apply(
     num_levels = params["num_levels"]
     rows, cols = params["dims"]
     workflow_name = params["workflow_name"]
-    delete_input = params.get(
-        "delete_in", "False"
-    )  # FIXME: rename this to delete_input
+    delete_input = params.get("delete_input", False)
 
     # FIXME validate tasks somewhere?
 
