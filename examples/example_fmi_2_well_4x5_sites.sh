@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# This dataset has 4 channels, 84 Z levels, and two wells of 4x5 sites each
 PATH_INPUT=/data/active/fractal/Liberali/FractalTesting20220124/210305NAR005AAN
 WFPARAMS=wf_params_fmi_2_well_4x5_sites.json
 
