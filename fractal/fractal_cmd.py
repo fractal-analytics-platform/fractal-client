@@ -473,7 +473,10 @@ def workflow_apply(
         return [x for x in inputs]
 
     # Task 0
-    if task_names[0] == "create_zarr_structure":
+    if task_names[0] in [
+        "create_zarr_structure",
+        "create_zarr_structure_multifov",
+    ]:
         kwargs = dict(
             in_path=resource_in,
             out_path=resource_out,
@@ -489,13 +492,18 @@ def workflow_apply(
             return dict_tasks[task_names[0]](**kwargs)
 
         future = app_create_zarr_structure(**kwargs)
-        zarrurls, chl_list = future.result()
+        if task_names[0] == "create_zarr_structure":
+            zarrurls, chl_list = future.result()
+        elif task_names[0] == "create_zarr_structure_multifov":
+            zarrurls, chl_list, sites_list = future.result()
+            debug(zarrurls)
+            debug(chl_list)
+            debug(sites_list)
         task_names = task_names[1:]  # FIXME
     else:
         print(
-            "ERROR/WARNING: Workflows must start with create_zarr_structure."
+            "ERROR/WARNING: Workflows must start with create_zarr_structure*"
         )
-        raise
 
     # Tasks 1,2,...
     db = db_load()
@@ -513,6 +521,18 @@ def workflow_apply(
                 coarsening_xy=coarsening_xy,
                 coarsening_z=coarsening_z,
             )
+        if task == "yokogawa_to_zarr_multifov":
+            kwargs = dict(
+                in_path=resource_in,
+                ext=ext,
+                delete_input=delete_input,
+                chl_list=chl_list,
+                sites_list=sites_list,
+                num_levels=num_levels,
+                coarsening_xy=coarsening_xy,
+                coarsening_z=coarsening_z,
+            )
+
         elif task == "maximum_intensity_projection":
             kwargs = dict(
                 chl_list=chl_list,
