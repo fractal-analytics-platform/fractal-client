@@ -166,7 +166,7 @@ def create_zarr_structure(
                 metadata(os.path.basename(fn))["chl"]
                 for fn in glob(in_path + f"{plate}*_{row+column}*." + ext)
             ]
-            chl_unique = set(chl)
+            chl_unique = sorted(list(set(chl)))
             # debug(chl_unique)
 
             group_well.attrs["well"] = {
