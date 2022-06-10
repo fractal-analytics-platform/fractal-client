@@ -1,4 +1,5 @@
 import json
+import shutil
 
 import dask.array as da
 import numpy as np
@@ -87,31 +88,45 @@ def illumination_correction(
     # Load highest-resolution level from original zarr array
     data_czyx = da.from_zarr(zarrurl + "/0")
 
+    # Check that input array is made of images (in terms of shape/chunks)
+    nc, nz, ny, nx = data_czyx.shape
+    if (ny % img_size_y != 0) or (nx % img_size_x != 0):
+        raise Exception(
+            "Error in illumination_correction, "
+            f"data_czyx.shape: {data_czyx.shape}"
+        )
+    chunks_c, chunks_z, chunks_y, chunks_x = data_czyx.chunks
+    if len(set(chunks_c)) != 1 or chunks_c[0] != 1:
+        raise Exception(
+            f"Error in illumination_correction, chunks_c: {chunks_c}"
+        )
+    if len(set(chunks_z)) != 1 or chunks_z[0] != 1:
+        raise Exception(
+            f"Error in illumination_correction, chunks_z: {chunks_z}"
+        )
+    if len(set(chunks_y)) != 1 or chunks_y[0] != img_size_y:
+        raise Exception(
+            f"Error in illumination_correction, chunks_y: {chunks_y}"
+        )
+    if len(set(chunks_x)) != 1 or chunks_x[0] != img_size_x:
+        raise Exception(
+            f"Error in illumination_correction, chunks_x: {chunks_x}"
+        )
+
     # Loop over channels
     data_czyx_new = []
     for ind_chl, chl in enumerate(chl_list):
-        data_zyx = data_czyx[ind_chl]
 
-        # Check that input array is made of images (in terms of shape/chunks)
-        nz, ny, nx = data_zyx.shape
-        if (ny % img_size_y != 0) or (nx % img_size_x != 0):
-            raise Exception(
-                "Error in illumination_correction, "
-                f"data_zyx.shape: {data_zyx.shape}"
-            )
-        chunks_z, chunks_y, chunks_x = data_zyx.chunks
-        if len(set(chunks_y)) != 1 or chunks_y[0] != img_size_y:
-            raise Exception(
-                f"Error in illumination_correction, chunks_y: {chunks_y}"
-            )
-        if len(set(chunks_x)) != 1 or chunks_x[0] != img_size_x:
-            raise Exception(
-                f"Error in illumination_correction, chunks_x: {chunks_x}"
-            )
+        data_zyx = data_czyx[ind_chl]
 
         # Correction function to be applied on each chunk, for each Z level
         def correct(img):
-
+            if img.shape != (1, img_size_y, img_size_x):
+                raise Exception(
+                    "Error in illumination_correction, "
+                    f"img.shape: {img.shape}"
+                )
+            return img
             # Background subtraction
             img[img <= background_threshold] = 0
             img[img > background_threshold] = (
@@ -119,41 +134,29 @@ def illumination_correction(
             )
 
             # Select illumination-correction matrix
-            # FIXME this is currently very specific!
-            illum_img = corrections[int(chl)]
+            illum_img = corrections[
+                int(chl)
+            ]  # FIXME: this is the same matrix everywhere for all channels!
 
-            # Actual illumination correction:
-            ratio = img / illum_img
+            # Actual illumination correction
+            ratio = img / illum_img[None, :, :]
             img_corr = np.mean(img) * ratio / np.mean(ratio)
 
             # Recasting into uint16 (mostly stays in uint16, but in some edge
             # cases it doesn't and recasting is useful)
             return img_corr.astype("uint16")
 
-        # Loop over Z levels and collect corrected arrays
-        data_zyx_new = []
-        for ind_z in range(nz):
-            print(data_zyx[ind_z].shape)
-            print(data_zyx[ind_z].chunks)
-            data_zyx_new.append(
-                data_zyx[ind_z]
-                .map_blocks(
-                    correct,
-                    chunks=(img_size_y, img_size_x),
-                    meta=np.array((), dtype=np.uint16),
-                )
-                .compute()
-            )
-        data_zyx_new = da.stack(data_zyx_new, axis=0)
-
-        # Accumulate different channels
+        # Map "correct" function onto each block
+        data_zyx_new = data_zyx.map_blocks(
+            correct,
+            chunks=(1, img_size_y, img_size_x),
+            meta=np.array((), dtype=np.uint16),
+        )
         data_czyx_new.append(data_zyx_new)
-
-    data_czyx_new = da.stack(data_czyx_new, axis=0)
 
     # Construct resolution pyramid
     pyramid = create_pyramid(
-        data_czyx_new,
+        da.stack(data_czyx_new, axis=0),
         coarsening_z=1,
         coarsening_xy=coarsening_xy,
         num_levels=num_levels,
@@ -164,11 +167,23 @@ def illumination_correction(
 
     # Write data into output zarr
     for ind_level in range(num_levels):
-        pyramid[ind_level].to_zarr(
-            newzarrurl + f"{ind_level}/",
-            dimension_separator="/",
-            overwrite=overwrite,
-        )
+        if overwrite:
+            pyramid[ind_level].to_zarr(
+                newzarrurl,
+                component=f"{ind_level}_TEMPORARY/",
+                dimension_separator="/",
+            )
+            shutil.rmtree(newzarrurl + f"{ind_level}")
+            shutil.move(
+                newzarrurl + f"{ind_level}_TEMPORARY",
+                newzarrurl + f"{ind_level}",
+            )
+        else:
+            pyramid[ind_level].to_zarr(
+                newzarrurl,
+                component=f"{ind_level}",
+                dimension_separator="/",
+            )
 
 
 if __name__ == "__main__":
