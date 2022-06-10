@@ -47,28 +47,35 @@ def create_pyramid(
         )
 
     # Create pyramid of XY-coarser levels
-    pyramid = {level: [] for level in range(num_levels)}
-    for ind_chl, chl in enumerate(chl_list):
-        zyx_arrays = {}
-        for level in range(num_levels):
+    pyramid = []
+    for level in range(num_levels):
+        list_data_channels = []
+        for ind_chl, chl in enumerate(chl_list):
+
+            # Coarsen, if needed
             if level == 0:
-                zyx_arrays[level] = data_czyx[ind_chl]
+                zyx_new = data_czyx[ind_chl]
             else:
-                zyx_arrays[level] = da.coarsen(
+                zyx_new = da.coarsen(
                     np.min,
-                    zyx_arrays[level - 1],
+                    pyramid[level - 1][ind_chl],
                     {1: coarsening_xy, 2: coarsening_xy},
                     trim_excess=True,
                 )
-            # Rechunk array
-            if apply_rechunking:
-                zyx_arrays[level] = zyx_arrays[level].rechunk(
-                    {1: chunk_size_y, 2: chunk_size_x}, balance=True
-                )
-            pyramid[level].append(zyx_arrays[level])
+            list_data_channels.append(zyx_new)
 
-    # pyramid[level] has dimensions (channel, Z, Y, X)
-    for ind_level in range(num_levels):
-        pyramid[ind_level] = da.stack(pyramid[ind_level], axis=0)
+        # Stack several channels
+        data_czyx_new = da.stack(list_data_channels, axis=0)
+
+        # Rechunk if needed
+        if apply_rechunking:
+            data_czyx_final = data_czyx_new.rechunk(
+                {2: chunk_size_y, 3: chunk_size_x}, balance=True
+            )
+        else:
+            data_czyx_final = data_czyx_new
+
+        # Append new level
+        pyramid.append(data_czyx_final)
 
     return pyramid
