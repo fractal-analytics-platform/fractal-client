@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 1 well, 2x2 sites
+#2x2, single well
 PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_testSubset
 WFPARAMS=wf_params_uzh_1_well_2x2_sites.json
 
 MWE_DIR=/data/active/fractal/tests
-PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_2x2_sites
+PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_2x2_sites_illumination
 
 CMD='poetry run python ../fractal/fractal_cmd.py'
 
@@ -40,16 +40,6 @@ $CMD task add yokogawa_to_zarr zarr zarr well
 $CMD task list
 echo
 
-echo 'Add replicate_zarr_structure_mip'
-$CMD task add replicate_zarr_structure_mip zarr zarr plate
-$CMD task list
-echo
-
-echo 'Add maximum_intensity_projection'
-$CMD task add maximum_intensity_projection zarr zarr well
-$CMD task list
-echo
-
 echo 'Create workflow'
 $CMD workflow new mwe-test wftest create_zarr_structure
 $CMD workflow list mwe-test
@@ -57,16 +47,6 @@ echo
 
 echo 'Add yokogawa_to_zarr task'
 $CMD workflow add-task mwe-test wftest yokogawa_to_zarr
-$CMD workflow list mwe-test
-echo
-
-echo 'Add replicate_zarr_structure_mip'
-$CMD workflow add-task mwe-test wftest replicate_zarr_structure_mip
-$CMD workflow list mwe-test
-echo
-
-echo 'Add maximum_intensity_projection'
-$CMD workflow add-task mwe-test wftest maximum_intensity_projection
 $CMD workflow list mwe-test
 echo
 

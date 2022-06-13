@@ -1,0 +1,7 @@
+{
+"workflow_name": "uzh_10_well_5x5_sites",
+"dims": [5, 5],
+"coarsening_xy": 3,
+"coarsening_z": 1,
+"num_levels": 5
+}

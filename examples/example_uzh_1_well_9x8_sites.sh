@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 1 well, 2x2 sites
-PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_testSubset
-WFPARAMS=wf_params_uzh_1_well_2x2_sites.json
+# 1 well, 9x8 sites
+PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_9x8_singleWell
+WFPARAMS=wf_params_uzh_1_well_9x8_sites.json
 
 MWE_DIR=/data/active/fractal/tests
-PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_2x2_sites
+PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_9x8_sites
 
 CMD='poetry run python ../fractal/fractal_cmd.py'
 
