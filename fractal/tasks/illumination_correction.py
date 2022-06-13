@@ -1,11 +1,11 @@
 import json
-import shutil
 
 import dask.array as da
 import numpy as np
 from skimage.io import imread
 
 from fractal.tasks.lib_pyramid_creation import create_pyramid
+from fractal.tasks.lib_to_zarr_custom import to_zarr_custom
 
 
 def illumination_correction(
@@ -167,23 +167,12 @@ def illumination_correction(
 
     # Write data into output zarr
     for ind_level in range(num_levels):
-        if overwrite:
-            pyramid[ind_level].to_zarr(
-                newzarrurl,
-                component=f"{ind_level}_TEMPORARY/",
-                dimension_separator="/",
-            )
-            shutil.rmtree(newzarrurl + f"{ind_level}")
-            shutil.move(
-                newzarrurl + f"{ind_level}_TEMPORARY",
-                newzarrurl + f"{ind_level}",
-            )
-        else:
-            pyramid[ind_level].to_zarr(
-                newzarrurl,
-                component=f"{ind_level}",
-                dimension_separator="/",
-            )
+        to_zarr_custom(
+            newzarrurl,
+            component=f"{ind_level}",
+            array=pyramid[ind_level],
+            overwrite=overwrite,
+        )
 
 
 if __name__ == "__main__":
