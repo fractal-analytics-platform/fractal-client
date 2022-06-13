@@ -345,7 +345,7 @@ def workflow_new(project_name, workflow_name, tasks):
         task_p = db["fractal"]["tasks"][tasks[0]]
         for task_n in db["fractal"]["tasks"][tasks[1:]]:
             if not check_I_O(task_p, task_n):
-                raise
+                raise Exception("I/O error in workflow_new")
             task_p = task_n
 
     prj, _ = project_file_load(project_name)
@@ -376,7 +376,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
         for task in tasks[1:]:
             task_n = db["fractal"]["tasks"][task]
             if not check_I_O(task_p, task_n):
-                raise
+                raise Exception("I/O error in workflow_add_task")
             task_p = task_n
             prj["workflows"][workflow_name]["tasks"].append(task_p)
 
@@ -412,7 +412,10 @@ def workflow_apply(
     # Verify that resource_in has been added to the resources of input_dataset
     dataset_resources = prj["datasets"][input_dataset]["resources"]
     if resource_in not in dataset_resources:
-        raise
+        raise Exception(
+            f"Error in workflow_apply, {resource_in} not in"
+            f" {dataset_resources}"
+        )
 
     # If the resource_out folder is not there, create it
     path_resource_out = Path(resource_out)
