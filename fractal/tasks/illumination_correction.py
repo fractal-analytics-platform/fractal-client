@@ -1,4 +1,5 @@
 import json
+import warnings
 
 import dask.array as da
 import numpy as np
@@ -119,13 +120,29 @@ def illumination_correction(
 
         data_zyx = data_czyx[ind_chl]
 
-        # Correction function to be applied on each chunk, for each Z level
         def correct(img):
+            """Corrects single Z level input image using an illumination profile
+
+            The illumination profile image can be uint8 or uint16.
+            It needs to follow the illumination profile. e.g. bright in the
+            center of the image, dim outside
+
+            Args:
+                img (np.array): Input image to be corrected. Can be uint8,
+                                uint16
+
+            Returns
+                np.array: Illumination corrected image of the same dtype as
+                          the input image
+
+            """
+            # Check that correct is applied to a single plane
             if img.shape != (1, img_size_y, img_size_x):
                 raise Exception(
                     "Error in illumination_correction, "
                     f"img.shape: {img.shape}"
                 )
+
             # Background subtraction
             img[img <= background_threshold] = 0
             img[img > background_threshold] = (
@@ -135,15 +152,28 @@ def illumination_correction(
             # Select illumination-correction matrix
             illum_img = corrections[
                 int(chl)
-            ]  # FIXME: this is the same matrix everywhere for all channels!
+            ][None, :, :]  # FIXME: How is the illum_corr matrix saved?
+            # Necessary to specify no Z?
+            # FIXME: this is the same matrix everywhere for all channels!
 
-            # Actual illumination correction
-            ratio = img / illum_img[None, :, :]
-            img_corr = np.mean(img) * ratio / np.mean(ratio)
+            # Apply the illumination correction
+            # (normalized by the max value in the illum_img)
+            img_corr = img / (
+                illum_img / np.max(illum_img)
+            )
 
-            # Recasting into uint16 (mostly stays in uint16, but in some edge
-            # cases it doesn't and recasting is useful)
-            return img_corr.astype("uint16")
+            # Handle edge case: The illumination correction can increase a value
+            # beyond the limit of the encoding, e.g. beyond 65535 for 16bit
+            # images. This clips values that surpass this limit and triggers
+            # a warning
+            if np.sum(img_corr > np.iinfo(img.dtype).max) > 0:
+                warnings.warn(f'The illumination correction created values \
+                               beyond the max range of your current image \
+                               type. These have been clipped to \
+                               {np.iinfo(img.dtype).max}')
+                img_corr[img_corr > np.iinfo(img.dtype).max] = np.iinfo(img.dtype).max
+
+            return img_corr.astype(img.dtype)
 
         # Map "correct" function onto each block
         data_zyx_new = data_zyx.map_blocks(
