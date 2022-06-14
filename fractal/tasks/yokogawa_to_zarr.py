@@ -100,7 +100,10 @@ def yokogawa_to_zarr(
                 f"  ch: {ch}"
             )
         max_z = max(
-            [re.findall(r"Z(.*)C", filename)[0] for filename in filenames]
+            [
+                re.findall(r"Z(.*)C", filename.split("/")[-1])[0]
+                for filename in filenames
+            ]
         )
 
         sample = imread(filenames[0])

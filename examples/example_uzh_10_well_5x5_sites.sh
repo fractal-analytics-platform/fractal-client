@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 10 wells, 5x5 sites
-PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_5x5_10wells
+PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_5x5_10wells_constantZ
 WFPARAMS=wf_params_uzh_10_well_5x5_sites.json
 
 MWE_DIR=/data/active/fractal/tests
