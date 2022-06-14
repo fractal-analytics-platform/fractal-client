@@ -9,6 +9,66 @@ from fractal.tasks.lib_pyramid_creation import create_pyramid
 from fractal.tasks.lib_to_zarr_custom import to_zarr_custom
 
 
+def correct(
+    img,
+    illum_img=None,
+    background_threshold=110,
+    img_size_y=2160,
+    img_size_x=2560,
+):
+    """Corrects single Z level input image using an illumination profile
+
+    The illumination profile image can be uint8 or uint16.
+    It needs to follow the illumination profile. e.g. bright in the
+    center of the image, dim outside
+
+    Args:
+        img (np.array): Input image to be corrected. Can be uint8,
+                        uint16
+
+    Returns
+        np.array: Illumination corrected image of the same dtype as
+                  the input image
+
+    """
+
+    # Check shapes
+    if img.shape != (1, img_size_y, img_size_x):
+        raise Exception(
+            f"Error in illumination_correction, img.shape: {img.shape}"
+        )
+    if illum_img.shape != (img_size_y, img_size_x):
+        raise Exception(
+            "Error in illumination_correction, "
+            f"illum_img.shape: {illum_img.shape}"
+        )
+
+    # Background subtraction
+    img[img <= background_threshold] = 0
+    img[img > background_threshold] = (
+        img[img > background_threshold] - background_threshold
+    )
+
+    # Apply the illumination correction
+    # (normalized by the max value in the illum_img)
+    img_corr = img / (illum_img / np.max(illum_img))[None, :, :]
+
+    # Handle edge case: The illumination correction can increase a value
+    # beyond the limit of the encoding, e.g. beyond 65535 for 16bit
+    # images. This clips values that surpass this limit and triggers
+    # a warning
+    if np.sum(img_corr > np.iinfo(img.dtype).max) > 0:
+        warnings.warn(
+            f"The illumination correction created values \
+                       beyond the max range of your current image \
+                       type. These have been clipped to \
+                       {np.iinfo(img.dtype).max}"
+        )
+        img_corr[img_corr > np.iinfo(img.dtype).max] = np.iinfo(img.dtype).max
+
+    return img_corr.astype(img.dtype)
+
+
 def illumination_correction(
     zarrurl,
     overwrite=False,
@@ -119,67 +179,17 @@ def illumination_correction(
     for ind_chl, chl in enumerate(chl_list):
 
         data_zyx = data_czyx[ind_chl]
-
-        def correct(img):
-            """Corrects single Z level input image using an illumination profile
-
-            The illumination profile image can be uint8 or uint16.
-            It needs to follow the illumination profile. e.g. bright in the
-            center of the image, dim outside
-
-            Args:
-                img (np.array): Input image to be corrected. Can be uint8,
-                                uint16
-
-            Returns
-                np.array: Illumination corrected image of the same dtype as
-                          the input image
-
-            """
-            # Check that correct is applied to a single plane
-            if img.shape != (1, img_size_y, img_size_x):
-                raise Exception(
-                    "Error in illumination_correction, "
-                    f"img.shape: {img.shape}"
-                )
-
-            # Background subtraction
-            img[img <= background_threshold] = 0
-            img[img > background_threshold] = (
-                img[img > background_threshold] - background_threshold
-            )
-
-            # Select illumination-correction matrix
-            illum_img = corrections[
-                int(chl)
-            ][None, :, :]  # FIXME: How is the illum_corr matrix saved?
-            # Necessary to specify no Z?
-            # FIXME: this is the same matrix everywhere for all channels!
-
-            # Apply the illumination correction
-            # (normalized by the max value in the illum_img)
-            img_corr = img / (
-                illum_img / np.max(illum_img)
-            )
-
-            # Handle edge case: The illumination correction can increase a value
-            # beyond the limit of the encoding, e.g. beyond 65535 for 16bit
-            # images. This clips values that surpass this limit and triggers
-            # a warning
-            if np.sum(img_corr > np.iinfo(img.dtype).max) > 0:
-                warnings.warn(f'The illumination correction created values \
-                               beyond the max range of your current image \
-                               type. These have been clipped to \
-                               {np.iinfo(img.dtype).max}')
-                img_corr[img_corr > np.iinfo(img.dtype).max] = np.iinfo(img.dtype).max
-
-            return img_corr.astype(img.dtype)
+        illum_img = corrections[int(chl)]
 
         # Map "correct" function onto each block
         data_zyx_new = data_zyx.map_blocks(
             correct,
             chunks=(1, img_size_y, img_size_x),
             meta=np.array((), dtype=np.uint16),
+            illum_img=illum_img,
+            background_threshold=background_threshold,
+            img_size_y=img_size_y,
+            img_size_x=img_size_x,
         )
         data_czyx_new.append(data_zyx_new)
 
