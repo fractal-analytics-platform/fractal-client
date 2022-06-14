@@ -86,24 +86,35 @@ def yokogawa_to_zarr(
         all_rows = []
 
         print(zarrurl, r, c)
+        print(in_path + f"*_{r+c}_*C{ch}." + ext)
         filenames = sorted(
             glob(in_path + f"*_{r+c}_*C{ch}." + ext), key=sort_fun
         )
-        print(in_path + f"*_{r+c}_*C{ch}." + ext)
-        max_z = max([re.findall(r"Z(.*)C", s)[0] for s in filenames])
+        if len(filenames) == 0:
+            raise Exception(
+                "Error in yokogawa_to_zarr: len(filenames)=0.\n"
+                f"  in_path: {in_path}\n"
+                f"  ext: {ext}\n"
+                f"  r: {r}\n"
+                f"  c: {c}\n"
+                f"  ch: {ch}"
+            )
+        max_z = max(
+            [re.findall(r"Z(.*)C", filename)[0] for filename in filenames]
+        )
 
         sample = imread(filenames[0])
 
-        s = 0
-        e = int(max_z)
+        start = 0
+        end = int(max_z)
 
         for ro in range(int(rows)):
             cell = []
 
             for co in range(int(cols)):
-                lazy_arrays = [lazy_imread(fn) for fn in filenames[s:e]]
-                s += int(max_z)
-                e += int(max_z)
+                lazy_arrays = [lazy_imread(fn) for fn in filenames[start:end]]
+                start += int(max_z)
+                end += int(max_z)
                 dask_arrays = [
                     da.from_delayed(
                         delayed_reader, shape=sample.shape, dtype=sample.dtype
