@@ -9,9 +9,7 @@ from parsl.channels import LocalChannel
 from parsl.config import Config
 from parsl.data_provider.files import File
 from parsl.executors import HighThroughputExecutor
-from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
-from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
 
@@ -23,33 +21,16 @@ def initialize_SlurmProvider():
         mem_per_node=1,  # specified in GB
         parallelism=0,
         partition="main",
-        worker_init="export SQUEUE_FORMAT="
-        + '"%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"\n'
-        + "source /opt/easybuild/software/Anaconda3/2019.07/"
-        + "etc/profile.d/conda.sh\n"
-        + "conda activate fractal",
+        worker_init=(
+            "source /opt/easybuild/software/Anaconda3/2019.07/"
+            "etc/profile.d/conda.sh\n"
+            "conda activate fractal"
+        ),
         launcher=SrunLauncher(debug=True),
         walltime="01:00:00",
         cmd_timeout=60,
     )
     return slurm
-
-
-def initialize_LocalProvider():
-    local = LocalProvider(
-        nodes_per_block=1,
-        init_blocks=1,
-        min_blocks=1,
-        max_blocks=1,
-        parallelism=0,
-        worker_init="source"
-        + " /opt/easybuild/software/Anaconda3/2019.07/"
-        + "etc/profile.d/conda.sh\n"
-        + "conda activate fractal",
-        cmd_timeout=60,
-        launcher=SingleNodeLauncher(debug=True),
-    )
-    return local
 
 
 def initialize_HighThroughputExecutor(provider=None, max_workers=10):
@@ -253,52 +234,36 @@ def AUX_workflow_compute_pi(provider):
     assert abs(av - numpy.pi) < 0.01
 
 
-def test_single_app_local():
-    provider = initialize_LocalProvider()
-    AUX_single_app(provider)
-
-
 def test_single_app_slurm():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
     provider = initialize_SlurmProvider()
     AUX_single_app(provider)
-
-
-def test_workflow_generate_combine_split_local():
-    provider = initialize_LocalProvider()
-    AUX_workflow_generate_combine_split(provider)
 
 
 def test_workflow_generate_combine_split_slurm():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
     provider = initialize_SlurmProvider()
     AUX_workflow_generate_combine_split(provider)
 
 
-def test_workflow_compute_pi_local():
-    provider = initialize_LocalProvider()
-    AUX_workflow_compute_pi(provider)
-
-
 def test_workflow_compute_pi_slurm():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
     provider = initialize_SlurmProvider()
     AUX_workflow_compute_pi(provider)
 
 
-def test_import_numpy_local():
-    provider = initialize_LocalProvider()
-    AUX_import_numpy(provider, "LocalProvider")
-
-
 def test_import_numpy_slurm():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
     provider = initialize_SlurmProvider()
     AUX_import_numpy(provider, "SlurmProvider")
 
 
 if __name__ == "__main__":
-    test_single_app_local()
-    # test_single_app_slurm()
-    test_workflow_generate_combine_split_local()
-    # test_workflow_generate_combine_split_slurm()
-    test_workflow_compute_pi_local()
-    # test_workflow_compute_pi_slurm()
-    test_import_numpy_local()
-    # test_import_numpy_slurm()
+    test_single_app_slurm()
+    test_workflow_generate_combine_split_slurm()
+    test_workflow_compute_pi_slurm()
+    test_import_numpy_slurm()
