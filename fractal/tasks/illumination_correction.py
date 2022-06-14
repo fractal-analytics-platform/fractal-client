@@ -126,7 +126,6 @@ def illumination_correction(
                     "Error in illumination_correction, "
                     f"img.shape: {img.shape}"
                 )
-            return img
             # Background subtraction
             img[img <= background_threshold] = 0
             img[img > background_threshold] = (
