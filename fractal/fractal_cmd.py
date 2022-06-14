@@ -444,7 +444,7 @@ def workflow_apply(
     # FIXME validate tasks somewhere?
 
     # Hard-coded parsl options
-    OPENBLAS_NUM_THREADS = "1"  # FIXME
+    OPENBLAS_NUM_THREADS = "4"  # FIXME
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
 
@@ -550,7 +550,7 @@ def workflow_apply(
                 chl_list=chl_list,
                 coarsening_xy=coarsening_xy,
                 overwrite=True,
-                # background_threshold=background_threshold,
+                # background=background,
             )
 
         @python_app

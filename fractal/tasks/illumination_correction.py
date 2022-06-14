@@ -12,23 +12,27 @@ from fractal.tasks.lib_to_zarr_custom import to_zarr_custom
 def correct(
     img,
     illum_img=None,
-    background_threshold=110,
+    background=110,
     img_size_y=2160,
     img_size_x=2560,
 ):
-    """Corrects single Z level input image using an illumination profile
+    """
+    Corrects single Z level input image using an illumination profile
 
     The illumination profile image can be uint8 or uint16.
     It needs to follow the illumination profile. e.g. bright in the
     center of the image, dim outside
 
-    Args:
-        img (np.array): Input image to be corrected. Can be uint8,
-                        uint16
-
-    Returns
-        np.array: Illumination corrected image of the same dtype as
-                  the input image
+    :param img: input image to be corrected, either uint8 or uint16
+    :type img: np.array
+    :param illum_img: correction matrix
+    :type illum_img: np.array
+    :param background: value for background subtraction (optional, default 110)
+    :type background: int
+    :param img_size_y: image size along Y (optional, default 2160)
+    :type img_size_y: int
+    :param img_size_x: image size along X (optional, default 2560)
+    :type img_size_x: int
 
     """
 
@@ -44,10 +48,8 @@ def correct(
         )
 
     # Background subtraction
-    img[img <= background_threshold] = 0
-    img[img > background_threshold] = (
-        img[img > background_threshold] - background_threshold
-    )
+    img[img <= background] = 0
+    img[img > background] = img[img > background] - background
 
     # Apply the illumination correction
     # (normalized by the max value in the illum_img)
@@ -75,20 +77,25 @@ def illumination_correction(
     newzarrurl=None,
     chl_list=None,
     coarsening_xy=2,
-    background_threshold=110,
+    background=110,
 ):
 
     """
     Perform illumination correction of the array in zarrurl
     a new zarr file.
 
-    :param zarrurl: input zarr file, at the site level (e.g. x.zarr/B/03/0/)
+    :param zarrurl: input zarr, at the site level (e.g. x.zarr/B/03/0/)
     :type zarrurl: str
+    :param overwrite: whether to overwrite an existing zarr file
+    :type overwrite: bool
+    :param newzarrurl: output zarr, at the site level (e.g. x.zarr/B/03/0/)
+    :type newzarrurl: str
     :param chl_list: list of channels
     :type chl_list: list
-    :param coarsening_xy: coarsening factor along X and Y
+    :param coarsening_xy: coarsening factor in XY (optional, default 2)
     :type coarsening_z: xy
-
+    :param background: value for background subtraction (optional, default 110)
+    :type background: int
 
     """
 
@@ -187,7 +194,7 @@ def illumination_correction(
             chunks=(1, img_size_y, img_size_x),
             meta=np.array((), dtype=np.uint16),
             illum_img=illum_img,
-            background_threshold=background_threshold,
+            background=background,
             img_size_y=img_size_y,
             img_size_x=img_size_x,
         )
@@ -248,7 +255,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-bg",
-        "--background_threshold",
+        "--background",
         default=110,
         type=int,
         help=(
@@ -264,5 +271,5 @@ if __name__ == "__main__":
         newzarrurl=args.newzarrurl,
         chl_list=args.chl_list,
         coarsening_xy=args.coarsening_xy,
-        background_threshold=args.background_threshold,
+        background=args.background,
     )
