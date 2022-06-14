@@ -262,8 +262,91 @@ def test_import_numpy_slurm():
     AUX_import_numpy(provider, "SlurmProvider")
 
 
+def test_use_tensorflow_on_gpu():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
+    slurm = SlurmProvider(
+        partition="gpu",
+        channel=LocalChannel(),
+        launcher=SrunLauncher(debug=True),
+    )
+    htex = HighThroughputExecutor(
+        address=address_by_hostname(), worker_debug=True, provider=slurm
+    )
+    config = Config(executors=[htex])
+    parsl.clear()
+    parsl.load(config)
+
+    @python_app
+    def increment_by_one(num):
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        import tensorflow as tf
+
+        gpus = tf.config.list_physical_devices("GPU")
+        with open("output_gpus.txt", "w") as out:
+            out.write(f"{gpus}\n")
+        return num + 1
+
+    two = increment_by_one(1).result()
+    print(f"two: {two}")
+    assert two == 2
+
+
+def test_multiexecutor_workflow():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
+    slurm_cpu = SlurmProvider(
+        partition="main",
+        channel=LocalChannel(),
+        launcher=SrunLauncher(debug=True),
+    )
+    slurm_gpu = SlurmProvider(
+        partition="gpu",
+        channel=LocalChannel(),
+        launcher=SrunLauncher(debug=True),
+    )
+    htex_cpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_cpu",
+        worker_debug=True,
+        provider=slurm_cpu,
+    )
+    htex_gpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_gpu",
+        worker_debug=True,
+        provider=slurm_gpu,
+    )
+    config = Config(executors=[htex_cpu, htex_gpu])
+    parsl.clear()
+    parsl.load(config)
+
+    @python_app(executors=["htex_gpu"])
+    def increment_by_one_gpu(num):
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        import tensorflow as tf
+
+        gpus = tf.config.list_physical_devices("GPU")
+        with open(
+            "output_gpus_from_test_multiexecutor_workflow.txt", "w"
+        ) as out:
+            out.write(f"{gpus}\n")
+        return num + 1
+
+    @python_app(executors=["htex_cpu"])
+    def increment_by_one_cpu(num):
+        return num + 1
+
+    one = increment_by_one_cpu(0)
+    two = increment_by_one_gpu(one).result()
+    print(f"two: {two}")
+    assert two == 2
+
+
 if __name__ == "__main__":
     test_single_app_slurm()
     test_workflow_generate_combine_split_slurm()
     test_workflow_compute_pi_slurm()
     test_import_numpy_slurm()
+    test_use_tensorflow_on_gpu()
+    test_multiexecutor_workflow()
