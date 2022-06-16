@@ -177,6 +177,16 @@ def create_zarr_structure(
                     ],
                 }
             ]
+            group_field.attrs["omero"] = [
+                {
+                    "id": "TBD",
+                    "name": "TBD",
+                    "version": "TBD",
+                    "channels": [
+                        {"label": channel[2]} for channel in actual_channels
+                    ],
+                }
+            ]
 
     return zarrurls, actual_channels
 
