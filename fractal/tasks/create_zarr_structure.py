@@ -1,67 +1,9 @@
 import os
-import re
 from glob import glob
 
 import zarr
 
-# from devtools import debug
-
-
-def metadata(filename):
-    """
-    Extract metadata by parsing image filename, return a parameter dictionary.
-    Three kinds of filenames are supported:
-    1) Filenames from UZH:
-       20200812-Cardio[...]Cycle1_B03_T0001F036L01A01Z18C01.png
-       with plate name 20200812-Cardio[...]Cycle1
-    2) Filenames from FMI, with successful barcode reading:
-       210305NAR005AAN_210416_164828_B11_T0001F006L01A04Z14C01.tif
-       with plate name 210305NAR005AAN
-    3) Filenames from FMI, with failed barcode reading:
-       yymmdd_hhmmss_210416_164828_B11_T0001F006L01A04Z14C01.tif
-       with plate name RS{yymmddhhmmss}
-
-    :param filename: name of the image
-    :type filename: str
-    """
-    f = filename.rsplit(".", 1)[0]
-
-    well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
-    tmp_plate = f.split(f"_{well}_")[0]
-
-    fields = tmp_plate.split("_")
-
-    if (
-        len(fields) == 4
-        and len(fields[0]) == 6
-        and len(fields[1]) == 6
-        and len(fields[2]) == 6
-    ):
-        # FMI (failed barcode reading)
-        scan_date, scan_time, img_date, img_time = fields[:]
-        plate = f"RS{scan_date + scan_time}"
-    elif len(fields) == 3:
-        # FMI (correct barcode reading)
-        barcode, img_date, img_time = fields[:]
-        if len(img_date) != 6 or len(img_time) != 6:
-            raise Exception(
-                f"Failure in metadata parsing of {tmp_plate}, with"
-                " img_date={img_date} and img_time={img_time}"
-            )
-        plate = barcode
-    elif len(fields) == 1:
-        # UZH
-        plate = fields[0]
-
-    site = re.findall(r"F(.*)L", f)[0]
-    chl = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0].split("_")[0]
-    t_ind = re.findall(r"T(.*)F", f)[0]
-    z_ind = re.findall(r"Z(.*)C", f)[0]
-
-    result = dict(
-        plate=plate, well=well, t_ind=t_ind, z_ind=z_ind, chl=chl, site=site
-    )
-    return result
+from fractal.tasks.lib_parse_filename_metadata import parse_metadata
 
 
 def create_zarr_structure(
@@ -85,19 +27,62 @@ def create_zarr_structure(
     :type num_levels: int
     """
 
-    # Find all plates
-    plate = []
+    # Find all plates and all channels
+    plates = []
+    channels = []
     if not in_path.endswith("/"):
         in_path += "/"
     for i in glob(in_path + "*." + ext):
         try:
-            plate.append(metadata(os.path.basename(i))["plate"])
+            metadata = parse_metadata(os.path.basename(i))
+            plates.append(metadata["plate"])
+            channels.append(f"A{metadata['A']}_C{metadata['C']}")
         except IndexError:
             print("IndexError for ", i)
             pass
-    plate_unique = set(plate)
-    print("Find all plates in", in_path + "*." + ext)
-    print(f"Plates: {plate_unique}")
+    plates = sorted(list(set(plates)))
+    channels = sorted(list(set(channels)))
+    print("Find all plates/channels in", in_path + "*." + ext)
+    print(f"Plates:   {plates}")
+    print(f"Channels: {channels}")
+
+    # FIXME Hard-coded list of allowed channels
+    # (this will be user-provided, later on)
+    import itertools
+    import random
+
+    allowed_channels = [
+        f"A{A:02d}_C{C:02d}"
+        for (A, C) in itertools.product(list(range(4)), repeat=2)
+    ]
+    allowed_channels = sorted(allowed_channels)
+    labels_allowed_channel = {
+        ch: f"label_{random.randint(1000, 9999):05d}"  # nosec
+        for ch in allowed_channels
+    }
+
+    # Check that all channels are in the allowed_channels
+    if not set(channels).issubset(set(allowed_channels)):
+        msg = "ERROR in create_zarr_structure\n"
+        msg += f"channels: {channels}\n"
+        msg += f"allowed_channels: {allowed_channels}\n"
+        raise Exception(msg)
+
+    # Sort channels according to allowed_channels, and assign increasing index
+    # actual_channels is a list of entries like (0, "A01_C01", "DAPI")
+    actual_channels = []
+    ind_channel = 0
+    print("-" * 80)
+    print("actual_channels")
+    print("-" * 80)
+    for ch in allowed_channels:
+        if ch in channels:
+            actual_channels.append(
+                [ind_channel, ch, labels_allowed_channel[ch]]
+            )
+            ind_channel += 1
+            print(ind_channel, ch, labels_allowed_channel[ch])
+    print("-" * 80)
 
     well = []
 
@@ -105,11 +90,11 @@ def create_zarr_structure(
 
     # loop over plate, each plate could have n wells
     # debug(plate_unique)
-    for plate in plate_unique:
+    for plate in plates:
         group_plate = zarr.group(out_path + f"{plate}.zarr")
         zarrurls["plate"].append(out_path + f"{plate}.zarr")
         well = [
-            metadata(os.path.basename(fn))["well"]
+            parse_metadata(os.path.basename(fn))["well"]
             for fn in glob(in_path + f"{plate}_*." + ext)
         ]
         well_unique = set(well)
@@ -120,8 +105,7 @@ def create_zarr_structure(
 
         group_plate.attrs["plate"] = {
             "acquisitions": [
-                {"id": id_, "name": name}
-                for id_, name in enumerate(plate_unique)
+                {"id": id_, "name": name} for id_, name in enumerate(plates)
             ],
             # takes unique cols from (row,col) tuples
             "columns": sorted(
@@ -156,18 +140,12 @@ def create_zarr_structure(
                 for well_row_column in well_rows_columns
             ],
         }
-        # debug(well_rows_columns)
 
         for row, column in well_rows_columns:
 
             group_well = group_plate.create_group(f"{row}/{column}/")
 
-            chl = [
-                metadata(os.path.basename(fn))["chl"]
-                for fn in glob(in_path + f"{plate}*_{row+column}*." + ext)
-            ]
-            chl_unique = sorted(list(set(chl)))
-            # debug(chl_unique)
+            # Assumption: All channels in actual_channels are present #FIXME
 
             group_well.attrs["well"] = {
                 "images": [
@@ -200,7 +178,7 @@ def create_zarr_structure(
                 }
             ]
 
-    return zarrurls, chl_unique
+    return zarrurls, actual_channels
 
 
 if __name__ == "__main__":
