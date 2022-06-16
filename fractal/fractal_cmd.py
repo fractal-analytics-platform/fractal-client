@@ -496,11 +496,13 @@ def workflow_apply(
 
         future = app_create_zarr_structure(**kwargs)
         if task_names[0] == "create_zarr_structure":
-            zarrurls, chl_list = future.result()
-        elif task_names[0] == "create_zarr_structure_multifov":
-            zarrurls, chl_list, sites_list = future.result()
+            zarrurls, channels = future.result()
             debug(zarrurls)
-            debug(chl_list)
+            debug(channels)
+        elif task_names[0] == "create_zarr_structure_multifov":
+            zarrurls, channels, sites_list = future.result()
+            debug(zarrurls)
+            debug(channels)
             debug(sites_list)
         task_names = task_names[1:]  # FIXME
     else:
@@ -519,7 +521,7 @@ def workflow_apply(
                 delete_input=delete_input,
                 rows=rows,
                 cols=cols,
-                chl_list=chl_list,
+                channels=channels,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
                 coarsening_z=coarsening_z,
@@ -529,7 +531,7 @@ def workflow_apply(
                 in_path=resource_in,
                 ext=ext,
                 delete_input=delete_input,
-                chl_list=chl_list,
+                channels=channels,
                 sites_list=sites_list,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
@@ -538,7 +540,7 @@ def workflow_apply(
 
         elif task == "maximum_intensity_projection":
             kwargs = dict(
-                chl_list=chl_list,
+                channels=channels,
                 coarsening_xy=coarsening_xy,
             )
         elif task == "replicate_zarr_structure_mip":
@@ -547,7 +549,7 @@ def workflow_apply(
             kwargs = dict(newzarrurl="new")
         elif task == "illumination_correction":
             kwargs = dict(
-                chl_list=chl_list,
+                channels=channels,
                 coarsening_xy=coarsening_xy,
                 overwrite=True,
                 # background=background,

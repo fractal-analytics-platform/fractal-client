@@ -28,7 +28,7 @@ def yokogawa_to_zarr(
     ext=None,
     rows=None,
     cols=None,
-    chl_list=None,
+    channels=None,
     num_levels=5,
     coarsening_xy=2,
     coarsening_z=1,
@@ -49,8 +49,8 @@ def yokogawa_to_zarr(
     :type rows: list
     :param cols: number of columns of the well
     :type cols: list
-    :param chl_list: list of the channels
-    :type chl_list: list
+    :param chl_list: list of the channels   #FIXME
+    :type chl_list: list                    #FIXME
     :param num_levels: number of levels in the zarr pyramid
     :type num_levels: int
     :param coarsening_xy: coarsening factor along X and Y
@@ -72,32 +72,36 @@ def yokogawa_to_zarr(
     # Define well
     if not zarrurl.endswith("/"):
         zarrurl += "/"
-    r = zarrurl.split("/")[-4]
-    c = zarrurl.split("/")[-3]
+    well_row = zarrurl.split("/")[-4]
+    well_column = zarrurl.split("/")[-3]
+    well_ID = well_row + well_column
 
     lazy_imread = delayed(imread)
     fc_list = {level: [] for level in range(num_levels)}
 
-    print(chl_list)
+    print(channels)
 
-    for ch in chl_list:
+    for channel in channels:
+        ind_ch, ID_ch, label_ch = channel[:]
+        A, C = ID_ch.split("_")
 
         l_rows = []
         all_rows = []
 
-        print(zarrurl, r, c)
-        print(in_path + f"*_{r+c}_*C{ch}." + ext)
+        print(zarrurl, well_ID)
+        print(in_path + f"*_{well_ID}_*{A}_*{C}." + ext)
         filenames = sorted(
-            glob(in_path + f"*_{r+c}_*C{ch}." + ext), key=sort_fun
+            glob(in_path + f"*_{well_ID}_*{A}*{C}." + ext), key=sort_fun
         )
         if len(filenames) == 0:
+            glob_path = in_path + f"*_{well_ID}_*{A}*{C}." + ext
             raise Exception(
                 "Error in yokogawa_to_zarr: len(filenames)=0.\n"
                 f"  in_path: {in_path}\n"
                 f"  ext: {ext}\n"
-                f"  r: {r}\n"
-                f"  c: {c}\n"
-                f"  ch: {ch}"
+                f"  well_ID: {well_ID}\n"
+                f"  channel: {ind_ch}, {ID_ch}, {label_ch}\n"
+                f"  glob_path: {glob_path}"
             )
         max_z = max(
             [
@@ -219,7 +223,7 @@ if __name__ == "__main__":
         "-C",
         "--chl_list",
         nargs="+",
-        help="list of channels ",
+        help="list of channels ",  # FIXME
     )
 
     parser.add_argument(
