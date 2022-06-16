@@ -46,16 +46,14 @@ def create_zarr_structure(
     print(f"Plates:   {plates}")
     print(f"Channels: {channels}")
 
-    # FIXME Hard-coded list of allowed channels
-    # (this will be user-provided, later on)
-    import itertools
-
-    allowed_channels = [
-        f"A{A:02d}_C{C:02d}"
-        for (A, C) in itertools.product(list(range(4)), repeat=2)
-    ]
-    allowed_channels = sorted(allowed_channels)
-    labels_allowed_channel = {ch: f"label_{ch}" for ch in allowed_channels}
+    # HARDCODED CHANNELS AND THEIR PROPERTIES
+    allowed_channels = ["A01_C01", "A01_C02", "A02_C03"]
+    labels_allowed_channel = {
+        "A01_C01": "DAPI",
+        "A01_C02": "nanog",
+        "A02_C03": "Lamin B1",
+    }
+    colormaps = ["00FFFF", "FF00FF", "FFFF00"]
 
     # Check that all channels are in the allowed_channels
     if not set(channels).issubset(set(allowed_channels)):
@@ -173,16 +171,28 @@ def create_zarr_structure(
                     ],
                 }
             ]
-            group_field.attrs["omero"] = [
-                {
-                    "id": "TBD",
-                    "name": "TBD",
-                    "version": "TBD",
-                    "channels": [
-                        {"label": channel[2]} for channel in actual_channels
-                    ],
-                }
-            ]
+            group_field.attrs["omero"] = {
+                "id": 1,
+                "name": "TBD",
+                "version": "0.4",
+                "channels": [
+                    {
+                        # "active": "rue,
+                        "coefficient": 1,
+                        "color": colormaps[channel[0]],
+                        "family": "linear",
+                        # "inverted": false,
+                        "label": channel[2],
+                        "window": {
+                            "end": 600,
+                            "max": 65535,
+                            "min": 0,
+                            "start": 110,
+                        },
+                    }
+                    for channel in actual_channels
+                ],
+            }
 
     return zarrurls, actual_channels
 
