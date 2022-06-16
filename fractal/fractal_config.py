@@ -1,5 +1,5 @@
 # Parameters of parsl.executors.HighThroughputExecutor
-max_workers = 3  # This is the maximum number of workers per block
+max_workers = 1  # This is the maximum number of workers per block
 
 # Parameters of parsl.providers.SlurmProvider
 # Note that worker_init is a command which is included at the beginning of

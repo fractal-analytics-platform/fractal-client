@@ -10,7 +10,7 @@ def define_MonitoringHub(workflow_name=None):
     # FIXME: scan ports and find one that is available
     kwargs = dict(
         hub_address=address_by_hostname(),
-        monitoring_debug=True,
+        # monitoring_debug=True,
         resource_monitoring_interval=30,
     )
     if workflow_name is not None:
@@ -35,7 +35,7 @@ def define_SlurmProvider(
         mem_per_node=mem_per_node_GB,  # specified in GB
         partition=partition,
         worker_init=worker_init,
-        launcher=SrunLauncher(debug=True),
+        launcher=SrunLauncher(),  # debug=True),
         walltime="23:00:00",
         cmd_timeout=60,
         min_blocks=1,
@@ -51,8 +51,10 @@ def define_HighThroughputExecutor(provider=None, max_workers=40):
     htex = HighThroughputExecutor(
         label="htex",
         address=address_by_hostname(),
-        worker_debug=True,
+        # worker_debug=True,
         max_workers=max_workers,
+        cores_per_worker=8,
         provider=provider,
+        cpu_affinity="block",
     )
     return htex
