@@ -49,17 +49,13 @@ def create_zarr_structure(
     # FIXME Hard-coded list of allowed channels
     # (this will be user-provided, later on)
     import itertools
-    import random
 
     allowed_channels = [
         f"A{A:02d}_C{C:02d}"
         for (A, C) in itertools.product(list(range(4)), repeat=2)
     ]
     allowed_channels = sorted(allowed_channels)
-    labels_allowed_channel = {
-        ch: f"label_{random.randint(1000, 9999):05d}"  # nosec
-        for ch in allowed_channels
-    }
+    labels_allowed_channel = {ch: f"label_{ch}" for ch in allowed_channels}
 
     # Check that all channels are in the allowed_channels
     if not set(channels).issubset(set(allowed_channels)):
