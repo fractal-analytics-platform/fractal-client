@@ -85,6 +85,11 @@ def create_zarr_structure_multifov(
     :type num_levels: int
     """
 
+    raise NotImplementedError(
+        "create_zarr_structure_multifov not implemented "
+        "with new channel scheme"
+    )
+
     # Find all plates
     plate = []
     if not in_path.endswith("/"):

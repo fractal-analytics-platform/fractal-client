@@ -75,7 +75,7 @@ def illumination_correction(
     zarrurl,
     overwrite=False,
     newzarrurl=None,
-    chl_list=None,
+    channels=None,
     coarsening_xy=2,
     background=110,
 ):
@@ -90,7 +90,7 @@ def illumination_correction(
     :type overwrite: bool
     :param newzarrurl: output zarr, at the site level (e.g. x.zarr/B/03/0/)
     :type newzarrurl: str
-    :param chl_list: list of channels
+    :param chl_list: list of channels  #FIXME
     :type chl_list: list
     :param coarsening_xy: coarsening factor in XY (optional, default 2)
     :type coarsening_z: xy
@@ -98,6 +98,10 @@ def illumination_correction(
     :type background: int
 
     """
+
+    raise NotImplementedError(
+        "illumination_correction not implemented " "with new channel scheme"
+    )
 
     # Check that only one output option is chosen
     if overwrite and (newzarrurl is not None):
@@ -138,11 +142,12 @@ def illumination_correction(
         4: "220120_60xW_BP676_CH04.tif",
     }
     corrections = {}
-    for chl in chl_list:
-        corrections[int(chl)] = imread(
-            path_correction_matrices + filenames[int(chl)]
+    for channel in channels:
+        ind_ch, ID_ch, label_ch = channel[:]
+        corrections[ind_ch] = imread(
+            path_correction_matrices + filenames[ind_ch + 1]
         )
-        if corrections[int(chl)].shape != (img_size_y, img_size_x):
+        if corrections[ind_ch].shape != (img_size_y, img_size_x):
             raise Exception(
                 "Error in illumination_correction, "
                 "correction matrix has wrong shape."
@@ -183,10 +188,11 @@ def illumination_correction(
 
     # Loop over channels
     data_czyx_new = []
-    for ind_chl, chl in enumerate(chl_list):
+    for channel in channels:
+        ind_ch, ID_ch, label_ch = channel[:]
 
-        data_zyx = data_czyx[ind_chl]
-        illum_img = corrections[int(chl)]
+        data_zyx = data_czyx[ind_ch]
+        illum_img = corrections[ind_ch]
 
         # Map "correct" function onto each block
         data_zyx_new = data_zyx.map_blocks(
@@ -208,7 +214,7 @@ def illumination_correction(
         num_levels=num_levels,
         chunk_size_x=img_size_x,
         chunk_size_y=img_size_y,
-        chl_list=chl_list,
+        num_channels=len(channels),
     )
 
     # Write data into output zarr
@@ -240,6 +246,7 @@ if __name__ == "__main__":
         help="path of the new zarr file",
     )
 
+    # FIXME
     parser.add_argument(
         "-C",
         "--chl_list",
