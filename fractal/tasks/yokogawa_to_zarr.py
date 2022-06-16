@@ -81,6 +81,10 @@ def yokogawa_to_zarr(
 
     print(channels)
 
+    # NOTE: by now we assume that channels are 0,..,n (without missing values)
+    if [channel[0] for channel in channels] != list(range(len(channels))):
+        raise Exception("ERROR: we expect all channels to be present")
+
     for channel in channels:
         ind_ch, ID_ch, label_ch = channel[:]
         A, C = ID_ch.split("_")
