@@ -1,3 +1,4 @@
+import json
 from glob import glob
 
 import zarr
@@ -96,6 +97,12 @@ def replicate_zarr_structure_mip(zarrurl):
                 "datasets": [{"path": level} for level in levels],
             }
         ]
+
+    # Copy .zattrs file at the COL/ROW/SITE level
+    path_zattrs = zarrurl + f"{row}/{column}/0/.zattrs"
+    with open(path_zattrs) as zattrs_file:
+        zattrs = json.load(zattrs_file)
+        group_field.attrs["omero"] = zattrs["omero"]
 
 
 if __name__ == "__main__":
