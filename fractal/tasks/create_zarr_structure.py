@@ -68,6 +68,7 @@ def create_zarr_structure(
             "A02_C03": dict(
                 label="Lamin B1", colormap="FFFF00", start=115, end=1000
             ),
+            "fake": dict(label="Fake", colormap="FFFFFF", start=115, end=1000),
         }
     else:
         try:
@@ -232,7 +233,7 @@ def create_zarr_structure(
                         "color": dict_channels[channel]["colormap"],
                         "family": "linear",
                         # "inverted": false, # how to write it in python?
-                        "label": channel[2],
+                        "label": dict_channels[channel]["label"],
                         "window": {
                             "min": 0,
                             "max": 65535,
