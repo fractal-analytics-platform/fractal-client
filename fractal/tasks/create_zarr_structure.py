@@ -59,9 +59,15 @@ def create_zarr_structure(
     # FIXME: remove hard-coded default (for None)
     if path_dict_channels is None:
         dict_channels = {
-            "A01_C01": dict(label="DAPI", colormap="00FFFF", start=110),
-            "A01_C02": dict(label="nanog", colormap="FF00FF", start=115),
-            "A02_C03": dict(label="Lamin B1", colormap="FFFF00", start=115),
+            "A01_C01": dict(
+                label="DAPI", colormap="00FFFF", start=110, end=600
+            ),
+            "A01_C02": dict(
+                label="nanog", colormap="FF00FF", start=115, end=200
+            ),
+            "A02_C03": dict(
+                label="Lamin B1", colormap="FFFF00", start=115, end=1000
+            ),
         }
     else:
         try:
