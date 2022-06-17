@@ -4,7 +4,14 @@ import warnings
 import numpy as np
 
 def parse_yokogawa_metadata(mrf_path, mlf_path):
+    """
+    Parse Yokogawa CV7000 metadata files and prepare site-level metadata
 
+    :param mrf_path: Full path to MeasurementDetail.mrf metadata file
+    :type mrf_path: Union(str, pathlib.Path)
+    :param mlf_path: Full path to MeasurementData.mlf metadata file
+    :type mlf_path: Union(str, pathlib.Path)
+    """
     mrf_frame, mlf_frame, error_count = read_metadata_files(mrf_path, mlf_path)
 
     per_site_parameters = [
@@ -32,7 +39,8 @@ def parse_yokogawa_metadata(mrf_path, mlf_path):
     total_files = len(mlf_frame)
     # TODO: Check whether the total_files correspond to the number of
     # relevant input images in the input folder. Returning it for now
-    # Maybe return it here for further checks?
+    # Maybe return it here for further checks and produce a warning if it does
+    # not match
 
     # TODO: What do we do with the metadata now? Who calls the
     # parse_yokogawa_metadata function?
@@ -51,6 +59,8 @@ def read_metadata_files(mrf_path, mlf_path):
     # use e.g. during illumination correction
 
     mlf_frame, error_count = read_mlf_file(mlf_path, mrf_frame)
+    # TODO: Time points are parsed as part of the mlf_frame, but currently not
+    # processed further. Once we tackle time-resolved data, parse from here.
 
     return mrf_frame, mlf_frame, error_count
 
@@ -222,7 +232,9 @@ def calculate_steps(site_series: pd.Series):
 
 
 def get_z_steps(mlf_frame):
-    # Process z step data, run checks & return site-based z step dataframe
+    # Process mlf_frame to extract Z information
+    # run checks on consistencies & return site-based z step dataframe
+    # Group by well, field & channel
     grouped_sites_z = mlf_frame.loc[:, [
                                         'well_id',
                                         'field_id',
@@ -233,6 +245,8 @@ def get_z_steps(mlf_frame):
                                                             'field_id',
                                                             'action_id',
                                                             'channel_id'])
+    # Group the whole site (combine channels), because Z steps need to be
+    # consistent between channels for OME-Zarr.
     z_data = grouped_sites_z.apply(calculate_steps).groupby(['well_id', 'field_id'])
     assert z_data.std().sum().sum() == 0.0, "" \
             "When parsing the Yokogawa mlf file, channels had " \
