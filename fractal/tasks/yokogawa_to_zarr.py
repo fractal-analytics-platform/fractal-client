@@ -81,13 +81,8 @@ def yokogawa_to_zarr(
 
     print(channels)
 
-    # NOTE: by now we assume that channels are 0,..,n (without missing values)
-    if [channel[0] for channel in channels] != list(range(len(channels))):
-        raise Exception("ERROR: we expect all channels to be present")
-
     for channel in channels:
-        ind_ch, ID_ch, label_ch = channel[:]
-        A, C = ID_ch.split("_")
+        A, C = channel.split("_")
 
         l_rows = []
         all_rows = []
@@ -104,7 +99,7 @@ def yokogawa_to_zarr(
                 f"  in_path: {in_path}\n"
                 f"  ext: {ext}\n"
                 f"  well_ID: {well_ID}\n"
-                f"  channel: {ind_ch}, {ID_ch}, {label_ch}\n"
+                f"  channel: {channel},\n"
                 f"  glob_path: {glob_path}"
             )
         max_z = max(

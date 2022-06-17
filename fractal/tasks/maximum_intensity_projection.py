@@ -40,22 +40,18 @@ def maximum_intensity_projection(
         zattrs = json.load(inputjson)
     num_levels = len(zattrs["multiscales"][0]["datasets"])
 
-    # NOTE: by now we assume that channels are 0,..,n (without missing values)
-    if [channel[0] for channel in channels] != list(range(len(channels))):
-        raise Exception("ERROR: we expect all channels to be present")
-
     # Load 0-th level
     data_chl_z_y_x = da.from_zarr(zarrurl + "/0")
     # Loop over channels
     accumulate_chl = []
-    for channel in channels:
-        ind_ch, ID_ch, label_ch = channel[:]
+    num_channels = len(channels)
+    for ind_ch in range(num_channels):
 
         # Perform MIP for each channel of level 0
         mip_yx = da.stack([da.max(data_chl_z_y_x[ind_ch], axis=0)], axis=0)
 
         accumulate_chl.append(mip_yx)
-        print(channel, mip_yx.shape, mip_yx.chunks)
+        print(ind_ch, mip_yx.shape, mip_yx.chunks)
         print(zarrurl_mip + f"0/{ind_ch}")
     accumulate_chl = da.stack(accumulate_chl, axis=0)
     print()
@@ -67,7 +63,7 @@ def maximum_intensity_projection(
         num_levels=num_levels,
         chunk_size_x=chunk_size_x,
         chunk_size_y=chunk_size_y,
-        num_channels=len(channels),
+        num_channels=num_channels,
     )
 
     for ind_level in range(num_levels):

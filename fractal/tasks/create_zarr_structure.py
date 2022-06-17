@@ -1,3 +1,4 @@
+import json
 import os
 from glob import glob
 
@@ -10,6 +11,7 @@ def create_zarr_structure(
     in_path=None,
     out_path=None,
     ext=None,
+    path_dict_channels="",
     num_levels=None,
 ):
 
@@ -26,6 +28,8 @@ def create_zarr_structure(
     :param num_levels: number of coarsening levels in the pyramid
     :type num_levels: int
     """
+
+    # FIXME: in_path should be a list!
 
     # Find all plates and all channels
     plates = []
@@ -51,12 +55,28 @@ def create_zarr_structure(
     print(f"Plates:   {plates}")
     print(f"Channels: {channels}")
 
-    # HARDCODED CHANNELS AND THEIR PROPERTIES
-    dict_channels = {
-        "A01_C01": dict(label="DAPI", colormap="00FFFF", start=110),
-        "A01_C02": dict(label="nanog", colormap="FF00FF", start=115),
-        "A02_C03": dict(label="Lamin B1", colormap="FFFF00", start=115),
-    }
+    # FIXME: remove hard-coded default (for None)
+    if path_dict_channels is None:
+        dict_channels = {
+            "A01_C01": dict(label="DAPI", colormap="00FFFF", start=110),
+            "A01_C02": dict(label="nanog", colormap="FF00FF", start=115),
+            "A02_C03": dict(label="Lamin B1", colormap="FFFF00", start=115),
+        }
+    else:
+        try:
+            with open(path_dict_channels, "r") as json_file:
+                dict_channels = json.load(json_file)
+        except FileNotFoundError:
+            raise Exception(
+                "ERROR in create_zarr_structure: "
+                f"{path_dict_channels} missing."
+            )
+        except TypeError:
+            raise Exception(
+                "ERROR in create_zarr_structure: "
+                f"{path_dict_channels} has wrong type "
+                "(probably a None instead of a string)."
+            )
 
     # Check that all channels are in the allowed_channels
     if not set(channels).issubset(set(dict_channels.keys())):
@@ -66,13 +86,13 @@ def create_zarr_structure(
         raise Exception(msg)
 
     # Sort channels according to allowed_channels, and assign increasing index
-    # actual_channels is a list of entries like (0, "A01_C01", "DAPI")
+    # actual_channels is a list of entries like A01_C01"
     actual_channels = []
     print("-" * 80)
     print("actual_channels")
     print("-" * 80)
     for ind_ch, ch in enumerate(channels):
-        actual_channels.append([ind_ch, ch, dict_channels[ch]["label"]])
+        actual_channels.append([ch])
         print(actual_channels[-1])
     print("-" * 80)
 
@@ -95,9 +115,6 @@ def create_zarr_structure(
         wells = sorted(list(set(wells)))
 
         # Verify that all wells have all channels
-        expected_channels = [
-            ind_name_label[1] for ind_name_label in actual_channels
-        ]
         for well in wells:
             well_channels = []
             glob_string = f"{in_path}{plate_prefix}_{well}*.{ext}"
@@ -108,11 +125,11 @@ def create_zarr_structure(
                 except IndexError:
                     print(f"Skipping {fn}")
             well_channels = sorted(list(set(well_channels)))
-            if well_channels != expected_channels:
+            if well_channels != actual_channels:
                 raise Exception(
                     f"ERROR: well {well} in plate {plate} (prefix: "
                     f"{plate_prefix}) has missing channels.\n"
-                    f"Expected: {expected_channels}\n"
+                    f"Expected: {actual_channels}\n"
                     f"Found: {well_channels}.\n"
                     f"[glob_string: {glob_string}]"
                 )
@@ -124,6 +141,7 @@ def create_zarr_structure(
         group_plate.attrs["plate"] = {
             "acquisitions": [
                 # FIXME this should not be within "for plate in plates"!
+                # {"id": 1, "name": plate}  # new version
                 {"id": id_, "name": name}
                 for id_, name in enumerate(plates)
             ],
@@ -204,15 +222,15 @@ def create_zarr_structure(
                     {
                         # "active": true,  # how to write it in python?
                         "coefficient": 1,
-                        "color": dict_channels[channel[1]]["colormap"],
+                        "color": dict_channels[channel]["colormap"],
                         "family": "linear",
                         # "inverted": false, # how to write it in python?
                         "label": channel[2],
                         "window": {
-                            "end": 600,
-                            "max": 65535,
                             "min": 0,
-                            "start": dict_channels[channel[1]]["start"],
+                            "max": 65535,
+                            "start": dict_channels[channel]["start"],
+                            "end": dict_channels[channel]["end"],
                         },
                     }
                     for channel in actual_channels
