@@ -11,7 +11,7 @@ def create_zarr_structure(
     in_path=None,
     out_path=None,
     ext=None,
-    path_dict_channels="",
+    path_dict_channels=None,
     num_levels=None,
 ):
 
