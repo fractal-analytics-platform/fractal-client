@@ -18,12 +18,19 @@ def parse_metadata(filename):
     :param filename: name of the image
     :type filename: str
     """
+
+    if "/" in filename:
+        raise Exception(
+            "ERROR: parse_metadata may fail when filename "
+            f'includes "/". Please check that {filename} is '
+            "correct."
+        )
     f = filename.rsplit(".", 1)[0]
 
     well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
-    tmp_plate = f.split(f"_{well}_")[0]
+    plate_prefix = f.split(f"_{well}_")[0]
 
-    fields = tmp_plate.split("_")
+    fields = plate_prefix.split("_")
 
     if (
         len(fields) == 4
@@ -39,7 +46,7 @@ def parse_metadata(filename):
         barcode, img_date, img_time = fields[:]
         if len(img_date) != 6 or len(img_time) != 6:
             raise Exception(
-                f"Failure in metadata parsing of {tmp_plate}, with"
+                f"Failure in metadata parsing of {plate_prefix}, with"
                 " img_date={img_date} and img_time={img_time}"
             )
         plate = barcode
@@ -56,5 +63,15 @@ def parse_metadata(filename):
     Z = re.findall(r"Z(.*)C", f)[0]
     C = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0]
 
-    result = dict(plate=plate, well=well, T=T, F=F, L=L, A=A, Z=Z, C=C)
+    result = dict(
+        plate=plate,
+        plate_prefix=plate_prefix,
+        well=well,
+        T=T,
+        F=F,
+        L=L,
+        A=A,
+        Z=Z,
+        C=C,
+    )
     return result
