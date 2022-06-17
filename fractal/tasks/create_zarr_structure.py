@@ -8,7 +8,7 @@ from fractal.tasks.lib_parse_filename_metadata import parse_metadata
 
 
 def create_zarr_structure(
-    in_path=None,
+    in_paths=[],
     out_path=None,
     ext=None,
     path_dict_channels=None,
@@ -19,8 +19,8 @@ def create_zarr_structure(
     Create (and store) the zarr folder, without reading or writing data.
 
 
-    :param in_path: path of images
-    :type in_path: str
+    :param in_path: path of images  #FIXME LIST
+    :type in_path: list
     :param out_path: path for output zarr files
     :type out_path: str
     :param ext: extension of images (e.g. tiff, png, ..)
@@ -31,30 +31,6 @@ def create_zarr_structure(
     """
 
     # FIXME: in_path should be a list!
-
-    # Find all plates and all channels
-    plates = []
-    channels = []
-    dict_plate_prefixes = {}
-    if not in_path.endswith("/"):
-        in_path += "/"
-    for fn in glob(in_path + "*." + ext):
-        try:
-            metadata = parse_metadata(os.path.basename(fn))
-            plate_prefix = metadata["plate_prefix"]
-            plate = metadata["plate"]
-            if plate not in dict_plate_prefixes.keys():
-                dict_plate_prefixes[plate] = plate_prefix
-            plates.append(plate)
-            channels.append(f"A{metadata['A']}_C{metadata['C']}")
-        except IndexError:
-            print("IndexError for ", fn)
-            pass
-    plates = sorted(list(set(plates)))
-    channels = sorted(list(set(channels)))
-    print("Find all plates/channels in", in_path + "*." + ext)
-    print(f"Plates:   {plates}")
-    print(f"Channels: {channels}")
 
     # FIXME: remove hard-coded default (for None)
     if path_dict_channels is None:
@@ -85,6 +61,51 @@ def create_zarr_structure(
                 f"{path_dict_channels} has wrong type "
                 "(probably a None instead of a string)."
             )
+
+    # Find all plates and all channels
+    plates = []
+    channels = None
+    dict_plate_paths = {}
+    dict_plate_prefixes = {}
+    for in_path in in_paths:
+        tmp_channels = []
+        tmp_plates = []
+        if not in_path.endswith("/"):
+            in_path += "/"
+        for fn in glob(in_path + "*." + ext):
+            try:
+                metadata = parse_metadata(os.path.basename(fn))
+                plate_prefix = metadata["plate_prefix"]
+                plate = metadata["plate"]
+                if plate not in dict_plate_prefixes.keys():
+                    dict_plate_prefixes[plate] = plate_prefix
+                tmp_plates.append(plate)
+                tmp_channels.append(f"A{metadata['A']}_C{metadata['C']}")
+            except IndexError:
+                print("IndexError for ", fn)
+                pass
+
+        info = (
+            f"Finding all plates/channels in {in_path}*.{ext}\n"
+            f"Plates:   {plates}\n"
+            f"Channels: {channels}"
+        )
+
+        # Check that folder includes a single plate
+        tmp_plates = sorted(list(set(tmp_plates)))
+        if len(tmp_plates) > 1:
+            raise Exception(f"ERROR\n{info} ERROR: more than one plate")
+        # Check that channels are the same as in previous plates
+        tmp_channels = sorted(list(set(channels)))
+        if channels is None:
+            channels = tmp_channels[:]
+        else:
+            if channels != tmp_channels:
+                raise Exception(
+                    f"ERROR\n{info}\nERROR: expected channels " "{channels}"
+                )
+        # Update dict_plate_paths
+        dict_plate_paths[tmp_plates[0]] = in_path
 
     # Check that all channels are in the allowed_channels
     if not set(channels).issubset(set(dict_channels.keys())):
@@ -228,11 +249,11 @@ def create_zarr_structure(
                 "version": "0.4",
                 "channels": [
                     {
-                        # "active": true,  # how to write it in python?
+                        # "active": true,  # FIXME how to write it in python?
                         "coefficient": 1,
                         "color": dict_channels[channel]["colormap"],
                         "family": "linear",
-                        # "inverted": false, # how to write it in python?
+                        # "inverted": false, # FIXME how to write it in python?
                         "label": dict_channels[channel]["label"],
                         "window": {
                             "min": 0,
@@ -253,7 +274,10 @@ if __name__ == "__main__":
 
     parser = ArgumentParser(prog="create_zarr_structure")
     parser.add_argument(
-        "-i", "--in_path", help="directory containing the input files"
+        "-i",
+        "--in_paths",
+        help="list of directories containing the input files",
+        nargs="+",
     )
     parser.add_argument(
         "-o", "--out_path", help="directory for the outnput zarr files"
@@ -270,9 +294,15 @@ if __name__ == "__main__":
         help="number of levels in the Zarr pyramid",
     )
 
+    parser.add_argument(
+        "-c",
+        "--path_dict_channels",
+        type=int,
+        help="path of channel dictionary",
+    )
     args = parser.parse_args()
     create_zarr_structure(
-        in_path=args.in_path,
+        in_paths=args.in_paths,
         out_path=args.out_path,
         ext=args.ext,
         num_levels=args.num_levels,

@@ -481,7 +481,8 @@ def workflow_apply(
         "create_zarr_structure_multifov",
     ]:
         kwargs = dict(
-            in_path=resource_in,
+            # FIXME : add support for a list!
+            in_path=[resource_in],
             out_path=resource_out,
             ext=ext,
             num_levels=num_levels,
