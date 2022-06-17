@@ -30,15 +30,20 @@ def create_zarr_structure(
     # Find all plates and all channels
     plates = []
     channels = []
+    dict_plate_prefixes = {}
     if not in_path.endswith("/"):
         in_path += "/"
-    for i in glob(in_path + "*." + ext):
+    for fn in glob(in_path + "*." + ext):
         try:
-            metadata = parse_metadata(os.path.basename(i))
-            plates.append(metadata["plate"])
+            metadata = parse_metadata(os.path.basename(fn))
+            plate_prefix = metadata["plate_prefix"]
+            plate = metadata["plate"]
+            if plate not in dict_plate_prefixes.keys():
+                dict_plate_prefixes[plate] = plate_prefix
+            plates.append(plate)
             channels.append(f"A{metadata['A']}_C{metadata['C']}")
         except IndexError:
-            print("IndexError for ", i)
+            print("IndexError for ", fn)
             pass
     plates = sorted(list(set(plates)))
     channels = sorted(list(set(channels)))
@@ -47,59 +52,80 @@ def create_zarr_structure(
     print(f"Channels: {channels}")
 
     # HARDCODED CHANNELS AND THEIR PROPERTIES
-    allowed_channels = ["A01_C01", "A01_C02", "A02_C03"]
-    labels_allowed_channel = {
-        "A01_C01": "DAPI",
-        "A01_C02": "nanog",
-        "A02_C03": "Lamin B1",
+    dict_channels = {
+        "A01_C01": dict(label="DAPI", colormap="00FFFF", start=110),
+        "A01_C02": dict(label="nanog", colormap="FF00FF", start=115),
+        "A02_C03": dict(label="Lamin B1", colormap="FFFF00", start=115),
     }
-    colormaps = ["00FFFF", "FF00FF", "FFFF00"]
 
     # Check that all channels are in the allowed_channels
-    if not set(channels).issubset(set(allowed_channels)):
+    if not set(channels).issubset(set(dict_channels.keys())):
         msg = "ERROR in create_zarr_structure\n"
         msg += f"channels: {channels}\n"
-        msg += f"allowed_channels: {allowed_channels}\n"
+        msg += f"allowed_channels: {dict_channels.keys()}\n"
         raise Exception(msg)
 
     # Sort channels according to allowed_channels, and assign increasing index
     # actual_channels is a list of entries like (0, "A01_C01", "DAPI")
     actual_channels = []
-    ind_channel = 0
     print("-" * 80)
     print("actual_channels")
     print("-" * 80)
-    for ch in allowed_channels:
-        if ch in channels:
-            actual_channels.append(
-                [ind_channel, ch, labels_allowed_channel[ch]]
-            )
-            ind_channel += 1
-            print(ind_channel, ch, labels_allowed_channel[ch])
+    for ind_ch, ch in enumerate(channels):
+        actual_channels.append([ind_ch, ch, dict_channels[ch]["label"]])
+        print(actual_channels[-1])
     print("-" * 80)
 
     well = []
 
     zarrurls = {"plate": [], "well": []}
 
-    # loop over plate, each plate could have n wells
-    # debug(plate_unique)
     for plate in plates:
+
+        # Define plate zarr
         group_plate = zarr.group(out_path + f"{plate}.zarr")
         zarrurls["plate"].append(out_path + f"{plate}.zarr")
-        well = [
+
+        # Identify all wells
+        plate_prefix = dict_plate_prefixes[plate]
+        wells = [
             parse_metadata(os.path.basename(fn))["well"]
-            for fn in glob(in_path + f"{plate}_*." + ext)
+            for fn in glob(f"{in_path}{plate_prefix}_*.{ext}")
         ]
-        well_unique = set(well)
+        wells = sorted(list(set(wells)))
+
+        # Verify that all wells have all channels
+        expected_channels = [
+            ind_name_label[1] for ind_name_label in actual_channels
+        ]
+        for well in wells:
+            well_channels = []
+            glob_string = f"{in_path}{plate_prefix}_{well}*.{ext}"
+            for fn in glob(glob_string):
+                try:
+                    metadata = parse_metadata(os.path.basename(fn))
+                    well_channels.append(f"A{metadata['A']}_C{metadata['C']}")
+                except IndexError:
+                    print(f"Skipping {fn}")
+            well_channels = sorted(list(set(well_channels)))
+            if well_channels != expected_channels:
+                raise Exception(
+                    f"ERROR: well {well} in plate {plate} (prefix: "
+                    f"{plate_prefix}) has missing channels.\n"
+                    f"Expected: {expected_channels}\n"
+                    f"Found: {well_channels}.\n"
+                    f"[glob_string: {glob_string}]"
+                )
 
         well_rows_columns = [
-            ind for ind in sorted([(n[0], n[1:]) for n in well_unique])
+            ind for ind in sorted([(n[0], n[1:]) for n in wells])
         ]
 
         group_plate.attrs["plate"] = {
             "acquisitions": [
-                {"id": id_, "name": name} for id_, name in enumerate(plates)
+                # FIXME this should not be within "for plate in plates"!
+                {"id": id_, "name": name}
+                for id_, name in enumerate(plates)
             ],
             # takes unique cols from (row,col) tuples
             "columns": sorted(
@@ -139,8 +165,6 @@ def create_zarr_structure(
 
             group_well = group_plate.create_group(f"{row}/{column}/")
 
-            # Assumption: All channels in actual_channels are present #FIXME
-
             group_well.attrs["well"] = {
                 "images": [
                     {"path": "0"}  # multiscale level, until pyramids just 0
@@ -171,23 +195,24 @@ def create_zarr_structure(
                     ],
                 }
             ]
+
             group_field.attrs["omero"] = {
-                "id": 1,
+                "id": 1,  # FIXME does this depend on the plate number?
                 "name": "TBD",
                 "version": "0.4",
                 "channels": [
                     {
-                        # "active": "rue,
+                        # "active": true,  # how to write it in python?
                         "coefficient": 1,
-                        "color": colormaps[channel[0]],
+                        "color": dict_channels[channel[1]]["colormap"],
                         "family": "linear",
-                        # "inverted": false,
+                        # "inverted": false, # how to write it in python?
                         "label": channel[2],
                         "window": {
                             "end": 600,
                             "max": 65535,
                             "min": 0,
-                            "start": 110,
+                            "start": dict_channels[channel[1]]["start"],
                         },
                     }
                     for channel in actual_channels
