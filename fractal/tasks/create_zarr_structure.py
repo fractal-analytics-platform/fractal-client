@@ -24,7 +24,8 @@ def create_zarr_structure(
     :param out_path: path for output zarr files
     :type out_path: str
     :param ext: extension of images (e.g. tiff, png, ..)
-    :type ext: str
+    :param path_dict_channels: FIXME
+    :type path_dict_channels: str
     :param num_levels: number of coarsening levels in the pyramid
     :type num_levels: int
     """
@@ -92,7 +93,7 @@ def create_zarr_structure(
     print("actual_channels")
     print("-" * 80)
     for ind_ch, ch in enumerate(channels):
-        actual_channels.append([ch])
+        actual_channels.append(ch)
         print(actual_channels[-1])
     print("-" * 80)
 
