@@ -7,12 +7,51 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "anyio"
+version = "3.6.1"
+description = "High level compatibility layer for multiple asynchronous event loop implementations"
+category = "main"
+optional = false
+python-versions = ">=3.6.2"
+
+[package.dependencies]
+idna = ">=2.8"
+sniffio = ">=1.1"
+
+[package.extras]
+doc = ["packaging", "sphinx-rtd-theme", "sphinx-autodoc-typehints (>=1.2.0)"]
+test = ["coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "contextlib2", "uvloop (<0.15)", "mock (>=4)", "uvloop (>=0.15)"]
+trio = ["trio (>=0.16)"]
+
+[[package]]
 name = "asciitree"
 version = "0.3.3"
 description = "Draws ASCII trees."
 category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "asgi-lifespan"
+version = "1.0.1"
+description = "Programmatic startup/shutdown of ASGI apps."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+sniffio = "*"
+
+[[package]]
+name = "asgiref"
+version = "3.5.2"
+description = "ASGI specs, helper code, and adapters"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+tests = ["pytest", "pytest-asyncio", "mypy (>=0.800)"]
 
 [[package]]
 name = "asttokens"
@@ -297,6 +336,24 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "fastapi"
+version = "0.78.0"
+description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
+category = "main"
+optional = false
+python-versions = ">=3.6.1"
+
+[package.dependencies]
+pydantic = ">=1.6.2,<1.7 || >1.7,<1.7.1 || >1.7.1,<1.7.2 || >1.7.2,<1.7.3 || >1.7.3,<1.8 || >1.8,<1.8.1 || >1.8.1,<2.0.0"
+starlette = "0.19.1"
+
+[package.extras]
+all = ["requests (>=2.24.0,<3.0.0)", "jinja2 (>=2.11.2,<4.0.0)", "python-multipart (>=0.0.5,<0.0.6)", "itsdangerous (>=1.1.0,<3.0.0)", "pyyaml (>=5.3.1,<7.0.0)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0)", "orjson (>=3.2.1,<4.0.0)", "email_validator (>=1.1.1,<2.0.0)", "uvicorn[standard] (>=0.12.0,<0.18.0)"]
+dev = ["python-jose[cryptography] (>=3.3.0,<4.0.0)", "passlib[bcrypt] (>=1.7.2,<2.0.0)", "autoflake (>=1.4.0,<2.0.0)", "flake8 (>=3.8.3,<4.0.0)", "uvicorn[standard] (>=0.12.0,<0.18.0)", "pre-commit (>=2.17.0,<3.0.0)"]
+doc = ["mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "mdx-include (>=1.4.1,<2.0.0)", "mkdocs-markdownextradata-plugin (>=0.1.7,<0.3.0)", "typer (>=0.4.1,<0.5.0)", "pyyaml (>=5.3.1,<7.0.0)"]
+test = ["pytest (>=6.2.4,<7.0.0)", "pytest-cov (>=2.12.0,<4.0.0)", "mypy (==0.910)", "flake8 (>=3.8.3,<4.0.0)", "black (==22.3.0)", "isort (>=5.0.6,<6.0.0)", "requests (>=2.24.0,<3.0.0)", "httpx (>=0.14.0,<0.19.0)", "email_validator (>=1.1.1,<2.0.0)", "sqlalchemy (>=1.3.18,<1.5.0)", "peewee (>=3.13.3,<4.0.0)", "databases[sqlite] (>=0.3.2,<0.6.0)", "orjson (>=3.2.1,<4.0.0)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0)", "python-multipart (>=0.0.5,<0.0.6)", "flask (>=1.1.2,<3.0.0)", "anyio[trio] (>=3.2.1,<4.0.0)", "types-ujson (==4.2.1)", "types-orjson (==3.6.2)", "types-dataclasses (==0.6.5)"]
+
+[[package]]
 name = "fasteners"
 version = "0.17.3"
 description = "A python package that provides useful locks"
@@ -394,6 +451,14 @@ typing-extensions = {version = ">=4.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
 dev = ["pytest (<7)", "coverage (<7)", "pytest-xdist (<3)", "responses (==0.17.0)", "flake8 (<5)", "isort (<6)", "black (==21.12b0)", "flake8-bugbear (==21.11.29)", "mypy (==0.940)", "types-docutils", "types-jwt", "types-requests", "typing-extensions", "sphinx (<5)", "sphinx-issues (<3)", "furo (==2022.1.2)"]
+
+[[package]]
+name = "h11"
+version = "0.13.0"
+description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
+category = "main"
+optional = false
+python-versions = ">=3.6"
 
 [[package]]
 name = "html5lib"
@@ -1022,6 +1087,20 @@ tomli = ">=1.0.0"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-asyncio"
+version = "0.18.3"
+description = "Pytest support for asyncio"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+pytest = ">=6.1.0"
+
+[package.extras]
+testing = ["coverage (==6.2)", "hypothesis (>=5.7.1)", "flaky (>=3.5.0)", "mypy (==0.931)", "pytest-trio (>=0.7.0)"]
+
+[[package]]
 name = "pytest-mock"
 version = "3.7.0"
 description = "Thin-wrapper around the mock package for easier use with pytest"
@@ -1046,6 +1125,7 @@ python-versions = "*"
 [package.dependencies]
 docutils = "*"
 lockfile = ">=0.10"
+setuptools = "*"
 
 [package.extras]
 test = ["coverage", "docutils", "testscenarios (>=0.4)", "testtools"]
@@ -1185,6 +1265,19 @@ cryptography = ">=2.0"
 jeepney = ">=0.6"
 
 [[package]]
+name = "setuptools"
+version = "62.5.0"
+description = "Easily download, build, install, upgrade, and uninstall Python packages"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-reredirects", "sphinxcontrib-towncrier", "furo"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-enabler (>=1.0.1)", "pytest-perf", "mock", "flake8-2020", "virtualenv (>=13.0.0)", "wheel", "pip (>=19.1)", "jaraco.envs (>=2.2)", "pytest-xdist", "jaraco.path (>=3.2.0)", "build", "filelock (>=3.4.0)", "pip-run (>=8.8)", "ini2toml[lite] (>=0.9)", "tomli-w (>=1.0.0)", "pytest-black (>=0.3.7)", "pytest-cov", "pytest-mypy (>=0.9.1)"]
+testing-integration = ["pytest", "pytest-xdist", "pytest-enabler", "virtualenv (>=13.0.0)", "tomli", "wheel", "jaraco.path (>=3.2.0)", "jaraco.envs (>=2.2)", "build", "filelock (>=3.4.0)"]
+
+[[package]]
 name = "shellingham"
 version = "1.4.0"
 description = "Tool to Detect Surrounding Shell"
@@ -1199,6 +1292,14 @@ description = "Python 2 and 3 compatibility utilities"
 category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
+name = "sniffio"
+version = "1.2.0"
+description = "Sniff out which async library your code is running under"
+category = "main"
+optional = false
+python-versions = ">=3.5"
 
 [[package]]
 name = "snowballstemmer"
@@ -1373,6 +1474,21 @@ timezone = ["python-dateutil"]
 url = ["furl (>=0.4.1)"]
 
 [[package]]
+name = "starlette"
+version = "0.19.1"
+description = "The little ASGI library that shines."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+anyio = ">=3.4.0,<5"
+typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
+
+[package.extras]
+full = ["itsdangerous", "jinja2", "python-multipart", "pyyaml", "requests"]
+
+[[package]]
 name = "tblib"
 version = "1.7.0"
 description = "Traceback serialization library."
@@ -1479,6 +1595,22 @@ secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "cer
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
+name = "uvicorn"
+version = "0.17.6"
+description = "The lightning-fast ASGI server."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+asgiref = ">=3.4.0"
+click = ">=7.0"
+h11 = ">=0.8"
+
+[package.extras]
+standard = ["websockets (>=10.0)", "httptools (>=0.4.0)", "watchgod (>=0.6)", "python-dotenv (>=0.13)", "PyYAML (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "colorama (>=0.4)"]
+
+[[package]]
 name = "virtualenv"
 version = "20.14.1"
 description = "Virtual Python Environment builder"
@@ -1547,15 +1679,27 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "a49c5a01493eb065dc8910fab877fb9bad465c2b7d99fd1059b8b678539a5edc"
+content-hash = "be588a283f79e6a762fd3d30a223a1338f8395b6b6e5ba4322fb1907d0d8daf5"
 
 [metadata.files]
 alabaster = [
     {file = "alabaster-0.7.12-py2.py3-none-any.whl", hash = "sha256:446438bdcca0e05bd45ea2de1668c1d9b032e1a9154c2c259092d77031ddd359"},
     {file = "alabaster-0.7.12.tar.gz", hash = "sha256:a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02"},
 ]
+anyio = [
+    {file = "anyio-3.6.1-py3-none-any.whl", hash = "sha256:cb29b9c70620506a9a8f87a309591713446953302d7d995344d0d7c6c0c9a7be"},
+    {file = "anyio-3.6.1.tar.gz", hash = "sha256:413adf95f93886e442aea925f3ee43baa5a765a64a0f52c6081894f9992fdd0b"},
+]
 asciitree = [
     {file = "asciitree-0.3.3.tar.gz", hash = "sha256:4aa4b9b649f85e3fcb343363d97564aa1fb62e249677f2e18a96765145cc0f6e"},
+]
+asgi-lifespan = [
+    {file = "asgi-lifespan-1.0.1.tar.gz", hash = "sha256:9a33e7da2073c4764bc79bd6136501d6c42f60e3d2168ba71235e84122eadb7f"},
+    {file = "asgi_lifespan-1.0.1-py3-none-any.whl", hash = "sha256:9ea969dc5eb5cf08e52c08dce6f61afcadd28112e72d81c972b1d8eb8691ab53"},
+]
+asgiref = [
+    {file = "asgiref-3.5.2-py3-none-any.whl", hash = "sha256:1d2880b792ae8757289136f1db2b7b99100ce959b2aa57fd69dab783d05afac4"},
+    {file = "asgiref-3.5.2.tar.gz", hash = "sha256:4a29362a6acebe09bf1d6640db38c1dc3d9217c68e6f9f6204d72667fc19a424"},
 ]
 asttokens = [
     {file = "asttokens-2.0.5-py2.py3-none-any.whl", hash = "sha256:0844691e88552595a6f4a4281a9f7f79b8dd45ca4ccea82e5e05b4bbdb76705c"},
@@ -1730,6 +1874,10 @@ executing = [
     {file = "executing-0.8.3-py2.py3-none-any.whl", hash = "sha256:d1eef132db1b83649a3905ca6dd8897f71ac6f8cac79a7e58a1a09cf137546c9"},
     {file = "executing-0.8.3.tar.gz", hash = "sha256:c6554e21c6b060590a6d3be4b82fb78f8f0194d809de5ea7df1c093763311501"},
 ]
+fastapi = [
+    {file = "fastapi-0.78.0-py3-none-any.whl", hash = "sha256:15fcabd5c78c266fa7ae7d8de9b384bfc2375ee0503463a6febbe3bab69d6f65"},
+    {file = "fastapi-0.78.0.tar.gz", hash = "sha256:3233d4a789ba018578658e2af1a4bb5e38bdd122ff722b313666a9b2c6786a83"},
+]
 fasteners = [
     {file = "fasteners-0.17.3-py3-none-any.whl", hash = "sha256:cae0772df265923e71435cc5057840138f4e8b6302f888a567d06ed8e1cbca03"},
     {file = "fasteners-0.17.3.tar.gz", hash = "sha256:a9a42a208573d4074c77d041447336cf4e3c1389a256fd3e113ef59cf29b7980"},
@@ -1753,6 +1901,10 @@ fsspec = [
 globus-sdk = [
     {file = "globus-sdk-3.8.0.tar.gz", hash = "sha256:492611636c190806409198cdadc9960227fa712281dce95ef3ec0d7e8f9823a9"},
     {file = "globus_sdk-3.8.0-py3-none-any.whl", hash = "sha256:8ede91296c793eb2a1a9ec56c3660d257b31afb28bf49e402f3589df28f17afb"},
+]
+h11 = [
+    {file = "h11-0.13.0-py3-none-any.whl", hash = "sha256:8ddd78563b633ca55346c8cd41ec0af27d3c79931828beffb46ce70a379e7442"},
+    {file = "h11-0.13.0.tar.gz", hash = "sha256:70813c1135087a248a4d38cc0e1a0181ffab2188141a93eaf567940c3957ff06"},
 ]
 html5lib = [
     {file = "html5lib-1.1-py2.py3-none-any.whl", hash = "sha256:0d78f8fde1c230e99fe37986a60526d7049ed4bf8a9fadbad5f00e22e58e041d"},
@@ -2204,6 +2356,11 @@ pytest = [
     {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
     {file = "pytest-7.1.2.tar.gz", hash = "sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45"},
 ]
+pytest-asyncio = [
+    {file = "pytest-asyncio-0.18.3.tar.gz", hash = "sha256:7659bdb0a9eb9c6e3ef992eef11a2b3e69697800ad02fb06374a210d85b29f91"},
+    {file = "pytest_asyncio-0.18.3-1-py3-none-any.whl", hash = "sha256:16cf40bdf2b4fb7fc8e4b82bd05ce3fbcd454cbf7b92afc445fe299dabb88213"},
+    {file = "pytest_asyncio-0.18.3-py3-none-any.whl", hash = "sha256:8fafa6c52161addfd41ee7ab35f11836c5a16ec208f93ee388f752bea3493a84"},
+]
 pytest-mock = [
     {file = "pytest-mock-3.7.0.tar.gz", hash = "sha256:5112bd92cc9f186ee96e1a92efc84969ea494939c3aead39c50f421c4cc69534"},
     {file = "pytest_mock-3.7.0-py3-none-any.whl", hash = "sha256:6cff27cec936bf81dc5ee87f07132b807bcda51106b5ec4b90a04331cba76231"},
@@ -2411,6 +2568,10 @@ secretstorage = [
     {file = "SecretStorage-3.3.2-py3-none-any.whl", hash = "sha256:755dc845b6ad76dcbcbc07ea3da75ae54bb1ea529eb72d15f83d26499a5df319"},
     {file = "SecretStorage-3.3.2.tar.gz", hash = "sha256:0a8eb9645b320881c222e827c26f4cfcf55363e8b374a021981ef886657a912f"},
 ]
+setuptools = [
+    {file = "setuptools-62.5.0-py3-none-any.whl", hash = "sha256:2a5de5d1ed1fd6dfbe4f1a1079af816032e2d8dfc0975265b57a61429511d10c"},
+    {file = "setuptools-62.5.0.tar.gz", hash = "sha256:a4c782ac58fcc9e3a86e5e1a4c74cf9d24bf21e4f1562043309022e1bb76951c"},
+]
 shellingham = [
     {file = "shellingham-1.4.0-py2.py3-none-any.whl", hash = "sha256:536b67a0697f2e4af32ab176c00a50ac2899c5a05e0d8e2dadac8e58888283f9"},
     {file = "shellingham-1.4.0.tar.gz", hash = "sha256:4855c2458d6904829bd34c299f11fdeed7cfefbf8a2c522e4caea6cd76b3171e"},
@@ -2418,6 +2579,10 @@ shellingham = [
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
+]
+sniffio = [
+    {file = "sniffio-1.2.0-py3-none-any.whl", hash = "sha256:471b71698eac1c2112a40ce2752bb2f4a4814c22a54a3eed3676bc0f5ca9f663"},
+    {file = "sniffio-1.2.0.tar.gz", hash = "sha256:c4666eecec1d3f50960c6bdf61ab7bc350648da6c126e3cf6898d8cd4ddcd3de"},
 ]
 snowballstemmer = [
     {file = "snowballstemmer-2.2.0-py2.py3-none-any.whl", hash = "sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a"},
@@ -2495,6 +2660,10 @@ sqlalchemy-utils = [
     {file = "SQLAlchemy-Utils-0.38.2.tar.gz", hash = "sha256:9e01d6d3fb52d3926fcd4ea4a13f3540701b751aced0316bff78264402c2ceb4"},
     {file = "SQLAlchemy_Utils-0.38.2-py3-none-any.whl", hash = "sha256:622235b1598f97300e4d08820ab024f5219c9a6309937a8b908093f487b4ba54"},
 ]
+starlette = [
+    {file = "starlette-0.19.1-py3-none-any.whl", hash = "sha256:5a60c5c2d051f3a8eb546136aa0c9399773a689595e099e0877704d5888279bf"},
+    {file = "starlette-0.19.1.tar.gz", hash = "sha256:c6d21096774ecb9639acad41b86b7706e52ba3bf1dc13ea4ed9ad593d47e24c7"},
+]
 tblib = [
     {file = "tblib-1.7.0-py2.py3-none-any.whl", hash = "sha256:289fa7359e580950e7d9743eab36b0691f0310fce64dee7d9c31065b8f723e23"},
     {file = "tblib-1.7.0.tar.gz", hash = "sha256:059bd77306ea7b419d4f76016aef6d7027cc8a0785579b5aad198803435f882c"},
@@ -2538,6 +2707,10 @@ typing-extensions = [
 urllib3 = [
     {file = "urllib3-1.26.9-py2.py3-none-any.whl", hash = "sha256:44ece4d53fb1706f667c9bd1c648f5469a2ec925fcf3a776667042d645472c14"},
     {file = "urllib3-1.26.9.tar.gz", hash = "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"},
+]
+uvicorn = [
+    {file = "uvicorn-0.17.6-py3-none-any.whl", hash = "sha256:19e2a0e96c9ac5581c01eb1a79a7d2f72bb479691acd2b8921fce48ed5b961a6"},
+    {file = "uvicorn-0.17.6.tar.gz", hash = "sha256:5180f9d059611747d841a4a4c4ab675edf54c8489e97f96d0583ee90ac3bfc23"},
 ]
 virtualenv = [
     {file = "virtualenv-20.14.1-py2.py3-none-any.whl", hash = "sha256:e617f16e25b42eb4f6e74096b9c9e37713cf10bf30168fb4a739f3fa8f898a3a"},
