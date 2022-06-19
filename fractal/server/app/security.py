@@ -9,12 +9,12 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import BaseModel
 
 from ..config import settings
-
-# from fastapi.security import OAuth2PasswordBearer
 
 
 # LDAPS
@@ -23,12 +23,16 @@ DOC: http://www.pynut.com/?p=45
 """
 
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token")
+
+
 class User(BaseModel):
     """
     Internal representation of a logged in user
     """
 
     sub: str
+    name: str
 
 
 class Token(BaseModel):
@@ -40,6 +44,27 @@ class FailedAuthenticationException(Exception):
     pass
 
 
+def mock_authenticate_user(username: str, password: str) -> User | None:
+    from ..utils import warn
+
+    warn("Using mock authentication")
+
+    if username == "username" and password == "password":  # nosec
+        return User(sub="1234", name="User Name")
+    return None
+
+
+def mock_get_user(sub: str) -> User:
+    from ..utils import warn
+
+    warn("Using mock get_user")
+
+    if sub == "1234":
+        return User(sub="1234", name="User Name")
+    else:
+        raise ValueError("User not found")
+
+
 async def authenticate_user(username: str, password: str):
     """
     Authenticate user against LDAP
@@ -48,12 +73,15 @@ async def authenticate_user(username: str, password: str):
     """
     from ..utils import warn
 
-    warn("authentication not implemented")
-    # raise NotImplementedError
-    return User(sub="1234")
+    warn("Using mock authentication")
+
+    user = mock_authenticate_user(username, password)
+    if not user:
+        raise FailedAuthenticationException
+    return user
 
 
-def create_access_token(
+def access_token_encode(
     data: dict, expires_min: int = settings.JWT_EXPIRE_MINUTES
 ) -> str:
     """
@@ -75,5 +103,11 @@ def create_access_token(
     return token
 
 
-# async def get_current_user(token: str = Depends(oauth2_scheme)):
-#     pass
+def access_token_decode(token: str = Depends(oauth2_scheme)) -> User:
+    payload = jwt.decode(token, settings.JWT_SECRET_KEY)
+    sub = payload["sub"]
+    return mock_get_user(sub)
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    return access_token_decode(token)
