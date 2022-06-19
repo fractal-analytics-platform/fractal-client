@@ -49,6 +49,7 @@ asgi-lifespan = "^1.0.1"
 pytest-mock = "^3.7.0"
 pytest-asyncio = "^0.18.3"
 pre-commit = "^2.19.0"
+bumpver = "^2022.1116"
 
 [build-system]
 requires = ["poetry-core"]
@@ -56,3 +57,23 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.bumpver]
+current_version = "0.1.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'version = "{version}"',
+]
+"fractal/server/config.py" = [
+    '__VERSION__ = "{version}"'
+]
+"README.md" = [
+    "{version}",
+    "{pep440_version}",
+]

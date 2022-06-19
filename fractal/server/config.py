@@ -15,6 +15,9 @@ def fail_getenv(key):
 load_dotenv(".fractal.env")
 
 
+__VERSION__ = "0.1.0"
+
+
 class DeploymentType(str, Enum):
     production = "production"
     staging = "staging"
@@ -24,7 +27,7 @@ class DeploymentType(str, Enum):
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Fractal Server"
-    PROJECT_VERSION: str = "0.1.0"
+    PROJECT_VERSION: str = __VERSION__
     DEPLOYMENT_TYPE: DeploymentType = DeploymentType(
         fail_getenv("DEPLOYMENT_TYPE")
     )

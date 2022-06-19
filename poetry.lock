@@ -116,6 +116,22 @@ tests = ["pytest (>=3.2.1,!=3.3.0)"]
 typecheck = ["mypy"]
 
 [[package]]
+name = "bumpver"
+version = "2022.1116"
+description = "Bump version numbers in project files."
+category = "dev"
+optional = false
+python-versions = ">=2.7"
+
+[package.dependencies]
+click = {version = "*", markers = "python_version >= \"3.6\""}
+colorama = ">=0.4"
+lexid = "*"
+pathlib2 = "*"
+setuptools = {version = ">=45.0.0", markers = "python_version >= \"3.5\""}
+toml = "*"
+
+[[package]]
 name = "certifi"
 version = "2022.6.15"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -269,7 +285,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "ecdsa"
 version = "0.17.0"
 description = "ECDSA cryptographic signature library (pure python)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -568,6 +584,14 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "lexid"
+version = "2021.1006"
+description = "Variable width build numbers with lexical ordering."
+category = "dev"
+optional = false
+python-versions = ">=2.7"
+
+[[package]]
 name = "locket"
 version = "1.0.0"
 description = "File-based locks for Python on Linux and Windows"
@@ -746,6 +770,17 @@ toolz = "*"
 complete = ["numpy (>=1.9.0)", "pandas (>=0.19.0)", "pyzmq", "blosc"]
 
 [[package]]
+name = "pathlib2"
+version = "2.3.7.post1"
+description = "Object-oriented filesystem paths"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
+
+[[package]]
 name = "pillow"
 version = "9.1.1"
 description = "Python Imaging Library (Fork)"
@@ -831,7 +866,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "pyasn1"
 version = "0.4.8"
 description = "ASN.1 types and codecs"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1019,7 +1054,7 @@ cli = ["click (>=5.0)"]
 name = "python-jose"
 version = "3.3.0"
 description = "JOSE implementation in Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1037,7 +1072,7 @@ pycryptodome = ["pycryptodome (>=3.3.1,<4.0.0)", "pyasn1"]
 name = "python-multipart"
 version = "0.0.5"
 description = "A streaming multipart parser for Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1119,7 +1154,7 @@ idna2008 = ["idna"]
 name = "rsa"
 version = "4.8"
 description = "Pure-Python RSA implementation"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6,<4"
 
@@ -1178,7 +1213,7 @@ testing-integration = ["pytest", "pytest-xdist", "pytest-enabler", "virtualenv (
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -1552,7 +1587,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b4df9f0a18de85d7c74b7ed59b8660bab62827c8bb49488fbd11f71e1e6ee557"
+content-hash = "d51c4304e07241b5aa7f50c77bff9df7fe3f734b88827e312e8f0c958ba4d248"
 
 [metadata.files]
 alabaster = [
@@ -1602,6 +1637,10 @@ bcrypt = [
     {file = "bcrypt-3.2.2-cp36-abi3-win32.whl", hash = "sha256:4e029cef560967fb0cf4a802bcf4d562d3d6b4b1bf81de5ec1abbe0f1adb027e"},
     {file = "bcrypt-3.2.2-cp36-abi3-win_amd64.whl", hash = "sha256:7ff2069240c6bbe49109fe84ca80508773a904f5a8cb960e02a977f7f519b129"},
     {file = "bcrypt-3.2.2.tar.gz", hash = "sha256:433c410c2177057705da2a9f2cd01dd157493b2a7ac14c8593a16b3dab6b6bfb"},
+]
+bumpver = [
+    {file = "bumpver-2022.1116-py2.py3-none-any.whl", hash = "sha256:4c87e85faf9bc04a696f4ba85b76bcec9045f6e86c4ba5a8a1bbf2364d32daea"},
+    {file = "bumpver-2022.1116.tar.gz", hash = "sha256:8851504c7b6b8406f7e91c650b4453fe516f01aafb0532dd55f9c8e3a5ba2df9"},
 ]
 certifi = [
     {file = "certifi-2022.6.15-py3-none-any.whl", hash = "sha256:fe86415d55e84719d75f8b69414f6438ac3547d2078ab91b67e779ef69378412"},
@@ -1822,6 +1861,10 @@ jinja2 = [
     {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
     {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
 ]
+lexid = [
+    {file = "lexid-2021.1006-py2.py3-none-any.whl", hash = "sha256:5526bb5606fd74c7add23320da5f02805bddd7c77916f2dc1943e6bada8605ed"},
+    {file = "lexid-2021.1006.tar.gz", hash = "sha256:509a3a4cc926d3dbf22b203b18a4c66c25e6473fb7c0e0d30374533ac28bafe5"},
+]
 locket = [
     {file = "locket-1.0.0-py2.py3-none-any.whl", hash = "sha256:b6c819a722f7b6bd955b80781788e4a66a55628b858d347536b7e81325a3a5e3"},
     {file = "locket-1.0.0.tar.gz", hash = "sha256:5c0d4c052a8bbbf750e056a8e65ccd309086f4f0f18a2eac306a8dfa4112a632"},
@@ -1973,6 +2016,10 @@ parsl = [
 partd = [
     {file = "partd-1.2.0-py3-none-any.whl", hash = "sha256:5c3a5d70da89485c27916328dc1e26232d0e270771bd4caef4a5124b6a457288"},
     {file = "partd-1.2.0.tar.gz", hash = "sha256:aa67897b84d522dcbc86a98b942afab8c6aa2f7f677d904a616b74ef5ddbc3eb"},
+]
+pathlib2 = [
+    {file = "pathlib2-2.3.7.post1-py2.py3-none-any.whl", hash = "sha256:5266a0fd000452f1b3467d782f079a4343c63aaa119221fbdc4e39577489ca5b"},
+    {file = "pathlib2-2.3.7.post1.tar.gz", hash = "sha256:9fe0edad898b83c0c3e199c842b27ed216645d2e177757b2dd67384d4113c641"},
 ]
 pillow = [
     {file = "Pillow-9.1.1-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:42dfefbef90eb67c10c45a73a9bc1599d4dac920f7dfcbf4ec6b80cb620757fe"},
