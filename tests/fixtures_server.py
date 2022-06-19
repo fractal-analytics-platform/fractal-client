@@ -14,6 +14,6 @@ async def app() -> AsyncGenerator[FastAPI, Any]:
 @pytest.fixture
 async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
-        app=app, base_url="http://test/api/v1"
+        app=app, base_url="http://test/api"
     ) as client, LifespanManager(app):
         yield client
