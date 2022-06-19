@@ -1,1 +1,1 @@
-from .fixtures_server import *
+from .fixtures_server import *  # noqa F403

@@ -1,8 +1,11 @@
+from typing import Any
+from typing import AsyncGenerator
+
 import pytest
-from fastapi import FastAPI
-from typing import AsyncGenerator, Any
-from httpx import AsyncClient
 from asgi_lifespan import LifespanManager
+from fastapi import FastAPI
+from httpx import AsyncClient
+
 from fractal.server import start_application
 
 
