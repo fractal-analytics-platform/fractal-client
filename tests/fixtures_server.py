@@ -14,6 +14,7 @@ def patch_settings():
     from os import environ
 
     environ["JWT_SECRET_KEY"] = "secret_key"
+    environ["DEPLOYMENT_TYPE"] = "development"
 
     from fractal.server.config import settings
 

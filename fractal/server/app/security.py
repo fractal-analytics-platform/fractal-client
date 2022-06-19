@@ -11,7 +11,6 @@ from datetime import timezone
 
 from jose import jwt
 from pydantic import BaseModel
-from pydantic import EmailStr
 
 from ..config import settings
 
@@ -29,8 +28,7 @@ class User(BaseModel):
     Internal representation of a logged in user
     """
 
-    uid: str
-    email: EmailStr
+    sub: str
 
 
 class Token(BaseModel):
@@ -48,7 +46,11 @@ async def authenticate_user(username: str, password: str):
 
     Raise a FailedAuthenticationException if the user cannot authenticate
     """
-    raise NotImplementedError
+    from ..utils import warn
+
+    warn("authentication not implemented")
+    # raise NotImplementedError
+    return User(sub="1234")
 
 
 def create_access_token(
@@ -68,7 +70,7 @@ def create_access_token(
     )
     payload.update(dict(exp=expire))
     token = jwt.encode(
-        payload, settings.JWT_SECRET_KEY, algorightm=settings.JWT_ALGORITHM
+        payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
     )
     return token
 
