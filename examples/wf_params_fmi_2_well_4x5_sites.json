@@ -3,5 +3,6 @@
 "dims": [4, 5],
 "coarsening_xy": 2,
 "coarsening_z": 1,
-"num_levels": 5
+"num_levels": 5,
+"channel_file": "wf_params_fmi_2_well_4x5_sites_channels.json"
 }
