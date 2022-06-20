@@ -1,4 +1,4 @@
-from fractal.tasks.create_zarr_structure import metadata
+from fractal.tasks.lib_parse_filename_metadata import parse_metadata
 
 f1 = "20200812-CardiomyocyteDifferentiation14-Cycle1"
 f1 += "_B03_T0001F036L01A01Z18C01.png"
@@ -11,6 +11,6 @@ p3 = "RS220304172545"
 
 
 def test_metadata():
-    assert metadata(f1)["plate"] == p1
-    assert metadata(f2)["plate"] == p2
-    assert metadata(f3)["plate"] == p3
+    assert parse_metadata(f1)["plate"] == p1
+    assert parse_metadata(f2)["plate"] == p2
+    assert parse_metadata(f3)["plate"] == p3

@@ -391,7 +391,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
 @click.argument("workflow_name", required=True, nargs=1)
 @click.argument("input_dataset", required=True, nargs=1)
 @click.argument("output_dataset", required=True, nargs=1)
-@click.argument("resource_in", required=True, nargs=1)
+@click.argument("resources_in", required=True, nargs=-1)
 @click.argument("resource_out", required=True, nargs=1)
 @click.argument("json_worker_params", required=True, nargs=1)
 def workflow_apply(
@@ -399,23 +399,26 @@ def workflow_apply(
     workflow_name,
     input_dataset,
     output_dataset,
-    resource_in,
+    resources_in,
     resource_out,
     json_worker_params,
 ):
 
-    resource_in = add_slash_to_path(resource_in)
+    resources_in = [
+        add_slash_to_path(resource_in) for resource_in in resources_in
+    ]
     resource_out = add_slash_to_path(resource_out)
 
     prj, _ = project_file_load(project_name)
 
-    # Verify that resource_in has been added to the resources of input_dataset
+    # Verify that resources_in has been added to the resources of input_dataset
     dataset_resources = prj["datasets"][input_dataset]["resources"]
-    if resource_in not in dataset_resources:
-        raise Exception(
-            f"Error in workflow_apply, {resource_in} not in"
-            f" {dataset_resources}"
-        )
+    for resource_in in resources_in:
+        if resource_in not in dataset_resources:
+            raise Exception(
+                f"Error in workflow_apply, {resource_in} not in"
+                f" {dataset_resources}"
+            )
 
     # If the resource_out folder is not there, create it
     path_resource_out = Path(resource_out)
@@ -481,7 +484,7 @@ def workflow_apply(
         "create_zarr_structure_multifov",
     ]:
         kwargs = dict(
-            in_path=resource_in,
+            in_paths=resources_in,
             out_path=resource_out,
             ext=ext,
             num_levels=num_levels,
@@ -495,8 +498,11 @@ def workflow_apply(
             return dict_tasks[task_names[0]](**kwargs)
 
         future = app_create_zarr_structure(**kwargs)
+
         if task_names[0] == "create_zarr_structure":
             zarrurls, chl_list = future.result()
+            debug(zarrurls)
+            debug(chl_list)
         elif task_names[0] == "create_zarr_structure_multifov":
             zarrurls, chl_list, sites_list = future.result()
             debug(zarrurls)
@@ -511,10 +517,17 @@ def workflow_apply(
     # Tasks 1,2,...
     db = db_load()
     for task in task_names:
+        if len(resources_in) > 1:
+            raise Exception(
+                "ERROR\n"
+                "Support for len(resources_in)>1 is not there.\n"
+                "Hint: we should modify the in_path argument of"
+                "yokogawa_to_zarr."
+            )
 
         if task == "yokogawa_to_zarr":
             kwargs = dict(
-                in_path=resource_in,
+                in_path=resources_in[0],  # FIXME
                 ext=ext,
                 delete_input=delete_input,
                 rows=rows,
@@ -526,7 +539,7 @@ def workflow_apply(
             )
         if task == "yokogawa_to_zarr_multifov":
             kwargs = dict(
-                in_path=resource_in,
+                in_path=resources_in[0],  # FIXME
                 ext=ext,
                 delete_input=delete_input,
                 chl_list=chl_list,
@@ -538,7 +551,6 @@ def workflow_apply(
 
         elif task == "maximum_intensity_projection":
             kwargs = dict(
-                chl_list=chl_list,
                 coarsening_xy=coarsening_xy,
             )
         elif task == "replicate_zarr_structure_mip":

@@ -9,7 +9,7 @@ def create_pyramid(
     num_levels=1,
     chunk_size_x=None,
     chunk_size_y=None,
-    chl_list=[],
+    num_channels=None,
 ):
 
     """
@@ -27,8 +27,8 @@ def create_pyramid(
     :type chunk_size_x: int
     :param chunk_size_y: chunk size along Y
     :type chunk_size_y: int
-    :param chl_list: list of the channels
-    :type chl_list: list
+    :param num_channels: number of channels
+    :type num_channels: int
     """
 
     # Check that input has the right shape
@@ -50,7 +50,7 @@ def create_pyramid(
     pyramid = []
     for level in range(num_levels):
         list_data_channels = []
-        for ind_chl, chl in enumerate(chl_list):
+        for ind_chl in range(num_channels):
 
             # Coarsen, if needed
             if level == 0:

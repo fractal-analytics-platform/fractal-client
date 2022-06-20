@@ -7,7 +7,6 @@ from fractal.tasks.lib_pyramid_creation import create_pyramid
 
 def maximum_intensity_projection(
     zarrurl,
-    chl_list=None,
     coarsening_xy=2,
 ):
 
@@ -17,8 +16,6 @@ def maximum_intensity_projection(
 
     :param zarrurl: input zarr file, at the site level (e.g. x.zarr/B/03/0/)
     :type zarrurl: str
-    :param chl_list: list of channels
-    :type chl_list: list
     :param coarsening_xy: coarsening factor along X and Y
     :type coarsening_z: xy
 
@@ -42,14 +39,17 @@ def maximum_intensity_projection(
 
     # Load 0-th level
     data_chl_z_y_x = da.from_zarr(zarrurl + "/0")
+    num_channels = data_chl_z_y_x.shape[0]
     # Loop over channels
     accumulate_chl = []
-    for ind_chl, chl in enumerate(chl_list):
+    for ind_ch in range(num_channels):
+
         # Perform MIP for each channel of level 0
-        mip_yx = da.stack([da.max(data_chl_z_y_x[ind_chl], axis=0)], axis=0)
+        mip_yx = da.stack([da.max(data_chl_z_y_x[ind_ch], axis=0)], axis=0)
+
         accumulate_chl.append(mip_yx)
-        print(chl, mip_yx.shape, mip_yx.chunks)
-        print(zarrurl_mip + f"0/{ind_chl}")
+        print(ind_ch, mip_yx.shape, mip_yx.chunks)
+        print(zarrurl_mip + f"0/{ind_ch}")
     accumulate_chl = da.stack(accumulate_chl, axis=0)
     print()
 
@@ -60,7 +60,7 @@ def maximum_intensity_projection(
         num_levels=num_levels,
         chunk_size_x=chunk_size_x,
         chunk_size_y=chunk_size_y,
-        chl_list=chl_list,
+        num_channels=num_channels,
     )
 
     for ind_level in range(num_levels):
@@ -78,13 +78,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-C",
-        "--chl_list",
-        nargs="+",
-        help="list of channels ",
-    )
-
-    parser.add_argument(
         "-cxy",
         "--coarsening_xy",
         default=2,
@@ -93,6 +86,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    maximum_intensity_projection(
-        args.zarrurl, args.chl_list, args.coarsening_xy
-    )
+    maximum_intensity_projection(args.zarrurl, args.coarsening_xy)

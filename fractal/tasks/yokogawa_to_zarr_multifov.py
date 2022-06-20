@@ -41,6 +41,10 @@ def yokogawa_to_zarr_multifov(
 
     """
 
+    raise NotImplementedError(
+        "yokogawa_to_zarr_multifov not implemented " "with new channel scheme"
+    )
+
     if not in_path.endswith("/"):
         in_path += "/"
     if not zarrurl.endswith("/"):
