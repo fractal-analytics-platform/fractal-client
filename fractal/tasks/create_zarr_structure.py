@@ -91,14 +91,26 @@ def create_zarr_structure(
             f"Channels: {tmp_channels}\n"
         )
 
-        # If more than one plate is found, add suffix _1, _2, ..
+        # Check that only one plate is found
         if len(tmp_plates) > 1:
-            print(f"{info}WARNING: {len(tmp_plates)} plates detected")
-            for ind, plate in enumerate(tmp_plates):
-                if ind == 0:
-                    continue
+            raise Exception(f"{info}ERROR: {len(tmp_plates)} plates detected")
+        plate = tmp_plates[0]
+
+        # If plate already exists in other folder, add suffix
+        if plate in plates:
+            ind = 1
+            new_plate = f"{plate}_{ind}"
+            while new_plate in plates:
                 new_plate = f"{plate}_{ind}"
-                dict_plate_prefixes[new_plate] = dict_plate_prefixes.pop(plate)
+                ind += 1
+            print(
+                f"WARNING: {plate} already exists, renaming it as {new_plate}"
+            )
+            plates.append(new_plate)
+            dict_plate_prefixes[new_plate] = dict_plate_prefixes[plate]
+            plate = new_plate
+        else:
+            plates.append(plate)
 
         # Check that channels are the same as in previous plates
         if channels is None:
@@ -109,8 +121,7 @@ def create_zarr_structure(
                     f"ERROR\n{info}\nERROR: expected channels " "{channels}"
                 )
 
-        # Update dict_plate_paths
-        for plate in tmp_plates:
+            # Update dict_plate_paths
             dict_plate_paths[plate] = in_path
 
     # Check that all channels are in the allowed_channels
@@ -123,19 +134,20 @@ def create_zarr_structure(
     # Sort channels according to allowed_channels, and assign increasing index
     # actual_channels is a list of entries like A01_C01"
     actual_channels = []
-    print("-" * 80)
-    print("actual_channels")
-    print("-" * 80)
     for ind_ch, ch in enumerate(channels):
         actual_channels.append(ch)
-        print(actual_channels[-1])
-    print("-" * 80)
+    print(f"actual_channels: {actual_channels}")
 
     well = []
+
+    if not out_path.endswith("/"):
+        out_path += "/"
 
     zarrurls = {"plate": [], "well": []}
 
     for plate in plates:
+
+        print(f"Creating {out_path}{plate}.zarr")
 
         # Define plate zarr
         group_plate = zarr.group(out_path + f"{plate}.zarr")
