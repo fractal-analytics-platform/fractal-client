@@ -482,7 +482,7 @@ def workflow_apply(
     ]:
         kwargs = dict(
             # FIXME : add support for a list!
-            in_path=[resource_in],
+            in_paths=[resource_in],
             out_path=resource_out,
             ext=ext,
             num_levels=num_levels,
