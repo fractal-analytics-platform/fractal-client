@@ -19,7 +19,7 @@ def create_zarr_structure(
     Create (and store) the zarr folder, without reading or writing data.
 
 
-    :param in_path: path of images  #FIXME LIST
+    :param in_paths: list of image directories
     :type in_path: list
     :param out_path: path for output zarr files
     :type out_path: str
@@ -29,8 +29,6 @@ def create_zarr_structure(
     :param num_levels: number of coarsening levels in the pyramid
     :type num_levels: int
     """
-
-    # FIXME: in_path should be a list!
 
     # FIXME: remove hard-coded default (for None)
     if path_dict_channels is None:
@@ -62,7 +60,7 @@ def create_zarr_structure(
                 "(probably a None instead of a string)."
             )
 
-    # Find all plates and all channels
+    # Identify all plates and all channels, across all input folders
     plates = []
     channels = None
     dict_plate_paths = {}
@@ -84,19 +82,25 @@ def create_zarr_structure(
             except IndexError:
                 print("IndexError for ", fn)
                 pass
+        tmp_plates = sorted(list(set(tmp_plates)))
+        tmp_channels = sorted(list(set(tmp_channels)))
 
         info = (
-            f"Finding all plates/channels in {in_path}*.{ext}\n"
-            f"Plates:   {plates}\n"
-            f"Channels: {channels}"
+            f"Listing all plates/channels from {in_path}*.{ext}\n"
+            f"Plates:   {tmp_plates}\n"
+            f"Channels: {tmp_channels}\n"
         )
 
-        # Check that folder includes a single plate
-        tmp_plates = sorted(list(set(tmp_plates)))
+        # If more than one plate is found, add suffix _1, _2, ..
         if len(tmp_plates) > 1:
-            raise Exception(f"ERROR\n{info} ERROR: more than one plate")
+            print(f"{info}WARNING: {len(tmp_plates)} plates detected")
+            for ind, plate in enumerate(tmp_plates):
+                if ind == 0:
+                    continue
+                new_plate = f"{plate}_{ind}"
+                dict_plate_prefixes[new_plate] = dict_plate_prefixes.pop(plate)
+
         # Check that channels are the same as in previous plates
-        tmp_channels = sorted(list(set(channels)))
         if channels is None:
             channels = tmp_channels[:]
         else:
@@ -104,8 +108,10 @@ def create_zarr_structure(
                 raise Exception(
                     f"ERROR\n{info}\nERROR: expected channels " "{channels}"
                 )
+
         # Update dict_plate_paths
-        dict_plate_paths[tmp_plates[0]] = in_path
+        for plate in tmp_plates:
+            dict_plate_paths[plate] = in_path
 
     # Check that all channels are in the allowed_channels
     if not set(channels).issubset(set(dict_channels.keys())):
@@ -168,13 +174,7 @@ def create_zarr_structure(
         ]
 
         group_plate.attrs["plate"] = {
-            "acquisitions": [
-                # FIXME this should not be within "for plate in plates"!
-                # {"id": 1, "name": plate}  # new version
-                {"id": id_, "name": name}
-                for id_, name in enumerate(plates)
-            ],
-            # takes unique cols from (row,col) tuples
+            "acquisitions": [{"id": 1, "name": plate}],
             "columns": sorted(
                 [
                     {"name": u_col}
@@ -187,7 +187,6 @@ def create_zarr_structure(
                 ],
                 key=lambda key: key["name"],
             ),
-            # takes unique rows from (row,col) tuples
             "rows": sorted(
                 [
                     {"name": u_row}
