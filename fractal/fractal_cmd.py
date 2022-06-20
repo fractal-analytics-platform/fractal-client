@@ -442,6 +442,7 @@ def workflow_apply(
     num_levels = params["num_levels"]
     rows, cols = params["dims"]
     workflow_name = params["workflow_name"]
+    path_dict_channels = params["channel_file"]
     delete_input = params.get("delete_input", False)
 
     # FIXME validate tasks somewhere?
@@ -486,6 +487,7 @@ def workflow_apply(
         kwargs = dict(
             in_paths=resources_in,
             out_path=resource_out,
+            path_dict_channels=path_dict_channels,
             ext=ext,
             num_levels=num_levels,
         )

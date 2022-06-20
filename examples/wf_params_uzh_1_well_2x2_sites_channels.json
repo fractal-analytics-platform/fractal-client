@@ -1,0 +1,26 @@
+{
+    "A01_C01": {
+        "label": "DAPI",
+        "colormap": "00FFFF",
+        "start": 110,
+        "end": 600
+    },
+    "A01_C02": {
+        "label": "nanog",
+        "colormap": "FF00FF",
+        "start": 115,
+        "end": 200
+    },
+    "A02_C03": {
+        "label": "Lamin B1",
+        "colormap": "FFFF00",
+        "start": 115,
+        "end": 1000
+    },
+    "fake": {
+        "label": "Fake",
+        "colormap": "FFFFFF",
+        "start": 115,
+        "end": 1000
+    }
+}

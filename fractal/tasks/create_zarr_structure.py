@@ -30,35 +30,19 @@ def create_zarr_structure(
     :type num_levels: int
     """
 
-    # FIXME: remove hard-coded default (for None)
-    if path_dict_channels is None:
-        dict_channels = {
-            "A01_C01": dict(
-                label="DAPI", colormap="00FFFF", start=110, end=600
-            ),
-            "A01_C02": dict(
-                label="nanog", colormap="FF00FF", start=115, end=200
-            ),
-            "A02_C03": dict(
-                label="Lamin B1", colormap="FFFF00", start=115, end=1000
-            ),
-            "fake": dict(label="Fake", colormap="FFFFFF", start=115, end=1000),
-        }
-    else:
-        try:
-            with open(path_dict_channels, "r") as json_file:
-                dict_channels = json.load(json_file)
-        except FileNotFoundError:
-            raise Exception(
-                "ERROR in create_zarr_structure: "
-                f"{path_dict_channels} missing."
-            )
-        except TypeError:
-            raise Exception(
-                "ERROR in create_zarr_structure: "
-                f"{path_dict_channels} has wrong type "
-                "(probably a None instead of a string)."
-            )
+    try:
+        with open(path_dict_channels, "r") as json_file:
+            dict_channels = json.load(json_file)
+    except FileNotFoundError:
+        raise Exception(
+            "ERROR in create_zarr_structure: " f"{path_dict_channels} missing."
+        )
+    except TypeError:
+        raise Exception(
+            "ERROR in create_zarr_structure: "
+            f"{path_dict_channels} has wrong type "
+            "(probably a None instead of a string)."
+        )
 
     # Identify all plates and all channels, across all input folders
     plates = []
