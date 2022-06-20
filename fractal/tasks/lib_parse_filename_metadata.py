@@ -56,11 +56,11 @@ def parse_metadata(filename):
 
     # Parse filename for additional fields
     # Example filename: (...)_B03_T0001F001L01A01Z06C01.png
-    T = re.findall(r"T(.*)F", f)[0]
-    F = re.findall(r"F(.*)L", f)[0]
-    L = re.findall(r"L(.*)A", f)[0]
-    A = re.findall(r"A(.*)Z", f)[0]
-    Z = re.findall(r"Z(.*)C", f)[0]
+    T = re.findall(r"_T(.*)F", f)[0]
+    F = re.findall(rf"_T{T}F(.*)L", f)[0]
+    L = re.findall(rf"_T{T}F{F}L(.*)A", f)[0]
+    A = re.findall(rf"_T{T}F{F}L{L}A(.*)Z", f)[0]
+    Z = re.findall(rf"_T{T}F{F}L{L}A{A}Z(.*)C", f)[0]
     C = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0]
 
     result = dict(
