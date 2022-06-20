@@ -8,6 +8,7 @@ The clients authenticate via LDAP or locally via OAUTH2
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
+from typing import List
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -23,7 +24,12 @@ DOC: http://www.pynut.com/?p=45
 """
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="api/v1/token",
+    scopes={
+        "profile": "Can read information about self",
+    },
+)
 
 
 class User(BaseModel):
@@ -38,6 +44,11 @@ class User(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class TokenData(BaseModel):
+    sub: str
+    scopes: List[str] = []
 
 
 class FailedAuthenticationException(Exception):
@@ -82,7 +93,7 @@ async def authenticate_user(username: str, password: str):
 
 
 def access_token_encode(
-    data: dict, expires_min: int = settings.JWT_EXPIRE_MINUTES
+    data: TokenData, expires_min: int = settings.JWT_EXPIRE_MINUTES
 ) -> str:
     """
     Create access token
@@ -92,7 +103,7 @@ def access_token_encode(
     data (dict): the payload
     expires_delta (timedelta): the lifetime of the token
     """
-    payload = data.copy()
+    payload = data.dict()
     expire = datetime.now(tz=timezone.utc) + timedelta(
         minutes=settings.JWT_EXPIRE_MINUTES
     )
@@ -107,6 +118,18 @@ def access_token_decode(token: str = Depends(oauth2_scheme)) -> User:
     payload = jwt.decode(token, settings.JWT_SECRET_KEY)
     sub = payload["sub"]
     return mock_get_user(sub)
+
+
+async def token_authentication_login(
+    username: str, password: str, scopes: List[str] | None = None
+) -> Token:
+    if not scopes:
+        scopes = []
+    user = await authenticate_user(username, password)
+    access_token = access_token_encode(
+        data=TokenData(sub=user.sub, scopes=scopes)
+    )
+    return Token(access_token=access_token, token_type="bearer")  # nosec
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
