@@ -7,7 +7,6 @@ from fractal.tasks.lib_pyramid_creation import create_pyramid
 
 def maximum_intensity_projection(
     zarrurl,
-    channels=None,
     coarsening_xy=2,
 ):
 
@@ -17,8 +16,6 @@ def maximum_intensity_projection(
 
     :param zarrurl: input zarr file, at the site level (e.g. x.zarr/B/03/0/)
     :type zarrurl: str
-    :param chl_list: list of channels  #FIXME
-    :type chl_list: list
     :param coarsening_xy: coarsening factor along X and Y
     :type coarsening_z: xy
 
@@ -42,9 +39,9 @@ def maximum_intensity_projection(
 
     # Load 0-th level
     data_chl_z_y_x = da.from_zarr(zarrurl + "/0")
+    num_channels = data_chl_z_y_x.shape[0]
     # Loop over channels
     accumulate_chl = []
-    num_channels = len(channels)
     for ind_ch in range(num_channels):
 
         # Perform MIP for each channel of level 0
@@ -81,13 +78,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-C",
-        "--chl_list",
-        nargs="+",
-        help="list of channels ",  # FIXME
-    )
-
-    parser.add_argument(
         "-cxy",
         "--coarsening_xy",
         default=2,
@@ -96,6 +86,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    maximum_intensity_projection(
-        args.zarrurl, args.chl_list, args.coarsening_xy
-    )
+    maximum_intensity_projection(args.zarrurl, args.coarsening_xy)
