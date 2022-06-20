@@ -138,20 +138,19 @@ def create_zarr_structure(
         actual_channels.append(ch)
     print(f"actual_channels: {actual_channels}")
 
-    well = []
+    zarrurls = {"plate": [], "well": []}
+    # zarrurls_in_paths = {}
 
     if not out_path.endswith("/"):
         out_path += "/"
-
-    zarrurls = {"plate": [], "well": []}
-
     for plate in plates:
 
-        print(f"Creating {out_path}{plate}.zarr")
-
         # Define plate zarr
-        group_plate = zarr.group(out_path + f"{plate}.zarr")
-        zarrurls["plate"].append(out_path + f"{plate}.zarr")
+        zarrurl = f"{out_path}{plate}.zarr"
+        print(f"Creating {zarrurl}")
+        group_plate = zarr.group(zarrurl)
+        zarrurls["plate"].append(zarrurl)
+        # zarrurls_in_paths[zarrurl] = dict_plate_paths[plate]
 
         # Identify all wells
         plate_prefix = dict_plate_prefixes[plate]

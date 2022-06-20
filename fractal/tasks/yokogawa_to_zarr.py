@@ -28,7 +28,7 @@ def yokogawa_to_zarr(
     ext=None,
     rows=None,
     cols=None,
-    channels=None,
+    chl_list=None,
     num_levels=5,
     coarsening_xy=2,
     coarsening_z=1,
@@ -49,8 +49,8 @@ def yokogawa_to_zarr(
     :type rows: list
     :param cols: number of columns of the well
     :type cols: list
-    :param chl_list: list of the channels   #FIXME
-    :type chl_list: list                    #FIXME
+    :param chl_list: list of channel names (e.g. A01_C01)
+    :type chl_list: list
     :param num_levels: number of levels in the zarr pyramid
     :type num_levels: int
     :param coarsening_xy: coarsening factor along X and Y
@@ -79,10 +79,10 @@ def yokogawa_to_zarr(
     lazy_imread = delayed(imread)
     fc_list = {level: [] for level in range(num_levels)}
 
-    print(channels)
+    print(f"Channels: {chl_list}")
 
-    for channel in channels:
-        A, C = channel.split("_")
+    for chl in chl_list:
+        A, C = chl.split("_")
 
         l_rows = []
         all_rows = []
@@ -99,7 +99,7 @@ def yokogawa_to_zarr(
                 f"  in_path: {in_path}\n"
                 f"  ext: {ext}\n"
                 f"  well_ID: {well_ID}\n"
-                f"  channel: {channel},\n"
+                f"  channel: {chl},\n"
                 f"  glob_path: {glob_path}"
             )
         max_z = max(
@@ -222,7 +222,7 @@ if __name__ == "__main__":
         "-C",
         "--chl_list",
         nargs="+",
-        help="list of channels ",  # FIXME
+        help="list of channel names (e.g. A01_C01)",
     )
 
     parser.add_argument(
