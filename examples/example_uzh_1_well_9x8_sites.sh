@@ -40,6 +40,16 @@ $CMD task add yokogawa_to_zarr zarr zarr well
 $CMD task list
 echo
 
+echo 'Add replicate_zarr_structure'
+$CMD task add replicate_zarr_structure zarr zarr plate
+$CMD task list
+echo
+
+echo 'Add illumination_correction'
+$CMD task add illumination_correction zarr zarr well
+$CMD task list
+echo
+
 echo 'Add replicate_zarr_structure_mip'
 $CMD task add replicate_zarr_structure_mip zarr zarr plate
 $CMD task list
@@ -50,6 +60,8 @@ $CMD task add maximum_intensity_projection zarr zarr well
 $CMD task list
 echo
 
+#############################################
+
 echo 'Create workflow'
 $CMD workflow new mwe-test wftest create_zarr_structure
 $CMD workflow list mwe-test
@@ -57,6 +69,16 @@ echo
 
 echo 'Add yokogawa_to_zarr task'
 $CMD workflow add-task mwe-test wftest yokogawa_to_zarr
+$CMD workflow list mwe-test
+echo
+
+#echo 'Add replicate_zarr_structure'
+#$CMD workflow add-task mwe-test wftest replicate_zarr_structure
+#$CMD workflow list mwe-test
+#echo
+
+echo 'Add illumination_correction'
+$CMD workflow add-task mwe-test wftest illumination_correction
 $CMD workflow list mwe-test
 echo
 
