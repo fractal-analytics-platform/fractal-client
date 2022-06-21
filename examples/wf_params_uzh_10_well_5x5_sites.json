@@ -4,6 +4,10 @@
 "coarsening_xy": 3,
 "coarsening_z": 1,
 "num_levels": 5,
+<<<<<<< HEAD
 "channel_file": "wf_params_uzh_1_well_2x2_sites_channels.json",
 "path_dict_corr": "wf_params_uzh_1_well_2x2_sites_illumination.json"
+=======
+"channel_file": "wf_params_uzh_1_well_2x2_sites_channels.json"
+>>>>>>> 5d469182b51babf91e7b8d281160e9fb802eb696
 }
