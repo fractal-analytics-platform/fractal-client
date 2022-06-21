@@ -82,8 +82,7 @@ def illumination_correction(
 ):
 
     """
-    Perform illumination correction of the array in zarrurl
-    a new zarr file.
+    Perform illumination correction of the array in zarrurl.
 
     :param zarrurl: input zarr, at the site level (e.g. x.zarr/B/03/0/)
     :type zarrurl: str
