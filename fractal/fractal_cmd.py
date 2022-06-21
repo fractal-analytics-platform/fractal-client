@@ -443,6 +443,7 @@ def workflow_apply(
     rows, cols = params["dims"]
     workflow_name = params["workflow_name"]
     path_dict_channels = params["channel_file"]
+    path_dict_corr = params["path_dict_corr"]
     delete_input = params.get("delete_input", False)
 
     # FIXME validate tasks somewhere?
@@ -562,6 +563,7 @@ def workflow_apply(
         elif task == "illumination_correction":
             kwargs = dict(
                 chl_list=chl_list,
+                path_dict_corr=path_dict_corr,
                 coarsening_xy=coarsening_xy,
                 overwrite=True,
                 # background=background,

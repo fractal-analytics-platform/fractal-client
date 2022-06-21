@@ -75,7 +75,8 @@ def illumination_correction(
     zarrurl,
     overwrite=False,
     newzarrurl=None,
-    channels=None,
+    chl_list=None,
+    path_dict_corr=None,
     coarsening_xy=2,
     background=110,
 ):
@@ -90,18 +91,16 @@ def illumination_correction(
     :type overwrite: bool
     :param newzarrurl: output zarr, at the site level (e.g. x.zarr/B/03/0/)
     :type newzarrurl: str
-    :param chl_list: list of channels  #FIXME
+    :param chl_list: list of channel names (e.g. A01_C01)
     :type chl_list: list
+    :param path_dict_corr: FIXME
+    :type path_dict_corr: str
     :param coarsening_xy: coarsening factor in XY (optional, default 2)
     :type coarsening_z: xy
     :param background: value for background subtraction (optional, default 110)
     :type background: int
 
     """
-
-    raise NotImplementedError(
-        "illumination_correction not implemented " "with new channel scheme"
-    )
 
     # Check that only one output option is chosen
     if overwrite and (newzarrurl is not None):
@@ -128,26 +127,16 @@ def illumination_correction(
     img_size_y = 2160
     img_size_x = 2560
 
-    # FIXME: this block is too specific!
-    # Hard-coded choice of illumination correction matrix
-    path_correction_matrices = (
-        "/data/active/fractal/Liberali/"
-        "FractalTesting20220124/"
-        "IlluminationCorrectionMatrices-Yokogawa/"
-    )
-    filenames = {
-        1: "220120_60xW_BP445_CH01.tif",
-        2: "220120_60xW_BP525_CH02.tif",
-        3: "220120_60xW_BP600_CH03.tif",
-        4: "220120_60xW_BP676_CH04.tif",
-    }
+    # Load paths of correction matrices
+    with open(path_dict_corr, "r") as jsonfile:
+        dict_corr = json.load(jsonfile)
+    root_path_corr = dict_corr.pop("root_path_corr")
+
+    # Assemble dictionary of matrices and check their shapes
     corrections = {}
-    for channel in channels:
-        ind_ch, ID_ch, label_ch = channel[:]
-        corrections[ind_ch] = imread(
-            path_correction_matrices + filenames[ind_ch + 1]
-        )
-        if corrections[ind_ch].shape != (img_size_y, img_size_x):
+    for ind_ch, ch in enumerate(chl_list):
+        corrections[ch] = imread(root_path_corr + dict_corr[ch])
+        if corrections[ch].shape != (img_size_y, img_size_x):
             raise Exception(
                 "Error in illumination_correction, "
                 "correction matrix has wrong shape."
@@ -188,11 +177,10 @@ def illumination_correction(
 
     # Loop over channels
     data_czyx_new = []
-    for channel in channels:
-        ind_ch, ID_ch, label_ch = channel[:]
+    for ind_ch, ch in enumerate(chl_list):
 
         data_zyx = data_czyx[ind_ch]
-        illum_img = corrections[ind_ch]
+        illum_img = corrections[ch]
 
         # Map "correct" function onto each block
         data_zyx_new = data_zyx.map_blocks(
@@ -214,7 +202,7 @@ def illumination_correction(
         num_levels=num_levels,
         chunk_size_x=img_size_x,
         chunk_size_y=img_size_y,
-        num_channels=len(channels),
+        num_channels=len(chl_list),
     )
 
     # Write data into output zarr
@@ -246,12 +234,11 @@ if __name__ == "__main__":
         help="path of the new zarr file",
     )
 
-    # FIXME
     parser.add_argument(
         "-C",
         "--chl_list",
         nargs="+",
-        help="list of channels ",
+        help="list of channel names (e.g. A01_C01)",
     )
     parser.add_argument(
         "-cxy",
