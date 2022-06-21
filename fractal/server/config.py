@@ -39,5 +39,8 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = fail_getenv("JWT_SECRET_KEY")
     JWT_ALGORITHM: str = "HS256"
 
+    # DATA
+    DATA_DIR_ROOT: str = fail_getenv("DATA_DIR_ROOT")
+
 
 settings = Settings()
