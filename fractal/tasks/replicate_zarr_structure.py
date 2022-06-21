@@ -14,10 +14,6 @@ def replicate_zarr_structure(zarrurl, newzarrurl=None):
     :type newzarrurl: str
     """
 
-    raise NotImplementedError(
-        "replicate_zarr_structure not implemented " "with new channel scheme"
-    )
-
     # Sanitize and check input zarr path
     if not zarrurl.endswith("/"):
         zarrurl += "/"
