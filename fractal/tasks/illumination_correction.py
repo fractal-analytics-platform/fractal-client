@@ -93,7 +93,7 @@ def illumination_correction(
     :type newzarrurl: str
     :param chl_list: list of channel names (e.g. A01_C01)
     :type chl_list: list
-    :param path_dict_corr: FIXME
+    :param path_dict_corr: path of JSON file with info on illumination matrices
     :type path_dict_corr: str
     :param coarsening_xy: coarsening factor in XY (optional, default 2)
     :type coarsening_z: xy
