@@ -4,7 +4,7 @@ from devtools import debug
 PREFIX = "/v1/project"
 
 
-async def test_project_creation(client):
+async def test_project_creation(app, client, MockCurrentUser):
     payload = dict(
         name="new project",
         project_dir="/some/path/",
