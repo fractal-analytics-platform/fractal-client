@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import Any
 from typing import AsyncGenerator
@@ -7,8 +8,21 @@ import pytest
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 from fractal.server import start_application
+
+
+DATABASE_URL = "sqlite+aiosqlite://"
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    _event_loop = asyncio.new_event_loop()
+    yield _event_loop
 
 
 @pytest.fixture(scope="session")
@@ -30,20 +44,32 @@ async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
     yield start_application()
 
 
+@pytest.fixture(scope="session")
+async def db_engine(patch_settings) -> AsyncEngine:
+    engine = create_async_engine(DATABASE_URL, echo=False, future=True)
+    yield engine
+
+
+@pytest.fixture
+async def db(db_engine) -> AsyncSession:
+    from sqlmodel import SQLModel
+
+    async with db_engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+        async_session_maker = sessionmaker(
+            db_engine, class_=AsyncSession, expire_on_commit=False
+        )
+        async with async_session_maker() as session:
+            yield session
+        await conn.run_sync(SQLModel.metadata.drop_all)
+
+
 @pytest.fixture
 async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
         app=app, base_url="http://test/api"
     ) as client, LifespanManager(app):
         yield client
-
-
-@pytest.fixture
-async def mock_ldap(patch_settings):
-    from ldap3 import Server
-
-    server = Server(patch_settings.LDAP_SERVER)
-    yield server
 
 
 @pytest.fixture
