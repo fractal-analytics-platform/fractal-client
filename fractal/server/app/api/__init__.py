@@ -8,8 +8,8 @@ from .v1.security import router as security_router
 router_default = APIRouter()
 router_v1 = APIRouter()
 
-router_v1.include_router(security_router, prefix="/auth")
-router_v1.include_router(project_router, prefix="/project")
+router_v1.include_router(security_router, prefix="/auth", tags=["auth"])
+router_v1.include_router(project_router, prefix="/project", tags=["project"])
 
 
 @router_default.get("/alive/")
