@@ -525,7 +525,7 @@ def workflow_apply(
                 "ERROR\n"
                 "Support for len(resources_in)>1 is not there.\n"
                 "Hint: we should modify the in_path argument of"
-                "yokogawa_to_zarr."
+                "yokogawa_to_zarr and take a global dict of paths."
             )
 
         if task == "yokogawa_to_zarr":
@@ -546,7 +546,7 @@ def workflow_apply(
                 ext=ext,
                 delete_input=delete_input,
                 chl_list=chl_list,
-                sites_dict=well_to_sites,
+                # sites_dict=well_to_sites,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
                 coarsening_z=coarsening_z,

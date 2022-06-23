@@ -122,7 +122,7 @@ def create_zarr_structure_multifov(
         actual_channels.append(ch)
     print(f"actual_channels: {actual_channels}")
 
-    zarrurls = {"plate": [], "well": []}
+    zarrurls = {"plate": [], "well": [], "site": []}
     well_to_sites = {}
 
     if not out_path.endswith("/"):

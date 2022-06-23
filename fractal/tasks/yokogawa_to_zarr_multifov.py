@@ -7,6 +7,8 @@ import numpy as np
 from dask import delayed
 from skimage.io import imread
 
+from fractal.tasks.lib_parse_filename_metadata import parse_metadata
+
 
 def sort_by_z(s):
 
@@ -28,7 +30,6 @@ def yokogawa_to_zarr_multifov(
     in_path=None,
     ext=None,
     chl_list=None,
-    sites_dict={},
     num_levels=5,
     coarsening_xy=2,
     coarsening_z=1,
@@ -41,8 +42,6 @@ def yokogawa_to_zarr_multifov(
 
     """
 
-    sites_list = sites_dict[zarrurl]
-
     if not in_path.endswith("/"):
         in_path += "/"
     if not zarrurl.endswith("/"):
@@ -51,90 +50,117 @@ def yokogawa_to_zarr_multifov(
     # WARNING: the zarr file should point to a well, not to a plate
     if zarrurl.endswith(".zarr/"):
         raise Exception(
-            "Error in replicate_zarr_structure, "
-            f"zarrurl={zarrurl} does not end with .zarr/"
+            "Error in yokogawa_to_zarr_multifov, "
+            f"zarrurl={zarrurl} should be at the site level."
         )
 
-    r = zarrurl.split("/")[-3]
-    c = zarrurl.split("/")[-2]
+    # Define well and site
+    if not zarrurl.endswith("/"):
+        zarrurl += "/"
+    well_row = zarrurl.split("/")[-4]
+    well_column = zarrurl.split("/")[-3]
+    well_ID = well_row + well_column
+    site = zarrurl.split("/")[-2]
+    print(f"zarrurl={zarrurl}")
+    print(f"site={site}")
+    if not site.isdigit():
+        raise Exception(
+            "Error in yokogawa_to_zarr_multifov\n"
+            f"zarrurl={zarrurl}\n"
+            f"site={site}"
+        )
+    site = int(site)
+    site += 1  # FIXME: is this robust?
 
     lazy_imread = delayed(imread)
 
-    print("channels:", chl_list)
-    print("sites:", sites_list)
+    print(f"Channels: {chl_list}")
 
-    # Loop over sites and channels
-    for index_site, site in enumerate(sites_list):
-        zarrurl_site = f"{zarrurl}{index_site}/"
+    matrix_level_channel = {}
 
-        matrix_level_channel = {}
+    for ind_chl, chl in enumerate(chl_list):
+        A, C = chl.split("_")
 
-        for channel in chl_list:
-
-            # Find all images for a given (site,channel)
-            filenames = sorted(
-                glob(in_path + f"*_{r+c}_*F{site}*C{channel}." + ext),
-                key=sort_by_z,
-            )
-            print(in_path + f"*_{r+c}_*F{site}*C{channel}." + ext)
-
-            # Build three-dimensional array for a given (site,channel)
-            sample = imread(filenames[0])
-            lazy_arrays = [lazy_imread(fn) for fn in filenames]
-            dask_arrays = [
-                da.from_delayed(
-                    delayed_reader, shape=sample.shape, dtype=sample.dtype
-                )
-                for delayed_reader in lazy_arrays
+        print(zarrurl, well_ID)
+        # Find all filenames for a given well and cannel, then filter by site
+        # [note: this is to avoid specifying the format of site (e.g. "F001")
+        glob_path = f"{in_path}*_{well_ID}_*{A}*{C}.{ext}"
+        filenames = sorted(
+            [
+                fn
+                for fn in glob(glob_path)
+                if int(parse_metadata(fn.split("/")[-1])["F"]) == site
             ]
-            matrix_site_channel = da.stack(dask_arrays, axis=0)
+        )
+        # FIXME: should we also specify plate?
 
-            # Create pyramid
-            coarsening = {
-                1: coarsening_xy,  # Y dimension
-                2: coarsening_xy,  # X dimension
-            }
-            for level in range(num_levels):
-                if level == 0:
-                    matrices_site_channel_levels = [matrix_site_channel]
-                    if coarsening_z > 1:
-                        matrices_site_channel_levels[level] = da.coarsen(
-                            np.min,
-                            matrices_site_channel_levels[level],
-                            {0: coarsening_z},
-                            trim_excess=True,
-                        )
-                else:
-                    matrices_site_channel_levels.append(
-                        da.coarsen(
-                            np.min,
-                            matrices_site_channel_levels[level - 1],
-                            coarsening,
-                            trim_excess=True,
-                        )
-                    )
+        if len(filenames) == 0:
+            raise Exception(
+                "Error in yokogawa_to_zarr: len(filenames)=0.\n"
+                f"  in_path: {in_path}\n"
+                f"  ext: {ext}\n"
+                f"  well_ID: {well_ID}\n"
+                f"  site: {site}\n"
+                f"  channel: {chl},\n"
+                f"  glob_path: {glob_path}"
+            )
+        print(f"[SITE {site}, CHANNEL {chl}] {len(filenames)} matching images")
 
-                matrix_level_channel[
-                    (level, channel)
-                ] = matrices_site_channel_levels[level]
+        # Build three-dimensional array for a given (site,channel)
+        sample = imread(filenames[0])
+        lazy_arrays = [lazy_imread(fn) for fn in filenames]
+        dask_arrays = [
+            da.from_delayed(
+                delayed_reader, shape=sample.shape, dtype=sample.dtype
+            )
+            for delayed_reader in lazy_arrays
+        ]
+        matrix_site_channel = da.stack(dask_arrays, axis=0)
 
-        if delete_input:
-            for f in filenames:
-                try:
-                    os.remove(f)
-                except OSError as e:
-                    print("Error: %s : %s" % (f, e.strerror))
-
+        # Create pyramid
+        coarsening = {
+            1: coarsening_xy,  # Y dimension
+            2: coarsening_xy,  # X dimension
+        }
         for level in range(num_levels):
-            level_list = [
-                matrix_level_channel[key]
-                for key in matrix_level_channel.keys()
-                if key[0] == level
-            ]
-            level_stack = da.stack(level_list, axis=0)
-            level_stack.to_zarr(
-                zarrurl_site + f"{level}/", dimension_separator="/"
-            )
+            if level == 0:
+                matrices_site_channel_levels = [matrix_site_channel]
+                if coarsening_z > 1:
+                    matrices_site_channel_levels[level] = da.coarsen(
+                        np.min,
+                        matrices_site_channel_levels[level],
+                        {0: coarsening_z},
+                        trim_excess=True,
+                    )
+            else:
+                matrices_site_channel_levels.append(
+                    da.coarsen(
+                        np.min,
+                        matrices_site_channel_levels[level - 1],
+                        coarsening,
+                        trim_excess=True,
+                    )
+                )
+
+            matrix_level_channel[
+                (level, ind_chl)
+            ] = matrices_site_channel_levels[level]
+
+    if delete_input:
+        for f in filenames:
+            try:
+                os.remove(f)
+            except OSError as e:
+                print("Error: %s : %s" % (f, e.strerror))
+
+    for level in range(num_levels):
+        level_list = [
+            matrix_level_channel[key]
+            for key in matrix_level_channel.keys()
+            if key[0] == level
+        ]
+        level_stack = da.stack(level_list, axis=0)
+        level_stack.to_zarr(zarrurl + f"{level}/", dimension_separator="/")
 
     # FIXME: return something useful
     shape_list = []
@@ -161,13 +187,6 @@ if __name__ == "__main__":
         "-d",
         "--delete_input",
         help="Delete input files and folder",
-    )
-
-    parser.add_argument(
-        "-S",
-        "--sites_list",
-        nargs="+",
-        help="list of sites ",
     )
 
     parser.add_argument(
@@ -213,7 +232,6 @@ if __name__ == "__main__":
         in_path=args.in_path,
         ext=args.ext,
         chl_list=args.chl_list,
-        sites_list=args.sites_list,
         num_levels=args.num_levels,
         coarsening_xy=args.coarsening_xy,
         coarsening_z=args.coarsening_z,
