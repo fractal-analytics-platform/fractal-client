@@ -9,8 +9,8 @@ def warn(message):
     Make sure that warnings do not make their way to staing and production
     """
     if settings.DEPLOYMENT_TYPE in [
-        DeploymentType.testing,
-        DeploymentType.development,
+        DeploymentType.TESTING,
+        DeploymentType.DEVELOPMENT,
     ]:
         _warn(message, RuntimeWarning)
     else:

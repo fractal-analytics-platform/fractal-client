@@ -1,5 +1,6 @@
 from enum import Enum
 from os import getenv
+from os.path import abspath
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -19,10 +20,10 @@ __VERSION__ = "0.1.0"
 
 
 class DeploymentType(str, Enum):
-    production = "production"
-    staging = "staging"
-    testing = "testing"
-    development = "development"
+    PRODUCTION = "production"
+    STAGING = "staging"
+    TESTING = "testing"
+    DEVELOPMENT = "development"
 
 
 class Settings(BaseSettings):
@@ -41,6 +42,30 @@ class Settings(BaseSettings):
 
     # DATA
     DATA_DIR_ROOT: str = fail_getenv("DATA_DIR_ROOT")
+
+    ###########################################################################
+    # DATABASE                                                                #
+    ###########################################################################
+    DB_ENGINE: str = getenv("DB_ENGINE", "sqlite")
+
+    if DB_ENGINE == "postgres":
+        POSTGRES_USER: str = getenv("POSTGRES_USER", "root")
+        POSTGRES_PASSWORD = getenv("POSTGRES_PASSWORD", "password")
+        POSTGRES_SERVER: str = getenv("POSTGRES_SERVER", "localhost")
+        POSTGRES_PORT: str = getenv("POSTGRES_PORT", "5432")
+        POSTGRES_DB: str = getenv("POSTGRES_DB", "test_db")
+
+        DATABASE_URL = (
+            f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+            f"@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
+        )
+    elif DB_ENGINE == "sqlite":
+        SQLITE_PATH: str = getenv("SQLITE_PATH", "")
+        DATABASE_URL = f"sqlite+aiosqlite://{abspath(SQLITE_PATH)}"
+
+    @property
+    def DB_ECHO(self):
+        return self.DEPLOYMENT_TYPE != DeploymentType.PRODUCTION
 
 
 settings = Settings()
