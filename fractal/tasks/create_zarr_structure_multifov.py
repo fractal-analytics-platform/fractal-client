@@ -208,7 +208,7 @@ def create_zarr_structure_multifov(
 
             # Identify sites / fields of view
             sites = [
-                metadata(os.path.basename(fn))["site"]
+                parse_metadata(os.path.basename(fn))["F"]
                 for fn in glob(in_path + f"{plate}*_{row+column}*." + ext)
             ]
             sites_unique = sorted(list(set(sites)))
@@ -283,8 +283,12 @@ if __name__ == "__main__":
 
     parser = ArgumentParser(prog="create_zarr_structure")
     parser.add_argument(
-        "-i", "--in_path", help="directory containing the input files"
+        "-i",
+        "--in_paths",
+        help="list of directories containing the input files",
+        nargs="+",
     )
+
     parser.add_argument(
         "-o", "--out_path", help="directory for the outnput zarr files"
     )
@@ -300,10 +304,19 @@ if __name__ == "__main__":
         help="number of levels in the Zarr pyramid",
     )
 
+    parser.add_argument(
+        "-c",
+        "--path_dict_channels",
+        type=str,
+        help="path of channel dictionary",
+    )
+
     args = parser.parse_args()
+
     create_zarr_structure_multifov(
-        in_path=args.in_path,
+        in_paths=args.in_paths,
         out_path=args.out_path,
         ext=args.ext,
         num_levels=args.num_levels,
+        path_dict_channels=args.path_dict_channels,
     )

@@ -289,7 +289,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c",
         "--path_dict_channels",
-        type=int,
+        type=str,
         help="path of channel dictionary",
     )
     args = parser.parse_args()
@@ -298,4 +298,5 @@ if __name__ == "__main__":
         out_path=args.out_path,
         ext=args.ext,
         num_levels=args.num_levels,
+        path_dict_channels=args.path_dict_channels,
     )
