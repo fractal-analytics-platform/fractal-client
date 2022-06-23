@@ -1,73 +1,17 @@
+import json
 import os
-import re
 from glob import glob
 
 import zarr
 
-# from devtools import debug
-
-
-def metadata(filename):
-    """
-    Extract metadata by parsing image filename, return a parameter dictionary.
-    Three kinds of filenames are supported:
-    1) Filenames from UZH:
-       20200812-Cardio[...]Cycle1_B03_T0001F036L01A01Z18C01.png
-       with plate name 20200812-Cardio[...]Cycle1
-    2) Filenames from FMI, with successful barcode reading:
-       210305NAR005AAN_210416_164828_B11_T0001F006L01A04Z14C01.tif
-       with plate name 210305NAR005AAN
-    3) Filenames from FMI, with failed barcode reading:
-       yymmdd_hhmmss_210416_164828_B11_T0001F006L01A04Z14C01.tif
-       with plate name RS{yymmddhhmmss}
-
-    :param filename: name of the image
-    :type filename: str
-    """
-    f = filename.rsplit(".", 1)[0]
-
-    well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
-    tmp_plate = f.split(f"_{well}_")[0]
-
-    fields = tmp_plate.split("_")
-
-    if (
-        len(fields) == 4
-        and len(fields[0]) == 6
-        and len(fields[1]) == 6
-        and len(fields[2]) == 6
-    ):
-        # FMI (failed barcode reading)
-        scan_date, scan_time, img_date, img_time = fields[:]
-        plate = f"RS{scan_date + scan_time}"
-    elif len(fields) == 3:
-        # FMI (correct barcode reading)
-        barcode, img_date, img_time = fields[:]
-        if len(img_date) != 6 or len(img_time) != 6:
-            raise Exception(
-                f"Failure in metadata parsing of {tmp_plate}, with"
-                " img_date={img_date} and img_time={img_time}"
-            )
-        plate = barcode
-    elif len(fields) == 1:
-        # UZH
-        plate = fields[0]
-
-    site = re.findall(r"F(.*)L", f)[0]
-    chl = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0].split("_")[0]
-    t_ind = re.findall(r"T(.*)F", f)[0]
-    z_ind = re.findall(r"Z(.*)C", f)[0]
-
-    result = dict(
-        plate=plate, well=well, t_ind=t_ind, z_ind=z_ind, chl=chl, site=site
-    )
-    return result
+from fractal.tasks.lib_parse_filename_metadata import parse_metadata
 
 
 def create_zarr_structure_multifov(
-    in_path=None,
+    in_paths=[],
     out_path=None,
     ext=None,
+    path_dict_channels=None,
     num_levels=None,
 ):
 
@@ -75,62 +19,157 @@ def create_zarr_structure_multifov(
     Create (and store) the zarr folder, without reading or writing data.
 
 
-    :param in_path: path of images
-    :type in_path: str
+    :param in_paths: list of image directories
+    :type in_path: list
     :param out_path: path for output zarr files
     :type out_path: str
     :param ext: extension of images (e.g. tiff, png, ..)
-    :type ext: str
+    :param path_dict_channels: FIXME
+    :type path_dict_channels: str
     :param num_levels: number of coarsening levels in the pyramid
     :type num_levels: int
     """
 
-    raise NotImplementedError(
-        "create_zarr_structure_multifov not implemented "
-        "with new channel scheme"
-    )
+    try:
+        with open(path_dict_channels, "r") as json_file:
+            dict_channels = json.load(json_file)
+    except FileNotFoundError:
+        raise Exception(
+            "ERROR in create_zarr_structure: " f"{path_dict_channels} missing."
+        )
+    except TypeError:
+        raise Exception(
+            "ERROR in create_zarr_structure: "
+            f"{path_dict_channels} has wrong type "
+            "(probably a None instead of a string)."
+        )
 
-    # Find all plates
-    plate = []
-    if not in_path.endswith("/"):
-        in_path += "/"
-    for i in glob(in_path + "*." + ext):
-        try:
-            plate.append(metadata(os.path.basename(i))["plate"])
-        except IndexError:
-            print("IndexError for ", i)
-            pass
-    plate_unique = set(plate)
-    print("Find all plates in", in_path + "*." + ext)
-    print(f"Plates: {plate_unique}")
+    # Identify all plates and all channels, across all input folders
+    plates = []
+    channels = None
+    dict_plate_paths = {}
+    dict_plate_prefixes = {}
+    for in_path in in_paths:
+        tmp_channels = []
+        tmp_plates = []
+        if not in_path.endswith("/"):
+            in_path += "/"
+        for fn in glob(in_path + "*." + ext):
+            try:
+                metadata = parse_metadata(os.path.basename(fn))
+                plate_prefix = metadata["plate_prefix"]
+                plate = metadata["plate"]
+                if plate not in dict_plate_prefixes.keys():
+                    dict_plate_prefixes[plate] = plate_prefix
+                tmp_plates.append(plate)
+                tmp_channels.append(f"A{metadata['A']}_C{metadata['C']}")
+            except IndexError:
+                print("IndexError for ", fn)
+                pass
+        tmp_plates = sorted(list(set(tmp_plates)))
+        tmp_channels = sorted(list(set(tmp_channels)))
 
-    well = []
+        info = (
+            f"Listing all plates/channels from {in_path}*.{ext}\n"
+            f"Plates:   {tmp_plates}\n"
+            f"Channels: {tmp_channels}\n"
+        )
 
-    zarrurls = {"plate": [], "well": [], "site": []}
-    # FIXME: plate_attributes is just a placeholder, at the moment
-    plate_attributes = {}
+        # Check that only one plate is found
+        if len(tmp_plates) > 1:
+            raise Exception(f"{info}ERROR: {len(tmp_plates)} plates detected")
+        plate = tmp_plates[0]
 
-    # Loop over plates
-    for plate in plate_unique:
-        group_plate = zarr.group(out_path + f"{plate}.zarr")
-        zarrurls["plate"].append(out_path + f"{plate}.zarr")
-        plate_attributes[plate] = dict(chl_list=[], sites_list=[])
-        well = [
-            metadata(os.path.basename(fn))["well"]
-            for fn in glob(in_path + f"{plate}_*." + ext)
+        # If plate already exists in other folder, add suffix
+        if plate in plates:
+            ind = 1
+            new_plate = f"{plate}_{ind}"
+            while new_plate in plates:
+                new_plate = f"{plate}_{ind}"
+                ind += 1
+            print(
+                f"WARNING: {plate} already exists, renaming it as {new_plate}"
+            )
+            plates.append(new_plate)
+            dict_plate_prefixes[new_plate] = dict_plate_prefixes[plate]
+            plate = new_plate
+        else:
+            plates.append(plate)
+
+        # Check that channels are the same as in previous plates
+        if channels is None:
+            channels = tmp_channels[:]
+        else:
+            if channels != tmp_channels:
+                raise Exception(
+                    f"ERROR\n{info}\nERROR: expected channels " "{channels}"
+                )
+
+            # Update dict_plate_paths
+            dict_plate_paths[plate] = in_path
+
+    # Check that all channels are in the allowed_channels
+    if not set(channels).issubset(set(dict_channels.keys())):
+        msg = "ERROR in create_zarr_structure\n"
+        msg += f"channels: {channels}\n"
+        msg += f"allowed_channels: {dict_channels.keys()}\n"
+        raise Exception(msg)
+
+    # Sort channels according to allowed_channels, and assign increasing index
+    # actual_channels is a list of entries like A01_C01"
+    actual_channels = []
+    for ind_ch, ch in enumerate(channels):
+        actual_channels.append(ch)
+    print(f"actual_channels: {actual_channels}")
+
+    zarrurls = {"plate": [], "well": []}
+    well_to_sites = {}
+
+    if not out_path.endswith("/"):
+        out_path += "/"
+    for plate in plates:
+
+        # Define plate zarr
+        zarrurl = f"{out_path}{plate}.zarr"
+        print(f"Creating {zarrurl}")
+        group_plate = zarr.group(zarrurl)
+        zarrurls["plate"].append(zarrurl)
+        # zarrurls_in_paths[zarrurl] = dict_plate_paths[plate]
+
+        # Identify all wells
+        plate_prefix = dict_plate_prefixes[plate]
+        wells = [
+            parse_metadata(os.path.basename(fn))["well"]
+            for fn in glob(f"{in_path}{plate_prefix}_*.{ext}")
         ]
-        well_unique = set(well)
+        wells = sorted(list(set(wells)))
+
+        # Verify that all wells have all channels
+        for well in wells:
+            well_channels = []
+            glob_string = f"{in_path}{plate_prefix}_{well}*.{ext}"
+            for fn in glob(glob_string):
+                try:
+                    metadata = parse_metadata(os.path.basename(fn))
+                    well_channels.append(f"A{metadata['A']}_C{metadata['C']}")
+                except IndexError:
+                    print(f"Skipping {fn}")
+            well_channels = sorted(list(set(well_channels)))
+            if well_channels != actual_channels:
+                raise Exception(
+                    f"ERROR: well {well} in plate {plate} (prefix: "
+                    f"{plate_prefix}) has missing channels.\n"
+                    f"Expected: {actual_channels}\n"
+                    f"Found: {well_channels}.\n"
+                    f"[glob_string: {glob_string}]"
+                )
 
         well_rows_columns = [
-            ind for ind in sorted([(n[0], n[1:]) for n in well_unique])
+            ind for ind in sorted([(n[0], n[1:]) for n in wells])
         ]
 
         group_plate.attrs["plate"] = {
-            "acquisitions": [
-                {"id": id_, "name": name}
-                for id_, name in enumerate(plate_unique)
-            ],
-            # takes unique cols from (row,col) tuples
+            "acquisitions": [{"id": 1, "name": plate}],
             "columns": sorted(
                 [
                     {"name": u_col}
@@ -143,7 +182,6 @@ def create_zarr_structure_multifov(
                 ],
                 key=lambda key: key["name"],
             ),
-            # takes unique rows from (row,col) tuples
             "rows": sorted(
                 [
                     {"name": u_row}
@@ -174,15 +212,6 @@ def create_zarr_structure_multifov(
                 for fn in glob(in_path + f"{plate}*_{row+column}*." + ext)
             ]
             sites_unique = sorted(list(set(sites)))
-            plate_attributes[plate]["sites_list"] = sites_unique[:]
-
-            # Identify channels
-            chl = [
-                metadata(os.path.basename(fn))["chl"]
-                for fn in glob(in_path + f"{plate}*_{row+column}*." + ext)
-            ]
-            chl_unique = sorted(list(set(chl)))
-            plate_attributes[plate]["chl_list"] = chl_unique[:]
 
             # Write all sites in the attributes
             group_well.attrs["well"] = {
@@ -193,6 +222,7 @@ def create_zarr_structure_multifov(
                 "version": "0.3",
             }
             zarrurls["well"].append(out_path + f"{plate}.zarr/{row}/{column}/")
+            well_to_sites[zarrurls["well"][-1]] = sites_unique
 
             # Create groups and paths for all sites
             for index_site, site in enumerate(sites_unique):
@@ -220,8 +250,32 @@ def create_zarr_structure_multifov(
                         ],
                     }
                 ]
+                group_field.attrs["omero"] = {
+                    "id": 1,  # FIXME does this depend on the plate number?
+                    "name": "TBD",
+                    "version": "0.4",
+                    "channels": [
+                        {
+                            # FIXME
+                            # How to write true/false (lowercase) via python?
+                            # "active": true,
+                            "coefficient": 1,
+                            "color": dict_channels[channel]["colormap"],
+                            "family": "linear",
+                            # "inverted": false,
+                            "label": dict_channels[channel]["label"],
+                            "window": {
+                                "min": 0,
+                                "max": 65535,
+                                "start": dict_channels[channel]["start"],
+                                "end": dict_channels[channel]["end"],
+                            },
+                        }
+                        for channel in actual_channels
+                    ],
+                }
 
-    return zarrurls, chl_unique, sites_unique  # , plate_attributes
+    return zarrurls, actual_channels, well_to_sites
 
 
 if __name__ == "__main__":

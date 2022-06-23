@@ -28,7 +28,7 @@ def yokogawa_to_zarr_multifov(
     in_path=None,
     ext=None,
     chl_list=None,
-    sites_list=None,
+    sites_dict={},
     num_levels=5,
     coarsening_xy=2,
     coarsening_z=1,
@@ -41,9 +41,7 @@ def yokogawa_to_zarr_multifov(
 
     """
 
-    raise NotImplementedError(
-        "yokogawa_to_zarr_multifov not implemented " "with new channel scheme"
-    )
+    sites_list = sites_dict[zarrurl]
 
     if not in_path.endswith("/"):
         in_path += "/"

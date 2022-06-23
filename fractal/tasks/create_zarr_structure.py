@@ -207,9 +207,7 @@ def create_zarr_structure(
             group_well = group_plate.create_group(f"{row}/{column}/")
 
             group_well.attrs["well"] = {
-                "images": [
-                    {"path": "0"}  # multiscale level, until pyramids just 0
-                ],
+                "images": [{"path": "0"}],
                 "version": "0.3",
             }
 

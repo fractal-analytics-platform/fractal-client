@@ -507,10 +507,10 @@ def workflow_apply(
             debug(zarrurls)
             debug(chl_list)
         elif task_names[0] == "create_zarr_structure_multifov":
-            zarrurls, chl_list, sites_list = future.result()
+            zarrurls, chl_list, well_to_sites = future.result()
             debug(zarrurls)
             debug(chl_list)
-            debug(sites_list)
+            debug(well_to_sites)
         task_names = task_names[1:]  # FIXME
     else:
         print(
@@ -546,7 +546,7 @@ def workflow_apply(
                 ext=ext,
                 delete_input=delete_input,
                 chl_list=chl_list,
-                sites_list=sites_list,
+                sites_dict=well_to_sites,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
                 coarsening_z=coarsening_z,
