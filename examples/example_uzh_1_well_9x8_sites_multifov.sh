@@ -55,9 +55,9 @@ echo
 #$CMD task list
 echo
 
-#echo 'Add maximum_intensity_projection'
-#$CMD task add maximum_intensity_projection zarr zarr well
-#$CMD task list
+echo 'Add maximum_intensity_projection'
+$CMD task add maximum_intensity_projection zarr zarr site
+$CMD task list
 echo
 
 #############################################
@@ -72,24 +72,19 @@ $CMD workflow add-task mwe-test wftest yokogawa_to_zarr_multifov
 $CMD workflow list mwe-test
 echo
 
-#echo 'Add replicate_zarr_structure'
-#$CMD workflow add-task mwe-test wftest replicate_zarr_structure
-#$CMD workflow list mwe-test
-#echo
+echo 'Add replicate_zarr_structure_mip'
+$CMD workflow add-task mwe-test wftest replicate_zarr_structure_mip
+$CMD workflow list mwe-test
+echo
 
 #echo 'Add illumination_correction'
 #$CMD workflow add-task mwe-test wftest illumination_correction
 #$CMD workflow list mwe-test
 #echo
 
-#echo 'Add replicate_zarr_structure_mip'
-#$CMD workflow add-task mwe-test wftest replicate_zarr_structure_mip
-#$CMD workflow list mwe-test
-echo
-
-#echo 'Add maximum_intensity_projection'
-#$CMD workflow add-task mwe-test wftest maximum_intensity_projection
-#$CMD workflow list mwe-test
+echo 'Add maximum_intensity_projection'
+$CMD workflow add-task mwe-test wftest maximum_intensity_projection
+$CMD workflow list mwe-test
 echo
 
 echo 'Execute workflow'
