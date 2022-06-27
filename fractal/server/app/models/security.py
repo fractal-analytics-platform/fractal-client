@@ -17,6 +17,7 @@ Adapted from
 
 
 class UserOAuth(SQLModelBaseUserDB, table=True):
+    __tablename__ = "user_oauth"
     oauth_accounts: List["OAuthAccount"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
@@ -25,11 +26,7 @@ class UserOAuth(SQLModelBaseUserDB, table=True):
 
 class OAuthAccount(SQLModelBaseOAuthAccount, table=True):
     user_id: UUID4 = Field(foreign_key="user_oauth.id")
-    user: Optional["UserOAuth"] = Relationship(back_populates="oauth_accounts")
-
-
-class User:
-    pass
+    user: Optional[UserOAuth] = Relationship(back_populates="oauth_accounts")
 
 
 class UserRead(BaseModel):
