@@ -8,9 +8,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pydantic = "^1.9.0"
-httpx = "^0.23.0"
 python-dotenv = "^0.20.0"
+
 [tool.poetry.group.server]
 optional = true
 [tool.poetry.group.server.dependencies]
@@ -21,6 +20,8 @@ python-multipart = "^0.0.5"
 fastapi-users = {extras = ["sqlalchemy", "oauth"], version = "^10.1.1"}
 sqlmodel = "^0.0.6"
 aiosqlite = "^0.17.0"
+PyJWT = "^2.4.0"
+fastapi-users-db-sqlmodel = "^0.2.0"
 
 [tool.poetry.group.client]
 optional = true
@@ -52,6 +53,7 @@ pytest-mock = "^3.7.0"
 pytest-asyncio = "^0.18.3"
 pre-commit = "^2.19.0"
 bumpver = "^2022.1116"
+httpx = "^0.23.0"
 
 [build-system]
 requires = ["poetry-core"]
