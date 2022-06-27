@@ -81,3 +81,6 @@ push = true
     "{version}",
     "{pep440_version}",
 ]
+
+[tool.poetry.scripts]
+server = "scripts.testserver:run_testserver"
