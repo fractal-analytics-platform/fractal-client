@@ -67,14 +67,14 @@ async def db(db_engine) -> AsyncSession:
 @pytest.fixture
 async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
-        app=app, base_url="http://test/api"
+        app=app, base_url="http://test"
     ) as client, LifespanManager(app):
         yield client
 
 
 @pytest.fixture
 async def MockCurrentUser(patch_settings):
-    from fractal.server.app.security import get_current_user
+    from fractal.server.app.security import current_active_user
     from fractal.server.app.security import User
 
     @dataclass
@@ -87,22 +87,22 @@ async def MockCurrentUser(patch_settings):
         sub: str
         scopes: List[str] | None
 
-        def get_user_override(self):
-            def __get_user_override():
+        def current_active_user_override(self):
+            def __current_active_user_override():
                 return User(sub=self.sub, name=self.sub)
 
         def __enter__(self):
             self.previous_user = self.app.dependency_overrides.get(
-                get_current_user, None
+                current_active_user, None
             )
             self.app.dependency_overrides[
-                get_current_user
-            ] = self.get_user_override()
+                current_active_user
+            ] = self.current_active_user_override()
 
         def __exit__(self, *args, **kwargs):
             if self.previous_user:
                 self.app.dependency_overrides[
-                    get_current_user
+                    current_active_user
                 ] = self.previous_user()
 
     return _MockCurrentUser

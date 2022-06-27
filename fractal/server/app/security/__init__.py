@@ -95,5 +95,4 @@ auth_router.include_router(
 )
 
 
-def get_current_user(*args, **kwargs) -> User:
-    return User()
+current_active_user = fastapi_users.current_user(active=True)
