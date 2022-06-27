@@ -33,18 +33,24 @@ class Settings(BaseSettings):
         fail_getenv("DEPLOYMENT_TYPE")
     )
 
+    ###########################################################################
     # AUTH
+    ###########################################################################
+
+    # LDAP
     LDAP_SERVER: str | None = getenv("LDAP_SERVER", None)
     LDAP_SSL: bool = getenv("LDAP_SSL", "1") == "1"
-    JWT_EXPIRE_MINUTES: int = int(getenv("JWT_EXPIRE_MINUTES", default=3))
-    JWT_SECRET_KEY: str = fail_getenv("JWT_SECRET_KEY")
-    JWT_ALGORITHM: str = "HS256"
 
-    # DATA
-    DATA_DIR_ROOT: str = fail_getenv("DATA_DIR_ROOT")
+    # OAUTH
+    OAUTH_ADMIN_CLIENT_ID = getenv("OAUTH_ADMIN_CLIENT_ID")
+    OAUTH_ADMIN_CLIENT_SECRET = getenv("OAUTH_ADMIN_CLIENT_SECRET")
+
+    # JWT TOKEN
+    JWT_EXPIRE_SECONDS: int = int(getenv("JWT_EXPIRE_SECONDS", default=180))
+    JWT_SECRET_KEY: str = fail_getenv("JWT_SECRET_KEY")
 
     ###########################################################################
-    # DATABASE                                                                #
+    # DATABASE
     ###########################################################################
     DB_ENGINE: str = getenv("DB_ENGINE", "sqlite")
 
@@ -66,6 +72,11 @@ class Settings(BaseSettings):
     @property
     def DB_ECHO(self):
         return self.DEPLOYMENT_TYPE != DeploymentType.PRODUCTION
+
+    ###########################################################################
+    # FRACTAL SPECIFIC
+    ###########################################################################
+    DATA_DIR_ROOT: str = fail_getenv("DATA_DIR_ROOT")
 
 
 settings = Settings()
