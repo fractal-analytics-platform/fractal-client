@@ -16,9 +16,6 @@ from sqlalchemy.orm import sessionmaker
 from fractal.server import start_application
 
 
-DATABASE_URL = "sqlite+aiosqlite://"
-
-
 @pytest.fixture(scope="session")
 def event_loop():
     _event_loop = asyncio.new_event_loop()
@@ -33,6 +30,9 @@ def patch_settings():
     environ["DEPLOYMENT_TYPE"] = "development"
     environ["DATA_DIR_ROOT"] = "/tmp/"
 
+    environ["DB_ENGINE"] = "sqlite"
+    environ["SQLITE_PATH"] = ""  # in memory
+
     from fractal.server.config import settings
 
     settings.LDAP_SERVER = "testserver"
@@ -45,14 +45,23 @@ async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
 
 
 @pytest.fixture(scope="session")
-async def db_engine(patch_settings) -> AsyncEngine:
-    engine = create_async_engine(DATABASE_URL, echo=False, future=True)
+async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
+    from fractal.server.config import settings
+
+    engine = create_async_engine(
+        settings.DATABASE_URL, echo=False, future=True
+    )
     yield engine
 
 
 @pytest.fixture
-async def db(db_engine) -> AsyncSession:
+async def db(db_engine) -> AsyncGenerator[AsyncSession, None]:
     from sqlmodel import SQLModel
+
+    from devtools import debug
+
+    debug(SQLModel.metadata.tables)
+    debug(db_engine)
 
     async with db_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
@@ -61,7 +70,9 @@ async def db(db_engine) -> AsyncSession:
         )
         async with async_session_maker() as session:
             yield session
+            debug("returning session")
         await conn.run_sync(SQLModel.metadata.drop_all)
+        debug("returning connection")
 
 
 @pytest.fixture
@@ -73,7 +84,7 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, Any]:
 
 
 @pytest.fixture
-async def MockCurrentUser(patch_settings):
+async def MockCurrentUser(app):
     from fractal.server.app.security import current_active_user
     from fractal.server.app.security import User
 
@@ -83,7 +94,6 @@ async def MockCurrentUser(patch_settings):
         Context managed user override
         """
 
-        app: FastAPI
         sub: str
         scopes: List[str] | None
 
@@ -91,17 +101,19 @@ async def MockCurrentUser(patch_settings):
             def __current_active_user_override():
                 return User(sub=self.sub, name=self.sub)
 
+            return __current_active_user_override
+
         def __enter__(self):
-            self.previous_user = self.app.dependency_overrides.get(
+            self.previous_user = app.dependency_overrides.get(
                 current_active_user, None
             )
-            self.app.dependency_overrides[
+            app.dependency_overrides[
                 current_active_user
             ] = self.current_active_user_override()
 
         def __exit__(self, *args, **kwargs):
             if self.previous_user:
-                self.app.dependency_overrides[
+                app.dependency_overrides[
                     current_active_user
                 ] = self.previous_user()
 
