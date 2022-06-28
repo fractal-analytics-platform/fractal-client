@@ -243,3 +243,8 @@ fractal workflow add-task [project_name] [workflow_name] [tasks_names] - add new
 fractal workflow apply [project_name] [workflow_name] [dataset_name] [resource_in] [resource_out] [wf_parameters_json_file] - run workflow using the parameters into the .json
 
 ```
+
+# Server database initialisation / migration
+
+Use `alembic revision --autogenerate -m "<commit message>"` to generate a new
+schema revision, `alembic upgrade head` to appy it.

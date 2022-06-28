@@ -67,8 +67,9 @@ class Settings(BaseSettings):
         )
     elif DB_ENGINE == "sqlite":
         SQLITE_PATH: str = getenv("SQLITE_PATH", "")
+
         DATABASE_URL = (
-            "sqlite+aiosqlite://"
+            "sqlite+aiosqlite:///"
             f"{abspath(SQLITE_PATH) if SQLITE_PATH else SQLITE_PATH}"
         )
 
