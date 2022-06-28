@@ -654,7 +654,7 @@ develop = false
 [package.dependencies]
 dill = "*"
 Flask = {version = ">=1.0.2", optional = true, markers = "extra == \"monitoring\""}
-flask-sqlalchemy = {version = "*", optional = true, markers = "extra == \"monitoring\""}
+flask_sqlalchemy = {version = "*", optional = true, markers = "extra == \"monitoring\""}
 globus-sdk = "*"
 networkx = {version = ">=2.5,<2.6", optional = true, markers = "extra == \"monitoring\""}
 pandas = {version = "<1.4", optional = true, markers = "extra == \"monitoring\""}
@@ -884,6 +884,20 @@ pytest = ">=6.1.0"
 
 [package.extras]
 testing = ["coverage (==6.2)", "hypothesis (>=5.7.1)", "flaky (>=3.5.0)", "mypy (==0.931)", "pytest-trio (>=0.7.0)"]
+
+[[package]]
+name = "pytest-mock"
+version = "3.8.1"
+description = "Thin-wrapper around the mock package for easier use with pytest"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+pytest = ">=5.0"
+
+[package.extras]
+dev = ["pre-commit", "tox", "pytest-asyncio"]
 
 [[package]]
 name = "python-daemon"
@@ -1206,7 +1220,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "bd03c94d75ca44dbd59f6b33649ab7595993c5c4484821e0df1e156e1bdebc0a"
+content-hash = "e73e9882f08a58cc71c779bb0e3ea506f4c8b2f0365162b706df2a6698d6c22b"
 
 [metadata.files]
 aiosqlite = [
@@ -1784,6 +1798,10 @@ pytest-asyncio = [
     {file = "pytest-asyncio-0.18.3.tar.gz", hash = "sha256:7659bdb0a9eb9c6e3ef992eef11a2b3e69697800ad02fb06374a210d85b29f91"},
     {file = "pytest_asyncio-0.18.3-1-py3-none-any.whl", hash = "sha256:16cf40bdf2b4fb7fc8e4b82bd05ce3fbcd454cbf7b92afc445fe299dabb88213"},
     {file = "pytest_asyncio-0.18.3-py3-none-any.whl", hash = "sha256:8fafa6c52161addfd41ee7ab35f11836c5a16ec208f93ee388f752bea3493a84"},
+]
+pytest-mock = [
+    {file = "pytest-mock-3.8.1.tar.gz", hash = "sha256:2c6d756d5d3bf98e2e80797a959ca7f81f479e7d1f5f571611b0fdd6d1745240"},
+    {file = "pytest_mock-3.8.1-py3-none-any.whl", hash = "sha256:d989f11ca4a84479e288b0cd1e6769d6ad0d3d7743dcc75e460d1416a5f2135a"},
 ]
 python-daemon = [
     {file = "python-daemon-2.3.0.tar.gz", hash = "sha256:bda993f1623b1197699716d68d983bb580043cf2b8a66a01274d9b8297b0aeaf"},
