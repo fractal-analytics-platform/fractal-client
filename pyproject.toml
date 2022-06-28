@@ -2,14 +2,16 @@
 name = "fractal"
 version = "0.1.0"
 description = ""
-authors = ["Jacopo Nespolo <jacopo.nespolo@exact-lab.it>",
-           "Marco Franzon <marco.franzon@exact-lab.it>"]
+authors = [
+    "Jacopo Nespolo <jacopo.nespolo@exact-lab.it>",
+    "Marco Franzon <marco.franzon@exact-lab.it>",
+    "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
+]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 python-dotenv = "^0.20.0"
-asyncclick = "^8.1.3.2"
 
 [tool.poetry.group.server]
 optional = true
@@ -28,6 +30,7 @@ fastapi-users-db-sqlmodel = "^0.2.0"
 optional = true
 [tool.poetry.group.client.dependencies]
 click = {version="^8.0.3"}
+asyncclick = "^8.1.3.2"
 
 [tool.poetry.group.runner]
 optional = true
