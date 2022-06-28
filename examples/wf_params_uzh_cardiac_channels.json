@@ -3,7 +3,7 @@
         "label": "DAPI",
         "colormap": "00FFFF",
         "start": 0,
-        "end": 600
+        "end": 700
     },
     "A01_C02": {
         "label": "nanog",
@@ -15,6 +15,6 @@
         "label": "Lamin B1",
         "colormap": "FFFF00",
         "start": 0,
-        "end": 1000
+        "end": 1500
     }
 }
