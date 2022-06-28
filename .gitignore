@@ -3,6 +3,7 @@ apply.json
 .pytest_cache/
 __pycache__
 *.cpython-*.pyc
+*.env
 
 # parsl-related
 cmd_parsl.slurm.*.sh
