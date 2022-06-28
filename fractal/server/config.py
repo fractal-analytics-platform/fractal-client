@@ -13,7 +13,7 @@ def fail_getenv(key):
     return value
 
 
-load_dotenv(".fractal.env")
+load_dotenv(".fractal_server.env")
 
 
 __VERSION__ = "0.1.0"
