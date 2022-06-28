@@ -5,7 +5,7 @@ PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_testSu
 WFPARAMS=wf_params_uzh_1_well_2x2_sites.json
 
 MWE_DIR=/data/active/fractal/tests
-PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_2x2_sites
+PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_2x2_sites_singlefov
 
 CMD='poetry run python ../fractal/fractal_cmd.py'
 
@@ -40,14 +40,14 @@ $CMD task add yokogawa_to_zarr zarr zarr well
 $CMD task list
 echo
 
-echo 'Add replicate_zarr_structure'
-$CMD task add replicate_zarr_structure zarr zarr plate
+#echo 'Add replicate_zarr_structure'
+#$CMD task add replicate_zarr_structure zarr zarr plate
 $CMD task list
 echo
 
-echo 'Add illumination_correction'
-$CMD task add illumination_correction zarr zarr well
-$CMD task list
+#echo 'Add illumination_correction'
+#$CMD task add illumination_correction zarr zarr well
+#$CMD task list
 echo
 
 echo 'Add replicate_zarr_structure_mip'
@@ -72,15 +72,10 @@ $CMD workflow add-task mwe-test wftest yokogawa_to_zarr
 $CMD workflow list mwe-test
 echo
 
-#echo 'Add replicate_zarr_structure'
-#$CMD workflow add-task mwe-test wftest replicate_zarr_structure
+#echo 'Add illumination_correction'
+#$CMD workflow add-task mwe-test wftest illumination_correction
 #$CMD workflow list mwe-test
 #echo
-
-echo 'Add illumination_correction'
-$CMD workflow add-task mwe-test wftest illumination_correction
-$CMD workflow list mwe-test
-echo
 
 echo 'Add replicate_zarr_structure_mip'
 $CMD workflow add-task mwe-test wftest replicate_zarr_structure_mip

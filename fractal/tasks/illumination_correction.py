@@ -232,7 +232,10 @@ if __name__ == "__main__":
         "--newzarrurl",
         help="path of the new zarr file",
     )
-
+    parser.add_argument(
+        "--path_dict_corr",
+        help="path of JSON file with info on illumination matrices",
+    )
     parser.add_argument(
         "-C",
         "--chl_list",
@@ -262,6 +265,7 @@ if __name__ == "__main__":
         args.zarrurl,
         overwrite=args.overwrite,
         newzarrurl=args.newzarrurl,
+        path_dict_corr=args.path_dict_corr,
         chl_list=args.chl_list,
         coarsening_xy=args.coarsening_xy,
         background=args.background,

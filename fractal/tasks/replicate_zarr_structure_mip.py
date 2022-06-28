@@ -73,36 +73,44 @@ def replicate_zarr_structure_mip(zarrurl):
 
     for row, column in well_rows_columns:
 
+        # Find sites in COL/ROW/.zattrs
+        path_zattrs = zarrurl + f"{row}/{column}/.zattrs"
+        with open(path_zattrs) as zattrs_file:
+            zattrs = json.load(zattrs_file)
+        well_images = zattrs["well"]["images"]
+        list_FOVs = sorted([img["path"] for img in well_images])
+
         group_well = group_plate.create_group(f"{row}/{column}/")
 
         group_well.attrs["well"] = {
-            "images": [{"path": "0"}],  # FOV (only 0, by now)
+            "images": well_images,
             "version": "0.3",
         }
-        group_field = group_well.create_group("0/")  # noqa: F841
 
-        group_field.attrs["multiscales"] = [
-            {
-                "version": "0.3",
-                "axes": [
-                    {"name": "c", "type": "channel"},
-                    {
-                        "name": "z",
-                        "type": "space",
-                        "unit": "micrometer",
-                    },
-                    {"name": "y", "type": "space"},
-                    {"name": "x", "type": "space"},
-                ],
-                "datasets": [{"path": level} for level in levels],
-            }
-        ]
+        for FOV in list_FOVs:
+            group_field = group_well.create_group(f"{FOV}/")  # noqa: F841
+            group_field.attrs["multiscales"] = [
+                {
+                    "version": "0.3",
+                    "axes": [
+                        {"name": "c", "type": "channel"},
+                        {
+                            "name": "z",
+                            "type": "space",
+                            "unit": "micrometer",
+                        },
+                        {"name": "y", "type": "space"},
+                        {"name": "x", "type": "space"},
+                    ],
+                    "datasets": [{"path": level} for level in levels],
+                }
+            ]
 
-        # Copy .zattrs file at the COL/ROW/SITE level
-        path_zattrs = zarrurl + f"{row}/{column}/0/.zattrs"
-        with open(path_zattrs) as zattrs_file:
-            zattrs = json.load(zattrs_file)
-            group_field.attrs["omero"] = zattrs["omero"]
+            # Copy .zattrs file at the COL/ROW/SITE level
+            path_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
+            with open(path_zattrs) as zattrs_file:
+                zattrs = json.load(zattrs_file)
+                group_field.attrs["omero"] = zattrs["omero"]
 
 
 if __name__ == "__main__":
