@@ -57,7 +57,7 @@ def create_pyramid(
                 zyx_new = data_czyx[ind_chl]
             else:
                 zyx_new = da.coarsen(
-                    np.min,
+                    np.mean,
                     pyramid[level - 1][ind_chl],
                     {1: coarsening_xy, 2: coarsening_xy},
                     trim_excess=True,

@@ -127,7 +127,7 @@ def yokogawa_to_zarr_multifov(
                 matrices_site_channel_levels = [matrix_site_channel]
                 if coarsening_z > 1:
                     matrices_site_channel_levels[level] = da.coarsen(
-                        np.min,
+                        np.mean,
                         matrices_site_channel_levels[level],
                         {0: coarsening_z},
                         trim_excess=True,
@@ -135,7 +135,7 @@ def yokogawa_to_zarr_multifov(
             else:
                 matrices_site_channel_levels.append(
                     da.coarsen(
-                        np.min,
+                        np.mean,
                         matrices_site_channel_levels[level - 1],
                         coarsening,
                         trim_excess=True,
