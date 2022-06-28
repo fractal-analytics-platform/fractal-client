@@ -158,14 +158,14 @@ def yokogawa_to_zarr(
                 # After concatenate, f_matrices[0] has three dimensions: z,y,x
                 if coarsening_z > 1:
                     f_matrices[level] = da.coarsen(
-                        np.min,
+                        np.mean,
                         f_matrices[level],
                         {0: coarsening_z},
                         trim_excess=True,
                     )
             else:
                 f_matrices[level] = da.coarsen(
-                    np.min,
+                    np.mean,
                     f_matrices[level - 1],
                     coarsening,
                     trim_excess=True,
