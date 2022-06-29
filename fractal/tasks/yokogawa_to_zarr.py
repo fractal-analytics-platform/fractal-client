@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import os
 import re
 from glob import glob
@@ -102,12 +101,10 @@ def yokogawa_to_zarr(
         all_rows = []
 
         print(zarrurl, well_ID)
-        print(in_path + f"*_{well_ID}_*{A}_*{C}." + ext)
-        filenames = sorted(
-            glob(in_path + f"*_{well_ID}_*{A}*{C}." + ext), key=sort_fun
-        )
+        glob_path = f"{in_path}*_{well_ID}_*{A}*{C}.{ext}"
+        print(f"glob path: {glob_path}")
+        filenames = sorted(glob(glob_path), key=sort_fun)
         if len(filenames) == 0:
-            glob_path = in_path + f"*_{well_ID}_*{A}*{C}." + ext
             raise Exception(
                 "Error in yokogawa_to_zarr: len(filenames)=0.\n"
                 f"  in_path: {in_path}\n"
