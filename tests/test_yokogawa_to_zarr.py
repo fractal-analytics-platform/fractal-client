@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import numpy as np
 
 from fractal.tasks.yokogawa_to_zarr import yokogawa_to_zarr
@@ -22,13 +21,6 @@ f2 = "plate_well_T0001F002L01A01Z01C01.png"
 f3 = "plate_well_T0001F003L01A01Z01C01.png"
 f4 = "plate_well_T0001F004L01A01Z01C01.png"
 
-in_path = ""
-out_path = ""
-zarrurl = "plate.zarr/row/column/fov/"
-delete_in = "False"
-rows = "2"
-cols = "2"
-ext = "png"
 chl_list = ["01"]
 num_levels = 5
 coarsening_factor_xy = 2
@@ -63,15 +55,15 @@ def test_yokogawa_to_zarr(mocker):
     )
 
     res = yokogawa_to_zarr(
-        zarrurl,
-        in_path="",
-        out_path="",
-        ext=ext,
-        dims=(2, 2),
-        chl_list=["01"],
+        "plate.zarr/row/column/fov/",
+        in_path="/tmp/",
+        ext="png",
+        rows=2,
+        cols=2,
+        chl_list=["A01_C01"],
         num_levels=5,
-        coarsening_factor_xy=2,
-        coarsening_factor_z=1,
+        coarsening_xy=2,
+        coarsening_z=1,
     )
 
     assert res == [
