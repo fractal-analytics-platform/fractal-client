@@ -38,6 +38,7 @@ parsl = {extras = ["monitoring"], git="https://github.com/jacopo-exact/parsl.git
 dask = "^2022.6.1"
 scikit-image = "^0.19.3"
 pandas = "1.3.5"
+cellpose = "2"
 
 [build-system]
 requires = ["poetry-core"]
