@@ -39,6 +39,7 @@ dask = "^2022.6.1"
 scikit-image = "^0.19.3"
 cellpose = "2"
 pandas = "^1.4.3"
+ome-zarr = "^0.5.0"
 
 [build-system]
 requires = ["poetry-core"]
