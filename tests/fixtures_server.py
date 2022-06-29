@@ -1,3 +1,15 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import asyncio
 from dataclasses import dataclass
 from typing import Any
@@ -24,12 +36,12 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-def patch_settings():
+def patch_settings(testdata_path):
     from os import environ
 
     environ["JWT_SECRET_KEY"] = "secret_key"
     environ["DEPLOYMENT_TYPE"] = "development"
-    environ["DATA_DIR_ROOT"] = "/tmp/"
+    environ["DATA_DIR_ROOT"] = testdata_path.as_posix()
 
     environ["DB_ENGINE"] = "sqlite"
     environ["SQLITE_PATH"] = ""  # in memory
