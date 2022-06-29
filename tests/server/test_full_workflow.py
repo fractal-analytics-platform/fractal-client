@@ -10,15 +10,13 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
-
 PREFIX = "/api/v1"
 
 
 async def test_project_creation(
     app, client, MockCurrentUser, db, testdata_path
 ):
-    with MockCurrentUser(sub="sub", scopes=["projects"]):
+    async with MockCurrentUser(persist=True):
 
         # CREATE PROJECT
 
