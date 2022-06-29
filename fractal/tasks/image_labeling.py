@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-# import json
 import dask.array as da
 import zarr
 from cellpose import core
@@ -28,28 +27,31 @@ def image_labeling(
     FIXME
     """
 
-    # Read number of levels from .zattrs of original zarr file
-    # with open(zarrurl + ".zattrs", "r") as inputjson:
-    #     zattrs = json.load(inputjson)
-    # num_levels = len(zattrs["multiscales"][0]["datasets"])
-
-    # Load some level and some channel #FIXME
+    # Load some level and some channel
+    # FIXME: this is now pinned to level 0 and channel 0
     dapi_dset = da.from_zarr(zarrurl + "/0")[0]
+
+    # Some debugging info
     print("LOADED ZARR")
     print(dapi_dset.shape)
     print()
 
+    # Perform segmentation
     use_gpu = core.use_gpu()
     model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
     mask, flows, styles, diams = model.eval(
         dapi_dset, channels=[0, 0], do_3D=True, net_avg=False, augment=False
     )
 
+    # Some debugging info
+    print("CELLPOSE OUTPUT")
     print(type(mask), mask.shape)
     print(type(flows), len(flows), len(flows[0]))
     print(type(styles), styles.shape)
     print(type(diams), diams)
+    print()
 
+    # Store labels
     store = parse_url(zarrurl, mode="w").store
     root = zarr.group(store=store)
     label_name = "label_image"
