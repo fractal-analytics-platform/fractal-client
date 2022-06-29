@@ -1,0 +1,5 @@
+cmd_parsl.slurm.*.sh
+dictionary_tasks.py
+fractal.json
+Output
+runinfo
