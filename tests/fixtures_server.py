@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 from typing import AsyncGenerator
 from typing import List
+from typing import Optional
 
 import pytest
 from asgi_lifespan import LifespanManager
@@ -91,7 +92,7 @@ async def MockCurrentUser(app):
         """
 
         sub: str
-        scopes: List[str] | None
+        scopes: Optional[List[str]]
 
         def current_active_user_override(self):
             def __current_active_user_override():

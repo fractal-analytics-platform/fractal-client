@@ -1,6 +1,7 @@
 from enum import Enum
 from os import getenv
 from os.path import abspath
+from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -38,7 +39,7 @@ class Settings(BaseSettings):
     ###########################################################################
 
     # LDAP
-    LDAP_SERVER: str | None = getenv("LDAP_SERVER", None)
+    LDAP_SERVER: Optional[str] = getenv("LDAP_SERVER", None)
     LDAP_SSL: bool = getenv("LDAP_SSL", "1") == "1"
 
     # OAUTH
