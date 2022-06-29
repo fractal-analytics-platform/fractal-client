@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...config import settings
 from ..db import get_db
 from ..models.security import OAuthAccount
+from ..models.security import UserCreate
 from ..models.security import UserOAuth as User
 from ..models.security import UserRead
 from ..models.security import UserUpdate
@@ -65,8 +66,32 @@ fastapi_users = FastAPIUsers[User, uuid.UUID](
 )
 
 
+current_active_user = fastapi_users.current_user(active=True)
+
+
+# AUTH ROUTES
+
 auth_router = APIRouter()
 
+auth_router.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/token",
+)
+auth_router.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+)
+auth_router.include_router(
+    fastapi_users.get_reset_password_router(),
+)
+auth_router.include_router(
+    fastapi_users.get_verify_router(UserRead),
+)
+auth_router.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+)
+
+# GitHub OAuth
 auth_router.include_router(
     fastapi_users.get_oauth_router(
         github_client,
@@ -85,14 +110,3 @@ auth_router.include_router(
     ),
     prefix="/github/associate",
 )
-
-auth_router.include_router(
-    fastapi_users.get_users_router(UserRead, UserUpdate),
-    prefix="/users",
-)
-auth_router.include_router(
-    fastapi_users.get_auth_router(auth_backend), prefix="/token"
-)
-
-
-current_active_user = fastapi_users.current_user(active=True)
