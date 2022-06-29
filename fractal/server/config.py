@@ -10,10 +10,10 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 from enum import Enum
 from os import getenv
 from os.path import abspath
+from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     ###########################################################################
 
     # LDAP
-    LDAP_SERVER: str | None = getenv("LDAP_SERVER", None)
+    LDAP_SERVER: Optional[str] = getenv("LDAP_SERVER", None)
     LDAP_SSL: bool = getenv("LDAP_SSL", "1") == "1"
 
     # OAUTH
@@ -80,8 +80,9 @@ class Settings(BaseSettings):
         )
     elif DB_ENGINE == "sqlite":
         SQLITE_PATH: str = getenv("SQLITE_PATH", "")
+
         DATABASE_URL = (
-            "sqlite+aiosqlite://"
+            "sqlite+aiosqlite:///"
             f"{abspath(SQLITE_PATH) if SQLITE_PATH else SQLITE_PATH}"
         )
 

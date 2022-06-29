@@ -6,8 +6,13 @@ from devtools import debug
 async def project_factory(db):
     from fractal.server.app.models import Project
 
-    async def __project_factory(*kwargs):
-        defaults = dict(name="project", project_dir="/tmp/")
+    async def __project_factory(user, **kwargs):
+        defaults = dict(
+            name="project",
+            project_dir="/tmp/",
+            user_owner_id=user.id,
+            slug="slug",
+        )
         defaults.update(kwargs)
         project = Project(**defaults)
         db.add(project)
@@ -21,20 +26,26 @@ async def project_factory(db):
 PREFIX = "/api/v1/project"
 
 
-async def test_project_get_list(client, db, project_factory):
-    res = await client.get(f"{PREFIX}/")
-    debug(res)
-    assert res.json() == []
+async def test_project_get_list(client, db, project_factory, MockCurrentUser):
+    # unauthenticated
 
-    await project_factory()
     res = await client.get(f"{PREFIX}/")
-    data = res.json()
-    debug(data)
-    assert len(data) == 1
+    assert res.status_code == 401
+
+    # authenticated
+    async with MockCurrentUser(persist=True) as user:
+        res = await client.get(f"{PREFIX}/")
+        debug(res)
+        assert res.json() == []
+
+        await project_factory(user)
+        res = await client.get(f"{PREFIX}/")
+        data = res.json()
+        debug(data)
+        assert len(data) == 1
 
 
 async def test_project_creation(app, client, MockCurrentUser, db):
-    debug(db)
     payload = dict(
         name="new project",
         project_dir="/some/path/",
@@ -44,9 +55,9 @@ async def test_project_creation(app, client, MockCurrentUser, db):
     debug(data)
     assert res.status_code == 401
 
-    with MockCurrentUser(sub="sub", scopes=["projects"]):
-        debug(app.dependency_overrides)
+    async with MockCurrentUser(persist=True) as user:
+        debug(user)
         res = await client.post(f"{PREFIX}/", json=payload)
         data = res.json()
-        debug(data)
         assert res.status_code == 201
+        assert data["user_owner_id"] == user.id
