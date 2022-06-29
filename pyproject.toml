@@ -37,6 +37,7 @@ uvicorn = "^0.18.2"
 parsl = {extras = ["monitoring"], git="https://github.com/jacopo-exact/parsl.git", branch="sqlalchemy-version"}
 dask = "^2022.6.1"
 scikit-image = "^0.19.3"
+pandas = "1.3.5"
 
 [build-system]
 requires = ["poetry-core"]
