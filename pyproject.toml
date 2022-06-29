@@ -34,11 +34,11 @@ alembic = "^1.8.0"
 uvicorn = "^0.18.2"
 
 [tool.poetry.group.runner.dependencies]
-parsl = {extras = ["monitoring"], git="https://github.com/jacopo-exact/parsl.git", branch="sqlalchemy-version"}
+parsl = {extras = ["monitoring"], git="https://github.com/jacopo-exact/parsl.git", branch="pandas_version"}
 dask = "^2022.6.1"
 scikit-image = "^0.19.3"
-pandas = "1.3.5"
 cellpose = "2"
+pandas = "^1.4.3"
 
 [build-system]
 requires = ["poetry-core"]
