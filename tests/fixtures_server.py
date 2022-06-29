@@ -12,6 +12,7 @@ Zurich.
 """
 import asyncio
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import AsyncGenerator
 from typing import List
@@ -93,7 +94,7 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, Any]:
 
 
 @pytest.fixture
-async def MockCurrentUser(app):
+async def MockCurrentUser(app, db):
     from fractal.server.app.security import current_active_user
     from fractal.server.app.security import User
 
@@ -103,24 +104,43 @@ async def MockCurrentUser(app):
         Context managed user override
         """
 
-        sub: str
-        scopes: Optional[List[str]]
+        sub: Optional[str] = "sub"
+        scopes: Optional[List[str]] = field(
+            default_factory=lambda: ["project"]
+        )
+        email: Optional[str] = "mock@exact-lab.it"
+        persist: Optional[bool] = False
+
+        def _create_user(self):
+            self.user = User(
+                sub=self.sub,
+                name=self.sub,
+                email=self.email,
+                hashed_password="fake_hashed_password",
+            )
 
         def current_active_user_override(self):
             def __current_active_user_override():
-                return User(sub=self.sub, name=self.sub)
+                return self.user
 
             return __current_active_user_override
 
-        def __enter__(self):
+        async def __aenter__(self):
+            self._create_user()
+
+            if self.persist:
+                db.add(self.user)
+                await db.commit()
+                await db.refresh(self.user)
             self.previous_user = app.dependency_overrides.get(
                 current_active_user, None
             )
             app.dependency_overrides[
                 current_active_user
             ] = self.current_active_user_override()
+            return self.user
 
-        def __exit__(self, *args, **kwargs):
+        async def __aexit__(self, *args, **kwargs):
             if self.previous_user:
                 app.dependency_overrides[
                     current_active_user
