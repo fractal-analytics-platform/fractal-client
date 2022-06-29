@@ -29,8 +29,34 @@ async def create_project(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Create new poject
+    """
     project = Project(name="project", project_dir="/tpm/")
     db.add(project)
     await db.commit()
     await db.refresh(project)
     return project
+
+
+@router.post("/apply/{project_slug}/{dataset_id}")
+async def apply_workflow():
+    raise NotImplementedError
+
+
+@router.post("/{project_slug}")
+async def add_dataset():
+    """
+    Add new dataset to current project
+    """
+    raise NotImplementedError
+
+
+@router.post("/{project_slug}/{dataset_id}/")
+async def add_resource():
+    raise NotImplementedError
+
+
+@router.patch("/{project_slug}/{dataset_id}")
+async def modify_dataset():
+    raise NotImplementedError
