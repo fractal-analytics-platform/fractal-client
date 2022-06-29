@@ -12,7 +12,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import json
 import os
 from pathlib import Path
@@ -24,12 +23,12 @@ import parsl
 from devtools import debug
 from parsl import python_app
 from parsl.config import Config
-from parsl_config import define_HighThroughputExecutor
-from parsl_config import define_MonitoringHub
-from parsl_config import define_SlurmProvider
 from pydantic import BaseModel
 
 import fractal.fractal_config as fractal_config
+from fractal.parsl_config import define_HighThroughputExecutor
+from fractal.parsl_config import define_MonitoringHub
+from fractal.parsl_config import define_SlurmProvider
 
 
 """
