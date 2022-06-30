@@ -26,7 +26,7 @@ async def project_factory(db):
 PREFIX = "/api/v1/project"
 
 
-async def test_project_get_list(client, db, project_factory, MockCurrentUser):
+async def test_project_get(client, db, project_factory, MockCurrentUser):
     # unauthenticated
 
     res = await client.get(f"{PREFIX}/")
@@ -34,15 +34,33 @@ async def test_project_get_list(client, db, project_factory, MockCurrentUser):
 
     # authenticated
     async with MockCurrentUser(persist=True) as user:
+        other_project = await project_factory(user)
+
+    async with MockCurrentUser(persist=True) as user:
         res = await client.get(f"{PREFIX}/")
         debug(res)
+        assert res.status_code == 200
         assert res.json() == []
 
         await project_factory(user)
         res = await client.get(f"{PREFIX}/")
         data = res.json()
         debug(data)
+        assert res.status_code == 200
         assert len(data) == 1
+
+        project_id = data[0]["id"]
+        res = await client.get(f"{PREFIX}/{project_id}")
+        assert res.status_code == 200
+        assert res.json()["id"] == project_id
+
+        # fail on non existent project
+        res = await client.get(f"{PREFIX}/666")
+        assert res.status_code == 404
+
+        # fail on other owner's project
+        res = await client.get(f"{PREFIX}/{other_project.id}")
+        assert res.status_code == 403
 
 
 async def test_project_creation(app, client, MockCurrentUser, db):
