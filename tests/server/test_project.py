@@ -52,12 +52,13 @@ async def test_project_creation(app, client, MockCurrentUser, db):
     )
     res = await client.post(f"{PREFIX}/", json=payload)
     data = res.json()
-    debug(data)
     assert res.status_code == 401
 
-    async with MockCurrentUser(persist=True) as user:
-        debug(user)
+    async with MockCurrentUser(persist=True):
         res = await client.post(f"{PREFIX}/", json=payload)
         data = res.json()
         assert res.status_code == 201
-        assert data["user_owner_id"] == user.id
+        debug(data)
+        assert data["name"] == payload["name"]
+        assert data["slug"] is not None
+        assert data["project_dir"] == payload["project_dir"]
