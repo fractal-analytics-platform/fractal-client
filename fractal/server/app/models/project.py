@@ -70,6 +70,10 @@ class Project(ProjectBase, table=True):  # type: ignore
     )
 
 
+class ResourceCreate(ResourceBase):
+    pass
+
+
 class Resource(ResourceBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     dataset_id: int = Field(foreign_key="dataset.id")
@@ -83,3 +87,4 @@ class ProjectRead(ProjectBase):
 
 class ResourceRead(ResourceBase):
     id: int
+    dataset_id: int

@@ -10,6 +10,9 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+from devtools import debug
+
+
 PREFIX = "/api/v1"
 
 
@@ -30,17 +33,15 @@ async def test_project_creation(
         assert res.status_code == 201
         project = res.json()
         project_slug = project["slug"]
-        dataset_id = project["dataset"][0]["id"]
+        dataset_id = project["dataset_list"][0]["id"]
 
         # ADD RESOURCE TO DATASET
 
         res = await client.post(
             f"{PREFIX}/project/{project_slug}/{dataset_id}",
-            json={
-                "path": testdata_path.as_posix(),
-                "type": "png",
-            },
+            json={"path": testdata_path.as_posix()},
         )
+        debug(res.json())
         assert res.status_code == 201
 
         # ADD GLOBAL TASKS

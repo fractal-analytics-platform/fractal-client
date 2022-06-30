@@ -12,6 +12,9 @@ from ...models.project import Dataset
 from ...models.project import Project
 from ...models.project import ProjectCreate
 from ...models.project import ProjectRead
+from ...models.project import Resource
+from ...models.project import ResourceCreate
+from ...models.project import ResourceRead
 from ...security import current_active_user
 from ...security import User
 
@@ -78,14 +81,32 @@ async def add_dataset(
     raise NotImplementedError
 
 
-@router.post("/{project_id}/{dataset_id}")
+@router.post(
+    "/{project_id}/{dataset_id}",
+    response_model=ResourceRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_resource(
     project_id: str,
     dataset_id: int,
+    resource: ResourceCreate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    raise NotImplementedError
+    """
+    Add resource to an existing dataset
+    """
+    stm = (
+        select(Project, Dataset)
+        .join(Dataset)
+        .where(Project.user_owner_id == user.id)
+    )
+    project, dataset = (await db.execute(stm)).one()
+    db_resource = Resource(dataset_id=dataset.id, **resource.dict())
+    db.add(db_resource)
+    await db.commit()
+    await db.refresh(db_resource)
+    return db_resource
 
 
 @router.patch("/{project_id}/{dataset_id}")
