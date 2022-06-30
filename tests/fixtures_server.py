@@ -17,6 +17,7 @@ from typing import Any
 from typing import AsyncGenerator
 from typing import List
 from typing import Optional
+from uuid import uuid4
 
 import pytest
 from asgi_lifespan import LifespanManager
@@ -108,7 +109,9 @@ async def MockCurrentUser(app, db):
         scopes: Optional[List[str]] = field(
             default_factory=lambda: ["project"]
         )
-        email: Optional[str] = "mock@exact-lab.it"
+        email: Optional[str] = field(
+            default_factory=lambda: f"{uuid4()}@exact-lab.it"
+        )
         persist: Optional[bool] = False
 
         def _create_user(self):
