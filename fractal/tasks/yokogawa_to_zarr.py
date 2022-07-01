@@ -98,7 +98,7 @@ def yokogawa_to_zarr(
         A, C = chl.split("_")
 
         l_rows = []
-        all_rows = []
+        data_zfyx = []
 
         print(zarrurl, well_ID)
         glob_path = f"{in_path}*_{well_ID}_*{A}*{C}.{ext}"
@@ -127,7 +127,6 @@ def yokogawa_to_zarr(
 
         for ro in range(int(rows)):
             cell = []
-
             for co in range(int(cols)):
                 lazy_arrays = [lazy_imread(fn) for fn in filenames[start:end]]
                 start += int(max_z)
@@ -141,30 +140,41 @@ def yokogawa_to_zarr(
                 z_stack = da.stack(dask_arrays, axis=0)
                 cell.append(z_stack)
             l_rows = da.block(cell)
-            all_rows.append(l_rows)
-        # At this point, all_rows has four dimensions: z,site,y,x
+            data_zfyx.append(l_rows)
+        data_zyx = da.concatenate(data_zfyx, axis=1).rechunk(
+            {1: chunk_size_y, 2: chunk_size_x}, balance=True
+        )
 
         # Define coarsening options
-        coarsening = {1: coarsening_xy, 2: coarsening_xy}
         f_matrices = {}
         for level in range(num_levels):
             if level == 0:
-                f_matrices[level] = da.concatenate(all_rows, axis=1).rechunk(
-                    {1: chunk_size_y, 2: chunk_size_x}, balance=True
-                )
-                # After concatenate, f_matrices[0] has three dimensions: z,y,x
+                if coarsening_z == 1:
+                    f_matrices[level] = data_zyx
                 if coarsening_z > 1:
+                    if data_zyx.shape[0] < coarsening_z:
+                        raise Exception(
+                            f"ERROR: coarsening_z={coarsening_z} "
+                            f"but data_zyx.shape={data_zyx.shape}"
+                        )
                     f_matrices[level] = da.coarsen(
                         np.mean,
-                        f_matrices[level],
+                        data_zyx,
                         {0: coarsening_z},
                         trim_excess=True,
                     )
             else:
+                if min(f_matrices[level - 1].shape[1:]) < coarsening_xy:
+                    raise Exception(
+                        f"ERROR at pyramid level={level}: "
+                        f"coarsening_xy={coarsening_xy} but "
+                        f"level={level-1} has shape "
+                        f"{f_matrices[level - 1].shape}"
+                    )
                 f_matrices[level] = da.coarsen(
                     np.mean,
                     f_matrices[level - 1],
-                    coarsening,
+                    {1: coarsening_xy, 2: coarsening_xy},
                     trim_excess=True,
                 ).rechunk(
                     {
