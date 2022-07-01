@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import dask.array as da
 import numpy as np
 
@@ -56,6 +55,11 @@ def create_pyramid(
 
     # Coarsen globally along Z direction
     if coarsening_z > 1:
+        if data_czyx.shape[1] < coarsening_z:
+            raise Exception(
+                f"ERROR: coarsening_z={coarsening_z} "
+                f"but data_czyx.shape={data_czyx.shape}"
+            )
         data_czyx = da.coarsen(
             np.min, data_czyx, {1: coarsening_z}, trim_excess=True
         )
@@ -70,6 +74,13 @@ def create_pyramid(
             if level == 0:
                 zyx_new = data_czyx[ind_chl]
             else:
+                if min(pyramid[level - 1][ind_chl].shape[1:]) < coarsening_xy:
+                    raise Exception(
+                        f"ERROR: at level={level}, "
+                        f"coarsening_xy={coarsening_xy} "
+                        "but level-1 shape is "
+                        f"{pyramid[level - 1][ind_chl].shape}"
+                    )
                 zyx_new = da.coarsen(
                     np.mean,
                     pyramid[level - 1][ind_chl],
