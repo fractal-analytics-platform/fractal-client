@@ -13,3 +13,6 @@ monitoring.db
 
 output*
 tmp_data
+LOG_*
+slurm-*.out
+Local_backup

@@ -256,8 +256,30 @@ if __name__ == "__main__":
     parser.add_argument(
         "-z", "--zarrurl", help="zarr url, at the FOV level", required=True
     )
+    parser.add_argument(
+        "-C",
+        "--chl_list",
+        nargs="+",
+        help="list of channel names (e.g. A01_C01)",
+    )
+    parser.add_argument(
+        "-cxy",
+        "--coarsening_xy",
+        default=2,
+        type=int,
+        help="coarsening factor along X and Y (optional, defaults to 2)",
+    )
+    parser.add_argument(
+        "-lc",
+        "--labeling_channel",
+        help="name of channel for labeling (e.g. A01_C01)",
+    )
 
     args = parser.parse_args()
     image_labeling(
         args.zarrurl,
+        coarsening_xy=args.coarsening_xy,
+        chl_list=args.chl_list,
+        labeling_channel=args.labeling_channel,
+        # FIXME: more arguments
     )

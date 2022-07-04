@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.executors import HighThroughputExecutor
@@ -57,17 +56,18 @@ def define_SlurmProvider(
         parallelism=1,
         exclusive=exclusive,
     )
+
     return slurm
 
 
-def define_HighThroughputExecutor(provider=None, max_workers=40):
+def define_HighThroughputExecutor(provider=None, max_workers=40, label="htex"):
 
     htex = HighThroughputExecutor(
-        label="htex",
+        label=label,
         address=address_by_hostname(),
         # worker_debug=True,
         max_workers=max_workers,
-        cores_per_worker=8,
+        cores_per_worker=16,
         provider=provider,
         cpu_affinity="block",
     )

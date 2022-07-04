@@ -11,12 +11,12 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 from fractal.tasks.create_zarr_structure import create_zarr_structure
 from fractal.tasks.create_zarr_structure_multifov import (
     create_zarr_structure_multifov,
 )
 from fractal.tasks.illumination_correction import illumination_correction
+from fractal.tasks.image_labeling import image_labeling
 from fractal.tasks.maximum_intensity_projection import (
     maximum_intensity_projection,
 )
@@ -36,3 +36,4 @@ dict_tasks["replicate_zarr_structure_mip"] = replicate_zarr_structure_mip
 dict_tasks["maximum_intensity_projection"] = maximum_intensity_projection
 dict_tasks["replicate_zarr_structure"] = replicate_zarr_structure
 dict_tasks["illumination_correction"] = illumination_correction
+dict_tasks["image_labeling"] = image_labeling

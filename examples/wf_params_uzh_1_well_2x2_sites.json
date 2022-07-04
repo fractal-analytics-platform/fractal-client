@@ -3,7 +3,7 @@
 "dims": [2, 2],
 "coarsening_xy": 2,
 "coarsening_z": 1,
-"num_levels": 4,
+"num_levels": 5,
 "channel_file": "wf_params_uzh_cardiac_channels.json",
 "path_dict_corr": "wf_params_uzh_cardiac_illumination.json"
 }

@@ -459,6 +459,7 @@ def workflow_apply(
     path_dict_channels = params["channel_file"]
     path_dict_corr = params["path_dict_corr"]
     delete_input = params.get("delete_input", False)
+    labeling_channel = params.get("labeling_channel", "A01_C01")
 
     # FIXME validate tasks somewhere?
 
@@ -478,10 +479,27 @@ def workflow_apply(
         exclusive=fractal_config.exclusive,
     )
     htex = define_HighThroughputExecutor(
-        provider=provider, max_workers=fractal_config.max_workers
+        provider=provider,
+        max_workers=fractal_config.max_workers,
+        label="cpu",
     )
+    provider_gpu = define_SlurmProvider(
+        nodes_per_block=fractal_config.nodes_per_block,
+        cores_per_node=fractal_config.cores_per_node,
+        mem_per_node_GB=fractal_config.mem_per_node_GB,
+        partition=fractal_config.partition_gpu,
+        worker_init=fractal_config.worker_init,
+        max_blocks=fractal_config.max_blocks,
+        exclusive=fractal_config.exclusive,
+    )
+    htex_gpu = define_HighThroughputExecutor(
+        provider=provider_gpu,
+        max_workers=fractal_config.max_workers,
+        label="gpu",
+    )
+
     monitoring = define_MonitoringHub(workflow_name=workflow_name)
-    config = Config(executors=[htex], monitoring=monitoring)
+    config = Config(executors=[htex, htex_gpu], monitoring=monitoring)
     # config = Config(executors=[htex])
     parsl.clear()
     parsl.load(config)
@@ -490,7 +508,7 @@ def workflow_apply(
 
     debug(dict_tasks)
 
-    @parsl.python_app
+    @parsl.python_app(executors=["cpu"])
     def collect_intermediate_results(inputs=[]):
         return [x for x in inputs]
 
@@ -507,7 +525,7 @@ def workflow_apply(
             num_levels=num_levels,
         )
 
-        @parsl.python_app
+        @parsl.python_app(executors=["cpu"])
         def app_create_zarr_structure(**kwargs_):
             os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
             import fractal.dictionary_tasks  # noqa: F401
@@ -542,6 +560,7 @@ def workflow_apply(
                 "yokogawa_to_zarr and take a global dict of paths."
             )
 
+        executor = "cpu"
         if task == "yokogawa_to_zarr":
             kwargs = dict(
                 in_path=resources_in[0],  # FIXME
@@ -582,8 +601,15 @@ def workflow_apply(
                 overwrite=True,
                 # background=background,
             )
+        elif task == "image_labeling":
+            kwargs = dict(
+                chl_list=chl_list,
+                coarsening_xy=coarsening_xy,
+                labeling_channel=labeling_channel,
+            )
+            executor = "gpu"
 
-        @python_app
+        @python_app(executors=[executor])
         def app(zarrurl, **kwargs_):
             os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
             import fractal.dictionary_tasks  # noqa: F401
