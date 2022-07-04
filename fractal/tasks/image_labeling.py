@@ -28,11 +28,21 @@ def apply_label_to_single_FOV_column(
     column,
     model=None,
     do_3D=True,
+    anisotropy=None,
+    diameter=40.0,
+    cellprob_threshold=0.0,
 ):
 
     # anisotropy = XXX  #FIXME
     mask, flows, styles, diams = model.eval(
-        column, channels=[0, 0], do_3D=do_3D, net_avg=False, augment=False
+        column,
+        channels=[0, 0],
+        do_3D=do_3D,
+        net_avg=False,
+        augment=False,
+        diameter=diameter,
+        anisotropy=anisotropy,
+        cellprob_threshold=cellprob_threshold,
     )
     # mask = np.random.normal(10000, 200, size=column.shape).astype(np.uint16)
 
@@ -42,6 +52,10 @@ def apply_label_to_single_FOV_column(
 def image_labeling(
     zarrurl,
     coarsening_xy=2,
+    anisotropy=None,
+    do_3D=True,
+    diameter=None,
+    cellprob_threshold=None,
 ):
 
     """
@@ -60,13 +74,15 @@ def image_labeling(
         )
 
     # Label dtype
-    label_dtype = np.uint16
+    label_dtype = np.uint32
 
     # Load some level and some channel
     data_zyx = da.from_zarr(f"{zarrurl}{ref_level}")[ind_channel]
 
     # FIXME DO INFERENCE ABOUT 2D/3D
     do_3D = data_zyx.shape[0] > 1
+    if do_3D:
+        anisotropy = 5.0 / 0.325
     label_name = "label_A01_C01"
     label_axes = ["z", "y", "x"]
 
@@ -130,19 +146,20 @@ def image_labeling(
 
         # This is a numpy block
         column_mask = apply_label_to_single_FOV_column(
-            column_data, model=model, do_3D=do_3D
+            column_data, model=model, do_3D=do_3D, anisotropy=anisotropy
         )
         if not do_3D:
             column_mask = np.expand_dims(column_mask, axis=0)
         max_column_mask = np.max(column_mask)
 
-        # FIXME 72 columns with 1000 labels means that you'll go over uint16
-        column_mask += cumulative_shift
+        column_mask[column_mask > 0] += cumulative_shift
 
         cumulative_shift += max_column_mask
-        if cumulative_shift > 2**16 - 2:
+        if cumulative_shift > np.iinfo(label_dtype).max - 1000:
             raise Exception(
-                "ERROR in re-labeling, number of labels does not fit uint16"
+                "ERROR in re-labeling:\n"
+                f"Reached more than {cumulative_shift} labels, "
+                f"but dtype={label_dtype}"
             )
 
         t1 = time.perf_counter()
