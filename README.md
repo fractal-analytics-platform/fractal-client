@@ -6,6 +6,11 @@ We are building towards integrating object segmentation (nuclei, cells, organoid
 
 Fractal is currently an **early alpha build**. We currently support only Yokogawa CV7000 image data as an input. Also, we're in the process of refactoring the workflow management into a client-server architecture. Thus, proceed with it at your own risk, there will still be significant breaking changes. While we don't have any releases or stable versions and thus don't provide user support, we welcome questions and discussions. Open an issue to get in touch.
 
+
+![Fractal_multiwell_plate](https://user-images.githubusercontent.com/18033446/177169496-09784413-6ba9-4041-80e2-c70a70e0a5d9.gif)
+
+Shortened movie of browsing an OME-Zarr file generated with Fractal in napari, using the [napari-ome-zarr plugin](https://github.com/ome/napari-ome-zarr). Actual loading times vary and can be a bit slower than in this GIF.
+
 ### Contributors
 Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi). The project was originally led by [@dvischi](https://github.com/dvischi).  
 The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
