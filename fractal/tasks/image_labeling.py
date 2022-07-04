@@ -13,39 +13,35 @@ Zurich.
 """
 import itertools
 import json
+import time
 
 import dask.array as da
 import numpy as np
 import zarr
 from cellpose import core
 from cellpose import models
-from ome_zarr.io import parse_url
-from ome_zarr.scale import Scaler
-from ome_zarr.writer import write_labels
+
+from fractal.tasks.lib_pyramid_creation import create_pyramid_3D
 
 
 def apply_label_to_single_FOV_column(
-    img,
+    column,
     model=None,
+    do_3D=True,
 ):
 
-    with open("LOG_image_labeling", "a") as out:
-        out.write(f"Running cellpose on array of shape {img.shape}\n")
-
     # anisotropy = XXX  #FIXME
-
     mask, flows, styles, diams = model.eval(
-        img, channels=[0, 0], do_3D=True, net_avg=False, augment=False
+        column, channels=[0, 0], do_3D=do_3D, net_avg=False, augment=False
     )
-
-    with open("LOG_image_labeling", "a") as out:
-        out.write(f"End, dtype={mask.dtype}m shape={mask.shape}\n")
+    # mask = np.random.normal(10000, 200, size=column.shape).astype(np.uint16)
 
     return mask
 
 
 def image_labeling(
     zarrurl,
+    coarsening_xy=2,
 ):
 
     """
@@ -63,8 +59,16 @@ def image_labeling(
             "By now we can only segment the highest-resolution level"
         )
 
+    # Label dtype
+    label_dtype = np.uint16
+
     # Load some level and some channel
     data_zyx = da.from_zarr(f"{zarrurl}{ref_level}")[ind_channel]
+
+    # FIXME DO INFERENCE ABOUT 2D/3D
+    do_3D = data_zyx.shape[0] > 1
+    label_name = "label_A01_C01"
+    label_axes = ["z", "y", "x"]
 
     # Check that input array is made of images (in terms of shape/chunks)
     img_size_y = 2160
@@ -82,25 +86,77 @@ def image_labeling(
     if len(set(chunks_x)) != 1 or chunks_x[0] != img_size_x:
         raise Exception(f"Error in image_labeling, chunks_x: {chunks_x}")
 
-    use_gpu = core.use_gpu()
-    model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
-
     data_zyx_rechunked = da.rechunk(
         data_zyx, chunks=(nz, img_size_y, img_size_x)
     )
-    mask_rechunked = data_zyx_rechunked.map_blocks(
-        apply_label_to_single_FOV_column,
-        chunks=(nz, img_size_y, img_size_x),
-        meta=np.array((), dtype=np.uint16),
-        model=model,
-    )
 
-    # Relabeling via explicit loop
-    # (https://stackoverflow.com/a/72018364/19085332)
+    # Extract num_levels
+    zattrs_file = f"{zarrurl}.zattrs"
+    with open(zattrs_file, "r") as jsonfile:
+        zattrs = json.load(jsonfile)
+        num_levels = len(zattrs["multiscales"][0]["datasets"])
+    print("num_levels", num_levels)
+    print()
+
+    # Initialize cellpose
+    use_gpu = core.use_gpu()
+    model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
+
+    # Initialize other things
     cumulative_shift = 0
+    mask_rechunked = da.empty(
+        data_zyx_rechunked.shape,
+        chunks=data_zyx_rechunked.chunks,
+        dtype=label_dtype,
+    )
+    with open("LOG_image_labeling", "w") as out:
+        out.write("Total well shape/chunks:\n")
+        out.write(f"{data_zyx_rechunked.shape}\n")
+        out.write(f"{data_zyx_rechunked.chunks}\n\n")
+
+    # Sequential labeling (and relabeling)
+    # https://stackoverflow.com/a/72018364/19085332
     for inds in itertools.product(*map(range, mask_rechunked.blocks.shape)):
-        max_label = da.max(mask_rechunked.blocks[inds]).compute()
-        print("max_label, cumulative_shift", max_label, cumulative_shift)
+
+        column_data = data_zyx_rechunked.blocks[inds].compute()
+
+        t0 = time.perf_counter()
+        with open("LOG_image_labeling", "a") as out:
+            out.write(f"Selected chunk: {inds}\n")
+            out.write("Now running cellpose\n")
+            out.write(
+                f"column_data: {type(column_data)}, {column_data.shape}\n"
+            )
+
+        # This is a numpy block
+        column_mask = apply_label_to_single_FOV_column(
+            column_data, model=model, do_3D=do_3D
+        )
+        if not do_3D:
+            column_mask = np.expand_dims(column_mask, axis=0)
+        max_column_mask = np.max(column_mask)
+
+        # FIXME 72 columns with 1000 labels means that you'll go over uint16
+        column_mask += cumulative_shift
+
+        cumulative_shift += max_column_mask
+        if cumulative_shift > 2**16 - 2:
+            raise Exception(
+                "ERROR in re-labeling, number of labels does not fit uint16"
+            )
+
+        t1 = time.perf_counter()
+        with open("LOG_image_labeling", "a") as out:
+            out.write(
+                f"End, dtype={column_mask.dtype} shape={column_mask.shape}\n"
+            )
+            out.write(f"Elapsed: {t1-t0:.4f} seconds\n")
+            out.write(
+                f"column_max: {max_column_mask}, "
+                f"new cumulative_shift: {cumulative_shift}\n\n"
+            )
+
+        # Put np data into a dask array.. ?? Is this out-of-memory!!  #FIXME
         start_z = inds[0] * nz
         end_z = (inds[0] + 1) * nz
         start_y = inds[1] * img_size_y
@@ -109,155 +165,48 @@ def image_labeling(
         end_x = (inds[2] + 1) * img_size_x
         mask_rechunked[
             start_z:end_z, start_y:end_y, start_x:end_x
-        ] += cumulative_shift
-        cumulative_shift += max_label
+        ] = column_mask[:, :, :]
 
-    # Rechunk
-    mask = da.rechunk(mask_rechunked, chunks=(1, img_size_y, img_size_x))
+    # Rechunk to get back to the original chunking (with separate Z planes)
+    mask = mask_rechunked.rechunk(data_zyx.chunks)
 
-    # From here on, it's all about storing the mask
-
-    # Extract num_levels
-    zattrs_file = f"{zarrurl}.zattrs"
-    with open(zattrs_file, "r") as jsonfile:
-        zattrs = json.load(jsonfile)
-        num_levels = len(zattrs["multiscales"][0]["datasets"])
-    print("num_levels", num_levels)
-    print()
-
-    cxy = 2  # Still needed, for the scaler
-    # FIXME: check that shapes change by x2 each time
-
-    # Define custom ome_zarr scaler
-    our_scaler = Scaler()
-    our_scaler.downscale = cxy
-    our_scaler.max_layer = num_levels - 1
-
-    # FIXME: relabeling
-
-    # Store labels
-    store = parse_url(zarrurl, mode="w").store
-    root = zarr.group(store=store)
-    label_name = "label_image"
-    label_axes = ["z", "y", "x"]  # FIXME: should be inferred (2D vs 3D)
-
-    write_labels(
+    # Construct resolution pyramid
+    pyramid = create_pyramid_3D(
         mask,
-        group=root,
-        name=label_name,
-        axes=label_axes,
-        scaler=our_scaler,
+        coarsening_z=1,
+        coarsening_xy=coarsening_xy,
+        num_levels=num_levels,
+        chunk_size_x=img_size_x,
+        chunk_size_y=img_size_y,
     )
 
+    # Write zattrs for labels and for specific label
+    # FIXME one channel? many channels? update
+    labels_group = zarr.group(f"{zarrurl}labels")
+    labels_group.attrs["labels"] = [label_name]
+    label_group = labels_group.create_group(label_name)
+    label_group.attrs["image-label"] = {"version": "0.4"}
+    label_group.attrs["multiscales"] = [
+        {
+            "name": label_name,
+            "version": "0.4",
+            "axes": [
+                {"name": axis_name, "type": "space"}
+                for axis_name in label_axes
+            ],
+            "datasets": [
+                {"path": f"{ind_level}"} for ind_level in range(num_levels)
+            ],
+        }
+    ]
 
-def old_image_labeling(
-    zarrurl,
-):
-
-    """
-    FIXME
-    """
-
-    raise NotImplementedError(
-        "This is an old function, which we only keep here because it includes"
-        " the logic for rescaling when segmenting a level>0"
-    )
-
-    ref_level = 3  # FIXME: level for segmentation, now pinned
-    ind_channel = 0  # FIXME: channel for segmentation, now pinned
-
-    # if ref_level > 0:
-
-    # Load some level and some channel
-    data_zyx = da.from_zarr(f"{zarrurl}/{ref_level}")[ind_channel]
-    shape_zyx_segmented_level = data_zyx.shape
-
-    with open("LOG_image_labeling", "w") as out:
-        out.write(f"shape of data to segment: {shape_zyx_segmented_level}\n")
-    print("LOADED ZARR", shape_zyx_segmented_level)
-    print()
-
-    # Extract num_levels
-    zattrs_file = f"{zarrurl}.zattrs"
-    with open(zattrs_file, "r") as jsonfile:
-        zattrs = json.load(jsonfile)
-        num_levels = len(zattrs["multiscales"][0]["datasets"])
-    print("num_levels", num_levels)
-    print()
-
-    cxy = 2  # Still needed, for the scaler
-    # FIXME: check that shapes change by x2 each time
-
-    # Define custom ome_zarr coordinate transformations
-    coordinatetransformations = []
-    for level in range(num_levels):
-
-        zarray_file = f"{zarrurl}{level}/.zarray"
-        with open(zarray_file, "r") as jsonfile:
-            shape_zxy = json.load(jsonfile)["shape"][1:]
-        if level == 0:
-            shape_zxy_highres = shape_zxy[:]
-            global_prefactor_y = (
-                shape_zxy_highres[1] / shape_zyx_segmented_level[1]
-            )
-            global_prefactor_x = (
-                shape_zxy_highres[2] / shape_zyx_segmented_level[2]
-            )
-
-        factor_y = global_prefactor_y * shape_zxy_highres[1] / shape_zxy[1]
-        factor_x = global_prefactor_x * shape_zxy_highres[2] / shape_zxy[2]
-        factors = [1.0, factor_y, factor_x]
-
-        # Alternative way
-        # factor = cxy ** (level + ref_level) * 1.0
-        # factors = [1.0, factor, factor]
-
-        print(f"level {level}, factors {factors}")
-        print()
-
-        coordinatetransformations.append(
-            [
-                {
-                    "type": "scale",
-                    "scale": factors,
-                }
-            ]
+    # Write data into output zarr
+    for ind_level in range(num_levels):
+        pyramid[ind_level].astype(label_dtype).to_zarr(
+            zarrurl,
+            component=f"labels/{label_name}/{ind_level}",
+            dimension_separator="/",
         )
-
-    # Define custom ome_zarr scaler
-    our_scaler = Scaler()
-    our_scaler.downscale = cxy
-    our_scaler.max_layer = num_levels - 1
-
-    # Perform segmentation
-    use_gpu = core.use_gpu()
-    model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
-    mask, flows, styles, diams = model.eval(
-        data_zyx, channels=[0, 0], do_3D=True, net_avg=False, augment=False
-    )
-
-    # Some debugging info
-    print("CELLPOSE OUTPUT")
-    print(type(mask), mask.shape)
-    print(type(flows), len(flows), len(flows[0]))
-    print(type(styles), styles.shape)
-    print(type(diams), diams)
-    print()
-
-    # Store labels
-    store = parse_url(zarrurl, mode="w").store
-    root = zarr.group(store=store)
-    label_name = "label_image"
-    label_axes = ["z", "y", "x"]  # FIXME: should be inferred (2D vs 3D)
-
-    write_labels(
-        mask,
-        group=root,
-        name=label_name,
-        axes=label_axes,
-        coordinate_transformations=coordinatetransformations,
-        scaler=our_scaler,
-    )
 
 
 if __name__ == "__main__":
