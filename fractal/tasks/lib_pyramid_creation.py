@@ -101,7 +101,7 @@ def create_pyramid(
             data_czyx_final = data_czyx_new
 
         # Append new level
-        pyramid.append(data_czyx_final)
+        pyramid.append(data_czyx_final.astype(data_czyx.dtype))
 
     return pyramid
 
@@ -181,6 +181,6 @@ def create_pyramid_3D(
         else:
             data_zyx_final = data_zyx_new
         # Append new level
-        pyramid.append(data_zyx_final)
+        pyramid.append(data_zyx_final.astype(data_zyx.dtype))
 
     return pyramid

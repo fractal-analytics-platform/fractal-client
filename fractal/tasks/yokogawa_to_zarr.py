@@ -183,7 +183,7 @@ def yokogawa_to_zarr(
                     },
                     balance=True,
                 )
-            fc_list[level].append(f_matrices[level])
+            fc_list[level].append(f_matrices[level].astype(sample.dtype))
 
         if delete_input:
             for f in filenames:
