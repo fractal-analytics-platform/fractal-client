@@ -499,7 +499,12 @@ def workflow_apply(
     )
 
     monitoring = define_MonitoringHub(workflow_name=workflow_name)
-    config = Config(executors=[htex, htex_gpu], monitoring=monitoring)
+    config = Config(
+        executors=[htex, htex_gpu],
+        monitoring=monitoring,
+        strategy="htex_auto_scale",
+        max_idletime=60,
+    )
     # config = Config(executors=[htex])
     parsl.clear()
     parsl.load(config)
