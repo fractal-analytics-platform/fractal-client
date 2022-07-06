@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import json
 from glob import glob
 
@@ -43,9 +42,13 @@ def replicate_zarr_structure_mip(zarrurl):
     well_rows_columns = sorted(
         [rc.split("/")[-2:] for rc in glob(zarrurl + "*/*")]
     )
-    levels = sorted(
+
+    # Identify subfolders of the FOV folder
+    level_folders = sorted(
         list(set([rc.split("/")[-1] for rc in glob(zarrurl + "*/*/*/*")]))
     )
+    # Filter out subfolders with non-numeric names (e.g. "labels")
+    levels = [level for level in level_folders if level.isnumeric()]
 
     group_plate = zarr.group(zarrurl_mip)
     plate = zarrurl.replace(".zarr/", "").split("/")[-1]
