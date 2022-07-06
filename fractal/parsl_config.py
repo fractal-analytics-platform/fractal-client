@@ -51,7 +51,7 @@ def define_SlurmProvider(
         launcher=SrunLauncher(),  # debug=True),
         walltime="23:00:00",
         cmd_timeout=60,
-        min_blocks=1,
+        min_blocks=0,
         max_blocks=max_blocks,
         parallelism=1,
         exclusive=exclusive,
