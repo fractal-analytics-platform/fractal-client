@@ -170,9 +170,10 @@ def image_labeling(
         if not do_3D:
             column_mask = np.expand_dims(column_mask, axis=0)
         num_labels_column = np.max(column_mask)
+        column_mask_recast = column_mask.astype(label_dtype)
 
         # Apply re-labeling and update total number of labels
-        column_mask[column_mask > 0] += num_labels_tot
+        column_mask_recast[column_mask_recast > 0] += num_labels_tot
         num_labels_tot += num_labels_column
 
         # Check that total number of labels is under control
@@ -187,7 +188,8 @@ def image_labeling(
         t1 = time.perf_counter()
         with open("LOG_image_labeling", "a") as out:
             out.write(
-                f"End, dtype={column_mask.dtype} shape={column_mask.shape}\n"
+                f"End, dtype={column_mask_recast.dtype} "
+                f"shape={column_mask_recast.shape}\n"
             )
             out.write(f"Elapsed: {t1-t0:.4f} seconds\n")
             out.write(
@@ -205,7 +207,7 @@ def image_labeling(
         end_x = (inds[2] + 1) * img_size_x
         mask_rechunked[
             start_z:end_z, start_y:end_y, start_x:end_x
-        ] = column_mask[:, :, :]
+        ] = column_mask_recast[:, :, :]
 
     # Rechunk to get back to the original chunking (with separate Z planes)
     mask = mask_rechunked.rechunk(data_zyx.chunks)

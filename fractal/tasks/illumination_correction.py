@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import json
 import warnings
 
@@ -162,6 +161,7 @@ def illumination_correction(
 
     # Load highest-resolution level from original zarr array
     data_czyx = da.from_zarr(zarrurl + "/0")
+    dtype = data_czyx.dtype
 
     # Check that input array is made of images (in terms of shape/chunks)
     nc, nz, ny, nx = data_czyx.shape
@@ -199,7 +199,7 @@ def illumination_correction(
         data_zyx_new = data_zyx.map_blocks(
             correct,
             chunks=(1, img_size_y, img_size_x),
-            meta=np.array((), dtype=np.uint16),
+            meta=np.array((), dtype=dtype),
             illum_img=illum_img,
             background=background,
             img_size_y=img_size_y,
