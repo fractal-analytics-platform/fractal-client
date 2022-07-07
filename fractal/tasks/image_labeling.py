@@ -11,6 +11,7 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import itertools
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -82,6 +83,7 @@ def image_labeling(
     labeling_channel=None,
     chl_list=None,
     num_threads=2,
+    relabeling=True,
     # More parameters
     anisotropy=None,
     diameter=None,
@@ -164,14 +166,9 @@ def image_labeling(
     model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
 
     # Initialize other things
-    mask_rechunked = da.empty(
-        data_zyx_rechunked.shape,
-        chunks=data_zyx_rechunked.chunks,
-        dtype=label_dtype,
-    )
-
     with open("LOG_image_labeling", "w") as out:
         out.write(f"Start image_labeling task for {zarrurl}\n")
+        out.write(f"relabeling: {relabeling}\n")
         out.write(f"use_gpu: {use_gpu}\n")
         out.write("Total well shape/chunks:\n")
         out.write(f"{data_zyx_rechunked.shape}\n")
@@ -219,51 +216,115 @@ def image_labeling(
             return_stored=True,
         )
 
-    # Construct resolution pyramid
-    pyramid = create_pyramid_3D(
-        level0,
-        coarsening_z=1,
-        coarsening_xy=coarsening_xy,
-        num_levels=num_levels,
-        chunk_size_x=img_size_x,
-        chunk_size_y=img_size_y,
-        aggregation_function=np.max,
-    )
-
-    # Write data into output zarr
-    for ind_level in range(1, num_levels):
-        pyramid[ind_level].astype(label_dtype).to_zarr(
-            zarrurl,
-            component=f"labels/{label_name}/{ind_level}",
-            dimension_separator="/",
+    if not relabeling:
+        # Construct resolution pyramid
+        pyramid = create_pyramid_3D(
+            level0,
+            coarsening_z=1,
+            coarsening_xy=coarsening_xy,
+            num_levels=num_levels,
+            chunk_size_x=img_size_x,
+            chunk_size_y=img_size_y,
+            aggregation_function=np.max,
         )
 
-    """
-    # APPLY RELABELING
-
-    # Load level-0 labels
-    newmask_rechunked = da.from_zarr(.f"{zarrurl}labels/{label_name}/{0}")
-    .rechunk(mask_rechunked.chunks)
-
-    # Sequential relabeling
-    # https://stackoverflow.com/a/72018364/19085332
-    num_labels_tot = 0
-    num_labels_column = 0
-    for inds in itertools.product(*map(range, newmask_rechunked.blocks.shape)):
-        # Select a specific chunk (=column in 3D, =image in 2D)
-        column_mask = newmask_rechunked.blocks[inds].compute()
-        num_labels_column = np.max(column_mask)
-        # Apply re-labeling and update total number of labels
-        column_mask[column_mask > 0] += num_labels_tot
-        num_labels_tot += num_labels_column
-        # Check that total number of labels is under control
-        if num_labels_tot > np.iinfo(label_dtype).max - 1000:
-            raise Exception(
-                "ERROR in re-labeling:\n"
-                f"Reached {num_labels_tot} labels, "
-                f"but dtype={label_dtype}"
+        # Write data into output zarr
+        for ind_level in range(1, num_levels):
+            pyramid[ind_level].astype(label_dtype).to_zarr(
+                zarrurl,
+                component=f"labels/{label_name}/{ind_level}",
+                dimension_separator="/",
             )
-    """
+
+    else:
+
+        with open("LOG_image_labeling", "a") as out:
+            out.write("Start relabeling\n")
+
+        mask = da.from_zarr(zarrurl, component=f"labels/{label_name}/{0}")
+        mask_rechunked = mask.rechunk(data_zyx_rechunked.chunks)
+        newmask_rechunked = da.empty(
+            shape=mask_rechunked.shape,
+            chunks=mask_rechunked.chunks,
+            dtype=label_dtype,
+        )
+
+        # Sequential relabeling
+        # https://stackoverflow.com/a/72018364/19085332
+        num_labels_tot = 0
+        num_labels_column = 0
+        for inds in itertools.product(
+            *map(range, mask_rechunked.blocks.shape)
+        ):
+
+            # Select a specific chunk (=column in 3D, =image in 2D)
+            column_mask = mask_rechunked.blocks[inds].compute()
+            num_labels_column = np.max(column_mask)
+
+            # Apply re-labeling and update total number of labels
+            shift = np.zeros_like(column_mask, dtype=label_dtype)
+            shift[column_mask > 0] = num_labels_tot
+            num_labels_tot += num_labels_column
+
+            with open("LOG_image_labeling", "a") as out:
+                out.write(
+                    f"Chunk {inds}, "
+                    f"num_labels_column={num_labels_column}, "
+                    f"num_labels_tot={num_labels_tot}\n"
+                )
+
+            # Check that total number of labels is under control
+            if num_labels_tot > np.iinfo(label_dtype).max - 1000:
+                raise Exception(
+                    "ERROR in re-labeling:\n"
+                    f"Reached {num_labels_tot} labels, "
+                    f"but dtype={label_dtype}"
+                )
+            # Re-assign the chunk to the new array
+            start_z = inds[0] * nz
+            end_z = (inds[0] + 1) * nz
+            start_y = inds[1] * img_size_y
+            end_y = (inds[1] + 1) * img_size_y
+            start_x = inds[2] * img_size_x
+            end_x = (inds[2] + 1) * img_size_x
+            newmask_rechunked[start_z:end_z, start_y:end_y, start_x:end_x] = (
+                column_mask + shift
+            )
+
+        newmask = newmask_rechunked.rechunk(data_zyx.chunks)
+
+        import shutil
+
+        shutil.rmtree(zarrurl + f"labels/{label_name}/{0}")
+        level0 = newmask.to_zarr(
+            zarrurl,
+            component=f"labels/{label_name}/{0}",
+            dimension_separator="/",
+            return_stored=True,
+        )
+
+        # Construct resolution pyramid
+        pyramid = create_pyramid_3D(
+            level0,
+            coarsening_z=1,
+            coarsening_xy=coarsening_xy,
+            num_levels=num_levels,
+            chunk_size_x=img_size_x,
+            chunk_size_y=img_size_y,
+            aggregation_function=np.max,
+        )
+
+        # Write data into output zarr
+        for ind_level in range(1, num_levels):
+            pyramid[ind_level].astype(label_dtype).to_zarr(
+                zarrurl,
+                component=f"labels/{label_name}/{ind_level}",
+                dimension_separator="/",
+            )
+
+
+"""
+"""
 
 
 if __name__ == "__main__":
