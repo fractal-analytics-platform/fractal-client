@@ -1059,7 +1059,7 @@ develop = false
 [package.dependencies]
 dill = "*"
 Flask = {version = ">=1.0.2", optional = true, markers = "extra == \"monitoring\""}
-flask_sqlalchemy = {version = "*", optional = true, markers = "extra == \"monitoring\""}
+flask-sqlalchemy = {version = "*", optional = true, markers = "extra == \"monitoring\""}
 globus-sdk = "*"
 networkx = {version = "*", optional = true, markers = "extra == \"monitoring\""}
 pandas = {version = ">=1.2", optional = true, markers = "extra == \"monitoring\""}
