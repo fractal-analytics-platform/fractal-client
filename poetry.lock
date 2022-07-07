@@ -601,6 +601,19 @@ typing-extensions = {version = ">=4.0", markers = "python_version < \"3.10\""}
 dev = ["pytest (<7)", "coverage (<7)", "pytest-xdist (<3)", "flake8 (<5)", "isort (<6)", "black (==21.12b0)", "flake8-bugbear (==21.11.29)", "mypy (==0.960)", "types-docutils", "types-jwt", "types-requests", "typing-extensions", "sphinx (<5)", "sphinx-issues (<3)", "furo (==2022.1.2)", "responses (==0.17.0)", "responses (==0.21.0)"]
 
 [[package]]
+name = "graphviz"
+version = "0.20"
+description = "Simple Python interface for Graphviz"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+dev = ["tox (>=3)", "flake8", "pep8-naming", "wheel", "twine"]
+docs = ["sphinx (>=4)", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+test = ["pytest (>=7)", "pytest-mock (>=3)", "mock (>=4)", "pytest-cov", "coverage"]
+
+[[package]]
 name = "greenlet"
 version = "1.1.2"
 description = "Lightweight in-process concurrent programming"
@@ -1080,7 +1093,7 @@ workqueue = ["work-queue"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/parsl.git"
 reference = "1.2.1-unofficial"
-resolved_reference = "3866967fea8716a07f2bb7b8ab23cf923cec3fdc"
+resolved_reference = "0cd9fc8490d9c17cfe0bd7f07d030c6c04141769"
 
 [[package]]
 name = "partd"
@@ -1819,7 +1832,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "8173c4b3edb5cbd19eb796323bd6812636d6b9254f79f25b86e7d8597efb3f2c"
+content-hash = "729e03ef48830aa7ce07ad4de248d8ecb7dd6549225390bdd066cfceab35e1e3"
 
 [metadata.files]
 aiobotocore = [
@@ -2246,6 +2259,10 @@ fsspec = [
 globus-sdk = [
     {file = "globus-sdk-3.10.0.tar.gz", hash = "sha256:7a7e7cd5cfbc40c6dc75bdb92b050c4191f992b5f7081cd08895bf119fd97bbf"},
     {file = "globus_sdk-3.10.0-py3-none-any.whl", hash = "sha256:f73d15cf88463aac9a9f77b8c4f601e11adfcbd4ecc77910a144dd251ed90551"},
+]
+graphviz = [
+    {file = "graphviz-0.20-py3-none-any.whl", hash = "sha256:62c5f48bcc534a45b4588c548ff75e419c1f1f3a33d31a91796ae80a7f581e4a"},
+    {file = "graphviz-0.20.zip", hash = "sha256:76bdfb73f42e72564ffe9c7299482f9d72f8e6cb8d54bce7b48ab323755e9ba5"},
 ]
 greenlet = [
     {file = "greenlet-1.1.2-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:58df5c2a0e293bf665a51f8a100d3e9956febfbf1d9aaf8c0677cf70218910c6"},
