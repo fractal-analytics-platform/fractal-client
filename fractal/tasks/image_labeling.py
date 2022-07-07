@@ -13,6 +13,7 @@ Zurich.
 """
 import itertools
 import json
+import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -216,6 +217,8 @@ def image_labeling(
             return_stored=True,
         )
 
+    # At this point, cellpose executed and data for level=0 are on disk
+
     if not relabeling:
         # Construct resolution pyramid
         pyramid = create_pyramid_3D(
@@ -293,9 +296,9 @@ def image_labeling(
 
         newmask = newmask_rechunked.rechunk(data_zyx.chunks)
 
-        import shutil
-
+        # FIXME: this is ugly
         shutil.rmtree(zarrurl + f"labels/{label_name}/{0}")
+
         level0 = newmask.to_zarr(
             zarrurl,
             component=f"labels/{label_name}/{0}",
@@ -321,10 +324,6 @@ def image_labeling(
                 component=f"labels/{label_name}/{ind_level}",
                 dimension_separator="/",
             )
-
-
-"""
-"""
 
 
 if __name__ == "__main__":
