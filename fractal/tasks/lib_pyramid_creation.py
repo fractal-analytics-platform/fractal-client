@@ -23,6 +23,7 @@ def create_pyramid(
     chunk_size_x=None,
     chunk_size_y=None,
     num_channels=None,
+    aggregation_function=None,
 ):
 
     """
@@ -42,6 +43,8 @@ def create_pyramid(
     :type chunk_size_y: int
     :param num_channels: number of channels
     :type num_channels: int
+    :param aggregation_function: FIXME
+    :type aggregation_function: FIXME
     """
 
     # Check that input has the right shape
@@ -53,6 +56,10 @@ def create_pyramid(
     if chunk_size_x is None or chunk_size_y is None:
         apply_rechunking = False
 
+    # Select aggregation_function
+    if aggregation_function is None:
+        aggregation_function = np.mean
+
     # Coarsen globally along Z direction
     if coarsening_z > 1:
         if data_czyx.shape[1] < coarsening_z:
@@ -61,7 +68,10 @@ def create_pyramid(
                 f"but data_czyx.shape={data_czyx.shape}"
             )
         data_czyx = da.coarsen(
-            np.min, data_czyx, {1: coarsening_z}, trim_excess=True
+            aggregation_function,
+            data_czyx,
+            {1: coarsening_z},
+            trim_excess=True,
         )
 
     # Create pyramid of XY-coarser levels
@@ -82,7 +92,7 @@ def create_pyramid(
                         f"{pyramid[level - 1][ind_chl].shape}"
                     )
                 zyx_new = da.coarsen(
-                    np.mean,
+                    aggregation_function,
                     pyramid[level - 1][ind_chl],
                     {1: coarsening_xy, 2: coarsening_xy},
                     trim_excess=True,
@@ -114,6 +124,7 @@ def create_pyramid_3D(
     chunk_size_x=None,
     chunk_size_y=None,
     num_channels=None,
+    aggregation_function=None,
 ):
 
     """
@@ -133,6 +144,8 @@ def create_pyramid_3D(
     :type chunk_size_y: int
     :param num_channels: number of channels
     :type num_channels: int
+    :param aggregation_function: FIXME
+    :type aggregation_function: FIXME
     """
 
     # Check that input has the right shape
@@ -144,6 +157,10 @@ def create_pyramid_3D(
     if chunk_size_x is None or chunk_size_y is None:
         apply_rechunking = False
 
+    # Select aggregation_function
+    if aggregation_function is None:
+        aggregation_function = np.mean
+
     # Coarsen globally along Z direction
     if coarsening_z > 1:
         if data_zyx.shape[0] < coarsening_z:
@@ -152,7 +169,7 @@ def create_pyramid_3D(
                 f"but data_zyx.shape={data_zyx.shape}"
             )
         data_zyx = da.coarsen(
-            np.min, data_zyx, {1: coarsening_z}, trim_excess=True
+            aggregation_function, data_zyx, {1: coarsening_z}, trim_excess=True
         )
 
     # Create pyramid of XY-coarser levels
@@ -168,7 +185,7 @@ def create_pyramid_3D(
             )
         # Coarsen (level-1)-th level into level-th level
         data_zyx_new = da.coarsen(
-            np.mean,
+            aggregation_function,
             pyramid[level - 1],
             {1: coarsening_xy, 2: coarsening_xy},
             trim_excess=True,
