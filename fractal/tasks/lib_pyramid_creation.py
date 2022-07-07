@@ -123,7 +123,6 @@ def create_pyramid_3D(
     num_levels=1,
     chunk_size_x=None,
     chunk_size_y=None,
-    num_channels=None,
     aggregation_function=None,
 ):
 
@@ -142,8 +141,6 @@ def create_pyramid_3D(
     :type chunk_size_x: int
     :param chunk_size_y: chunk size along Y
     :type chunk_size_y: int
-    :param num_channels: number of channels
-    :type num_channels: int
     :param aggregation_function: FIXME
     :type aggregation_function: FIXME
     """
