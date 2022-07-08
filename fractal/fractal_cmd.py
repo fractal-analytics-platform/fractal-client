@@ -452,7 +452,6 @@ def workflow_apply(
         params = json.load(file_params)
     ext = prj["datasets"][input_dataset]["type"]
     coarsening_xy = params["coarsening_xy"]
-    coarsening_z = params["coarsening_z"]
     num_levels = params["num_levels"]
     rows, cols = params["dims"]
     workflow_name = params["workflow_name"]
@@ -503,7 +502,6 @@ def workflow_apply(
         executors=[htex, htex_gpu],
         monitoring=monitoring,
         strategy="htex_auto_scale",
-        max_idletime=60,
     )
     # config = Config(executors=[htex])
     parsl.clear()
@@ -576,7 +574,6 @@ def workflow_apply(
                 chl_list=chl_list,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
-                coarsening_z=coarsening_z,
             )
         if task == "yokogawa_to_zarr_multifov":
             kwargs = dict(
@@ -587,7 +584,6 @@ def workflow_apply(
                 # sites_dict=well_to_sites,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
-                coarsening_z=coarsening_z,
             )
 
         elif task == "maximum_intensity_projection":
