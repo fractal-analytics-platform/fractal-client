@@ -28,6 +28,7 @@ def correct(
     background=110,
     img_size_y=2160,
     img_size_x=2560,
+    block_info=None,
 ):
     """
     Corrects single Z level input image using an illumination profile
@@ -48,6 +49,11 @@ def correct(
     :type img_size_x: int
 
     """
+
+    chunk_location = block_info[None]["chunk-location"]
+
+    with open("LOG_illum", "a") as out:
+        out.write(f"[{chunk_location}] START illumination correction")
 
     # Check shapes
     if img.shape != (1, img_size_y, img_size_x):
@@ -80,6 +86,9 @@ def correct(
                        {np.iinfo(img.dtype).max}"
         )
         img_corr[img_corr > np.iinfo(img.dtype).max] = np.iinfo(img.dtype).max
+
+    with open("LOG_illum", "a") as out:
+        out.write(f"[{chunk_location}] END   illumination correction")
 
     return img_corr.astype(img.dtype)
 
@@ -125,6 +134,9 @@ def illumination_correction(
             "ERROR in illumination_correction: "
             f"overwrite={overwrite} and newzarrurl={newzarrurl}."
         )
+
+    with open("LOG_illum", "w") as out:
+        out.write("init")
 
     # Sanitize zarr paths
     if not zarrurl.endswith("/"):
