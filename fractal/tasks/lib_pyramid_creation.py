@@ -17,7 +17,6 @@ import numpy as np
 
 def create_pyramid(
     data_czyx,
-    coarsening_z=1,
     coarsening_xy=1,
     num_levels=1,
     chunk_size_x=None,
@@ -31,8 +30,6 @@ def create_pyramid(
 
     :param data_czyx: input data
     :type data_czyx: dask array
-    :param coarsening_z: coarsening factor along Z
-    :type coarsening_z: int
     :param coarsening_xy: coarsening factor along X and Y
     :type coarsening_xy: int
     :param num_levels: number of levels in the zarr pyramid
@@ -59,20 +56,6 @@ def create_pyramid(
     # Select aggregation_function
     if aggregation_function is None:
         aggregation_function = np.mean
-
-    # Coarsen globally along Z direction
-    if coarsening_z > 1:
-        if data_czyx.shape[1] < coarsening_z:
-            raise Exception(
-                f"ERROR: coarsening_z={coarsening_z} "
-                f"but data_czyx.shape={data_czyx.shape}"
-            )
-        data_czyx = da.coarsen(
-            aggregation_function,
-            data_czyx,
-            {1: coarsening_z},
-            trim_excess=True,
-        )
 
     # Create pyramid of XY-coarser levels
     pyramid = []
@@ -118,7 +101,6 @@ def create_pyramid(
 
 def create_pyramid_3D(
     data_zyx,
-    coarsening_z=1,
     coarsening_xy=1,
     num_levels=1,
     chunk_size_x=None,
@@ -131,8 +113,6 @@ def create_pyramid_3D(
 
     :param data_czyx: input data
     :type data_czyx: dask array
-    :param coarsening_z: coarsening factor along Z
-    :type coarsening_z: int
     :param coarsening_xy: coarsening factor along X and Y
     :type coarsening_xy: int
     :param num_levels: number of levels in the zarr pyramid
@@ -157,17 +137,6 @@ def create_pyramid_3D(
     # Select aggregation_function
     if aggregation_function is None:
         aggregation_function = np.mean
-
-    # Coarsen globally along Z direction
-    if coarsening_z > 1:
-        if data_zyx.shape[0] < coarsening_z:
-            raise Exception(
-                f"ERROR: coarsening_z={coarsening_z} "
-                f"but data_zyx.shape={data_zyx.shape}"
-            )
-        data_zyx = da.coarsen(
-            aggregation_function, data_zyx, {1: coarsening_z}, trim_excess=True
-        )
 
     # Create pyramid of XY-coarser levels
     pyramid = [data_zyx]
