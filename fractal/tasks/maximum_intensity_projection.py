@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import json
 
 import dask.array as da
@@ -31,7 +30,7 @@ def maximum_intensity_projection(
     :param zarrurl: input zarr file, at the site level (e.g. x.zarr/B/03/0/)
     :type zarrurl: str
     :param coarsening_xy: coarsening factor along X and Y
-    :type coarsening_z: xy
+    :type coarsening_xy: xy
 
     """
 
@@ -69,7 +68,6 @@ def maximum_intensity_projection(
 
     pyramid = create_pyramid(
         accumulate_chl,
-        coarsening_z=1,
         coarsening_xy=coarsening_xy,
         num_levels=num_levels,
         chunk_size_x=chunk_size_x,

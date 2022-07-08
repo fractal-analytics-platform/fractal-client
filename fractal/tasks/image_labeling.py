@@ -223,7 +223,6 @@ def image_labeling(
         # Construct resolution pyramid
         pyramid = create_pyramid_3D(
             level0,
-            coarsening_z=1,
             coarsening_xy=coarsening_xy,
             num_levels=num_levels,
             chunk_size_x=img_size_x,
@@ -309,7 +308,6 @@ def image_labeling(
         # Construct resolution pyramid
         pyramid = create_pyramid_3D(
             level0,
-            coarsening_z=1,
             coarsening_xy=coarsening_xy,
             num_levels=num_levels,
             chunk_size_x=img_size_x,
