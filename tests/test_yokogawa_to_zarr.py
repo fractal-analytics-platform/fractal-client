@@ -63,7 +63,6 @@ def test_yokogawa_to_zarr(mocker):
         chl_list=["A01_C01"],
         num_levels=5,
         coarsening_xy=2,
-        coarsening_z=1,
     )
 
     assert res == [

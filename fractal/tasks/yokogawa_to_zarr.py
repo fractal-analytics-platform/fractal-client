@@ -44,7 +44,6 @@ def yokogawa_to_zarr(
     chl_list=None,
     num_levels=5,
     coarsening_xy=2,
-    coarsening_z=1,
     delete_input=False,
 ):
     """
@@ -68,8 +67,6 @@ def yokogawa_to_zarr(
     :type num_levels: int
     :param coarsening_xy: coarsening factor along X and Y
     :type coarsening_xy: int
-    :param coarsening_z: coarsening factor along Z
-    :type coarsening_z: int
     """
 
     if not in_path.endswith("/"):
@@ -149,20 +146,7 @@ def yokogawa_to_zarr(
         f_matrices = {}
         for level in range(num_levels):
             if level == 0:
-                if coarsening_z == 1:
-                    f_matrices[level] = data_zyx
-                if coarsening_z > 1:
-                    if data_zyx.shape[0] < coarsening_z:
-                        raise Exception(
-                            f"ERROR: coarsening_z={coarsening_z} "
-                            f"but data_zyx.shape={data_zyx.shape}"
-                        )
-                    f_matrices[level] = da.coarsen(
-                        np.mean,
-                        data_zyx,
-                        {0: coarsening_z},
-                        trim_excess=True,
-                    )
+                f_matrices[level] = data_zyx
             else:
                 if min(f_matrices[level - 1].shape[1:]) < coarsening_xy:
                     raise Exception(
@@ -262,14 +246,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-cz",
-        "--coarsening_z",
-        default=1,
-        type=int,
-        help="coarsening factor along Z (optional, defaults to 1)",
-    )
-
-    parser.add_argument(
         "-d",
         "--delete_input",
         action="store_true",
@@ -287,6 +263,5 @@ if __name__ == "__main__":
         chl_list=args.chl_list,
         num_levels=args.num_levels,
         coarsening_xy=args.coarsening_xy,
-        coarsening_z=args.coarsening_z,
         delete_input=args.delete_input,
     )
