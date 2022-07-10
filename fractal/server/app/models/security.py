@@ -1,9 +1,10 @@
+import uuid
 from typing import List
 from typing import Optional
 
+from fastapi_users import schemas
 from fastapi_users_db_sqlmodel import SQLModelBaseOAuthAccount
 from fastapi_users_db_sqlmodel import SQLModelBaseUserDB
-from pydantic import BaseModel
 from pydantic import UUID4
 from sqlmodel import Field
 from sqlmodel import Relationship
@@ -29,9 +30,13 @@ class OAuthAccount(SQLModelBaseOAuthAccount, table=True):
     user: Optional[UserOAuth] = Relationship(back_populates="oauth_accounts")
 
 
-class UserRead(BaseModel):
+class UserRead(schemas.BaseUser[uuid.UUID]):
     pass
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(schemas.BaseUserUpdate):
+    pass
+
+
+class UserCreate(schemas.BaseUserCreate):
     pass
