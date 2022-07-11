@@ -42,3 +42,4 @@ class Task(TaskBase, table=True):  # type: ignore
 
 class TaskRead(TaskBase):
     id: int
+    subtask_list: List["TaskRead"]
