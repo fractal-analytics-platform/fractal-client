@@ -37,7 +37,7 @@ try:
     stdout, stderr = process.communicate()
     HAS_SLURM = True
 except FileNotFoundError:
-    HAS_SLURM = True
+    HAS_SLURM = False
 
 try:
     import tensorflow as tf  # NOQA
