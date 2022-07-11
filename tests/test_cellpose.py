@@ -12,8 +12,10 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import os
+import subprocess
 
 import parsl
+import pytest
 from parsl.addresses import address_by_hostname
 from parsl.app.app import python_app
 from parsl.channels import LocalChannel
@@ -22,7 +24,17 @@ from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SrunLauncher
 from parsl.providers import SlurmProvider
 
+try:
+    process = subprocess.Popen(
+        ["sinfo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    stdout, stderr = process.communicate()
+    missing_slurm = False
+except FileNotFoundError:
+    missing_slurm = True
 
+
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
 def test_use_cellpose_on_gpu():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt

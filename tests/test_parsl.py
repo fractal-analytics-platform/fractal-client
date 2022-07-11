@@ -11,11 +11,12 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import itertools
 import os
+import subprocess
 
 import parsl
+import pytest
 from parsl.addresses import address_by_hostname
 from parsl.app.app import bash_app
 from parsl.app.app import python_app
@@ -25,6 +26,15 @@ from parsl.data_provider.files import File
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SrunLauncher
 from parsl.providers import SlurmProvider
+
+try:
+    process = subprocess.Popen(
+        ["sinfo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    stdout, stderr = process.communicate()
+    missing_slurm = False
+except FileNotFoundError:
+    missing_slurm = True
 
 
 def initialize_SlurmProvider():
@@ -248,6 +258,7 @@ def AUX_workflow_compute_pi(provider):
     assert abs(av - numpy.pi) < 0.01
 
 
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
 def test_single_app_slurm():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -255,6 +266,7 @@ def test_single_app_slurm():
     AUX_single_app(provider)
 
 
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
 def test_workflow_generate_combine_split_slurm():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -262,6 +274,7 @@ def test_workflow_generate_combine_split_slurm():
     AUX_workflow_generate_combine_split(provider)
 
 
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
 def test_workflow_compute_pi_slurm():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -269,6 +282,7 @@ def test_workflow_compute_pi_slurm():
     AUX_workflow_compute_pi(provider)
 
 
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
 def test_import_numpy_slurm():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -276,6 +290,7 @@ def test_import_numpy_slurm():
     AUX_import_numpy(provider, "SlurmProvider")
 
 
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
 def test_use_tensorflow_on_gpu():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -357,10 +372,130 @@ def test_multiexecutor_workflow():
     assert two == 2
 
 
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
+def test_multiexecutor_workflow_flexible():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
+    slurm_cpu = SlurmProvider(
+        partition="main",
+        channel=LocalChannel(),
+        launcher=SrunLauncher(debug=True),
+    )
+    slurm_gpu = SlurmProvider(
+        partition="gpu",
+        channel=LocalChannel(),
+        launcher=SrunLauncher(debug=True),
+    )
+
+    htex_cpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_cpu",
+        worker_debug=True,
+        provider=slurm_cpu,
+    )
+
+    htex_cpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_cpu",
+        worker_debug=True,
+        provider=slurm_cpu,
+    )
+    htex_gpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_gpu",
+        worker_debug=True,
+        provider=slurm_gpu,
+    )
+    config = Config(
+        executors=[htex_cpu, htex_gpu],
+        strategy="htex_auto_scale",
+        max_idletime=120,
+    )
+    parsl.clear()
+    parsl.load(config)
+
+    import time
+
+    """
+    @python_app(executors=["htex_gpu"])
+    def dummy_gpu_task():
+        return
+    dummy_gpu_task().result()
+    htex_gpu.scale_in()
+    """
+
+    @python_app(executors=["htex_cpu"])
+    def increment_by_one_cpu(num):
+        import time
+
+        time.sleep(10)
+        return num + 1
+
+    print("CPU START - 10")
+    t0 = time.perf_counter()
+    one = increment_by_one_cpu(0).result()
+    t1 = time.perf_counter()
+    print("CPU END", t1 - t0)
+    print()
+
+    @python_app(executors=["htex_gpu"])
+    def increment_by_one_gpu(num):
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        import time
+
+        time.sleep(10)
+        return num + 1
+
+    print("GPU START - 10")
+    t0 = time.perf_counter()
+    two = increment_by_one_gpu(one).result()
+    t1 = time.perf_counter()
+    # htex_gpu.scale_in(1)
+    print("GPU END", t1 - t0)
+    print()
+
+    # CPU task
+    @python_app(executors=["htex_cpu"])
+    def increment_by_two_cpu(num):
+        import time
+
+        time.sleep(10)
+        return num + 2
+
+    print("CPU START - 10")
+    t0 = time.perf_counter()
+    four = increment_by_two_cpu(two).result()
+    t1 = time.perf_counter()
+    print("CPU END", t1 - t0)
+    print()
+
+    # GPU task
+    @python_app(executors=["htex_gpu"])
+    def increment_by_three_gpu(num):
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        import time
+
+        time.sleep(10)
+        return num + 3
+
+    print("GPU START - 10")
+    t0 = time.perf_counter()
+    seven = increment_by_three_gpu(four).result()
+    t1 = time.perf_counter()
+    print("GPU END", t1 - t0)
+    print()
+
+    print(f"seven: {seven}")
+    assert seven == 7
+
+
 if __name__ == "__main__":
+    """
     test_single_app_slurm()
     test_workflow_generate_combine_split_slurm()
     test_workflow_compute_pi_slurm()
     test_import_numpy_slurm()
     test_use_tensorflow_on_gpu()
     test_multiexecutor_workflow()
+    """
+    test_multiexecutor_workflow_flexible()
