@@ -2,6 +2,7 @@ import asyncio
 from collections import Counter
 from typing import Any
 from typing import Dict
+from typing import List
 
 from fastapi import APIRouter
 from fastapi import Depends
@@ -14,6 +15,7 @@ from ...db import AsyncSession
 from ...db import get_db
 from ...models.task import Task
 from ...models.task import TaskCreate
+from ...models.task import TaskRead
 from ...security import current_active_user
 from ...security import User
 
@@ -60,6 +62,18 @@ async def collect_core_tasks(
     db: AsyncSession = Depends(get_db),
 ):
     return await collect_tasks_headless(db)
+
+
+@router.get("/", response_model=List[TaskRead])
+async def get_list_task(
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stm = select(Task)
+    res = await db.execute(stm)
+    task_list = res.scalars().unique().fetchall()
+    await asyncio.gather(*[db.refresh(t) for t in task_list])
+    return task_list
 
 
 @router.post("/")
