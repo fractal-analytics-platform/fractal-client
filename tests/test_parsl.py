@@ -321,6 +321,7 @@ def test_use_tensorflow_on_gpu():
     assert two == 2
 
 
+@pytest.mark.skipif(missing_slurm, reason="SLURM not available")
 def test_multiexecutor_workflow():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
