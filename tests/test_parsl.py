@@ -13,6 +13,7 @@ Zurich.
 """
 import itertools
 import os
+import pathlib
 import subprocess
 
 import parsl
@@ -108,7 +109,7 @@ def test_single_app():
     assert incremented_numbers == [i + 1 for i in range(N)]
 
 
-def test_workflow_generate_combine_split():
+def test_workflow_generate_combine_split(tmp_path: pathlib.Path):
     if HAS_SLURM:
         provider = initialize_SlurmProvider()
     else:
@@ -145,8 +146,7 @@ def test_workflow_generate_combine_split():
                         f2.write(f"{w} {c} {num}\n")
 
     # Create files
-    if not os.path.isdir("tmp_data"):
-        os.makedirs("tmp_data")
+    tmp_dir = tmp_path.resolve().as_posix()
     n_wells = 2
     n_channels = 2
     output_files = []
@@ -157,8 +157,8 @@ def test_workflow_generate_combine_split():
                 outputs=[
                     File(
                         os.path.join(
-                            os.getcwd(),
-                            f"tmp_data/file-w{well}-c{channel}.txt",
+                            tmp_dir,
+                            f"file-w{well}-c{channel}.txt",
                         )
                     )
                 ],
@@ -168,9 +168,7 @@ def test_workflow_generate_combine_split():
     # Concatenate the files into a single file
     cc = task_combine(
         inputs=[i.outputs[0] for i in output_files],
-        outputs=[
-            File(os.path.join(os.getcwd(), "tmp_data/combined_data.txt"))
-        ],
+        outputs=[File(os.path.join(tmp_dir, "combined_data.txt"))],
     )
 
     # Split the single file back into many files
@@ -182,8 +180,8 @@ def test_workflow_generate_combine_split():
             [
                 File(
                     os.path.join(
-                        os.getcwd(),
-                        f"tmp_data/processed_file-w{well}-c{channel}.txt",
+                        tmp_dir,
+                        f"processed_file-w{well}-c{channel}.txt",
                     )
                 )
             ]
@@ -198,16 +196,12 @@ def test_workflow_generate_combine_split():
     # Verify that all files are generated
     for well, channel in itertools.product(range(n_wells), range(n_channels)):
         assert os.path.isfile(
-            os.path.join(os.getcwd(), f"tmp_data/file-w{well}-c{channel}.txt")
+            os.path.join(tmp_dir, f"file-w{well}-c{channel}.txt")
         )
-    assert os.path.isfile(
-        os.path.join(os.getcwd(), "tmp_data/combined_data.txt")
-    )
+    assert os.path.isfile(os.path.join(tmp_dir, "combined_data.txt"))
     for well, channel in itertools.product(range(n_wells), range(n_channels)):
         assert os.path.isfile(
-            os.path.join(
-                os.getcwd(), f"tmp_data/processed_file-w{well}-c{channel}.txt"
-            )
+            os.path.join(tmp_dir, f"processed_file-w{well}-c{channel}.txt")
         )
 
 
