@@ -20,13 +20,13 @@ async def test_db_connection(db):
 async def test_task_relations(db):
     t0 = Task(
         name="task0",
-        import_name="task0",
+        module="task0",
         input_type="zarr",
         output_type="zarr",
     )
     t1 = Task(
         name="task1",
-        import_name="task1",
+        module="task1",
         input_type="zarr",
         output_type="zarr",
     )

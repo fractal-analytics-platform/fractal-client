@@ -87,6 +87,13 @@ async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
 
 
 @pytest.fixture
+async def collect_tasks(db):
+    from fractal.server import __on_startup
+
+    await __on_startup()
+
+
+@pytest.fixture
 async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
         app=app, base_url="http://test"

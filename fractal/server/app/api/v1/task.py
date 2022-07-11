@@ -43,9 +43,7 @@ async def upsert_task(
         return "updated"
 
 
-@router.post("/collect/", status_code=status.HTTP_201_CREATED)
-async def collect_core_tasks(
-    user: User = Depends(current_active_user),
+async def collect_tasks_headless(
     db: AsyncSession = Depends(get_db),
 ):
     out = dict(inserted=0, updated=0)
@@ -54,6 +52,14 @@ async def collect_core_tasks(
     )
     out.update(dict(Counter(results)))
     return out
+
+
+@router.post("/collect/", status_code=status.HTTP_201_CREATED)
+async def collect_core_tasks(
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await collect_tasks_headless(db)
 
 
 @router.post("/")

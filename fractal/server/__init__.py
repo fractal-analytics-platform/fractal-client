@@ -10,7 +10,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 from fastapi import FastAPI
 
 
@@ -22,6 +21,14 @@ def collect_routers(app: FastAPI) -> None:
     app.include_router(router_default, prefix="/api")
     app.include_router(router_v1, prefix="/api/v1")
     app.include_router(auth_router, prefix="/auth", tags=["auth"])
+
+
+async def __on_startup():
+    from .app.db import async_session_maker
+    from .app.api.v1.task import collect_tasks_headless
+
+    async with async_session_maker() as db:
+        await collect_tasks_headless(db=db)
 
 
 def start_application() -> FastAPI:
