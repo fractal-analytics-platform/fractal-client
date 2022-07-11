@@ -7,8 +7,8 @@ from sqlmodel import SQLModel
 
 
 class TaskBase(SQLModel):
-    name: str
-    import_name: str
+    name: str = Field(sa_column_kwargs=dict(unique=True))
+    module: str
     input_type: str
     output_type: str
     default_parameters: Optional[str]
