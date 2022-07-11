@@ -16,8 +16,12 @@ from devtools import debug
 PREFIX = "/api/v1"
 
 
+async def test_task(collect_tasks):
+    pass
+
+
 async def test_project_creation(
-    app, client, MockCurrentUser, db, testdata_path
+    app, client, MockCurrentUser, db, testdata_path, collect_tasks
 ):
     async with MockCurrentUser(persist=True):
 
@@ -44,49 +48,13 @@ async def test_project_creation(
         debug(res.json())
         assert res.status_code == 201
 
-        # ADD GLOBAL TASKS
-
-        task_id_list = []
-        res = await client.post(
-            f"{PREFIX}/task/",
-            json=dict(
-                name="Create ZARR Structure",
-                input_type="png",
-                output_type="zarr",
-            ),
-        )
-        assert res.status_code == 201
-        task_id_list.append(res.json()["id"])
-        res = await client.post(
-            f"{PREFIX}/task/",
-            json=dict(
-                name="Yokogawa to ZARR", input_type="zarr", output_type="zarr"
-            ),
-        )
-        assert res.status_code == 201
-        task_id_list.append(res.json()["id"])
-
-        # ADD GLOBAL WORKFLOW
-
-        res = await client.post(
-            f"{PREFIX}/workflow/",
-            json=dict(
-                name="test workflow",
-            ),
-        )
-        assert res.status_code == 201
-        workflow_id = res.json()["id"]
-
-        # ADD TASK TO GLOBAL WORKFLOW
-
-        for task_id in task_id_list:
-            res = await client.post(
-                f"{PREFIX}/workflow/{workflow_id}",
-                json=dict(
-                    task_id=task_id,
-                ),
-            )
-            assert res.status_code == 201
+        # GET WORKFLOW ID (in this case just a dummy task)
+        res = await client.get(f"{PREFIX}/task/")
+        assert res.status_code == 200
+        data = res.json()
+        debug(data)
+        task = data[0]
+        workflow_id = task["id"]
 
         # EXECUTE WORKFLOW
 
