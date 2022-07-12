@@ -96,7 +96,7 @@ async def register_routers(app):
 async def collect_tasks(db):
     from fractal.server.app.api.v1.task import collect_tasks_headless
 
-    await collect_tasks_headless(db)
+    await collect_tasks_headless()
 
 
 @pytest.fixture
