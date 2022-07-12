@@ -1,8 +1,13 @@
+from pathlib import Path
+from typing import Any
+from typing import Dict
 from typing import List
 from typing import Optional
 
 from pydantic import root_validator
 from pydantic import UUID4
+from sqlalchemy import Column
+from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
@@ -17,6 +22,15 @@ def slugify(value: str):
 class DatasetBase(SQLModel):
     name: str
     type: Optional[str]
+    meta: Dict[str, Any] = {}
+
+
+class DatasetCreate(DatasetBase):
+    pass
+
+
+class DatasetRead(DatasetBase):
+    id: int
 
 
 class ProjectBase(SQLModel):
@@ -26,10 +40,11 @@ class ProjectBase(SQLModel):
 
 class ResourceBase(SQLModel):
     path: str
+    glob_pattern: str
 
-
-class DatasetRead(DatasetBase):
-    id: int
+    @property
+    def glob_path(self):
+        return Path(self.path) / self.glob_pattern
 
 
 class Dataset(DatasetBase, table=True):  # type: ignore
@@ -38,6 +53,10 @@ class Dataset(DatasetBase, table=True):  # type: ignore
     resource_list: List["Resource"] = Relationship(
         sa_relationship_kwargs={"lazy": "selectin"}
     )
+    meta: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ProjectCreate(ProjectBase):
