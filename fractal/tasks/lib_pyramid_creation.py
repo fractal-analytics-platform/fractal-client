@@ -14,6 +14,8 @@ Zurich.
 import dask.array as da
 import numpy as np
 
+from fractal.tasks.lib_to_zarr_custom import to_zarr_custom
+
 
 def create_pyramid(
     data_czyx,
@@ -167,3 +169,90 @@ def create_pyramid_3D(
         pyramid.append(data_zyx_final.astype(data_zyx.dtype))
 
     return pyramid
+
+
+def write_pyramid(
+    data,
+    overwrite=False,
+    newzarrurl=None,
+    coarsening_xy=2,
+    num_levels=2,
+    chunk_size_x=None,
+    chunk_size_y=None,
+    aggregation_function=None,
+):
+
+    """
+    Take a four-dimensional array and build a pyramid of coarsened levels
+
+    :param data_czyx: input data
+    :type data_czyx: dask array
+    :param coarsening_xy: coarsening factor along X and Y
+    :type coarsening_xy: int
+    :param num_levels: number of levels in the zarr pyramid
+    :type num_levels: int
+    :param chunk_size_x: chunk size along X
+    :type chunk_size_x: int
+    :param chunk_size_y: chunk size along Y
+    :type chunk_size_y: int
+    :param aggregation_function: FIXME
+    :type aggregation_function: FIXME
+    """
+
+    # Check the number of axes and identify YX dimensions
+    ndims = len(data.shape)
+    if ndims not in [2, 3, 4]:
+        raise Exception(
+            "ERROR: data has shape {data.shape}, ndims not in [2,3,4]"
+        )
+    y_axis = ndims - 2
+    x_axis = ndims - 1
+
+    # Set rechunking options, if needed
+    if chunk_size_x is None or chunk_size_y is None:
+        apply_rechunking = False
+    else:
+        apply_rechunking = True
+        chunking = {y_axis: chunk_size_y, x_axis: chunk_size_x}
+
+    # Set aggregation_function
+    if aggregation_function is None:
+        aggregation_function = np.mean
+
+    # Create pyramid of XY-coarser levels
+
+    # Highest-resolution level
+    level0 = to_zarr_custom(
+        newzarrurl=newzarrurl, array=data, component="0", overwrite=overwrite
+    )
+    if apply_rechunking:
+        levels = [level0.rechunk(chunking)]
+    else:
+        levels = [level0]
+
+    # Lower-resolution levels
+    for ind_level in range(1, num_levels):
+        # Verify that coarsening is possible
+        if min(levels[-1].shape[-2:]) < coarsening_xy:
+            raise Exception(
+                f"ERROR: at {ind_level}-th level, "
+                f"coarsening_xy={coarsening_xy} "
+                f"but {ind_level-1}-th level has shape {levels[-1].shape}"
+            )
+        # Apply coarsening
+        newlevel = da.coarsen(
+            aggregation_function,
+            levels[ind_level - 1],
+            {y_axis: coarsening_xy, x_axis: coarsening_xy},
+            trim_excess=True,
+        ).astype(data.dtype)
+        written_level = to_zarr_custom(
+            newzarrurl=newzarrurl,
+            array=newlevel,
+            component=f"{ind_level}",
+            overwrite=overwrite,
+        )
+        if apply_rechunking:
+            levels.append(written_level.rechunk(chunking))
+        else:
+            levels.append(written_level)
