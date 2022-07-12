@@ -1,5 +1,5 @@
 {
-"root_path_corr": "/data/homes/fractal/mwe_fractal/tests/data/illumination_correction",
+"root_path_corr": "tests/data/illumination_correction",
 "A01_C01": "illum_corr_matrix.png",
 "A02_C02": "illum_corr_matrix.png"
 }
