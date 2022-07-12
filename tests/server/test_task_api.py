@@ -16,6 +16,7 @@ async def task_factory():
     async def __task_factory(db: AsyncSession, index: int = 0, children=None):
         t = Task(
             name=f"task{index}",
+            resource_type="task",
             module=f"task{index}",
             input_type="zarr",
             output_type="zarr",
@@ -33,12 +34,14 @@ async def task_factory():
 async def test_task_relations(db, task_factory):
     t0 = Task(
         name="task0",
+        resource_type="task",
         module="task0",
         input_type="zarr",
         output_type="zarr",
     )
     t1 = Task(
         name="task1",
+        resource_type="task",
         module="task1",
         input_type="zarr",
         output_type="zarr",
