@@ -28,8 +28,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from fractal.server import start_application
-
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -83,7 +81,15 @@ async def db(db_engine, app) -> AsyncGenerator[AsyncSession, None]:
 
 @pytest.fixture
 async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
-    yield start_application()
+    app = FastAPI()
+    yield app
+
+
+@pytest.fixture
+async def register_routers(app):
+    from fractal.server import collect_routers
+
+    collect_routers(app)
 
 
 @pytest.fixture
@@ -94,7 +100,9 @@ async def collect_tasks(db):
 
 
 @pytest.fixture
-async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, Any]:
+async def client(
+    app: FastAPI, register_routers
+) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
         app=app, base_url="http://test"
     ) as client, LifespanManager(app):
@@ -157,3 +165,27 @@ async def MockCurrentUser(app, db):
                 ] = self.previous_user()
 
     return _MockCurrentUser
+
+
+@pytest.fixture
+async def project_factory(db):
+    """
+    Factory that adds a project to the database
+    """
+    from fractal.server.app.models import Project
+
+    async def __project_factory(user, **kwargs):
+        defaults = dict(
+            name="project",
+            project_dir="/tmp/",
+            user_owner_id=user.id,
+            slug="slug",
+        )
+        defaults.update(kwargs)
+        project = Project(**defaults)
+        db.add(project)
+        await db.commit()
+        await db.refresh(project)
+        return project
+
+    return __project_factory
