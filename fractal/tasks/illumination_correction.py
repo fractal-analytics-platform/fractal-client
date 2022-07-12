@@ -115,7 +115,7 @@ def illumination_correction(
     """
 
     # Check that only one output option is chosen
-    if overwrite and (newzarrurl is not None):
+    if overwrite and (newzarrurl is not None) and (newzarrurl != zarrurl):
         raise Exception(
             "ERROR in illumination_correction: "
             f"overwrite={overwrite} and newzarrurl={newzarrurl}."
@@ -191,6 +191,7 @@ def illumination_correction(
         )
 
     # Loop over channels
+    # FIXME: map_blocks could take care of this
     data_czyx_new = []
     for ind_ch, ch in enumerate(chl_list):
 

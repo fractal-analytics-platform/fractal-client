@@ -219,40 +219,44 @@ def write_pyramid(
     if aggregation_function is None:
         aggregation_function = np.mean
 
-    # Create pyramid of XY-coarser levels
-
-    # Highest-resolution level
+    # Write highest-resolution level
     level0 = to_zarr_custom(
         newzarrurl=newzarrurl, array=data, component="0", overwrite=overwrite
     )
     if apply_rechunking:
-        levels = [level0.rechunk(chunking)]
+        previous_level = level0.rechunk(chunking)
     else:
-        levels = [level0]
+        previous_level = level0
 
-    # Lower-resolution levels
+    # Compute and write lower-resolution levels
     for ind_level in range(1, num_levels):
-        # Verify that coarsening is possible
-        if min(levels[-1].shape[-2:]) < coarsening_xy:
+
+        # Verify that coarsening is doable
+        if min(previous_level.shape[-2:]) < coarsening_xy:
             raise Exception(
                 f"ERROR: at {ind_level}-th level, "
                 f"coarsening_xy={coarsening_xy} "
-                f"but {ind_level-1}-th level has shape {levels[-1].shape}"
+                f"but previous level has shape {previous_level.shape}"
             )
+
         # Apply coarsening
         newlevel = da.coarsen(
             aggregation_function,
-            levels[ind_level - 1],
+            previous_level,
             {y_axis: coarsening_xy, x_axis: coarsening_xy},
             trim_excess=True,
         ).astype(data.dtype)
-        written_level = to_zarr_custom(
+
+        # Apply rechunking
+        if apply_rechunking:
+            newlevel_rechunked = newlevel.rechunk(chunking)
+        else:
+            newlevel_rechunked = newlevel
+
+        # Write zarr and store output (useful to construct next level)
+        previous_level = to_zarr_custom(
             newzarrurl=newzarrurl,
-            array=newlevel,
+            array=newlevel_rechunked,
             component=f"{ind_level}",
             overwrite=overwrite,
         )
-        if apply_rechunking:
-            levels.append(written_level.rechunk(chunking))
-        else:
-            levels.append(written_level)

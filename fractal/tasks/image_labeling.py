@@ -215,6 +215,7 @@ def image_labeling(
             component=f"labels/{label_name}/{0}",
             dimension_separator="/",
             return_stored=True,
+            # compute=True, #FIXME ???
         )
 
     # At this point, cellpose executed and data for level=0 are on disk
