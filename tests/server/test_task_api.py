@@ -73,7 +73,7 @@ async def test_collection(db, client, MockCurrentUser):
         assert res.status_code == 201
         data = res.json()
         debug(data)
-        assert data["inserted"] == 1
+        assert data["inserted"] == 2
         assert data["updated"] == 0
 
     res = await db.execute(select(Task))
@@ -86,7 +86,7 @@ async def test_collection(db, client, MockCurrentUser):
         data = res.json()
         assert res.status_code == 201
         assert data["inserted"] == 0
-        assert data["updated"] == 1
+        assert data["updated"] == 2
 
     res = await db.execute(select(Task))
     n_tasks = len(res.scalars().all())  # FIXME: run query server side!
