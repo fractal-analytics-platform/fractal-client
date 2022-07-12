@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter
+from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
@@ -15,9 +16,10 @@ from ...models.project import ProjectRead
 from ...models.project import Resource
 from ...models.project import ResourceCreate
 from ...models.project import ResourceRead
+from ...models.task import Task
+from ...runner import submit_workflow
 from ...security import current_active_user
 from ...security import User
-
 
 router = APIRouter()
 
@@ -87,7 +89,7 @@ async def add_dataset(
     status_code=status.HTTP_201_CREATED,
 )
 async def add_resource(
-    project_id: str,
+    project_id: int,
     dataset_id: int,
     resource: ResourceCreate,
     user: User = Depends(current_active_user),
@@ -117,6 +119,38 @@ async def modify_dataset(
     raise NotImplementedError
 
 
-@router.post("/apply/{project_id}/{dataset_id}")
-async def apply_workflow():
-    raise NotImplementedError
+@router.post(
+    "/apply/{project_id}/{input_dataset_id}/{workflow_id}",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def apply_workflow(
+    project_id: int,
+    input_dataset_id: int,
+    workflow_id: int,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stm = (
+        select(Project, Dataset)
+        .join(Dataset)
+        .where(Project.user_owner_id == user.id)
+    )
+    project, dataset = (await db.execute(stm)).one()
+
+    task = await db.get(Task, workflow_id)
+    # TODO check that user is allowed to use this task
+
+    from devtools import debug
+
+    debug(task)
+    background_tasks.add_task(submit_workflow, "msg")
+    return dict(status="submitted")
+
+
+@router.post("/prova/")
+async def apply_workflow_prova(
+    background_tasks: BackgroundTasks,
+):
+    background_tasks.add_task(submit_workflow, "msg")
+    return "Ok"

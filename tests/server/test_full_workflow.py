@@ -36,13 +36,13 @@ async def test_project_creation(
         )
         assert res.status_code == 201
         project = res.json()
-        project_slug = project["slug"]
+        project_id = project["id"]
         dataset_id = project["dataset_list"][0]["id"]
 
         # ADD RESOURCE TO DATASET
 
         res = await client.post(
-            f"{PREFIX}/project/{project_slug}/{dataset_id}",
+            f"{PREFIX}/project/{project_id}/{dataset_id}",
             json={"path": testdata_path.as_posix()},
         )
         debug(res.json())
@@ -58,8 +58,11 @@ async def test_project_creation(
 
         # EXECUTE WORKFLOW
 
+        payload = dict()
         res = await client.post(
-            f"{PREFIX}/project/apply/{project_slug}"
-            f"/{dataset_id}/{workflow_id}"
+            f"{PREFIX}/project/apply/{project_id}"
+            f"/{dataset_id}/{workflow_id}",
+            json=payload,
         )
-        assert res.status_code == 201
+        debug(res.json())
+        assert res.status_code == 202
