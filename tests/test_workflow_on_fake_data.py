@@ -1,7 +1,20 @@
 import os
 import shutil
+import subprocess
+
+import pytest
+
+try:
+    process = subprocess.Popen(
+        ["sinfo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    stdout, stderr = process.communicate()
+    HAS_SLURM = True
+except FileNotFoundError:
+    HAS_SLURM = False
 
 
+@pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
 def test_workflow_fake_data():
 
     from fractal.fractal_cmd import dataset_update_type
