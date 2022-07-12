@@ -39,6 +39,14 @@ class Task(TaskBase, table=True):  # type: ignore
         ),
     )
 
+    @property
+    def callable(self):
+        return self.module.partition(":")[2]
+
+    @property
+    def import_path(self):
+        return self.module.partition(":")[0]
+
 
 class TaskRead(TaskBase):
     id: int
