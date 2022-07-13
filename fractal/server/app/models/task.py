@@ -4,6 +4,7 @@ from typing import List
 from typing import Optional
 
 from sqlalchemy import Column
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
@@ -44,6 +45,7 @@ class Subtask(SQLModel, table=True):  # type: ignore
     subtask: "Task" = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="Subtask.subtask_id==Task.id")
     )
+    order: Optional[int]
     parameters: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
 
 
@@ -57,6 +59,8 @@ class Task(TaskBase, table=True):  # type: ignore
         sa_relationship_kwargs=dict(
             primaryjoin="Task.id==Subtask.parent_task_id",
             lazy="selectin",
+            order_by="Subtask.order",
+            collection_class=ordering_list("order"),
         ),
     )
 
