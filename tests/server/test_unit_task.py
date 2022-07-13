@@ -7,6 +7,23 @@ from fractal.server.app.models import SubtaskRead
 from fractal.server.app.models import TaskRead
 
 
+async def test_add_subtask(db, task_factory):
+    parent = await task_factory(name="parent")
+    child = await task_factory(name="child")
+    otherchild = await task_factory(name="otherchild")
+
+    await parent.add_subtask(db, subtask=child)
+    debug(TaskRead.from_orm(parent))
+
+    assert len(parent.subtask_list) == 1
+    assert parent.subtask_list[0].subtask == child
+
+    # insert otherchild at the beginning
+    await parent.add_subtask(db, subtask=otherchild, order=0)
+    assert parent.subtask_list[0].subtask == otherchild
+    assert parent.subtask_list[1].subtask == child
+
+
 async def test_task_relations(db, task_factory):
     """
     GIVEN two tasks

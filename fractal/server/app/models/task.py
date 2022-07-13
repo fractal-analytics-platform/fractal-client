@@ -5,6 +5,7 @@ from typing import List
 from typing import Optional
 
 from sqlalchemy import Column
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.types import JSON
 from sqlmodel import Field
@@ -44,6 +45,10 @@ class SubtaskBase(SQLModel):
 
 
 class Subtask(SubtaskBase, table=True):  # type: ignore
+    class Config:
+        arbitrary_types_allowed = True
+        fields = {"parent": {"exclude": True}}
+
     parent_task_id: Optional[int] = Field(
         default=None, foreign_key="task.id", primary_key=True
     )
@@ -90,6 +95,27 @@ class Task(TaskBase, table=True):  # type: ignore
     @property
     def import_path(self):
         return self.module.partition(":")[0]
+
+    async def add_subtask(
+        self,
+        db: AsyncSession,
+        subtask: "Task",
+        order=None,
+        args=None,
+        commit_and_refresh=True,
+    ):
+        if not args:
+            args = dict()
+        st = Subtask(parent=self, subtask=subtask, args=args)
+
+        if order is None:
+            self.subtask_list.append(st)
+        else:
+            self.subtask_list.insert(order, st)
+        db.add_all([self, st])
+        if commit_and_refresh:
+            await db.commit()
+            await db.refresh(self)
 
 
 class TaskRead(TaskBase):
