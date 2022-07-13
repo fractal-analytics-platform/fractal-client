@@ -27,7 +27,7 @@ from cellpose import models
 from fractal.tasks.lib_pyramid_creation import create_pyramid_3D
 
 
-def apply_label_to_single_FOV_column(
+def segment_FOV(
     column,
     block_info=None,
     model=None,
@@ -177,7 +177,7 @@ def image_labeling(
 
     # Map labeling function onto all chunks (i.e., FOV colums)
     mask_rechunked = data_zyx_rechunked.map_blocks(
-        apply_label_to_single_FOV_column,
+        segment_FOV,
         chunks=data_zyx_rechunked.chunks,
         meta=np.array((), dtype=label_dtype),
         model=model,
@@ -215,6 +215,7 @@ def image_labeling(
             component=f"labels/{label_name}/{0}",
             dimension_separator="/",
             return_stored=True,
+            # compute=True, #FIXME ???
         )
 
     # At this point, cellpose executed and data for level=0 are on disk

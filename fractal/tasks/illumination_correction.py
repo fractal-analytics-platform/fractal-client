@@ -18,8 +18,7 @@ import dask.array as da
 import numpy as np
 from skimage.io import imread
 
-from fractal.tasks.lib_pyramid_creation import create_pyramid
-from fractal.tasks.lib_to_zarr_custom import to_zarr_custom
+from fractal.tasks.lib_pyramid_creation import write_pyramid
 
 
 def correct(
@@ -49,11 +48,6 @@ def correct(
     :type img_size_x: int
 
     """
-
-    chunk_location = block_info[None]["chunk-location"]
-
-    with open("LOG_illum", "a") as out:
-        out.write(f"[{chunk_location}] START illumination correction")
 
     # Check shapes
     if img.shape != (1, img_size_y, img_size_x):
@@ -87,9 +81,6 @@ def correct(
         )
         img_corr[img_corr > np.iinfo(img.dtype).max] = np.iinfo(img.dtype).max
 
-    with open("LOG_illum", "a") as out:
-        out.write(f"[{chunk_location}] END   illumination correction")
-
     return img_corr.astype(img.dtype)
 
 
@@ -117,14 +108,14 @@ def illumination_correction(
     :param path_dict_corr: path of JSON file with info on illumination matrices
     :type path_dict_corr: str
     :param coarsening_xy: coarsening factor in XY (optional, default 2)
-    :type coarsening_z: xy
+    :type coarsening_xy: xy
     :param background: value for background subtraction (optional, default 110)
     :type background: int
 
     """
 
     # Check that only one output option is chosen
-    if overwrite and (newzarrurl is not None):
+    if overwrite and (newzarrurl is not None) and (newzarrurl != zarrurl):
         raise Exception(
             "ERROR in illumination_correction: "
             f"overwrite={overwrite} and newzarrurl={newzarrurl}."
@@ -134,9 +125,6 @@ def illumination_correction(
             "ERROR in illumination_correction: "
             f"overwrite={overwrite} and newzarrurl={newzarrurl}."
         )
-
-    with open("LOG_illum", "w") as out:
-        out.write("init")
 
     # Sanitize zarr paths
     if not zarrurl.endswith("/"):
@@ -155,6 +143,8 @@ def illumination_correction(
     with open(path_dict_corr, "r") as jsonfile:
         dict_corr = json.load(jsonfile)
     root_path_corr = dict_corr.pop("root_path_corr")
+    if not root_path_corr.endswith("/"):
+        root_path_corr += "/"
 
     # Assemble dictionary of matrices and check their shapes
     corrections = {}
@@ -201,13 +191,14 @@ def illumination_correction(
         )
 
     # Loop over channels
+    # FIXME: map_blocks could take care of this
     data_czyx_new = []
     for ind_ch, ch in enumerate(chl_list):
 
         data_zyx = data_czyx[ind_ch]
         illum_img = corrections[ch]
 
-        # Map "correct" function onto each block
+        # Map correct(..) function onto each block
         data_zyx_new = data_zyx.map_blocks(
             correct,
             chunks=(1, img_size_y, img_size_x),
@@ -218,26 +209,18 @@ def illumination_correction(
             img_size_x=img_size_x,
         )
         data_czyx_new.append(data_zyx_new)
+    accumulated_data = da.stack(data_czyx_new, axis=0)
 
     # Construct resolution pyramid
-    pyramid = create_pyramid(
-        da.stack(data_czyx_new, axis=0),
-        coarsening_z=1,
+    write_pyramid(
+        accumulated_data,
+        newzarrurl=newzarrurl,
+        overwrite=overwrite,
         coarsening_xy=coarsening_xy,
         num_levels=num_levels,
         chunk_size_x=img_size_x,
         chunk_size_y=img_size_y,
-        num_channels=len(chl_list),
     )
-
-    # Write data into output zarr
-    for ind_level in range(num_levels):
-        to_zarr_custom(
-            newzarrurl,
-            component=f"{ind_level}",
-            array=pyramid[ind_level],
-            overwrite=overwrite,
-        )
 
 
 if __name__ == "__main__":

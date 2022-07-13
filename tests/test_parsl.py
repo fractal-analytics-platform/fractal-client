@@ -11,11 +11,13 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import itertools
 import os
+import pathlib
+import subprocess
 
 import parsl
+import pytest
 from parsl.addresses import address_by_hostname
 from parsl.app.app import bash_app
 from parsl.app.app import python_app
@@ -23,43 +25,72 @@ from parsl.channels import LocalChannel
 from parsl.config import Config
 from parsl.data_provider.files import File
 from parsl.executors import HighThroughputExecutor
+from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
+from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
+
+try:
+    process = subprocess.Popen(
+        ["sinfo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    stdout, stderr = process.communicate()
+    HAS_SLURM = True
+except FileNotFoundError:
+    HAS_SLURM = False
+
+try:
+    import tensorflow as tf  # NOQA
+
+    HAS_TENSORFLOW = True
+except ImportError:
+    HAS_TENSORFLOW = False
+
+
+fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+os.environ["SQUEUE_FORMAT"] = fmt
 
 
 def initialize_SlurmProvider():
     slurm = SlurmProvider(
         channel=LocalChannel(),
         nodes_per_block=1,
-        cores_per_node=16,
         mem_per_node=1,  # specified in GB
         parallelism=0,
         partition="main",
-        worker_init=(
-            "source /opt/easybuild/software/Anaconda3/2019.07/"
-            "etc/profile.d/conda.sh\n"
-            "conda activate fractal"
-        ),
         launcher=SrunLauncher(debug=True),
-        walltime="01:00:00",
-        cmd_timeout=60,
     )
     return slurm
 
 
-def initialize_HighThroughputExecutor(provider=None, max_workers=10):
+def initialize_LocalProvider():
+    local = LocalProvider(
+        nodes_per_block=1,
+        init_blocks=1,
+        min_blocks=1,
+        max_blocks=1,
+        parallelism=0,
+        launcher=SingleNodeLauncher(debug=True),
+    )
+    return local
+
+
+def initialize_HighThroughputExecutor(provider=None):
     assert provider is not None
     htex = HighThroughputExecutor(
         label="htex",
         address=address_by_hostname(),
         worker_debug=True,
-        max_workers=max_workers,
         provider=provider,
     )
     return htex
 
 
-def AUX_single_app(provider):
+def test_single_app():
+    if HAS_SLURM:
+        provider = initialize_SlurmProvider()
+    else:
+        provider = initialize_LocalProvider()
     htex = initialize_HighThroughputExecutor(provider=provider)
     config = Config(executors=[htex])
     parsl.clear()
@@ -78,7 +109,11 @@ def AUX_single_app(provider):
     assert incremented_numbers == [i + 1 for i in range(N)]
 
 
-def AUX_workflow_generate_combine_split(provider):
+def test_workflow_generate_combine_split(tmp_path: pathlib.Path):
+    if HAS_SLURM:
+        provider = initialize_SlurmProvider()
+    else:
+        provider = initialize_LocalProvider()
     htex = initialize_HighThroughputExecutor(provider=provider)
     config = Config(executors=[htex])
     parsl.clear()
@@ -111,8 +146,7 @@ def AUX_workflow_generate_combine_split(provider):
                         f2.write(f"{w} {c} {num}\n")
 
     # Create files
-    if not os.path.isdir("tmp_data"):
-        os.makedirs("tmp_data")
+    tmp_dir = tmp_path.resolve().as_posix()
     n_wells = 2
     n_channels = 2
     output_files = []
@@ -123,8 +157,8 @@ def AUX_workflow_generate_combine_split(provider):
                 outputs=[
                     File(
                         os.path.join(
-                            os.getcwd(),
-                            f"tmp_data/file-w{well}-c{channel}.txt",
+                            tmp_dir,
+                            f"file-w{well}-c{channel}.txt",
                         )
                     )
                 ],
@@ -134,9 +168,7 @@ def AUX_workflow_generate_combine_split(provider):
     # Concatenate the files into a single file
     cc = task_combine(
         inputs=[i.outputs[0] for i in output_files],
-        outputs=[
-            File(os.path.join(os.getcwd(), "tmp_data/combined_data.txt"))
-        ],
+        outputs=[File(os.path.join(tmp_dir, "combined_data.txt"))],
     )
 
     # Split the single file back into many files
@@ -148,8 +180,8 @@ def AUX_workflow_generate_combine_split(provider):
             [
                 File(
                     os.path.join(
-                        os.getcwd(),
-                        f"tmp_data/processed_file-w{well}-c{channel}.txt",
+                        tmp_dir,
+                        f"processed_file-w{well}-c{channel}.txt",
                     )
                 )
             ]
@@ -164,20 +196,20 @@ def AUX_workflow_generate_combine_split(provider):
     # Verify that all files are generated
     for well, channel in itertools.product(range(n_wells), range(n_channels)):
         assert os.path.isfile(
-            os.path.join(os.getcwd(), f"tmp_data/file-w{well}-c{channel}.txt")
+            os.path.join(tmp_dir, f"file-w{well}-c{channel}.txt")
         )
-    assert os.path.isfile(
-        os.path.join(os.getcwd(), "tmp_data/combined_data.txt")
-    )
+    assert os.path.isfile(os.path.join(tmp_dir, "combined_data.txt"))
     for well, channel in itertools.product(range(n_wells), range(n_channels)):
         assert os.path.isfile(
-            os.path.join(
-                os.getcwd(), f"tmp_data/processed_file-w{well}-c{channel}.txt"
-            )
+            os.path.join(tmp_dir, f"processed_file-w{well}-c{channel}.txt")
         )
 
 
-def AUX_import_numpy(provider, providername):
+def test_import_numpy():
+    if HAS_SLURM:
+        provider = initialize_SlurmProvider()
+    else:
+        provider = initialize_LocalProvider()
     htex = initialize_HighThroughputExecutor(provider=provider)
     config = Config(executors=[htex])
     parsl.clear()
@@ -207,13 +239,15 @@ def AUX_import_numpy(provider, providername):
 
     if not os.path.isdir("tmp_data"):
         os.makedirs("tmp_data")
-    with open(
-        os.path.join(os.getcwd(), f"tmp_data/info_{providername}.txt"), "w"
-    ) as out:
+    with open(os.path.join(os.getcwd(), "tmp_data/info.txt"), "w") as out:
         out.write(info)
 
 
-def AUX_workflow_compute_pi(provider):
+def test_workflow_compute_pi():
+    if HAS_SLURM:
+        provider = initialize_SlurmProvider()
+    else:
+        provider = initialize_LocalProvider()
     htex = initialize_HighThroughputExecutor(provider=provider)
     config = Config(executors=[htex])
     parsl.clear()
@@ -248,34 +282,8 @@ def AUX_workflow_compute_pi(provider):
     assert abs(av - numpy.pi) < 0.01
 
 
-def test_single_app_slurm():
-    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
-    os.environ["SQUEUE_FORMAT"] = fmt
-    provider = initialize_SlurmProvider()
-    AUX_single_app(provider)
-
-
-def test_workflow_generate_combine_split_slurm():
-    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
-    os.environ["SQUEUE_FORMAT"] = fmt
-    provider = initialize_SlurmProvider()
-    AUX_workflow_generate_combine_split(provider)
-
-
-def test_workflow_compute_pi_slurm():
-    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
-    os.environ["SQUEUE_FORMAT"] = fmt
-    provider = initialize_SlurmProvider()
-    AUX_workflow_compute_pi(provider)
-
-
-def test_import_numpy_slurm():
-    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
-    os.environ["SQUEUE_FORMAT"] = fmt
-    provider = initialize_SlurmProvider()
-    AUX_import_numpy(provider, "SlurmProvider")
-
-
+@pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
+@pytest.mark.skipif(not HAS_TENSORFLOW, reason="tensorflow not available")
 def test_use_tensorflow_on_gpu():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -294,7 +302,7 @@ def test_use_tensorflow_on_gpu():
     @python_app
     def increment_by_one(num):
         os.environ["OPENBLAS_NUM_THREADS"] = "1"
-        import tensorflow as tf
+        import tensorflow as tf  # NOQA
 
         gpus = tf.config.list_physical_devices("GPU")
         with open("output_gpus.txt", "w") as out:
@@ -306,6 +314,8 @@ def test_use_tensorflow_on_gpu():
     assert two == 2
 
 
+@pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
+@pytest.mark.skipif(not HAS_TENSORFLOW, reason="tensorflow not available")
 def test_multiexecutor_workflow():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -338,7 +348,7 @@ def test_multiexecutor_workflow():
     @python_app(executors=["htex_gpu"])
     def increment_by_one_gpu(num):
         os.environ["OPENBLAS_NUM_THREADS"] = "1"
-        import tensorflow as tf
+        import tensorflow as tf  # NOQA
 
         gpus = tf.config.list_physical_devices("GPU")
         with open(
@@ -357,10 +367,128 @@ def test_multiexecutor_workflow():
     assert two == 2
 
 
+@pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
+def test_multiexecutor_workflow_flexible():
+    fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
+    os.environ["SQUEUE_FORMAT"] = fmt
+    slurm_cpu = SlurmProvider(
+        partition="main",
+        channel=LocalChannel(),
+        launcher=SrunLauncher(debug=True),
+    )
+    slurm_gpu = SlurmProvider(
+        partition="gpu",
+        channel=LocalChannel(),
+        launcher=SrunLauncher(debug=True),
+    )
+
+    htex_cpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_cpu",
+        worker_debug=True,
+        provider=slurm_cpu,
+    )
+
+    htex_cpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_cpu",
+        worker_debug=True,
+        provider=slurm_cpu,
+    )
+    htex_gpu = HighThroughputExecutor(
+        address=address_by_hostname(),
+        label="htex_gpu",
+        worker_debug=True,
+        provider=slurm_gpu,
+    )
+    config = Config(
+        executors=[htex_cpu, htex_gpu],
+        strategy="htex_auto_scale",
+        max_idletime=120,
+    )
+    parsl.clear()
+    parsl.load(config)
+
+    import time
+
+    """
+    @python_app(executors=["htex_gpu"])
+    def dummy_gpu_task():
+        return
+    dummy_gpu_task().result()
+    htex_gpu.scale_in()
+    """
+
+    @python_app(executors=["htex_cpu"])
+    def increment_by_one_cpu(num):
+        import time
+
+        time.sleep(10)
+        return num + 1
+
+    print("CPU START - 10")
+    t0 = time.perf_counter()
+    one = increment_by_one_cpu(0).result()
+    t1 = time.perf_counter()
+    print("CPU END", t1 - t0)
+    print()
+
+    @python_app(executors=["htex_gpu"])
+    def increment_by_one_gpu(num):
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        import time
+
+        time.sleep(10)
+        return num + 1
+
+    print("GPU START - 10")
+    t0 = time.perf_counter()
+    two = increment_by_one_gpu(one).result()
+    t1 = time.perf_counter()
+    # htex_gpu.scale_in(1)
+    print("GPU END", t1 - t0)
+    print()
+
+    # CPU task
+    @python_app(executors=["htex_cpu"])
+    def increment_by_two_cpu(num):
+        import time
+
+        time.sleep(10)
+        return num + 2
+
+    print("CPU START - 10")
+    t0 = time.perf_counter()
+    four = increment_by_two_cpu(two).result()
+    t1 = time.perf_counter()
+    print("CPU END", t1 - t0)
+    print()
+
+    # GPU task
+    @python_app(executors=["htex_gpu"])
+    def increment_by_three_gpu(num):
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        import time
+
+        time.sleep(10)
+        return num + 3
+
+    print("GPU START - 10")
+    t0 = time.perf_counter()
+    seven = increment_by_three_gpu(four).result()
+    t1 = time.perf_counter()
+    print("GPU END", t1 - t0)
+    print()
+
+    print(f"seven: {seven}")
+    assert seven == 7
+
+
 if __name__ == "__main__":
-    test_single_app_slurm()
-    test_workflow_generate_combine_split_slurm()
-    test_workflow_compute_pi_slurm()
-    test_import_numpy_slurm()
+    test_single_app()
+    test_workflow_generate_combine_split()
+    test_workflow_compute_pi()
+    test_import_numpy()
     test_use_tensorflow_on_gpu()
     test_multiexecutor_workflow()
+    test_multiexecutor_workflow_flexible()

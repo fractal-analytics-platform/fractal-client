@@ -39,5 +39,5 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
 
-      - name: Test with pytest (skip parsl)
-        run: poetry run pytest --ignore tests/test_parsl.py --ignore tests/test_cellpose.py --ignore examples --ignore tests/server --ignore tests/test_workflow_on_fake_data.py
+      - name: Test with pytest
+        run: poetry run pytest --ignore tests/server
