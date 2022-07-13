@@ -138,13 +138,14 @@ async def apply_workflow(
     )
     project, dataset = (await db.execute(stm)).one()
 
-    task = await db.get(Task, workflow_id)
     # TODO check that user is allowed to use this task
+    workflow = await db.get(Task, workflow_id)
 
-    from devtools import debug
+    background_tasks.add_task(
+        submit_workflow, dataset=dataset, workflow=workflow
+    )
 
-    debug(task)
-    background_tasks.add_task(submit_workflow, "msg")
+    # TODO we should return a job id of some sort
     return dict(status="submitted")
 
 
