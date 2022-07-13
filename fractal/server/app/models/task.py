@@ -29,22 +29,33 @@ class TaskCreate(TaskBase):
     pass
 
 
-class AssTaskTask(SQLModel, table=True):  # type: ignore
+class Subtask(SQLModel, table=True):  # type: ignore
     parent_task_id: Optional[int] = Field(
         default=None, foreign_key="task.id", primary_key=True
     )
     subtask_id: Optional[int] = Field(
         default=None, foreign_key="task.id", primary_key=True
     )
+    parent: "Task" = Relationship(
+        sa_relationship_kwargs=dict(
+            primaryjoin="Subtask.parent_task_id==Task.id"
+        )
+    )
+    subtask: "Task" = Relationship(
+        sa_relationship_kwargs=dict(primaryjoin="Subtask.subtask_id==Task.id")
+    )
+    parameters: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
+
+
+class SubtaskRead(SQLModel):
+    subtask: "TaskRead"
 
 
 class Task(TaskBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
-    subtask_list: List["Task"] = Relationship(
-        link_model=AssTaskTask,
+    subtask_list: List["Subtask"] = Relationship(
         sa_relationship_kwargs=dict(
-            primaryjoin="Task.id==AssTaskTask.parent_task_id",
-            secondaryjoin="Task.id==AssTaskTask.subtask_id",
+            primaryjoin="Task.id==Subtask.parent_task_id",
             lazy="selectin",
         ),
     )
@@ -60,4 +71,7 @@ class Task(TaskBase, table=True):  # type: ignore
 
 class TaskRead(TaskBase):
     id: int
-    subtask_list: List["TaskRead"]
+    subtask_list: List[SubtaskRead]
+
+
+SubtaskRead.update_forward_refs()
