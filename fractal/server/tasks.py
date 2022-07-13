@@ -4,5 +4,5 @@ def collect_tasks():
     return (
         task_manifest
         for task_manifest in __FRACTAL_MANIFEST__
-        if task_manifest["resource_type"] == "task"
+        if "task" in task_manifest["resource_type"]
     )

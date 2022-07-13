@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any
 from typing import Dict
 from typing import List
@@ -11,9 +12,19 @@ from sqlmodel import Relationship
 from sqlmodel import SQLModel
 
 
+class ResourceTypeEnum(str, Enum):
+    CORE_WORKFLOW = "core workflow"
+    CORE_TASK = "core task"
+    CORE_STEP = "core step"
+
+    WORKFLOW = "workflow"
+    TASK = "task"
+    STEP = "step"
+
+
 class TaskBase(SQLModel):
     name: str = Field(sa_column_kwargs=dict(unique=True))
-    resource_type: str
+    resource_type: ResourceTypeEnum
     module: Optional[str]
     input_type: str
     output_type: str
