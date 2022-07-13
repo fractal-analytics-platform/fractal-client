@@ -1,6 +1,10 @@
+from typing import Any
+from typing import Dict
 from typing import List
 from typing import Optional
 
+from sqlalchemy import Column
+from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
@@ -8,11 +12,17 @@ from sqlmodel import SQLModel
 
 class TaskBase(SQLModel):
     name: str = Field(sa_column_kwargs=dict(unique=True))
-    module: str
+    resource_type: str
+    module: Optional[str]
     input_type: str
     output_type: str
-    default_parameters: Optional[str]
+    default_parameters: Dict[str, Any] = Field(
+        sa_column=Column(JSON), default={}
+    )
     subtask_list: Optional[List["TaskBase"]] = Field(default=[])
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class TaskCreate(TaskBase):
