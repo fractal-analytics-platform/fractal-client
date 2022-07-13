@@ -147,11 +147,3 @@ async def apply_workflow(
 
     # TODO we should return a job id of some sort
     return dict(status="submitted")
-
-
-@router.post("/prova/")
-async def apply_workflow_prova(
-    background_tasks: BackgroundTasks,
-):
-    background_tasks.add_task(submit_workflow, "msg")
-    return "Ok"
