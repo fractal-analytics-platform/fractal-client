@@ -28,7 +28,11 @@ class TaskCreate(TaskBase):
     pass
 
 
-class Subtask(SQLModel, table=True):  # type: ignore
+class SubtaskBase(SQLModel):
+    pass
+
+
+class Subtask(SubtaskBase, table=True):  # type: ignore
     parent_task_id: Optional[int] = Field(
         default=None, foreign_key="task.id", primary_key=True
     )
@@ -46,8 +50,14 @@ class Subtask(SQLModel, table=True):  # type: ignore
     order: Optional[int]
     args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
 
+    @property
+    def merged_args(self):
+        out = self.subtask.default_args.copy()
+        out.update(self.args)
+        return out
 
-class SubtaskRead(SQLModel):
+
+class SubtaskRead(SubtaskBase):
     subtask: "TaskRead"
 
 

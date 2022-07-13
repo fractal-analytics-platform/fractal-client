@@ -65,16 +65,14 @@ async def test_task_parameter_override(db, task_factory):
     default_args = dict(a=1, b=2)
     override_args = dict(a="overridden")
     t = await task_factory(default_args=default_args)
-    wf = await task_factory(
-        resource_type="workflow", name="wf", subtask_list=[t]
+    parent = await task_factory(
+        resource_type="task", name="parent", subtask_list=[t]
     )
-    wf.subtask_list[0].args = override_args
-    db.add(wf)
+    parent.subtask_list[0].args = override_args
+    db.add(parent)
     await db.commit()
-    await db.refresh(wf)
+    await db.refresh(parent)
 
-    debug(wf)
-
-    # debug(TaskRead.from_orm(wf))
-
-    assert False
+    debug(parent)
+    assert parent.subtask_list[0].merged_args["a"] == override_args["a"]
+    assert parent.subtask_list[0].merged_args["b"] == default_args["b"]
