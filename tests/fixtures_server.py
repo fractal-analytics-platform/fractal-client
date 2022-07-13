@@ -188,6 +188,40 @@ async def project_factory(db):
 
 
 @pytest.fixture
+async def dataset_factory(db):
+    from fractal.server.app.models import Project, Dataset
+
+    async def __dataset_factory(project: Project, **kwargs):
+        defaults = dict(name="test dataset")
+        defaults.update(kwargs)
+        project.dataset_list.append(Dataset(**defaults))
+        db.add(project)
+        await db.commit()
+        await db.refresh(project)
+        return project.dataset_list[-1]
+
+    return __dataset_factory
+
+
+@pytest.fixture
+async def resource_factory(db, testdata_path):
+    from fractal.server.app.models import Dataset, Resource
+
+    async def __resource_factory(dataset: Dataset, **kwargs):
+        defaults = dict(
+            path=(testdata_path / "png").as_posix(), glob_pattern="*.png"
+        )
+        defaults.update(kwargs)
+        dataset.resource_list.append(Resource(**defaults))
+        db.add(dataset)
+        await db.commit()
+        await db.refresh(dataset)
+        return dataset.resource_list[-1]
+
+    return __resource_factory
+
+
+@pytest.fixture
 async def task_factory(db: AsyncSession):
     """
     Insert task in db
