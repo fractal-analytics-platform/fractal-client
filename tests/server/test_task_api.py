@@ -1,8 +1,8 @@
 import pytest
 from devtools import debug
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from fractal.server.app.db import AsyncSession
 from fractal.server.app.models.task import Task
 from fractal.server.tasks import collect_tasks
 
@@ -63,7 +63,8 @@ async def test_collection(db, client, MockCurrentUser):
     """
     GIVEN a running server
     WHEN the `POST task/collect/` endpoint is called
-    THEN the table `Task` is updated accordingly
+    THEN the table `Task` is updated accordingly, collecting the available
+         tasks
     """
     res = await db.execute(select(Task))
     n_tasks = len(res.scalars().all())  # FIXME: run query server side!

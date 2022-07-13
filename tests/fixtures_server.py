@@ -25,7 +25,6 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 
@@ -54,11 +53,8 @@ def patch_settings(testdata_path):
 
 @pytest.fixture(scope="session")
 async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
-    from fractal.server.config import settings
+    from fractal.server.app.db import engine
 
-    engine = create_async_engine(
-        settings.DATABASE_URL, echo=False, future=True
-    )
     yield engine
 
 
