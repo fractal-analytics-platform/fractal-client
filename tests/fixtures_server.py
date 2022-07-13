@@ -185,3 +185,28 @@ async def project_factory(db):
         return project
 
     return __project_factory
+
+
+@pytest.fixture
+async def task_factory():
+    """
+    Insert task in db
+    """
+    from fractal.server.app.models import Task
+
+    async def __task_factory(db: AsyncSession, index: int = 0, children=None):
+        t = Task(
+            name=f"task{index}",
+            resource_type="task",
+            module=f"task{index}",
+            input_type="zarr",
+            output_type="zarr",
+        )
+        if children:
+            t.subtask_list.extend(list(children))
+        db.add(t)
+        await db.commit()
+        await db.refresh(t)
+        return t
+
+    return __task_factory
