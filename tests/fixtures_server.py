@@ -188,13 +188,13 @@ async def project_factory(db):
 
 
 @pytest.fixture
-async def task_factory():
+async def task_factory(db: AsyncSession):
     """
     Insert task in db
     """
     from fractal.server.app.models import Task, Subtask
 
-    async def __task_factory(db: AsyncSession, index: int = 0, **kwargs):
+    async def __task_factory(db: AsyncSession = db, index: int = 0, **kwargs):
         defaults = dict(
             name=f"task{index}",
             resource_type="task",

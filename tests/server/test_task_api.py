@@ -44,8 +44,8 @@ async def test_collection(db, client, MockCurrentUser):
 
 
 async def test_task_get_list(db, client, task_factory, MockCurrentUser):
-    t1 = await task_factory(db, index=1)
-    await task_factory(db, index=2, subtask_list=[t1])
+    t1 = await task_factory(index=1)
+    await task_factory(index=2, subtask_list=[t1])
 
     async with MockCurrentUser(persist=True):
         res = await client.get("api/v1/task/")
