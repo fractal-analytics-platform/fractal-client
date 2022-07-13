@@ -52,3 +52,29 @@ async def test_task_relations(db, task_factory):
     debug(parent)
     assert child0_subtask.order == 1
     assert child1_subtask.order == 0
+
+
+async def test_task_parameter_override(db, task_factory):
+    """
+    GIVEN a parent workflow and a child task
+    WHEN the parent workflow defines overrides for the task's parameters
+    THEN
+        * the information is saved correctly in the database
+        * the merged parameters are readily accessible to the executor
+    """
+    default_args = dict(a=1, b=2)
+    override_args = dict(a="overridden")
+    t = await task_factory(default_args=default_args)
+    wf = await task_factory(
+        resource_type="workflow", name="wf", subtask_list=[t]
+    )
+    wf.subtask_list[0].args = override_args
+    db.add(wf)
+    await db.commit()
+    await db.refresh(wf)
+
+    debug(wf)
+
+    # debug(TaskRead.from_orm(wf))
+
+    assert False

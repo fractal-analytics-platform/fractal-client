@@ -17,9 +17,7 @@ class TaskBase(SQLModel):
     module: Optional[str]
     input_type: str
     output_type: str
-    default_parameters: Dict[str, Any] = Field(
-        sa_column=Column(JSON), default={}
-    )
+    default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
     subtask_list: Optional[List["TaskBase"]] = Field(default=[])
 
     class Config:
@@ -46,7 +44,7 @@ class Subtask(SQLModel, table=True):  # type: ignore
         sa_relationship_kwargs=dict(primaryjoin="Subtask.subtask_id==Task.id")
     )
     order: Optional[int]
-    parameters: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
+    args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
 
 
 class SubtaskRead(SQLModel):
