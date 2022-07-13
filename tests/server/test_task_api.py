@@ -54,4 +54,4 @@ async def test_task_get_list(db, client, task_factory, MockCurrentUser):
         debug(data)
         assert len(data) == 2
         assert data[1]["id"] == 2
-        assert data[1]["subtask_list"][0]["id"] == 1
+        assert data[1]["subtask_list"][0]["subtask"]["id"] == t1.id

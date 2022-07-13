@@ -192,19 +192,25 @@ async def task_factory():
     """
     Insert task in db
     """
-    from fractal.server.app.models import Task
+    from fractal.server.app.models import Task, Subtask
 
-    async def __task_factory(db: AsyncSession, index: int = 0, children=None):
-        t = Task(
+    async def __task_factory(db: AsyncSession, index: int = 0, **kwargs):
+        defaults = dict(
             name=f"task{index}",
             resource_type="task",
             module=f"task{index}",
             input_type="zarr",
             output_type="zarr",
+            subtask_list=[],
         )
-        if children:
-            t.subtask_list.extend(list(children))
+        args = dict(**defaults)
+        args.update(kwargs)
+        subtask_list = args.pop("subtask_list")
+        t = Task(**args)
         db.add(t)
+        for st in subtask_list:
+            this_st = Subtask(parent=t, subtask=st)
+            db.add(this_st)
         await db.commit()
         await db.refresh(t)
         return t
