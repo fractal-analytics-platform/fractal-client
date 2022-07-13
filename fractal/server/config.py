@@ -88,7 +88,15 @@ class Settings(BaseSettings):
 
     @property
     def DB_ECHO(self):
-        return self.DEPLOYMENT_TYPE != DeploymentType.PRODUCTION
+        db_echo = bool(
+            int(
+                getenv(
+                    "DB_ECHO",
+                    self.DEPLOYMENT_TYPE != DeploymentType.PRODUCTION,
+                )
+            )
+        )
+        return db_echo
 
     ###########################################################################
     # FRACTAL SPECIFIC
