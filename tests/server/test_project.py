@@ -1,26 +1,4 @@
-import pytest
 from devtools import debug
-
-
-@pytest.fixture
-async def project_factory(db):
-    from fractal.server.app.models import Project
-
-    async def __project_factory(user, **kwargs):
-        defaults = dict(
-            name="project",
-            project_dir="/tmp/",
-            user_owner_id=user.id,
-            slug="slug",
-        )
-        defaults.update(kwargs)
-        project = Project(**defaults)
-        db.add(project)
-        await db.commit()
-        await db.refresh(project)
-        return project
-
-    return __project_factory
 
 
 PREFIX = "/api/v1/project"

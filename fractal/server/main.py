@@ -10,8 +10,13 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
+from . import __on_startup
 from . import start_application
 
 
 app = start_application()
+
+
+@app.on_event("startup")
+async def on_startup():
+    await __on_startup()
