@@ -55,8 +55,8 @@ class Settings(BaseSettings):
     LDAP_SSL: bool = getenv("LDAP_SSL", "1") == "1"
 
     # OAUTH
-    OAUTH_ADMIN_CLIENT_ID = getenv("OAUTH_ADMIN_CLIENT_ID")
-    OAUTH_ADMIN_CLIENT_SECRET = getenv("OAUTH_ADMIN_CLIENT_SECRET")
+    OAUTH_ADMIN_CLIENT_ID: str = getenv("OAUTH_ADMIN_CLIENT_ID")
+    OAUTH_ADMIN_CLIENT_SECRET: str = getenv("OAUTH_ADMIN_CLIENT_SECRET")
 
     # JWT TOKEN
     JWT_EXPIRE_SECONDS: int = int(getenv("JWT_EXPIRE_SECONDS", default=180))
