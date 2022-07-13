@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import json
 import os
 from glob import glob
@@ -22,7 +21,7 @@ from fractal.tasks.lib_parse_filename_metadata import parse_metadata
 
 
 def create_zarr_structure(
-    in_paths=[],
+    in_paths=None,
     out_path=None,
     ext=None,
     path_dict_channels=None,
@@ -56,6 +55,10 @@ def create_zarr_structure(
             "ERROR in create_zarr_structure: "
             f"{path_dict_channels} has wrong type "
             "(probably a None instead of a string)."
+        )
+    if in_paths is None:
+        raise Exception(
+            "ERROR in create_zarr_structure_multifov: in_paths is None"
         )
 
     # Identify all plates and all channels, across all input folders
