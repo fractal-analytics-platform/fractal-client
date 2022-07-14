@@ -72,6 +72,14 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
         out.update(self.args)
         return out
 
+    @property
+    def import_path(self):
+        return self.subtask.import_path
+
+    @property
+    def callable(self):
+        return self.subtask.callable
+
 
 class SubtaskRead(SubtaskBase):
     subtask: "TaskRead"
