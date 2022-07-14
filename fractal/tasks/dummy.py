@@ -12,15 +12,37 @@ def dummy(
     metadata: Optional[Dict[str, Any]] = None,
     # arguments of this task
     message: str,
+    index: int = 0,
     **task_args,
-):
+) -> Path:
     """
     Dummy task
 
     This task appends to a json file the parameters it was called with, such
     that it is easy  to parse the file in a test settings.
 
-    Incidentally, this task defines the reference implementation of a task.
+    Incidentally, this task defines the reference interface of a task.
+
+    Arguments
+    ---------
+    input_paths (iterable of Path) :
+        The paths to fetch data from
+    output_path (Path) :
+        The output path, pointing either to a file or to a directory in which
+        the task will write its output files.
+    metadata (Dict or None) :
+        Optional metadata about the input the task may need
+
+    any further argument (Any) :
+        the arguments specific to the issue, i.e., `message` and `index` in the
+        present exmaple
+
+    **task_args (Any) :
+        Task should always include a catch-all kwarg
+
+    Retrun
+    ------
+    path to the resource the task wrote into
     """
     from datetime import datetime, timezone
     import json
@@ -35,10 +57,16 @@ def dummy(
         message=message,
     )
 
-    with open(output_path, "r+") as fout:
-        try:
-            data = json.load(fout)
-        except JSONDecodeError:
-            data = []
-        data.append(payload)
-        json.dump(data, fout)
+    filename_out = f"{index}.json"
+    out_fullpath = output_path / filename_out
+
+    try:
+        with open(out_fullpath, "r") as fin:
+            data = json.load(fin)
+    except (JSONDecodeError, FileNotFoundError):
+        data = []
+    data.append(payload)
+    with open(out_fullpath, "w") as fout:
+        json.dump(data, fout, indent=2)
+
+    return out_fullpath
