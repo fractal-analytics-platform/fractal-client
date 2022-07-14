@@ -11,7 +11,9 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import itertools
 import json
+import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -71,10 +73,6 @@ def segment_FOV(
             f" mask dtype: {mask.dtype} (before recast to {label_dtype}),"
             f" max(mask): {np.max(mask)}\n"
         )
-        # out.write(
-        #    f"[{chunk_location}] "
-        #    f" flows shape: {np.array(flows[1]).shape},"
-        #    f" flows dtype: {np.array(flows[1]).dtype}\n")
 
     return mask.astype(label_dtype)
 
@@ -86,7 +84,7 @@ def image_labeling(
     labeling_channel=None,
     chl_list=None,
     num_threads=1,
-    relabeling=False,
+    relabeling=True,
     # More parameters
     anisotropy=None,
     diameter=None,
@@ -190,10 +188,82 @@ def image_labeling(
             f"and chunks {mask.chunks}\n\n"
         )
 
-    # Construct resolution pyramid
-    with dask.config.set(pool=ThreadPoolExecutor(num_threads)):
+    if relabeling:
+
+        # Execute all, and write level-0 mask to disk
+        with dask.config.set(pool=ThreadPoolExecutor(num_threads)):
+            write_pyramid(
+                mask,
+                newzarrurl=f"{zarrurl}labels/{label_name}/",
+                overwrite=False,
+                coarsening_xy=coarsening_xy,
+                num_levels=1,
+                chunk_size_x=2560,
+                chunk_size_y=2160,
+            )
+
+        with open("LOG_image_labeling", "a") as out:
+            out.write("\nStart relabeling\n")
+        t0 = time.perf_counter()
+
+        # Load non-relabeled mask from disk
+        mask = da.from_zarr(zarrurl, component=f"labels/{label_name}/{0}")
+        mask_rechunked = mask.rechunk((nz, img_size_y, img_size_x))
+        newmask_rechunked = da.empty(
+            shape=mask_rechunked.shape,
+            chunks=mask_rechunked.chunks,
+            dtype=label_dtype,
+        )
+
+        # Sequential relabeling
+        # https://stackoverflow.com/a/72018364/19085332
+        num_labels_tot = 0
+        num_labels_column = 0
+        for inds in itertools.product(
+            *map(range, mask_rechunked.blocks.shape)
+        ):
+
+            # Select a specific chunk (=column in 3D, =image in 2D)
+            column_mask = mask_rechunked.blocks[inds].compute()
+            num_labels_column = np.max(column_mask)
+
+            # Apply re-labeling and update total number of labels
+            shift = np.zeros_like(column_mask, dtype=label_dtype)
+            shift[column_mask > 0] = num_labels_tot
+            num_labels_tot += num_labels_column
+
+            with open("LOG_image_labeling", "a") as out:
+                out.write(
+                    f"Chunk {inds}, "
+                    f"num_labels_column={num_labels_column}, "
+                    f"num_labels_tot={num_labels_tot}\n"
+                )
+
+            # Check that total number of labels is under control
+            if num_labels_tot > np.iinfo(label_dtype).max - 1000:
+                raise Exception(
+                    "ERROR in re-labeling:\n"
+                    f"Reached {num_labels_tot} labels, "
+                    f"but dtype={label_dtype}"
+                )
+            # Re-assign the chunk to the new array
+            start_z = inds[0] * nz
+            end_z = (inds[0] + 1) * nz
+            start_y = inds[1] * img_size_y
+            end_y = (inds[1] + 1) * img_size_y
+            start_x = inds[2] * img_size_x
+            end_x = (inds[2] + 1) * img_size_x
+            newmask_rechunked[start_z:end_z, start_y:end_y, start_x:end_x] = (
+                column_mask + shift
+            )
+
+        newmask = newmask_rechunked.rechunk(data_zyx.chunks)
+
+        # FIXME: this is ugly
+        shutil.rmtree(zarrurl + f"labels/{label_name}/{0}")
+
         write_pyramid(
-            mask,
+            newmask,
             newzarrurl=f"{zarrurl}labels/{label_name}/",
             overwrite=False,
             coarsening_xy=coarsening_xy,
@@ -201,6 +271,27 @@ def image_labeling(
             chunk_size_x=2560,
             chunk_size_y=2160,
         )
+
+        t1 = time.perf_counter()
+        with open("LOG_image_labeling", "a") as out:
+            out.write(f"End relabeling, elapsed: {t1-t0} s\n")
+
+    else:
+
+        # Construct resolution pyramid
+        with dask.config.set(pool=ThreadPoolExecutor(num_threads)):
+            write_pyramid(
+                mask,
+                newzarrurl=f"{zarrurl}labels/{label_name}/",
+                overwrite=False,
+                coarsening_xy=coarsening_xy,
+                num_levels=num_levels,
+                chunk_size_x=2560,
+                chunk_size_y=2160,
+            )
+
+        with open("LOG_image_labeling", "a") as out:
+            out.write("\nSkip relabeling\n")
 
 
 if __name__ == "__main__":
