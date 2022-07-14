@@ -36,6 +36,7 @@ class DatasetRead(DatasetBase):
 class ProjectBase(SQLModel):
     name: str
     project_dir: str
+    read_only: bool = False
 
 
 class ResourceBase(SQLModel):
