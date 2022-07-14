@@ -67,6 +67,13 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
     args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
 
     @property
+    def _is_atomic(self):
+        """
+        A subtask is atomic iff the child task is atomic
+        """
+        return self.subtask._is_atomic
+
+    @property
     def _merged_args(self):
         out = self.subtask.default_args.copy()
         out.update(self.args)
@@ -95,6 +102,13 @@ class Task(TaskBase, table=True):  # type: ignore
             collection_class=ordering_list("order"),
         ),
     )
+
+    @property
+    def _is_atomic(self) -> bool:
+        """
+        A task is atomic iff it does not contain subtasks
+        """
+        return bool(self.subtask_list)
 
     @property
     def callable(self):
