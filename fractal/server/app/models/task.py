@@ -67,7 +67,7 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
     args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
 
     @property
-    def merged_args(self):
+    def _merged_args(self):
         out = self.subtask.default_args.copy()
         out.update(self.args)
         return out
