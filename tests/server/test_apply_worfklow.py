@@ -12,8 +12,10 @@ from fractal.server.app.runner import _atomic_task_factory
 from fractal.server.app.runner import submit_workflow
 
 
+N_INDICES = 3
 DUMMY_MESSAGE = "dummy task message"
 DUMMY_SUBTASK_MESSAGE = "dummy subtask message"
+
 
 dummy_task = Task(
     name="dummy",
@@ -24,13 +26,21 @@ dummy_task = Task(
 dummy_subtask = Subtask(
     subtask=dummy_task, args={"message": DUMMY_SUBTASK_MESSAGE}
 )
+dummy_subtask_parallel = Subtask(
+    subtask=dummy_task,
+    args={"message": DUMMY_SUBTASK_MESSAGE, "parallelization_level": "index"},
+)
 
 
 @pytest.mark.parametrize(
-    ("task", "message"),
-    [(dummy_task, DUMMY_MESSAGE), (dummy_subtask, DUMMY_SUBTASK_MESSAGE)],
+    ("task", "message", "nfiles"),
+    [
+        (dummy_task, DUMMY_MESSAGE, 1),
+        (dummy_subtask, DUMMY_SUBTASK_MESSAGE, 1),
+        (dummy_subtask_parallel, DUMMY_SUBTASK_MESSAGE, N_INDICES),
+    ],
 )
-def test_atomic_task_factory(task, message, tmp_path):
+def test_atomic_task_factory(task, message, nfiles, tmp_path):
     """
     GIVEN
         * a task or subtask
@@ -44,23 +54,31 @@ def test_atomic_task_factory(task, message, tmp_path):
     """
     input_path_str = "/input/path"
     output_path = tmp_path
+    metadata = {"index": list(range(N_INDICES))}
 
     parsl_app = _atomic_task_factory(
         task=task,
         input_paths=[Path(input_path_str)],
         output_path=output_path,
-        metadata={},
+        metadata=metadata,
     )
 
     debug(parsl_app)
     res = parsl_app.result()
     debug(res)
     assert res
-    with open(res, "r") as output_file:
-        data = json.load(output_file)
-        debug(data)
-        assert len(data) == 1
-        assert data[0]["message"] == message
+
+    assert sum(1 for item in output_path.glob("*.json")) == nfiles
+
+    if not isinstance(res, list):
+        res = [res]
+
+    for r in res:
+        with open(r, "r") as output_file:
+            data = json.load(output_file)
+            debug(data)
+            assert len(data) == 1
+            assert data[0]["message"] == message
 
 
 def test_process_workflow():
@@ -69,6 +87,7 @@ def test_process_workflow():
         * a workflow with nested tasks
     WHEN
     """
+    pass
 
 
 async def test_apply_workflow(

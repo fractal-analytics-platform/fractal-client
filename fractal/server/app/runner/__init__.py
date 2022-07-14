@@ -68,30 +68,36 @@ def _atomic_task_factory(
         output_path: Path = output_path,
         metadata: Optional[Dict[str, Any]] = metadata,
         task_args: Optional[Dict[str, Any]] = task_args,
+        component: Optional[Dict[str, Any]] = None,
     ):
+        if component is None:
+            component = {}
+
         task_module = importlib.import_module(task.import_path)
         _callable = getattr(task_module, task.callable)
         return _callable(
             input_paths=input_paths,
             output_path=output_path,
             metadata=metadata,
+            **component,
             **task_args,
         )
 
     parall_level = task_args.get("parallelization_level", None)
     if parall_level:
 
-        @parsl.join_app()
-        def _task_parallelization(parall_level):
-            # TODO
-            # Write generator that takes care of generating
-            # parallelization_items
-            #
-            # This is just a placeholder implementation, likely nonsensical
-            parall_item_gen = (par_item for par_item in metadata[parall_level])
-            return map(lambda item: _task_app(component=item), parall_item_gen)
+        @parsl.python_app()
+        def _task_parallelization(inputs: List[PythonApp]):
+            return [x for x in inputs]
 
-        return _task_parallelization()
+        parall_item_gen = (par_item for par_item in metadata[parall_level])
+
+        return _task_parallelization(
+            inputs=[
+                _task_app(component={parall_level: item})
+                for item in parall_item_gen
+            ]
+        )
     else:
         return _task_app()
 
