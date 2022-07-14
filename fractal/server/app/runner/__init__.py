@@ -19,6 +19,21 @@ from ..models.task import Task
 parsl.load(Config())
 
 
+def _process_workflow(task: Union[Task, Subtask]) -> PythonApp:
+    """
+    Unwrap workflow recursively
+    """
+    if not task._is_atomic:
+        return task
+    else:
+
+        @parsl.join_app
+        def _workflow():
+            map(_process_workflow, task.subtask_list)
+
+        return _workflow()
+
+
 def _atomic_task_factory(
     *,
     task: Union[Task, Subtask],
@@ -43,7 +58,11 @@ def _atomic_task_factory(
             f"Got `{type(task)}`"
         )
 
-    @parsl.python_app()
+    # TODO
+    # Pass executor
+    # executor = task_args.get("executor", "cpu")
+    # @parsl.python_app(executors=[executor])
+    @parsl.python_app
     def _task_app(
         input_paths: List[Path] = input_paths,
         output_path: Path = output_path,
@@ -52,7 +71,7 @@ def _atomic_task_factory(
     ):
         task_module = importlib.import_module(task.import_path)
         _callable = getattr(task_module, task.callable)
-        _callable(
+        return _callable(
             input_paths=input_paths,
             output_path=output_path,
             metadata=metadata,
@@ -70,7 +89,7 @@ def _atomic_task_factory(
             #
             # This is just a placeholder implementation, likely nonsensical
             parall_item_gen = (par_item for par_item in metadata[parall_level])
-            map(lambda item: _task_app(component=item), parall_item_gen)
+            return map(lambda item: _task_app(component=item), parall_item_gen)
 
         return _task_parallelization()
     else:

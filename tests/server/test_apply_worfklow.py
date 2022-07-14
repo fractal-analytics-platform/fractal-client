@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
 import pytest
 from devtools import debug
@@ -31,7 +30,7 @@ dummy_subtask = Subtask(
     ("task", "message"),
     [(dummy_task, DUMMY_MESSAGE), (dummy_subtask, DUMMY_SUBTASK_MESSAGE)],
 )
-async def test_atomic_task_factory(task, message):
+def test_atomic_task_factory(task, message, tmp_path):
     """
     GIVEN
         * a task or subtask
@@ -44,22 +43,32 @@ async def test_atomic_task_factory(task, message):
         * the output is as expected
     """
     input_path_str = "/input/path"
-    output_file = NamedTemporaryFile()
+    output_path = tmp_path
 
     parsl_app = _atomic_task_factory(
         task=task,
         input_paths=[Path(input_path_str)],
-        output_path=Path(output_file.name),
+        output_path=output_path,
         metadata={},
     )
 
     debug(parsl_app)
-    parsl_app.result()
+    res = parsl_app.result()
+    debug(res)
+    assert res
+    with open(res, "r") as output_file:
+        data = json.load(output_file)
+        debug(data)
+        assert len(data) == 1
+        assert data[0]["message"] == message
 
-    data = json.load(output_file)
-    debug(data)
-    assert len(data) == 1
-    assert data[0]["message"] == message
+
+def test_process_workflow():
+    """
+    GIVEN
+        * a workflow with nested tasks
+    WHEN
+    """
 
 
 async def test_apply_workflow(
