@@ -23,6 +23,7 @@ bumpver = "^2022.1116"
 Pillow = "^9.1.1"
 pytest-mock = "^3.8.1"
 pre-commit = "^2.19.0"
+coverage = "^6.4.2"
 
 
 [tool.poetry.group.server.dependencies]
