@@ -147,11 +147,10 @@ def image_labeling_whole_well(
                     "coordinateTransformations": [
                         {
                             "type": "scale",
-                            # FIXME: should scale depend on ind_level?
                             "scale": [
                                 1.0,
-                                coarsening_xy**labeling_level,
-                                coarsening_xy**labeling_level,
+                                coarsening_xy ** (labeling_level + ind_level),
+                                coarsening_xy ** (labeling_level + ind_level),
                             ],
                         }
                     ],
