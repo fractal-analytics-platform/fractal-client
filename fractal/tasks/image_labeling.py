@@ -59,7 +59,6 @@ def segment_FOV(
         diameter=diameter,
         anisotropy=anisotropy,
         cellprob_threshold=cellprob_threshold,
-        # batch_size=16,
     )
     if not do_3D:
         mask = np.expand_dims(mask, axis=0)
