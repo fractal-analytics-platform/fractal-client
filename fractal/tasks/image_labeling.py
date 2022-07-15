@@ -20,6 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 import dask
 import dask.array as da
 import numpy as np
+import zarr
 from cellpose import core
 from cellpose import models
 
@@ -85,7 +86,6 @@ def image_labeling(
     chl_list=None,
     num_threads=1,
     relabeling=True,
-    # More parameters
     anisotropy=None,
     diameter=None,
     cellprob_threshold=None,
@@ -188,6 +188,26 @@ def image_labeling(
             f"and chunks {mask.chunks}\n\n"
         )
 
+    # Write zattrs for labels and for specific label
+    # FIXME deal with: (1) many channels, (2) overwriting
+    labels_group = zarr.group(f"{zarrurl}labels")
+    labels_group.attrs["labels"] = [label_name]
+    label_group = labels_group.create_group(label_name)
+    label_group.attrs["image-label"] = {"version": "0.4"}
+    label_group.attrs["multiscales"] = [
+        {
+            "name": label_name,
+            "version": "0.4",
+            "axes": [
+                {"name": axis_name, "type": "space"}
+                for axis_name in ["z", "y", "x"]
+            ],
+            "datasets": [
+                {"path": f"{ind_level}"} for ind_level in range(num_levels)
+            ],
+        }
+    ]
+
     if relabeling:
 
         # Execute all, and write level-0 mask to disk
@@ -240,7 +260,7 @@ def image_labeling(
                 )
 
             # Check that total number of labels is under control
-            if num_labels_tot > np.iinfo(label_dtype).max - 1000:
+            if num_labels_tot > np.iinfo(label_dtype).max:
                 raise Exception(
                     "ERROR in re-labeling:\n"
                     f"Reached {num_labels_tot} labels, "
