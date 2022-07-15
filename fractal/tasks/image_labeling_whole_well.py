@@ -26,7 +26,7 @@ from fractal.tasks.lib_pyramid_creation import write_pyramid
 def image_labeling_whole_well(
     zarrurl,
     coarsening_xy=2,
-    labeling_level=1,
+    labeling_level=2,
     labeling_channel=None,
     chl_list=None,
     relabeling=True,
@@ -104,7 +104,7 @@ def image_labeling_whole_well(
         do_3D=False,
         net_avg=False,
         augment=False,
-        diameter=40.0,
+        diameter=(40.0 / coarsening_xy**labeling_level),
         cellprob_threshold=0.0,
     )
     mask = np.expand_dims(mask, axis=0)
