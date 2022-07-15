@@ -149,8 +149,12 @@ def image_labeling_whole_well(
                             "type": "scale",
                             "scale": [
                                 1.0,
-                                coarsening_xy ** (labeling_level + ind_level),
-                                coarsening_xy ** (labeling_level + ind_level),
+                                1.0
+                                * coarsening_xy
+                                ** (labeling_level + ind_level),
+                                1.0
+                                * coarsening_xy
+                                ** (labeling_level + ind_level),
                             ],
                         }
                     ],
