@@ -121,8 +121,17 @@ def image_labeling_whole_well(
         )
 
     # Explicit on-disk upscaling
+    # (https://stackoverflow.com/questions/7525214/how-to-scale-a-numpy-array)
+    # FIXME: what about memory usage?
     upscaled_mask = np.kron(
-        mask, np.ones((1, coarsening_xy, coarsening_xy))
+        mask,
+        np.ones(
+            (
+                1,
+                coarsening_xy**labeling_level,
+                coarsening_xy**labeling_level,
+            )
+        ),
     ).astype(mask.dtype)
     with open("LOG_image_labeling_whole_well", "a") as out:
         out.write(
