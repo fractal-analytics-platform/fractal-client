@@ -120,26 +120,8 @@ def image_labeling_whole_well(
             f" max(mask): {np.max(mask)}\n\n"
         )
 
-    # Explicit on-disk upscaling
-    # (https://stackoverflow.com/questions/7525214/how-to-scale-a-numpy-array)
-    # FIXME: what about memory usage?
-    upscaled_mask = np.kron(
-        mask,
-        np.ones(
-            (
-                1,
-                coarsening_xy**labeling_level,
-                coarsening_xy**labeling_level,
-            )
-        ),
-    ).astype(mask.dtype)
-    with open("LOG_image_labeling_whole_well", "a") as out:
-        out.write(
-            f"upscaled mask from {mask.shape} to {upscaled_mask.shape}\n\n"
-        )
-
     # Convert mask to dask
-    mask_da = da.from_array(upscaled_mask).rechunk((1, 2160, 2560))
+    mask_da = da.from_array(mask).rechunk((1, 2160, 2560))
     with open("LOG_image_labeling_whole_well", "a") as out:
         out.write(
             f"da.from_array(upscaled_mask) [with rechunking]: {mask_da}\n\n"
@@ -160,7 +142,21 @@ def image_labeling_whole_well(
                 for axis_name in ["z", "y", "x"]
             ],
             "datasets": [
-                {"path": f"{ind_level}"} for ind_level in range(num_levels)
+                {
+                    "path": f"{ind_level}",
+                    "coordinateTransformations": [
+                        {
+                            "type": "scale",
+                            # FIXME: should scale depend on ind_level?
+                            "scale": [
+                                1.0,
+                                coarsening_xy**labeling_level,
+                                coarsening_xy**labeling_level,
+                            ],
+                        }
+                    ],
+                }
+                for ind_level in range(num_levels)
             ],
         }
     ]
