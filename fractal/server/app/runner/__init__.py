@@ -16,6 +16,11 @@ from ..models.task import Subtask
 from ..models.task import Task
 
 
+@parsl.python_app
+def _collect_results(inputs: List[PythonApp]):
+    return [x for x in inputs]
+
+
 parsl.load(Config())
 
 
@@ -84,15 +89,9 @@ def _atomic_task_factory(
         )
 
     parall_level = task_args.get("parallelization_level", None)
-    if parall_level:
-
-        @parsl.python_app()
-        def _task_parallelization(inputs: List[PythonApp]):
-            return [x for x in inputs]
-
+    if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
-
-        return _task_parallelization(
+        return _collect_results(
             inputs=[
                 _task_app(component={parall_level: item})
                 for item in parall_item_gen
