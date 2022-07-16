@@ -4,6 +4,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from pydantic import BaseModel
 from sqlalchemy import Column
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -11,6 +12,21 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
+
+
+def flatten(xx):
+    for x in xx:
+        if isinstance(x, PreprocessedTask):
+            yield x
+        else:
+            yield from x
+
+
+class PreprocessedTask(BaseModel):
+    name: str
+    module: str
+    args: Dict[str, Any]
+    save_intermediate_result: bool = False
 
 
 class ResourceTypeEnum(str, Enum):
@@ -74,7 +90,7 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
         return self.subtask._is_atomic
 
     @property
-    def _merged_args(self):
+    def _arguments(self):
         out = self.subtask.default_args.copy()
         out.update(self.args)
         return out
@@ -86,6 +102,16 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
     @property
     def callable(self):
         return self.subtask.callable
+
+    def preprocess(self):
+        if self._is_atomic:
+            return PreprocessedTask(
+                name=self.subtask.name,
+                module=self.subtask.module,
+                args=self._arguments,
+            )
+        else:
+            return [st.preprocess() for st in self.subtask.subtask_list]
 
 
 class SubtaskRead(SubtaskBase):
@@ -103,12 +129,28 @@ class Task(TaskBase, table=True):  # type: ignore
         ),
     )
 
+    def preprocess(self):
+        if not self._is_atomic:
+            return flatten(st.preprocess() for st in self.subtask_list)
+        else:
+            raise ValueError("Trying to preprocess an atomic Task")
+
+    @property
+    def _arguments(self):
+        if not self._is_atomic:
+            raise ValueError("Cannot call _arguments on a non-atomic task")
+        return self.default_args
+
+    @property
+    def module(self):
+        return self.subtask.module
+
     @property
     def _is_atomic(self) -> bool:
         """
         A task is atomic iff it does not contain subtasks
         """
-        return bool(self.subtask_list)
+        return not self.subtask_list
 
     @property
     def callable(self):
