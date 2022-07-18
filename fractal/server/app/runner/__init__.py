@@ -56,7 +56,7 @@ def _atomic_task_factory(
     if isinstance(task, Task):
         task_args = task.default_args
     elif isinstance(task, Subtask):
-        task_args = task._merged_args
+        task_args = task._arguments
     else:
         raise ValueError(
             "Argument `task` must be of type `Task` or `Subtask`. "
@@ -139,12 +139,13 @@ async def submit_workflow(
         )
 
     input_path = [r.glob_path for r in input_dataset.resource_list]
+
     output_path = None
     metadata = input_dataset.metadata
 
     if "workflow" in workflow.resource_type:
         for subtask in workflow.subtask_list:
-            kwargs = subtask._merged_args
+            kwargs = subtask._arguments
 
             @parsl.python_app()
             def workflow_app(

@@ -91,5 +91,5 @@ async def test_task_parameter_override(db, task_factory):
     await db.refresh(parent)
 
     debug(parent)
-    assert parent.subtask_list[0]._merged_args["a"] == override_args["a"]
-    assert parent.subtask_list[0]._merged_args["b"] == default_args["b"]
+    assert parent.subtask_list[0]._arguments["a"] == override_args["a"]
+    assert parent.subtask_list[0]._arguments["b"] == default_args["b"]
