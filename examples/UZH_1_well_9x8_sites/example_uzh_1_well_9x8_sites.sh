@@ -1,16 +1,19 @@
 #!/bin/bash
 
-# 1 well, 2x2 sites
-PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_testSubset
-WFPARAMS=wf_params_uzh_1_well_2x2_sites.json
+# 1 well, 9x8 sites
+PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_9x8_singleWell
+WFPARAMS=wf_params_uzh_1_well_9x8_sites.json
 
 MWE_DIR=/data/active/fractal/tests
-PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_2x2_sites_singlefov
+PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_9x8_sites_singlefov
 
-CMD='poetry run python ../fractal/fractal_cmd.py'
+CMD='poetry run python ../../fractal/fractal_cmd.py'
 
 #echo 'Re-install poetry'
 #poetry install
+
+date
+echo
 
 echo 'Clean up'
 rm -rf $PATH_OUTPUT
@@ -55,8 +58,15 @@ echo 'Add image_labeling'
 $CMD task add image_labeling zarr zarr well
 echo
 
+echo 'Add image_labeling_whole_well'
+$CMD task add image_labeling_whole_well zarr zarr well
+echo
+
 echo 'Add maximum_intensity_projection'
 $CMD task add maximum_intensity_projection zarr zarr well
+echo
+
+echo
 $CMD task list
 echo
 
@@ -86,6 +96,10 @@ echo 'Add maximum_intensity_projection'
 $CMD workflow add-task mwe-test wftest maximum_intensity_projection
 echo
 
+echo 'Add image_labeling_whole_well'
+$CMD workflow add-task mwe-test wftest image_labeling_whole_well
+echo
+
 echo 'Final list:'
 $CMD workflow list mwe-test
 echo
@@ -93,3 +107,6 @@ echo
 echo 'Execute workflow'
 $CMD workflow apply mwe-test wftest dstest dstest $PATH_INPUT $PATH_OUTPUT $WFPARAMS
 echo
+
+echo
+date

@@ -458,7 +458,6 @@ def workflow_apply(
     path_dict_channels = params["channel_file"]
     path_dict_corr = params["path_dict_corr"]
     delete_input = params.get("delete_input", False)
-    labeling_channel = params.get("labeling_channel", "A01_C01")
 
     # FIXME validate tasks somewhere?
 
@@ -501,7 +500,6 @@ def workflow_apply(
     config = Config(
         executors=[htex, htex_gpu],
         monitoring=monitoring,
-        strategy="htex_auto_scale",
     )
     # config = Config(executors=[htex])
     parsl.clear()
@@ -602,12 +600,9 @@ def workflow_apply(
                 overwrite=True,
                 # background=background,
             )
-        elif task == "image_labeling":
-            kwargs = dict(
-                chl_list=chl_list,
-                coarsening_xy=coarsening_xy,
-                labeling_channel=labeling_channel,
-            )
+        elif task == "image_labeling" or task == "image_labeling_whole_well":
+            kwargs = params[task]
+            kwargs["chl_list"] = chl_list
             executor = "gpu"
 
         @python_app(executors=[executor])

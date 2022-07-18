@@ -31,8 +31,8 @@ def image_labeling_whole_well(
     chl_list=None,
     relabeling=True,
     anisotropy=None,
-    diameter=None,
-    cellprob_threshold=None,
+    diameter_level0=35.0,
+    cellprob_threshold=0.0,
 ):
 
     """
@@ -42,6 +42,15 @@ def image_labeling_whole_well(
     # Sanitize zarr path
     if not zarrurl.endswith("/"):
         zarrurl += "/"
+
+    # Find well ID
+    # FIXME: only useful for our temporary log files
+    well_ID = "_".join(zarrurl.split("/")[-4:-2])
+    logfile = f"LOG_image_labeling_{well_ID}_whole_well"
+
+    # Work on MIP zarr file
+    # FIXME: this is a temporary hack
+    zarrurl = zarrurl.replace(".zarr/", "_mip.zarr/")
 
     # Find channel index
     if labeling_channel not in chl_list:
@@ -84,14 +93,14 @@ def image_labeling_whole_well(
     model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
 
     # Initialize other things
-    with open("LOG_image_labeling_whole_well", "w") as out:
+    with open(logfile, "w") as out:
         out.write(f"Start image_labeling_whole_well task for {zarrurl}\n")
         out.write("Total well shape/chunks:\n")
         out.write(f"{data_zyx.shape}\n")
         out.write(f"{data_zyx.chunks}\n\n")
 
     # Write some debugging info
-    with open("LOG_image_labeling_whole_well", "a") as out:
+    with open(logfile, "a") as out:
         out.write(
             f"START Cellpose |" f" well: {type(data_zyx)}, {data_zyx.shape} \n"
         )
@@ -104,14 +113,14 @@ def image_labeling_whole_well(
         do_3D=False,
         net_avg=False,
         augment=False,
-        diameter=(40.0 / coarsening_xy**labeling_level),
-        cellprob_threshold=0.0,
+        diameter=(diameter_level0 / coarsening_xy**labeling_level),
+        cellprob_threshold=cellprob_threshold,
     )
     mask = np.expand_dims(mask, axis=0)
     t1 = time.perf_counter()
 
     # Write some debugging info
-    with open("LOG_image_labeling_whole_well", "a") as out:
+    with open(logfile, "a") as out:
         out.write(
             f"END   Cellpose |"
             f" Elapsed: {t1-t0:.4f} seconds |"
@@ -122,7 +131,7 @@ def image_labeling_whole_well(
 
     # Convert mask to dask
     mask_da = da.from_array(mask).rechunk((1, 2160, 2560))
-    with open("LOG_image_labeling_whole_well", "a") as out:
+    with open(logfile, "a") as out:
         out.write(
             f"da.from_array(upscaled_mask) [with rechunking]: {mask_da}\n\n"
         )

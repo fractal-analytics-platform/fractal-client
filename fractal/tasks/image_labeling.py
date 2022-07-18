@@ -36,12 +36,13 @@ def segment_FOV(
     diameter=40.0,
     cellprob_threshold=0.0,
     label_dtype=None,
+    logfile="LOG_image_labeling",
 ):
 
     chunk_location = block_info[None]["chunk-location"]
 
     # Write some debugging info
-    with open("LOG_image_labeling", "a") as out:
+    with open(logfile, "a") as out:
         out.write(
             f"[{chunk_location}] START Cellpose |"
             f" column: {type(column)}, {column.shape} |"
@@ -65,7 +66,7 @@ def segment_FOV(
     t1 = time.perf_counter()
 
     # Write some debugging info
-    with open("LOG_image_labeling", "a") as out:
+    with open(logfile, "a") as out:
         out.write(
             f"[{chunk_location}] END   Cellpose |"
             f" Elapsed: {t1-t0:.4f} seconds |"
@@ -97,6 +98,11 @@ def image_labeling(
     # Sanitize zarr path
     if not zarrurl.endswith("/"):
         zarrurl += "/"
+
+    # Find well ID
+    # FIXME: only useful for our temporary log files
+    well_ID = "_".join(zarrurl.split("/")[-4:-2])
+    logfile = f"LOG_image_labeling_{well_ID}"
 
     # Find channel index
     if labeling_channel not in chl_list:
@@ -160,9 +166,10 @@ def image_labeling(
     model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
 
     # Initialize other things
-    with open("LOG_image_labeling", "w") as out:
+    with open(logfile, "w") as out:
         out.write(f"Start image_labeling task for {zarrurl}\n")
         out.write(f"relabeling: {relabeling}\n")
+        out.write(f"num_threads: {num_threads}\n")
         out.write("Total well shape/chunks:\n")
         out.write(f"{data_zyx.shape}\n")
         out.write(f"{data_zyx.chunks}\n\n")
@@ -177,11 +184,14 @@ def image_labeling(
             do_3D=do_3D,
             anisotropy=anisotropy,
             label_dtype=label_dtype,
+            diameter=diameter,
+            cellprob_threshold=cellprob_threshold,
+            logfile=logfile,
         )
         .rechunk((1, img_size_y, img_size_x))
     )
 
-    with open("LOG_image_labeling", "a") as out:
+    with open(logfile, "a") as out:
         out.write(
             f"After map_block, mask will have shape {mask.shape} "
             f"and chunks {mask.chunks}\n\n"
@@ -221,7 +231,7 @@ def image_labeling(
                 chunk_size_y=2160,
             )
 
-        with open("LOG_image_labeling", "a") as out:
+        with open(logfile, "a") as out:
             out.write("\nStart relabeling\n")
         t0 = time.perf_counter()
 
@@ -251,7 +261,7 @@ def image_labeling(
             shift[column_mask > 0] = num_labels_tot
             num_labels_tot += num_labels_column
 
-            with open("LOG_image_labeling", "a") as out:
+            with open(logfile, "a") as out:
                 out.write(
                     f"Chunk {inds}, "
                     f"num_labels_column={num_labels_column}, "
@@ -292,7 +302,7 @@ def image_labeling(
         )
 
         t1 = time.perf_counter()
-        with open("LOG_image_labeling", "a") as out:
+        with open(logfile, "a") as out:
             out.write(f"End relabeling, elapsed: {t1-t0} s\n")
 
     else:
@@ -309,7 +319,7 @@ def image_labeling(
                 chunk_size_y=2160,
             )
 
-        with open("LOG_image_labeling", "a") as out:
+        with open(logfile, "a") as out:
             out.write("\nSkip relabeling\n")
 
 
