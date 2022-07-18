@@ -9,7 +9,53 @@ from fractal.server.app.models import Subtask
 from fractal.server.app.models import Task
 from fractal.server.app.models import TaskRead
 from fractal.server.app.runner import _atomic_task_factory
+from fractal.server.app.runner import _process_workflow
 from fractal.server.app.runner import submit_workflow
+
+
+LEN_NONTRIVIAL_WORKFLOW = 3
+
+
+@pytest.fixture
+def nontrivial_workflow():
+    workflow = Task(
+        name="outer workflow",
+        resource_type="workflow",
+        subtask_list=[
+            Subtask(
+                subtask=Task(
+                    name="inner workflow",
+                    resource_type="workflow",
+                    subtask_list=[
+                        Subtask(
+                            args={"message": "dummy0"},
+                            subtask=Task(
+                                name="dummy0",
+                                module="fractal.tasks.dummy:dummy",
+                                default_args=dict(message="dummy0"),
+                            ),
+                        ),
+                        Subtask(
+                            args={"message": "dummy1"},
+                            subtask=Task(
+                                name="dummy1",
+                                module="fractal.tasks.dummy:dummy",
+                                default_args=dict(message="dummy1"),
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+            Subtask(
+                subtask=Task(
+                    name="dummy2",
+                    module="fractal.tasks.dummy:dummy",
+                    default_args=dict(message="dummy2"),
+                )
+            ),
+        ],
+    )
+    return workflow
 
 
 N_INDICES = 3
@@ -81,13 +127,50 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path):
             assert data[0]["message"] == message
 
 
-def test_process_workflow():
+def test_preprocess_workflow(nontrivial_workflow):
     """
-    GIVEN
-        * a workflow with nested tasks
-    WHEN
+    GIVEN a workflow with nested tasks
+    WHEN the workflow is preprocessed
+    THEN
+        * the workflow is correctly unwrapped into a list
+        * the order of the tasks is correctly preserved
     """
-    pass
+    workflow = nontrivial_workflow
+
+    debug(workflow.preprocess())
+    preprocessed_workflow = workflow.preprocess()
+    for i, preprocessed_task in enumerate(preprocessed_workflow):
+        assert str(i) in preprocessed_task.name
+
+    assert i + 1 == LEN_NONTRIVIAL_WORKFLOW
+
+
+def test_process_workflow(tmp_path, nontrivial_workflow):
+    """
+    GIVEN a nontrivial workflow
+    WHEN the workflow is processed
+    THEN
+        * a single PARSL python_app which will execute the workflow is produced
+        * it is executable
+        * the output is the one expected from the workflow
+    """
+    app = _process_workflow(
+        task=nontrivial_workflow,
+        input_paths=[tmp_path / "0.json"],
+        output_path=tmp_path / "0.json",
+    )
+    debug(app)
+    app.result()
+
+    print(list(tmp_path.glob("*.json")))
+    for f in tmp_path.glob("*.json"):
+        with open(f, "r") as output_file:
+            data = json.load(output_file)
+            debug(data)
+    assert len(data) == LEN_NONTRIVIAL_WORKFLOW
+    assert data[0]["message"] == "dummy0"
+    assert data[1]["message"] == "dummy1"
+    assert data[2]["message"] == "dummy2"
 
 
 async def test_apply_workflow(
