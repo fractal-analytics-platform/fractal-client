@@ -48,7 +48,7 @@ def create_zarr_structure(
             dict_channels = json.load(json_file)
     except FileNotFoundError:
         raise Exception(
-            "ERROR in create_zarr_structure: " f"{path_dict_channels} missing."
+            f"ERROR in create_zarr_structure: {path_dict_channels} missing."
         )
     except TypeError:
         raise Exception(
