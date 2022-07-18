@@ -174,6 +174,7 @@ def image_labeling(
     with open(logfile, "w") as out:
         out.write(f"Start image_labeling task for {zarrurl}\n")
         out.write(f"relabeling: {relabeling}\n")
+        out.write(f"model_type: {model_type}\n")
         out.write(f"num_threads: {num_threads}\n")
         out.write("Total well shape/chunks:\n")
         out.write(f"{data_zyx.shape}\n")

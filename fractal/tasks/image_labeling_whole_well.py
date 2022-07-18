@@ -100,6 +100,7 @@ def image_labeling_whole_well(
     # Initialize other things
     with open(logfile, "w") as out:
         out.write(f"Start image_labeling_whole_well task for {zarrurl}\n")
+        out.write(f"model_type: {model_type}\n")
         out.write("Total well shape/chunks:\n")
         out.write(f"{data_zyx.shape}\n")
         out.write(f"{data_zyx.chunks}\n\n")
