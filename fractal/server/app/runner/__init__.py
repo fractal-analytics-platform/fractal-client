@@ -9,9 +9,11 @@ from typing import Union
 import parsl
 from parsl.app.python import PythonApp
 from parsl.config import Config
+from parsl.dataflow.futures import AppFuture
 
 from ..models.project import Dataset
 from ..models.project import Resource
+from ..models.task import PreprocessedTask
 from ..models.task import Subtask
 from ..models.task import Task
 
@@ -24,27 +26,54 @@ def _collect_results(inputs: List[PythonApp]):
 parsl.load(Config())
 
 
-def _process_workflow(task: Union[Task, Subtask]) -> PythonApp:
+def _process_workflow(
+    task: Union[Task, Subtask],
+    input_paths: List[Path],
+    output_path: Path,
+    intermediate_path: Optional[Path] = None,
+) -> PythonApp:
     """
     Unwrap workflow recursively
+
+    Arguments
+    ---------
+    output_path (Path):
+        directory or file where the final output, i.e., the output of the last
+        task, will be written
+    TBD
+
+    Return
+    ------
+    TBD
     """
-    if not task._is_atomic:
-        return task
-    else:
+    preprocessed = task.preprocess()
 
-        @parsl.join_app
-        def _workflow():
-            map(_process_workflow, task.subtask_list)
+    this_input = input_paths
+    this_output = output_path
 
-        return _workflow()
+    apps = []
+
+    for i, task in enumerate(preprocessed):
+        this_task_app = _atomic_task_factory(
+            task=task,
+            input_paths=this_input,
+            output_path=this_output,
+            depends_on=[apps[i - 1] if i > 0 else None],
+        )
+        apps.append(this_task_app)
+        this_input = [this_output]
+
+    # Got to make sure that it is executed serially, task by task
+    return apps[-1]
 
 
 def _atomic_task_factory(
     *,
-    task: Union[Task, Subtask],
+    task: Union[Task, Subtask, PreprocessedTask],
     input_paths: List[Path],
     output_path: Path,
-    metadata: Optional[Dict[str, Any]],
+    metadata: Optional[Dict[str, Any]] = None,
+    depends_on: Optional[List[AppFuture]] = None,
 ) -> PythonApp:
     """
     Single task processing
@@ -52,28 +81,25 @@ def _atomic_task_factory(
     Create a single PARSL app that encapsulates the task at hand and
     its parallelizazion.
     """
+    if depends_on is None:
+        depends_on = []
 
-    if isinstance(task, Task):
-        task_args = task.default_args
-    elif isinstance(task, Subtask):
-        task_args = task._arguments
-    else:
-        raise ValueError(
-            "Argument `task` must be of type `Task` or `Subtask`. "
-            f"Got `{type(task)}`"
-        )
+    task_args = task._arguments
 
     # TODO
     # Pass executor
     # executor = task_args.get("executor", "cpu")
     # @parsl.python_app(executors=[executor])
+
     @parsl.python_app
     def _task_app(
+        *,
         input_paths: List[Path] = input_paths,
         output_path: Path = output_path,
         metadata: Optional[Dict[str, Any]] = metadata,
         task_args: Optional[Dict[str, Any]] = task_args,
         component: Optional[Dict[str, Any]] = None,
+        inputs=None,
     ):
         if component is None:
             component = {}
@@ -98,7 +124,7 @@ def _atomic_task_factory(
             ]
         )
     else:
-        return _task_app()
+        return _task_app(inputs=depends_on)
 
 
 async def submit_workflow(

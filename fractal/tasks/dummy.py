@@ -57,8 +57,11 @@ def dummy(
         message=message,
     )
 
-    filename_out = f"{index}.json"
-    out_fullpath = output_path / filename_out
+    if not output_path.as_posix().endswith(".json"):
+        filename_out = f"{index}.json"
+        out_fullpath = output_path / filename_out
+    else:
+        out_fullpath = output_path
 
     try:
         with open(out_fullpath, "r") as fin:
