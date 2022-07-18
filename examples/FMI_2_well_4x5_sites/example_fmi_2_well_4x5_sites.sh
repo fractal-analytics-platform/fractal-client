@@ -84,9 +84,9 @@ echo 'Add illumination_correction'
 $CMD workflow add-task mwe-test wftest illumination_correction
 echo
 
-echo 'Add image_labeling'
-$CMD workflow add-task mwe-test wftest image_labeling
-echo
+#echo 'Add image_labeling'
+#$CMD workflow add-task mwe-test wftest image_labeling
+#echo
 
 echo 'Add replicate_zarr_structure_mip'
 $CMD workflow add-task mwe-test wftest replicate_zarr_structure_mip
