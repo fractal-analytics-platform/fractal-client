@@ -89,6 +89,7 @@ def image_labeling(
     anisotropy=None,
     diameter=None,
     cellprob_threshold=None,
+    model_type="nuclei",
 ):
 
     """
@@ -128,6 +129,10 @@ def image_labeling(
             # Reasonable value for level 0 (for some of our UZH datasets)
             anisotropy = 1.0 / 0.1625
 
+    # Check model_type
+    if model_type not in ["nuclei", "cyto2", "cyto"]:
+        raise Exception(f"ERROR model_type={model_type} is not allowed.")
+
     # Load .zattrs file
     zattrs_file = f"{zarrurl}.zattrs"
     with open(zattrs_file, "r") as jsonfile:
@@ -163,7 +168,7 @@ def image_labeling(
 
     # Initialize cellpose
     use_gpu = core.use_gpu()
-    model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
+    model = models.Cellpose(gpu=use_gpu, model_type=model_type)
 
     # Initialize other things
     with open(logfile, "w") as out:

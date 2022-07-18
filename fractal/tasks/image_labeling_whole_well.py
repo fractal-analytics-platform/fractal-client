@@ -33,6 +33,7 @@ def image_labeling_whole_well(
     anisotropy=None,
     diameter_level0=35.0,
     cellprob_threshold=0.0,
+    model_type="nuclei",
 ):
 
     """
@@ -47,6 +48,10 @@ def image_labeling_whole_well(
     # FIXME: only useful for our temporary log files
     well_ID = "_".join(zarrurl.split("/")[-4:-2])
     logfile = f"LOG_image_labeling_{well_ID}_whole_well"
+
+    # Check model_type
+    if model_type not in ["nuclei", "cyto2", "cyto"]:
+        raise Exception(f"ERROR model_type={model_type} is not allowed.")
 
     # Work on MIP zarr file
     # FIXME: this is a temporary hack
@@ -90,7 +95,7 @@ def image_labeling_whole_well(
 
     # Initialize cellpose
     use_gpu = core.use_gpu()
-    model = models.Cellpose(gpu=use_gpu, model_type="nuclei")
+    model = models.Cellpose(gpu=use_gpu, model_type=model_type)
 
     # Initialize other things
     with open(logfile, "w") as out:
