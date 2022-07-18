@@ -28,6 +28,18 @@ class PreprocessedTask(BaseModel):
     args: Dict[str, Any]
     save_intermediate_result: bool = False
 
+    @property
+    def _arguments(self):
+        return self.args
+
+    @property
+    def callable(self):
+        return self.module.partition(":")[2]
+
+    @property
+    def import_path(self):
+        return self.module.partition(":")[0]
+
 
 class ResourceTypeEnum(str, Enum):
     CORE_WORKFLOW = "core workflow"
