@@ -1,9 +1,0 @@
-{
-"workflow_name": "fmi_2_well_4x5_sites",
-"dims": [4, 5],
-"coarsening_xy": 3,
-"coarsening_z": 1,
-"num_levels": 5,
-"channel_file": "wf_params_fmi_2_well_4x5_sites_channels.json",
-"path_dict_corr": "wf_params_fmi_2_well_4x5_sites_illumination.json"
-}
