@@ -6,6 +6,6 @@
 "num_levels": 5,
 "channel_file": "../wf_params_uzh_cardiac_channels.json",
 "path_dict_corr": "../wf_params_uzh_cardiac_illumination.json",
-"image_labeling": {"coarsening_xy": 2, "labeling_level": 0, "labeling_channel": "A01_C01", "num_threads": 2, "relabeling": 1, "anisotropy": 6.1538, "diameter": 35.0, "cellprob_threshold": 0.0},
+"image_labeling": {"coarsening_xy": 2, "labeling_level": 0, "labeling_channel": "A01_C01", "num_threads": 1, "relabeling": 1, "anisotropy": 6.1538, "diameter": 35.0, "cellprob_threshold": 0.0},
 "image_labeling_whole_well": {"coarsening_xy": 2, "labeling_level": 2, "labeling_channel": "A01_C01", "diameter_level0": 35.0, "cellprob_threshold": 0.0}
 }
