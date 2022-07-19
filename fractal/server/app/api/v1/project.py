@@ -18,6 +18,7 @@ from ...models.project import ResourceCreate
 from ...models.project import ResourceRead
 from ...models.task import Task
 from ...runner import submit_workflow
+from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
 
@@ -141,8 +142,19 @@ async def apply_workflow(
     # TODO check that user is allowed to use this task
     workflow = await db.get(Task, workflow_id)
 
+    try:
+        validate_workflow_compatibility(
+            workflow=workflow, input_dataset=dataset, output_dataset=None
+        )
+    except TypeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
+        )
+
     background_tasks.add_task(
-        submit_workflow, dataset=dataset, workflow=workflow
+        submit_workflow,
+        input_dataset=dataset,
+        workflow=workflow,
     )
 
     # TODO we should return a job id of some sort

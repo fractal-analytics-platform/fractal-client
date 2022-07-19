@@ -26,47 +26,6 @@ def _collect_results(inputs: List[PythonApp]):
 parsl.load(Config())
 
 
-def _process_workflow(
-    task: Union[Task, Subtask],
-    input_paths: List[Path],
-    output_path: Path,
-    intermediate_path: Optional[Path] = None,
-) -> PythonApp:
-    """
-    Unwrap workflow recursively
-
-    Arguments
-    ---------
-    output_path (Path):
-        directory or file where the final output, i.e., the output of the last
-        task, will be written
-    TBD
-
-    Return
-    ------
-    TBD
-    """
-    preprocessed = task.preprocess()
-
-    this_input = input_paths
-    this_output = output_path
-
-    apps = []
-
-    for i, task in enumerate(preprocessed):
-        this_task_app = _atomic_task_factory(
-            task=task,
-            input_paths=this_input,
-            output_path=this_output,
-            depends_on=[apps[i - 1] if i > 0 else None],
-        )
-        apps.append(this_task_app)
-        this_input = [this_output]
-
-    # Got to make sure that it is executed serially, task by task
-    return apps[-1]
-
-
 def _atomic_task_factory(
     *,
     task: Union[Task, Subtask, PreprocessedTask],
@@ -127,12 +86,81 @@ def _atomic_task_factory(
         return _task_app(inputs=depends_on)
 
 
+def _process_workflow(
+    task: Union[Task, Subtask],
+    input_paths: List[Path],
+    output_path: Path,
+) -> PythonApp:
+    """
+    Creates the PARSL app that will execute the full workflow, taking care of
+    dependencies
+
+    Arguments
+    ---------
+    output_path (Path):
+        directory or file where the final output, i.e., the output of the last
+        task, will be written
+    TBD
+
+    Return
+    ------
+    TBD
+    """
+    preprocessed = task.preprocess()
+
+    this_input = input_paths
+    this_output = output_path
+
+    apps: List[PythonApp] = []
+
+    for i, task in enumerate(preprocessed):
+        this_task_app = _atomic_task_factory(
+            task=task,
+            input_paths=this_input,
+            output_path=this_output,
+            depends_on=[apps[i - 1] if i > 0 else None],
+        )
+        apps.append(this_task_app)
+        this_input = [this_output]
+
+    # Got to make sure that it is executed serially, task by task
+    return apps[-1]
+
+
+def validate_workflow_compatibility(
+    *,
+    input_dataset: Dataset,
+    workflow: Task,
+    output_dataset: Optional[Dataset] = None,
+):
+    """
+    Check compatibility of workflow and input / ouptut dataset
+    """
+    if (
+        workflow.input_type != "Any"
+        and workflow.input_type != input_dataset.type
+    ):
+        raise TypeError(
+            f"Incompatible types `{workflow.input_type}` of workflow "
+            f"`{workflow.name}` and `{input_dataset.type}` of dataset "
+            f"`{input_dataset.name}`"
+        )
+
+    if not output_dataset:
+        if input_dataset.read_only:
+            raise ValueError("Input dataset is read-only")
+        else:
+            input_paths = input_dataset.paths
+            if len(input_paths) != 1:
+                # Only single input can be safely transformed in an output
+                raise ValueError("Cannot determine output path")
+
+
 async def submit_workflow(
     *,
     input_dataset: Dataset,
     workflow: Task,
-    output_dataset: Optional[Union[Dataset, str]] = None,
-    output_resource: Optional[Union[Resource, str]] = None,
+    output_dataset: Optional[Dataset] = None,
 ):
     """
     Arguments
@@ -157,41 +185,13 @@ async def submit_workflow(
         # TODO: check that dataset exists and if not create dataset and
         # resource.
 
-    if workflow.input_type != input_dataset.type:
-        raise TypeError(
-            f"Incompatible types `{workflow.input_type}` of workflow "
-            f"`{workflow.name}` and `{input_dataset.type}` of dataset "
-            f"`{input_dataset.name}`"
-        )
-
-    input_path = [r.glob_path for r in input_dataset.resource_list]
+    input_paths = input_dataset.paths
 
     output_path = None
-    metadata = input_dataset.metadata
 
-    if "workflow" in workflow.resource_type:
-        for subtask in workflow.subtask_list:
-            kwargs = subtask._arguments
-
-            @parsl.python_app()
-            def workflow_app(
-                input_path: List[Path] = input_path,
-                output_path: Path = output_path,
-                metadata: Dict[str, Any] = metadata,
-                kwargs: Dict[str, Any] = kwargs,
-            ):
-                task_module = importlib.import_module(subtask.import_path)
-                __callable = getattr(task_module, subtask.callable)
-                __callable(
-                    input_path=input_path,
-                    output_path=output_dataset,
-                    metadata=metadata,
-                    **kwargs,
-                )
-
-    app_list = []
-    # TODO
-    # for parallelization_item in parallelization_level:
-    #     app_list.append(workflow_app(parallelization_item))
-
-    map(lambda app: app.result(), app_list)
+    _process_workflow(
+        task=workflow,
+        input_paths=input_paths,
+        output_path=output_path,
+    )
+    raise NotImplementedError

@@ -23,6 +23,7 @@ class DatasetBase(SQLModel):
     name: str
     type: Optional[str]
     meta: Dict[str, Any] = {}
+    read_only: Optional[bool] = False
 
 
 class DatasetCreate(DatasetBase):
@@ -41,10 +42,10 @@ class ProjectBase(SQLModel):
 
 class ResourceBase(SQLModel):
     path: str
-    glob_pattern: str
+    glob_pattern: Optional[str] = ""
 
     @property
-    def glob_path(self):
+    def glob_path(self) -> Path:
         return Path(self.path) / self.glob_pattern
 
 
@@ -58,6 +59,10 @@ class Dataset(DatasetBase, table=True):  # type: ignore
 
     class Config:
         arbitrary_types_allowed = True
+
+    @property
+    def paths(self) -> List[Path]:
+        return [r.glob_path for r in self.resource_list]
 
 
 class ProjectCreate(ProjectBase):
