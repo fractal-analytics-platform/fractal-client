@@ -21,6 +21,7 @@ def slugify(value: str):
 
 class DatasetBase(SQLModel):
     name: str
+    project_id: Optional[int]
     type: Optional[str]
     meta: Dict[str, Any] = {}
     read_only: Optional[bool] = False
