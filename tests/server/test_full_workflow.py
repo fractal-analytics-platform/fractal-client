@@ -54,10 +54,13 @@ async def test_project_creation(
 
         # EXECUTE WORKFLOW
 
-        payload = dict()
+        payload = dict(
+            project_id=project_id,
+            workflow_id=workflow_id,
+            input_dataset_id=dataset_id,
+        )
         res = await client.post(
-            f"{PREFIX}/project/apply/{project_id}"
-            f"/{dataset_id}/{workflow_id}",
+            f"{PREFIX}/project/apply/",
             json=payload,
         )
         debug(res.json())

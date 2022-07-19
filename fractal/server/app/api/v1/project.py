@@ -19,8 +19,10 @@ from ...models.project import ResourceRead
 from ...models.task import Task
 from ...runner import submit_workflow
 from ...runner import validate_workflow_compatibility
+from ...runner import auto_output_dataset
 from ...security import current_active_user
 from ...security import User
+from fractal.common.models import ApplyWorkflow
 
 router = APIRouter()
 
@@ -121,13 +123,11 @@ async def modify_dataset(
 
 
 @router.post(
-    "/apply/{project_id}/{input_dataset_id}/{workflow_id}",
+    "/apply/",
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def apply_workflow(
-    project_id: int,
-    input_dataset_id: int,
-    workflow_id: int,
+    apply_workflow: ApplyWorkflow,
     background_tasks: BackgroundTasks,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
@@ -136,25 +136,49 @@ async def apply_workflow(
         select(Project, Dataset)
         .join(Dataset)
         .where(Project.user_owner_id == user.id)
+        .where(Project.id == apply_workflow.project_id)
+        .where(Dataset.id == apply_workflow.input_dataset_id)
     )
-    project, dataset = (await db.execute(stm)).one()
+    project, input_dataset = (await db.execute(stm)).one()
 
     # TODO check that user is allowed to use this task
-    workflow = await db.get(Task, workflow_id)
+
+    workflow = await db.get(Task, apply_workflow.workflow_id)
+
+    if apply_workflow.output_dataset_id:
+        stm = (
+            select(Dataset)
+            .where(Dataset.project_id == project.id)
+            .where(Dataset.id == apply_workflow.output_dataset_id)
+        )
+        output_dataset = (await db.execute(stm)).one()
+    else:
+        output_dataset = auto_output_dataset(
+            proejct=project,
+            input_dataset=input_dataset,
+            workflow=workflow
+        )
 
     try:
         validate_workflow_compatibility(
-            workflow=workflow, input_dataset=dataset, output_dataset=None
+            workflow=workflow,
+            input_dataset=input_dataset,
+            output_dataset=output_dataset
         )
     except TypeError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
         )
 
+    assert input_dataset
+    assert output_dataset
+    assert workflow
+
     background_tasks.add_task(
         submit_workflow,
-        input_dataset=dataset,
         workflow=workflow,
+        input_dataset=input_dataset,
+        output_dataset=output_dataset,
     )
 
     # TODO we should return a job id of some sort
