@@ -24,11 +24,9 @@ def collect_routers(app: FastAPI) -> None:
 
 
 async def __on_startup():
-    from .app.db import async_session_maker
     from .app.api.v1.task import collect_tasks_headless
 
-    async with async_session_maker() as db:
-        await collect_tasks_headless(db=db)
+    await collect_tasks_headless()
 
 
 def start_application() -> FastAPI:
