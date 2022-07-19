@@ -487,7 +487,7 @@ def workflow_apply(
         mem_per_node_GB=fractal_config.mem_per_node_GB,
         partition=fractal_config.partition_gpu,
         worker_init=fractal_config.worker_init,
-        max_blocks=fractal_config.max_blocks,
+        max_blocks=fractal_config.max_blocks_gpu,
         exclusive=fractal_config.exclusive,
     )
     htex_gpu = define_HighThroughputExecutor(
