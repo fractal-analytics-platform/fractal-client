@@ -145,7 +145,11 @@ class Task(TaskBase, table=True):  # type: ignore
         if not self._is_atomic:
             return flatten(st.preprocess() for st in self.subtask_list)
         else:
-            raise ValueError("Trying to preprocess an atomic Task")
+            return [PreprocessedTask(
+                name=self.name,
+                module=self.module,
+                args=self.default_args,
+            )]
 
     @property
     def _arguments(self):
