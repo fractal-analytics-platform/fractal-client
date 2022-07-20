@@ -15,9 +15,12 @@ import json
 import os
 from glob import glob
 
+import pandas as pd
 import zarr
+from anndata.experimental import write_elem
 
 from fractal.tasks.lib_parse_filename_metadata import parse_metadata
+from fractal.tasks.lib_regions_of_interest import prepare_ROIs_table
 from fractal.tasks.metadata_parsing import parse_yokogawa_metadata
 
 
@@ -28,6 +31,7 @@ def create_zarr_structure(
     path_dict_channels=None,
     num_levels=None,
     coarsening_xy=None,
+    metadata_table="mlf_mrf",
 ):
 
     """
@@ -62,6 +66,21 @@ def create_zarr_structure(
     if in_paths is None:
         raise Exception(
             "ERROR in create_zarr_structure_multifov: in_paths is None"
+        )
+
+    # Preliminary checks on metadata_table
+    if metadata_table != "mlf_mrf" and not isinstance(
+        metadata_table, pd.core.frame.DataFrame
+    ):
+        raise Exception(
+            "ERROR: metadata_table must be a known string or a "
+            "pandas DataFrame}"
+        )
+    if metadata_table != "mlf_mrf":
+        raise NotImplementedError(
+            "We currently only support "
+            'metadata_table="mlf_mrf", '
+            f"and not {metadata_table}"
         )
 
     # Identify all plates and all channels, across all input folders
@@ -116,6 +135,9 @@ def create_zarr_structure(
         else:
             plates.append(plate)
 
+        # Update dict_plate_paths
+        dict_plate_paths[plate] = in_path
+
         # Check that channels are the same as in previous plates
         if channels is None:
             channels = tmp_channels[:]
@@ -124,9 +146,6 @@ def create_zarr_structure(
                 raise Exception(
                     f"ERROR\n{info}\nERROR: expected channels " "{channels}"
                 )
-
-            # Update dict_plate_paths
-            dict_plate_paths[plate] = in_path
 
     # Check that all channels are in the allowed_channels
     if not set(channels).issubset(set(dict_channels.keys())):
@@ -143,36 +162,42 @@ def create_zarr_structure(
     print(f"actual_channels: {actual_channels}")
 
     zarrurls = {"plate": [], "well": []}
-    # zarrurls_in_paths = {}
 
-    # PARSE METADATA
-    # FIXME: hard-coded paths
-    root = (
-        "/data/active/fractal/3D/PelkmansLab/"
-        "CardiacMultiplexing/Cycle1_testSubset/"
-    )
-    mrf_path = root + "MeasurementDetail.mrf"
-    mlf_path = root + "MeasurementData.mlf"
-
-    site_metadata, total_files = parse_yokogawa_metadata(
-        mrf_path=mrf_path, mlf_path=mlf_path
-    )
-
-    # PIXEL SIZES
-    pixel_size_z = site_metadata["pixel_size_z"][0]
-    pixel_size_y = site_metadata["pixel_size_y"][0]
-    pixel_size_x = site_metadata["pixel_size_x"][0]
-
+    # Sanitize out_path
     if not out_path.endswith("/"):
         out_path += "/"
+
+    # Loop over plates
     for plate in plates:
+
+        # Retrieve path corresponding to this plate
+        in_path = dict_plate_paths[plate]
 
         # Define plate zarr
         zarrurl = f"{out_path}{plate}.zarr"
         print(f"Creating {zarrurl}")
         group_plate = zarr.group(zarrurl)
         zarrurls["plate"].append(zarrurl)
-        # zarrurls_in_paths[zarrurl] = dict_plate_paths[plate]
+
+        # Obtain FOV-metadata dataframe
+        if metadata_table == "mlf_mrf":
+            mrf_path = f"{in_path}MeasurementDetail.mrf"
+            mlf_path = f"{in_path}MeasurementData.mlf"
+            site_metadata, total_files = parse_yokogawa_metadata(
+                mrf_path=mrf_path, mlf_path=mlf_path
+            )
+            # FIXME: hardcoded
+            image_size = {"x": 2560, "y": 2160}
+
+        # Extract pixel sizes
+        pixel_size_z = site_metadata["pixel_size_z"][0]
+        pixel_size_y = site_metadata["pixel_size_y"][0]
+        pixel_size_x = site_metadata["pixel_size_x"][0]
+
+        # Extract bit_depth #FIXME
+        # bit_depth = site_metadata["bit_depth"][0]
+        # if bit_depth == 8:
+        #    dtype
 
         # Identify all wells
         plate_prefix = dict_plate_prefixes[plate]
@@ -291,7 +316,7 @@ def create_zarr_structure(
                         }
                         for ind_level in range(num_levels)
                     ],
-                    # Global rescaling to physiacl units
+                    # Global rescaling to physical units
                     "coordinateTransformations": [
                         {
                             "type": "scale",
@@ -327,6 +352,13 @@ def create_zarr_structure(
                     for channel in actual_channels
                 ],
             }
+
+            # Prepare and write anndata table of FOV ROIs
+            FOV_ROIs_table = prepare_ROIs_table(
+                site_metadata.loc[f"{row+column}"], image_size=image_size
+            )
+            group_tables = group_field.create_group("tables/")  # noqa: F841
+            write_elem(group_tables, "FOV_ROI_table", FOV_ROIs_table)
 
     return zarrurls, actual_channels
 
@@ -375,4 +407,5 @@ if __name__ == "__main__":
         num_levels=args.num_levels,
         coarsening_xy=args.coarsening_xy,
         path_dict_channels=args.path_dict_channels,
+        # metadata_table=args.metadata_table,   #FIXME
     )
