@@ -323,6 +323,7 @@ def image_labeling(
                 num_levels=num_levels,
                 chunk_size_x=2560,
                 chunk_size_y=2160,
+                aggregation_function=np.max,
             )
 
         with open(logfile, "a") as out:
