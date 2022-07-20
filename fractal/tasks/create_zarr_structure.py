@@ -18,6 +18,7 @@ from glob import glob
 import zarr
 
 from fractal.tasks.lib_parse_filename_metadata import parse_metadata
+from fractal.tasks.metadata_parsing import parse_yokogawa_metadata
 
 
 def create_zarr_structure(
@@ -26,6 +27,7 @@ def create_zarr_structure(
     ext=None,
     path_dict_channels=None,
     num_levels=None,
+    coarsening_xy=None,
 ):
 
     """
@@ -41,6 +43,7 @@ def create_zarr_structure(
     :type path_dict_channels: str
     :param num_levels: number of coarsening levels in the pyramid
     :type num_levels: int
+    FIXME
     """
 
     try:
@@ -141,6 +144,24 @@ def create_zarr_structure(
 
     zarrurls = {"plate": [], "well": []}
     # zarrurls_in_paths = {}
+
+    # PARSE METADATA
+    # FIXME: hard-coded paths
+    root = (
+        "/data/active/fractal/3D/PelkmansLab/"
+        "CardiacMultiplexing/Cycle1_testSubset/"
+    )
+    mrf_path = root + "MeasurementDetail.mrf"
+    mlf_path = root + "MeasurementData.mlf"
+
+    site_metadata, total_files = parse_yokogawa_metadata(
+        mrf_path=mrf_path, mlf_path=mlf_path
+    )
+
+    # PIXEL SIZES
+    pixel_size_z = site_metadata["pixel_size_z"][0]
+    pixel_size_y = site_metadata["pixel_size_y"][0]
+    pixel_size_x = site_metadata["pixel_size_x"][0]
 
     if not out_path.endswith("/"):
         out_path += "/"
@@ -243,11 +264,43 @@ def create_zarr_structure(
                             "type": "space",
                             "unit": "micrometer",
                         },
-                        {"name": "y", "type": "space"},
-                        {"name": "x", "type": "space"},
+                        {
+                            "name": "y",
+                            "type": "space",
+                            "unit": "micrometer",
+                        },
+                        {
+                            "name": "x",
+                            "type": "space",
+                            "unit": "micrometer",
+                        },
                     ],
                     "datasets": [
-                        {"path": f"{level}"} for level in range(num_levels)
+                        {
+                            "path": f"{ind_level}",
+                            "coordinateTransformations": [
+                                {
+                                    "type": "scale",
+                                    "scale": [
+                                        1.0,
+                                        1.0 * coarsening_xy**ind_level,
+                                        1.0 * coarsening_xy**ind_level,
+                                    ],
+                                }
+                            ],
+                        }
+                        for ind_level in range(num_levels)
+                    ],
+                    # Global rescaling to physiacl units
+                    "coordinateTransformations": [
+                        {
+                            "type": "scale",
+                            "scale": [
+                                pixel_size_z,
+                                pixel_size_y,
+                                pixel_size_x,
+                            ],
+                        }
                     ],
                 }
             ]
@@ -302,7 +355,12 @@ if __name__ == "__main__":
         type=int,
         help="number of levels in the Zarr pyramid",
     )
-
+    parser.add_argument(
+        "-cxy",
+        "--coarsening_xy",
+        type=int,
+        help="FIXME",
+    )
     parser.add_argument(
         "-c",
         "--path_dict_channels",
@@ -315,5 +373,6 @@ if __name__ == "__main__":
         out_path=args.out_path,
         ext=args.ext,
         num_levels=args.num_levels,
+        coarsening_xy=args.coarsening_xy,
         path_dict_channels=args.path_dict_channels,
     )
