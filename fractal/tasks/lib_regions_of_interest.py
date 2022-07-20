@@ -41,25 +41,19 @@ def convert_ROI_table_to_indices(
 ) -> List[List]:
     list_indices = []
 
-    for FOV in range(ROI.n_obs):
+    for FOV in ROI.obs_names:
 
         # Extract data from anndata table
         # FIXME: is there a better way to do this??
-        x_micrometer = ROI[FOV, ROI.var_names == "x_micrometer"].X[0, 0]
-        y_micrometer = ROI[FOV, ROI.var_names == "y_micrometer"].X[0, 0]
-        z_micrometer = ROI[FOV, ROI.var_names == "z_micrometer"].X[0, 0]
-        len_x_micrometer = ROI[FOV, ROI.var_names == "len_x_micrometer"].X[
-            0, 0
-        ]
-        len_y_micrometer = ROI[FOV, ROI.var_names == "len_y_micrometer"].X[
-            0, 0
-        ]
-        len_z_micrometer = ROI[FOV, ROI.var_names == "len_z_micrometer"].X[
-            0, 0
-        ]
-        pixel_size_x = ROI[FOV, ROI.var_names == "pixel_size_x"].X[0, 0]
-        pixel_size_y = ROI[FOV, ROI.var_names == "pixel_size_y"].X[0, 0]
-        pixel_size_z = ROI[FOV, ROI.var_names == "pixel_size_z"].X[0, 0]
+        x_micrometer = ROI[FOV, "x_micrometer"].X[0, 0]
+        y_micrometer = ROI[FOV, "y_micrometer"].X[0, 0]
+        z_micrometer = ROI[FOV, "z_micrometer"].X[0, 0]
+        len_x_micrometer = ROI[FOV, "len_x_micrometer"].X[0, 0]
+        len_y_micrometer = ROI[FOV, "len_y_micrometer"].X[0, 0]
+        len_z_micrometer = ROI[FOV, "len_z_micrometer"].X[0, 0]
+        pixel_size_x = ROI[FOV, "pixel_size_x"].X[0, 0]
+        pixel_size_y = ROI[FOV, "pixel_size_y"].X[0, 0]
+        pixel_size_z = ROI[FOV, "pixel_size_z"].X[0, 0]
 
         # Set pyramid-level pixel sizes
         prefactor = coarsening_xy**level
