@@ -117,6 +117,11 @@ def create_zarr_structure(
         # Check that only one plate is found
         if len(tmp_plates) > 1:
             raise Exception(f"{info}ERROR: {len(tmp_plates)} plates detected")
+        if len(tmp_plates) == 0:
+            raise Exception(
+                f"{info}ERROR: No plate found with current settings."
+                "Check that correct file extension was specified"
+            )
         plate = tmp_plates[0]
 
         # If plate already exists in other folder, add suffix
