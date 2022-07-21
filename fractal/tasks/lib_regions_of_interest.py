@@ -129,6 +129,27 @@ def convert_ROI_table_to_indices(
     return list_indices
 
 
+def split_3D_ROI_indices_into_z_layers(
+    list_indices: List[List[int]],
+) -> List[List[int]]:
+
+    num_z_layers = None
+    new_list_indices = []
+    for indices in list_indices:
+        if num_z_layers is None:
+            num_z_layers = indices[1]
+        else:
+            if indices[1] != num_z_layers:
+                raise Exception(
+                    "Inconsistent num_z_layers in split_indices_into_2D_layers"
+                )
+        for ind_z in range(num_z_layers):
+            new_indices = [ind_z, ind_z + 1] + indices[2:]
+            new_list_indices.append(new_indices)
+
+    return new_list_indices
+
+
 def _inspect_ROI_table(
     path: str = None, level: int = 0, coarsening_xy: int = 2
 ) -> None:
@@ -142,6 +163,9 @@ def _inspect_ROI_table(
     list_indices = convert_ROI_table_to_indices(
         adata, level=level, coarsening_xy=coarsening_xy
     )
+
+    list_indices = split_3D_ROI_indices_into_z_layers(list_indices)
+
     print(f"level:         {level}")
     print(f"coarsening_xy: {coarsening_xy}")
     print("list_indices:")
