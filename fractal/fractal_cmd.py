@@ -501,7 +501,6 @@ def workflow_apply(
         executors=[htex, htex_gpu],
         monitoring=monitoring,
     )
-    # config = Config(executors=[htex])
     parsl.clear()
     parsl.load(config)
 
@@ -524,6 +523,7 @@ def workflow_apply(
             path_dict_channels=path_dict_channels,
             ext=ext,
             num_levels=num_levels,
+            coarsening_xy=coarsening_xy,
         )
 
         @parsl.python_app(executors=["cpu"])
