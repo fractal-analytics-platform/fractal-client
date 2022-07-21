@@ -48,6 +48,38 @@ def prepare_FOV_ROI_table(
     return adata
 
 
+def convert_FOV_ROIs_3D_to_2D(adata: ad.AnnData = None) -> ad.AnnData:
+
+    # FIXME: use this piece of code (or similar) in tests
+    """
+    adata = ad.AnnData(X=np.zeros((2, 3)), dtype=int)
+    adata.obs_names = ["FOV1", "FOV2"]
+    adata.var_names = ["z", "len_z", "pixel_size_z"]
+    adata[:, "z"].X = [[2], [4]]
+    adata[:, "len_z"].X = [[5], [7]]
+    adata[:, "pixel_size_z"].X = [[2], [2]]
+    """
+
+    # Compress a 3D stack of images to a single Z plane,
+    # with thickness equal to pixel_size_z
+    df = adata.to_df()
+    df["len_z"] = df["pixel_size_z"]
+
+    # Assign dtype explicitly, to avoid
+    # >> UserWarning: X converted to numpy array with dtype float64
+    # when creating AnnData object
+    df = df.astype(np.float32)
+
+    # Create an AnnData object directly from the DataFrame
+    new_adata = ad.AnnData(X=df)
+
+    # Rename rows and columns
+    new_adata.obs_names = [f"FOV_{i+1:d}" for i in range(new_adata.n_obs)]
+    new_adata.var_names = list(map(str, df.columns))
+
+    return new_adata
+
+
 def convert_ROI_table_to_indices(
     ROI: ad.AnnData,
     level: int = 0,
