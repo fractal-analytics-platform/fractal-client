@@ -169,6 +169,9 @@ def image_labeling(
     print("num_levels", num_levels)
     print()
 
+    # Extract axes, and remove channel
+    new_axes = [ax for ax in multiscales[0]["axes"] if ax["type"] != "channel"]
+
     # Try to read channel label from OMERO metadata
     try:
         omero_label = zattrs["omero"]["channels"][ind_channel]["label"]
@@ -240,7 +243,7 @@ def image_labeling(
         {
             "name": label_name,
             "version": "0.4",
-            "axes": multiscales[0]["axes"],
+            "axes": new_axes,
             "datasets": multiscales[0]["datasets"],
         }
     ]
