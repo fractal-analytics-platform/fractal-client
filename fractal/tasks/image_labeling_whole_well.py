@@ -157,19 +157,28 @@ def image_labeling_whole_well(
     new_datasets = []
     for ds in datasets:
         new_ds = {}
+
+        # Copy all keys that are not coordinateTransformations (e.g. path)
         for key in ds.keys():
             if key != "coordinateTransformations":
                 new_ds[key] = ds[key]
+
+        # Update coordinateTransformations
         old_transformations = ds["coordinateTransformations"]
         new_transformations = []
         for t in old_transformations:
             if t["type"] == "scale":
-                new_t = t
-                new_t["scale"][1] *= coarsening_xy**labeling_level
-                new_t["scale"][2] *= coarsening_xy**labeling_level
+                new_t = {"type": "scale"}
+                new_t["scale"] = [
+                    t[0],
+                    t[1] * coarsening_xy**labeling_level,
+                    t[2] * coarsening_xy**labeling_level,
+                ]
                 new_transformations.append(new_t)
             else:
                 new_transformations.append(t)
+        new_ds["coordinateTransformations"] = new_transformations
+
         new_datasets.append(new_ds)
 
     # Write zattrs for labels and for specific label
