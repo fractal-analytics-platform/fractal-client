@@ -170,9 +170,9 @@ def image_labeling_whole_well(
             if t["type"] == "scale":
                 new_t = {"type": "scale"}
                 new_t["scale"] = [
-                    t[0],
-                    t[1] * coarsening_xy**labeling_level,
-                    t[2] * coarsening_xy**labeling_level,
+                    t["scale"][0],
+                    t["scale"][1] * coarsening_xy**labeling_level,
+                    t["scale"][2] * coarsening_xy**labeling_level,
                 ]
                 new_transformations.append(new_t)
             else:
