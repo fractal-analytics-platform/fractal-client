@@ -31,7 +31,7 @@ def create_zarr_structure(
     path_dict_channels=None,
     num_levels=None,
     coarsening_xy=None,
-    metadata_table="mlf_mrf",
+    metadata_table="mrf_mlf",
 ):
 
     """
@@ -69,17 +69,17 @@ def create_zarr_structure(
         )
 
     # Preliminary checks on metadata_table
-    if metadata_table != "mlf_mrf" and not isinstance(
+    if metadata_table != "mrf_mlf" and not isinstance(
         metadata_table, pd.core.frame.DataFrame
     ):
         raise Exception(
             "ERROR: metadata_table must be a known string or a "
             "pandas DataFrame}"
         )
-    if metadata_table != "mlf_mrf":
+    if metadata_table != "mrf_mlf":
         raise NotImplementedError(
             "We currently only support "
-            'metadata_table="mlf_mrf", '
+            'metadata_table="mrf_mlf", '
             f"and not {metadata_table}"
         )
 
@@ -180,11 +180,11 @@ def create_zarr_structure(
         zarrurls["plate"].append(zarrurl)
 
         # Obtain FOV-metadata dataframe
-        if metadata_table == "mlf_mrf":
+        if metadata_table == "mrf_mlf":
             mrf_path = f"{in_path}MeasurementDetail.mrf"
             mlf_path = f"{in_path}MeasurementData.mlf"
             site_metadata, total_files = parse_yokogawa_metadata(
-                mrf_path=mrf_path, mlf_path=mlf_path
+                mrf_path, mlf_path
             )
             # FIXME: hardcoded
             well_size = {"x": 2560, "y": 2160, "z": 10}
