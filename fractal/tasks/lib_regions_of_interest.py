@@ -9,26 +9,43 @@ import pandas as pd
 
 
 def prepare_ROIs_table(
-    df: pd.DataFrame, image_size: Union[Dict, None] = None
+    df: pd.DataFrame,
+    image_size: Union[Dict, None] = None,
+    # FIXME HARDCODED VALUE:
+    num_z_planes: int = 10,
 ) -> ad.AnnData:
     if image_size is None:
         raise Exception("Missing image_size arg in prepare_ROIs_table")
 
+    # Reset reference values for coordinates
     df["x_micrometer"] -= df["x_micrometer"].min()
     df["y_micrometer"] -= df["y_micrometer"].min()
     df["z_micrometer"] -= df["z_micrometer"].min()
 
+    # Obtain box size in physical units
     df["len_x_micrometer"] = image_size["x"] * df["pixel_size_x"]
     df["len_y_micrometer"] = image_size["y"] * df["pixel_size_y"]
-    df["len_z_micrometer"] = df["pixel_size_z"]
+    df["len_z_micrometer"] = num_z_planes * df["pixel_size_z"]
 
+    # Remove unused column
     df.drop("bit_depth", inplace=True, axis=1)
 
+    # Assign dtype explicitly, to avoid
+    # >> UserWarning: X converted to numpy array with dtype float64
+    # when creating AnnData object
     df = df.astype(np.float32)
 
-    adata = ad.AnnData(X=df, dtype=np.float32)
+    # Convert DataFrame index to str, to avoid
+    # >> ImplicitModificationWarning: Transforming to str index
+    # when creating AnnData object
+    df.index = df.index.astype(str)
+
+    # Create an AnnData object directly from the DataFrame
+    adata = ad.AnnData(X=df)
+
+    # Rename rows and columns
     adata.obs_names = [f"FOV_{i+1:d}" for i in range(adata.n_obs)]
-    adata.var_names = df.columns
+    adata.var_names = list(map(str, df.columns))
 
     return adata
 
@@ -44,7 +61,6 @@ def convert_ROI_table_to_indices(
     for FOV in ROI.obs_names:
 
         # Extract data from anndata table
-        # FIXME: is there a better way to do this??
         x_micrometer = ROI[FOV, "x_micrometer"].X[0, 0]
         y_micrometer = ROI[FOV, "y_micrometer"].X[0, 0]
         z_micrometer = ROI[FOV, "z_micrometer"].X[0, 0]
@@ -61,8 +77,6 @@ def convert_ROI_table_to_indices(
         pixel_size_y *= prefactor
 
         # Identify indices along the three dimensions
-        # FIXME: We don't need Z indices for FOVs, but perhaps we will for
-        #        more complex 3D shapes
         start_x = x_micrometer / pixel_size_x
         end_x = (x_micrometer + len_x_micrometer) / pixel_size_x
         start_y = y_micrometer / pixel_size_y
@@ -72,7 +86,7 @@ def convert_ROI_table_to_indices(
         indices = [start_z, end_z, start_y, end_y, start_x, end_x]
 
         # Round indices to lower integer
-        # FIXME: to be checked
+        # FIXME: to be checked/tested
         indices = list(map(math.floor, indices))
 
         # Default behavior
