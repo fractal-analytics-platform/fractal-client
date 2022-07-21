@@ -43,13 +43,6 @@ def replicate_zarr_structure_mip(zarrurl):
         [rc.split("/")[-2:] for rc in glob(zarrurl + "*/*")]
     )
 
-    # Identify subfolders of the FOV folder
-    level_folders = sorted(
-        list(set([rc.split("/")[-1] for rc in glob(zarrurl + "*/*/*/*")]))
-    )
-    # Filter out subfolders with non-numeric names (e.g. "labels")
-    levels = [level for level in level_folders if level.isnumeric()]
-
     group_plate = zarr.group(zarrurl_mip)
     plate = zarrurl.replace(".zarr/", "").split("/")[-1]
     group_plate.attrs["plate"] = {
@@ -91,43 +84,29 @@ def replicate_zarr_structure_mip(zarrurl):
     for row, column in well_rows_columns:
 
         # Find sites in COL/ROW/.zattrs
-        path_zattrs = zarrurl + f"{row}/{column}/.zattrs"
-        with open(path_zattrs) as zattrs_file:
-            zattrs = json.load(zattrs_file)
-        well_images = zattrs["well"]["images"]
+        path_well_zattrs = zarrurl + f"{row}/{column}/.zattrs"
+        with open(path_well_zattrs) as well_zattrs_file:
+            well_zattrs = json.load(well_zattrs_file)
+        well_images = well_zattrs["well"]["images"]
         list_FOVs = sorted([img["path"] for img in well_images])
 
+        # Create well group
         group_well = group_plate.create_group(f"{row}/{column}/")
-
         group_well.attrs["well"] = {
             "images": well_images,
             "version": "0.3",
         }
 
         for FOV in list_FOVs:
-            group_field = group_well.create_group(f"{FOV}/")  # noqa: F841
-            group_field.attrs["multiscales"] = [
-                {
-                    "version": "0.3",
-                    "axes": [
-                        {"name": "c", "type": "channel"},
-                        {
-                            "name": "z",
-                            "type": "space",
-                            "unit": "micrometer",
-                        },
-                        {"name": "y", "type": "space"},
-                        {"name": "x", "type": "space"},
-                    ],
-                    "datasets": [{"path": level} for level in levels],
-                }
-            ]
+            # Create FOV group
+            group_FOV = group_well.create_group(f"{FOV}/")  # noqa: F841
 
             # Copy .zattrs file at the COL/ROW/SITE level
-            path_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
-            with open(path_zattrs) as zattrs_file:
-                zattrs = json.load(zattrs_file)
-                group_field.attrs["omero"] = zattrs["omero"]
+            path_FOV_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
+            with open(path_FOV_zattrs) as FOV_zattrs_file:
+                FOV_zattrs = json.load(FOV_zattrs_file)
+            for key in FOV_zattrs.keys():
+                group_FOV.attrs[key] = FOV_zattrs[key]
 
 
 if __name__ == "__main__":
