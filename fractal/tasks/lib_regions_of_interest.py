@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 
-def prepare_ROIs_table(
+def prepare_FOV_ROI_table(
     df: pd.DataFrame,
     well_size: Union[Dict, None] = None,
 ) -> ad.AnnData:

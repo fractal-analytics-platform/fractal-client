@@ -20,7 +20,7 @@ import zarr
 from anndata.experimental import write_elem
 
 from fractal.tasks.lib_parse_filename_metadata import parse_metadata
-from fractal.tasks.lib_regions_of_interest import prepare_ROIs_table
+from fractal.tasks.lib_regions_of_interest import prepare_FOV_ROI_table
 from fractal.tasks.metadata_parsing import parse_yokogawa_metadata
 
 
@@ -187,7 +187,7 @@ def create_zarr_structure(
                 mrf_path=mrf_path, mlf_path=mlf_path
             )
             # FIXME: hardcoded
-            image_size = {"x": 2560, "y": 2160}
+            well_size = {"x": 2560, "y": 2160, "z": 10}
 
         # Extract pixel sizes
         pixel_size_z = site_metadata["pixel_size_z"][0]
@@ -307,25 +307,16 @@ def create_zarr_structure(
                                 {
                                     "type": "scale",
                                     "scale": [
-                                        1.0,
-                                        1.0 * coarsening_xy**ind_level,
-                                        1.0 * coarsening_xy**ind_level,
+                                        pixel_size_z,
+                                        pixel_size_y
+                                        * coarsening_xy**ind_level,
+                                        pixel_size_x
+                                        * coarsening_xy**ind_level,
                                     ],
                                 }
                             ],
                         }
                         for ind_level in range(num_levels)
-                    ],
-                    # Global rescaling to physical units
-                    "coordinateTransformations": [
-                        {
-                            "type": "scale",
-                            "scale": [
-                                pixel_size_z,
-                                pixel_size_y,
-                                pixel_size_x,
-                            ],
-                        }
                     ],
                 }
             ]
@@ -354,8 +345,9 @@ def create_zarr_structure(
             }
 
             # Prepare and write anndata table of FOV ROIs
-            FOV_ROIs_table = prepare_ROIs_table(
-                site_metadata.loc[f"{row+column}"], image_size=image_size
+            FOV_ROIs_table = prepare_FOV_ROI_table(
+                site_metadata.loc[f"{row+column}"],
+                well_size=well_size,
             )
             group_tables = group_field.create_group("tables/")  # noqa: F841
             write_elem(group_tables, "FOV_ROI_table", FOV_ROIs_table)
