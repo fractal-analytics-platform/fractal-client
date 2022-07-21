@@ -63,7 +63,7 @@ def convert_FOV_ROIs_3D_to_2D(adata: ad.AnnData = None) -> ad.AnnData:
     # Compress a 3D stack of images to a single Z plane,
     # with thickness equal to pixel_size_z
     df = adata.to_df()
-    df["len_z"] = df["pixel_size_z"]
+    df["len_z_micrometer"] = df["pixel_size_z"]
 
     # Assign dtype explicitly, to avoid
     # >> UserWarning: X converted to numpy array with dtype float64
@@ -123,3 +123,33 @@ def convert_ROI_table_to_indices(
         list_indices.append(indices)
 
     return list_indices
+
+
+def _inspect_ROI_table(
+    path: str = None, level: int = 0, coarsening_xy: int = 2
+) -> None:
+
+    adata = ad.read_zarr(path)
+    df = adata.to_df()
+    print("table")
+    print(df)
+    print()
+
+    list_indices = convert_ROI_table_to_indices(
+        adata, level=level, coarsening_xy=coarsening_xy
+    )
+    print(f"level:         {level}")
+    print(f"coarsening_xy: {coarsening_xy}")
+    print("list_indices:")
+    for indices in list_indices:
+        print(indices)
+    print()
+
+
+if __name__ == "__main__":
+    import sys
+
+    args = sys.argv[1:]
+    types = [str, int, int]
+    args = [types[ix](x) for ix, x in enumerate(args)]
+    _inspect_ROI_table(*args)
