@@ -84,11 +84,11 @@ def convert_ROI_table_to_indices(
     ROI: ad.AnnData,
     level: int = 0,
     coarsening_xy: int = 2,
-    num_z_replicas: int = 1,
 ) -> List[List]:
+
     list_indices = []
 
-    for FOV in ROI.obs_names:
+    for FOV in sorted(ROI.obs_names):
 
         # Extract data from anndata table
         x_micrometer = ROI[FOV, "x_micrometer"].X[0, 0]
@@ -119,20 +119,7 @@ def convert_ROI_table_to_indices(
         # FIXME: to be checked/tested
         indices = list(map(math.floor, indices))
 
-        # Default behavior
-        if num_z_replicas == 1:
-            list_indices.append(indices)
-        # Create 3D stack of 2D ROIs
-        else:
-            # Check that this ROI is 2D, i.e. it has z indices [0:1]
-            if start_z != 0 or end_z != 1:
-                raise Exception(
-                    f"ERROR: num_z_replicas={num_z_replicas}, "
-                    f"but [start_z,end_z]={[start_z,end_z]}"
-                )
-            # Loop over Z planes
-            for z_start in range(num_z_replicas):
-                indices[0:2] = [z_start, z_start + 1]
-                list_indices.append(indices[:])
+        # Append ROI indices to to list
+        list_indices.append(indices)
 
     return list_indices
