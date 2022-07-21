@@ -129,7 +129,7 @@ def convert_ROI_table_to_indices(
     return list_indices
 
 
-def split_3D_ROI_indices_into_z_layers(
+def split_3D_indices_into_z_layers(
     list_indices: List[List[int]],
 ) -> List[List[int]]:
 
@@ -164,7 +164,7 @@ def _inspect_ROI_table(
         adata, level=level, coarsening_xy=coarsening_xy
     )
 
-    list_indices = split_3D_ROI_indices_into_z_layers(list_indices)
+    list_indices = split_3D_indices_into_z_layers(list_indices)
 
     print(f"level:         {level}")
     print(f"coarsening_xy: {coarsening_xy}")
