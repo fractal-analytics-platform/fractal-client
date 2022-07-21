@@ -133,13 +133,23 @@ def image_labeling(
     if model_type not in ["nuclei", "cyto2", "cyto"]:
         raise Exception(f"ERROR model_type={model_type} is not allowed.")
 
-    # Load .zattrs file
+    # Load zattrs file
     zattrs_file = f"{zarrurl}.zattrs"
     with open(zattrs_file, "r") as jsonfile:
         zattrs = json.load(jsonfile)
 
+    # Preliminary checks on multiscales
+    multiscales = zattrs["multiscales"]
+    if len(multiscales) > 1:
+        raise Exception(f"ERROR: There are {len(multiscales)} multiscales")
+    if "coordinateTransformations" in multiscales[0].keys():
+        raise Exception(
+            "ERROR: coordinateTransformations at the multiscales "
+            "level are not currently supported"
+        )
+
     # Extract num_levels
-    num_levels = len(zattrs["multiscales"][0]["datasets"])
+    num_levels = len(multiscales[0]["datasets"])
     print("num_levels", num_levels)
     print()
 
@@ -213,13 +223,8 @@ def image_labeling(
         {
             "name": label_name,
             "version": "0.4",
-            "axes": [
-                {"name": axis_name, "type": "space"}
-                for axis_name in ["z", "y", "x"]
-            ],
-            "datasets": [
-                {"path": f"{ind_level}"} for ind_level in range(num_levels)
-            ],
+            "axes": multiscales[0]["axes"],
+            "datasets": multiscales[0]["datasets"],
         }
     ]
 

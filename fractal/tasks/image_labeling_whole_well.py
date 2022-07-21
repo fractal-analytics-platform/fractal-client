@@ -76,13 +76,23 @@ def image_labeling_whole_well(
             " but there can be only one Z plane."
         )
 
-    # Load .zattrs file
+    # Load zattrs file
     zattrs_file = f"{zarrurl}.zattrs"
     with open(zattrs_file, "r") as jsonfile:
         zattrs = json.load(jsonfile)
 
+    # Preliminary checks on multiscales
+    multiscales = zattrs["multiscales"]
+    if len(multiscales) > 1:
+        raise Exception(f"ERROR: There are {len(multiscales)} multiscales")
+    if "coordinateTransformations" in multiscales[0].keys():
+        raise Exception(
+            "ERROR: coordinateTransformations at the multiscales "
+            "level are not currently supported"
+        )
+
     # Extract num_levels
-    num_levels = len(zattrs["multiscales"][0]["datasets"])
+    num_levels = len(multiscales[0]["datasets"])
     print("num_levels", num_levels)
     print()
 
@@ -142,6 +152,26 @@ def image_labeling_whole_well(
             f"da.from_array(upscaled_mask) [with rechunking]: {mask_da}\n\n"
         )
 
+    # Construct rescaled datasets
+    datasets = multiscales[0]["datasets"]
+    new_datasets = []
+    for ds in datasets:
+        new_ds = {}
+        for key in ds.keys():
+            if key != "coordinateTransformations":
+                new_ds[key] = ds[key]
+        old_transformations = ds["coordinateTransformations"]
+        new_transformations = []
+        for t in old_transformations:
+            if t["type"] == "scale":
+                new_t = t
+                new_t["scale"][1] *= coarsening_xy**labeling_level
+                new_t["scale"][2] *= coarsening_xy**labeling_level
+                new_transformations.append(new_t)
+            else:
+                new_transformations.append(t)
+        new_datasets.append(new_ds)
+
     # Write zattrs for labels and for specific label
     # FIXME deal with: (1) many channels, (2) overwriting
     labels_group = zarr.group(f"{zarrurl}labels")
@@ -152,30 +182,8 @@ def image_labeling_whole_well(
         {
             "name": label_name,
             "version": "0.4",
-            "axes": [
-                {"name": axis_name, "type": "space"}
-                for axis_name in ["z", "y", "x"]
-            ],
-            "datasets": [
-                {
-                    "path": f"{ind_level}",
-                    "coordinateTransformations": [
-                        {
-                            "type": "scale",
-                            "scale": [
-                                1.0,
-                                1.0
-                                * coarsening_xy
-                                ** (labeling_level + ind_level),
-                                1.0
-                                * coarsening_xy
-                                ** (labeling_level + ind_level),
-                            ],
-                        }
-                    ],
-                }
-                for ind_level in range(num_levels)
-            ],
+            "axes": multiscales[0]["axes"],
+            "datasets": new_datasets,
         }
     ]
 
