@@ -10,12 +10,10 @@ import pandas as pd
 
 def prepare_ROIs_table(
     df: pd.DataFrame,
-    image_size: Union[Dict, None] = None,
-    # FIXME HARDCODED VALUE:
-    num_z_planes: int = 10,
+    well_size: Union[Dict, None] = None,
 ) -> ad.AnnData:
-    if image_size is None:
-        raise Exception("Missing image_size arg in prepare_ROIs_table")
+    if well_size is None:
+        raise Exception("Missing well_size arg in prepare_ROIs_table")
 
     # Reset reference values for coordinates
     df["x_micrometer"] -= df["x_micrometer"].min()
@@ -23,9 +21,9 @@ def prepare_ROIs_table(
     df["z_micrometer"] -= df["z_micrometer"].min()
 
     # Obtain box size in physical units
-    df["len_x_micrometer"] = image_size["x"] * df["pixel_size_x"]
-    df["len_y_micrometer"] = image_size["y"] * df["pixel_size_y"]
-    df["len_z_micrometer"] = num_z_planes * df["pixel_size_z"]
+    df["len_x_micrometer"] = well_size["x"] * df["pixel_size_x"]
+    df["len_y_micrometer"] = well_size["y"] * df["pixel_size_y"]
+    df["len_z_micrometer"] = well_size["z"] * df["pixel_size_z"]
 
     # Remove unused column
     df.drop("bit_depth", inplace=True, axis=1)
