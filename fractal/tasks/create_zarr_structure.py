@@ -274,12 +274,12 @@ def create_zarr_structure(
                 "version": "0.3",
             }
 
-            group_field = group_well.create_group("0/")  # noqa: F841
+            group_FOV = group_well.create_group("0/")  # noqa: F841
             zarrurls["well"].append(
                 out_path + f"{plate}.zarr/{row}/{column}/0/"
             )
 
-            group_field.attrs["multiscales"] = [
+            group_FOV.attrs["multiscales"] = [
                 {
                     "version": "0.3",
                     "axes": [
@@ -321,7 +321,7 @@ def create_zarr_structure(
                 }
             ]
 
-            group_field.attrs["omero"] = {
+            group_FOV.attrs["omero"] = {
                 "id": 1,  # FIXME does this depend on the plate number?
                 "name": "TBD",
                 "version": "0.4",
@@ -349,7 +349,7 @@ def create_zarr_structure(
                 site_metadata.loc[f"{row+column}"],
                 well_size=well_size,
             )
-            group_tables = group_field.create_group("tables/")  # noqa: F841
+            group_tables = group_FOV.create_group("tables/")  # noqa: F841
             write_elem(group_tables, "FOV_ROI_table", FOV_ROIs_table)
 
     return zarrurls, actual_channels
