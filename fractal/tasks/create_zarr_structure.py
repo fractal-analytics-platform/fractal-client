@@ -187,7 +187,8 @@ def create_zarr_structure(
                 mrf_path, mlf_path
             )
             # FIXME: hardcoded
-            well_size = {"x": 2560, "y": 2160, "z": 10}
+            image_size = {"x": 2560, "y": 2160}
+            well_size_z = 10
 
         # Extract pixel sizes
         pixel_size_z = site_metadata["pixel_size_z"][0]
@@ -347,7 +348,8 @@ def create_zarr_structure(
             # Prepare and write anndata table of FOV ROIs
             FOV_ROIs_table = prepare_FOV_ROI_table(
                 site_metadata.loc[f"{row+column}"],
-                well_size=well_size,
+                image_size=image_size,
+                well_size_z=well_size_z,
             )
             group_tables = group_FOV.create_group("tables/")  # noqa: F841
             write_elem(group_tables, "FOV_ROI_table", FOV_ROIs_table)

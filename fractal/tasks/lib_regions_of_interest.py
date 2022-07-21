@@ -10,10 +10,14 @@ import pandas as pd
 
 def prepare_FOV_ROI_table(
     df: pd.DataFrame,
-    well_size: Union[Dict, None] = None,
+    image_size: Union[Dict, None] = None,
+    well_size_z: int = None,
 ) -> ad.AnnData:
-    if well_size is None:
-        raise Exception("Missing well_size arg in prepare_ROIs_table")
+
+    if image_size is None:
+        raise Exception("Missing image_size arg in prepare_ROIs_table")
+    if well_size_z is None:
+        raise Exception("Missing well_size_z arg in prepare_ROIs_table")
 
     # Reset reference values for coordinates
     df["x_micrometer"] -= df["x_micrometer"].min()
@@ -21,9 +25,9 @@ def prepare_FOV_ROI_table(
     df["z_micrometer"] -= df["z_micrometer"].min()
 
     # Obtain box size in physical units
-    df["len_x_micrometer"] = well_size["x"] * df["pixel_size_x"]
-    df["len_y_micrometer"] = well_size["y"] * df["pixel_size_y"]
-    df["len_z_micrometer"] = well_size["z"] * df["pixel_size_z"]
+    df["len_x_micrometer"] = image_size["x"] * df["pixel_size_x"]
+    df["len_y_micrometer"] = image_size["y"] * df["pixel_size_y"]
+    df["len_z_micrometer"] = well_size_z * df["pixel_size_z"]
 
     # Remove unused column
     df.drop("bit_depth", inplace=True, axis=1)
