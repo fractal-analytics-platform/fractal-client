@@ -129,9 +129,9 @@ def image_labeling(
         if anisotropy is None:
 
             adata = ad.read_zarr(f"{zarrurl}tables/FOV_ROI_table")
-            pixel_size_x = adata["pixel_size_x"][0]
-            pixel_size_y = adata["pixel_size_y"][0]
-            pixel_size_z = adata["pixel_size_z"][0]
+            pixel_size_x = adata[:, "pixel_size_x"].X[0, 0]
+            pixel_size_y = adata[:, "pixel_size_y"].X[0, 0]
+            pixel_size_z = adata[:, "pixel_size_z"].X[0, 0]
             if not np.allclose(pixel_size_x, pixel_size_y):
                 raise Exception(
                     "ERROR: XY anisotropy detected\n"
