@@ -1,6 +1,6 @@
 {
-"workflow_name": "uzh_1_well_9x8_sites",
-"dims": [9, 8],
+"workflow_name": "uzh_1_well_2x2_sites",
+"dims": [2, 2],
 "coarsening_xy": 2,
 "coarsening_z": 1,
 "num_levels": 5,
