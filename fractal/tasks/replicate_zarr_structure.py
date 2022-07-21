@@ -14,7 +14,9 @@ Zurich.
 import json
 from glob import glob
 
+import anndata as ad
 import zarr
+from anndata.experimental import write_elem
 
 
 def replicate_zarr_structure(zarrurl, newzarrurl=None):
@@ -107,16 +109,32 @@ def replicate_zarr_structure(zarrurl, newzarrurl=None):
             "version": "0.3",
         }
 
-        for FOV in list_FOVs:
-            # Create FOV group
-            group_FOV = group_well.create_group(f"{FOV}/")  # noqa: F841
+        # Check that only the 0-th FOV exists
+        FOV = 0
+        if len(list_FOVs) > 1:
+            raise Exception(
+                "ERROR: we are in a single-merged-FOV scheme, "
+                f"but there are {len(list_FOVs)} FOVs."
+            )
 
-            # Copy .zattrs file at the COL/ROW/SITE level
-            path_FOV_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
-            with open(path_FOV_zattrs) as FOV_zattrs_file:
-                FOV_zattrs = json.load(FOV_zattrs_file)
-            for key in FOV_zattrs.keys():
-                group_FOV.attrs[key] = FOV_zattrs[key]
+        # Create FOV group
+        group_FOV = group_well.create_group(f"{FOV}/")
+
+        # Copy .zattrs file at the COL/ROW/FOV level
+        path_FOV_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
+        with open(path_FOV_zattrs) as FOV_zattrs_file:
+            FOV_zattrs = json.load(FOV_zattrs_file)
+        for key in FOV_zattrs.keys():
+            group_FOV.attrs[key] = FOV_zattrs[key]
+
+        # Read FOV ROI table
+        FOV_ROI_table = ad.read_zarr(
+            zarrurl + f"{row}/{column}/0/tables/FOV_ROI_table"
+        )
+
+        # Create table group and write table
+        group_tables = group_FOV.create_group("tables/")
+        write_elem(group_tables, "FOV_ROI_table", FOV_ROI_table)
 
 
 if __name__ == "__main__":
