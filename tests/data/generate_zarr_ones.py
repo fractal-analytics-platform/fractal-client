@@ -12,7 +12,7 @@ from fractal.tasks.lib_regions_of_interest import prepare_FOV_ROI_table
 
 
 num_C = 2
-num_Z = 1
+num_Z = 2
 num_Y = 2
 num_X = 1
 num_levels = 5
