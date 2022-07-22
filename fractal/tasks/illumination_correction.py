@@ -223,20 +223,17 @@ def illumination_correction(
     # Prepare delayed function
     delayed_correct = dask.delayed(correct)
 
-    # FIXME The dask array will consist of a single chunk.
-    # (docs.dask.org/en/stable/_modules/dask/array/core.html#from_delayed)
-
     # Loop over channels
     data_czyx_new = []
     for ind_ch, ch in enumerate(chl_list):
-
-        data_zyx = data_czyx[ind_ch]
+        # Set correction matrix
         illum_img = corrections[ch]
-
+        # Select data for given channel
+        data_zyx = data_czyx[ind_ch]
+        # Initialize empty array for corrected images
         data_zyx_new = da.empty_like(data_zyx)
-
+        # Loop over FOVs
         for indices in list_indices:
-
             s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
             shape = [e_z - s_z, e_y - s_y, e_x - s_x]
             if min(shape) == 0:
@@ -246,12 +243,12 @@ def illumination_correction(
                 illum_img,
                 background=background,
             )
-            # FIXME what about meta and name kwargs?
             data_zyx_new[s_z:e_z, s_y:e_y, s_x:e_x] = da.from_delayed(
                 new_img, shape, dtype
             )
-
         data_czyx_new.append(data_zyx_new)
+
+    # Combine all 3D channel arrays into a single 4D array
     accumulated_data = da.stack(data_czyx_new, axis=0)
 
     # Construct resolution pyramid
