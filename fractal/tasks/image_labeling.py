@@ -17,7 +17,6 @@ import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-import anndata as ad
 import dask
 import dask.array as da
 import numpy as np
@@ -26,6 +25,9 @@ from cellpose import core
 from cellpose import models
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
+from fractal.tasks.lib_regions_of_interest import (
+    extract_zyx_pixel_sizes_from_zattrs,
+)
 
 
 def segment_FOV(
@@ -127,11 +129,11 @@ def image_labeling(
     do_3D = data_zyx.shape[0] > 1
     if do_3D:
         if anisotropy is None:
-
-            adata = ad.read_zarr(f"{zarrurl}tables/FOV_ROI_table")
-            pixel_size_x = adata[:, "pixel_size_x"].X[0, 0]
-            pixel_size_y = adata[:, "pixel_size_y"].X[0, 0]
-            pixel_size_z = adata[:, "pixel_size_z"].X[0, 0]
+            # Read pixel sizes from zattrs file
+            pxl_zyx = extract_zyx_pixel_sizes_from_zattrs(
+                zarrurl + ".zattrs", level=labeling_level
+            )
+            pixel_size_z, pixel_size_y, pixel_size_x = pxl_zyx[:]
             if not np.allclose(pixel_size_x, pixel_size_y):
                 raise Exception(
                     "ERROR: XY anisotropy detected\n"
@@ -139,11 +141,6 @@ def image_labeling(
                     f"pixel_size_y={pixel_size_y}"
                 )
             anisotropy = pixel_size_z / pixel_size_x
-            if labeling_level > 0:
-                raise NotImplementedError(
-                    "TODO: fix automatic anisotropy "
-                    "detection for higher levels"
-                )
 
     # Check model_type
     if model_type not in ["nuclei", "cyto2", "cyto"]:

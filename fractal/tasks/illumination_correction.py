@@ -23,6 +23,9 @@ from skimage.io import imread
 from fractal.tasks.lib_pyramid_creation import write_pyramid
 from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
 from fractal.tasks.lib_regions_of_interest import (
+    extract_zyx_pixel_sizes_from_zattrs,
+)
+from fractal.tasks.lib_regions_of_interest import (
     split_3D_indices_into_z_layers,
 )
 
@@ -135,6 +138,7 @@ def illumination_correction(
             newzarrurl += "/"
 
     # Hard-coded values for the image size
+    # FIXME can we parse this from somewhere?
     img_size_y = 2160
     img_size_x = 2560
 
@@ -192,9 +196,15 @@ def illumination_correction(
     # Read FOV ROIs
     FOV_ROI_table = ad.read_zarr(f"{zarrurl}tables/FOV_ROI_table")
 
+    # Read pixel sizes from zattrs file
+    pixel_sizes_zyx = extract_zyx_pixel_sizes_from_zattrs(zarrurl + ".zattrs")
+
     # Create list of indices for 3D FOVs spanning the entire Z direction
     list_indices = convert_ROI_table_to_indices(
-        FOV_ROI_table, level=0, coarsening_xy=coarsening_xy
+        FOV_ROI_table,
+        level=0,
+        coarsening_xy=coarsening_xy,
+        pixel_sizes_zyx=pixel_sizes_zyx,
     )
 
     # Create the final list of single-Z-layer FOVs
@@ -216,8 +226,11 @@ def illumination_correction(
         data_zyx_new = da.empty_like(data_zyx)
 
         for indices in list_indices:
+
             s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
             shape = [e_z - s_z, e_y - s_y, e_x - s_x]
+            if min(shape) == 0:
+                raise Exception(f"ERROR: ROI indices lead to shape {shape}")
             new_img = delayed_correct(
                 data_zyx[s_z:e_z, s_y:e_y, s_x:e_x],
                 illum_img,

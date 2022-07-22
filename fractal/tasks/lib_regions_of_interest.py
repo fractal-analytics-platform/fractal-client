@@ -1,6 +1,7 @@
+import json
 import math
-from typing import Dict
 from typing import List
+from typing import Tuple
 from typing import Union
 
 import anndata as ad
@@ -10,24 +11,21 @@ import pandas as pd
 
 def prepare_FOV_ROI_table(
     df: pd.DataFrame,
-    image_size: Union[Dict, None] = None,
-    well_size_z: int = None,
 ) -> ad.AnnData:
 
-    if image_size is None:
-        raise Exception("Missing image_size arg in prepare_ROIs_table")
-    if well_size_z is None:
-        raise Exception("Missing well_size_z arg in prepare_ROIs_table")
+    for mu in ["x", "y", "z"]:
 
-    # Reset reference values for coordinates
-    df["x_micrometer"] -= df["x_micrometer"].min()
-    df["y_micrometer"] -= df["y_micrometer"].min()
-    df["z_micrometer"] -= df["z_micrometer"].min()
+        # Reset reference values for coordinates
+        df[f"{mu}_micrometer"] -= df[f"{mu}_micrometer"].min()
 
-    # Obtain box size in physical units
-    df["len_x_micrometer"] = image_size["x"] * df["pixel_size_x"]
-    df["len_y_micrometer"] = image_size["y"] * df["pixel_size_y"]
-    df["len_z_micrometer"] = well_size_z * df["pixel_size_z"]
+        # Obtain box size in physical units
+        df[f"len_{mu}_micrometer"] = df[f"{mu}_pixel"] * df[f"pixel_size_{mu}"]
+
+        # Remove information about pixel sizes in physical units
+        df.drop(f"pixel_size_{mu}", inplace=True, axis=1)
+
+        # Remove information about array size in pixels
+        df.drop(f"{mu}_pixel", inplace=True, axis=1)
 
     # Remove unused column
     df.drop("bit_depth", inplace=True, axis=1)
@@ -52,22 +50,17 @@ def prepare_FOV_ROI_table(
     return adata
 
 
-def convert_FOV_ROIs_3D_to_2D(adata: ad.AnnData = None) -> ad.AnnData:
+def convert_FOV_ROIs_3D_to_2D(
+    adata: ad.AnnData = None, pixel_size_z: float = None
+) -> ad.AnnData:
 
-    # FIXME: use this piece of code (or similar) in tests
-    """
-    adata = ad.AnnData(X=np.zeros((2, 3)), dtype=int)
-    adata.obs_names = ["FOV1", "FOV2"]
-    adata.var_names = ["z", "len_z", "pixel_size_z"]
-    adata[:, "z"].X = [[2], [4]]
-    adata[:, "len_z"].X = [[5], [7]]
-    adata[:, "pixel_size_z"].X = [[2], [2]]
-    """
+    if pixel_size_z is None:
+        raise Exception("Missing pixel_size_z in convert_FOV_ROIs_3D_to_2D")
 
     # Compress a 3D stack of images to a single Z plane,
     # with thickness equal to pixel_size_z
     df = adata.to_df()
-    df["len_z_micrometer"] = df["pixel_size_z"]
+    df["len_z_micrometer"] = pixel_size_z
 
     # Assign dtype explicitly, to avoid
     # >> UserWarning: X converted to numpy array with dtype float64
@@ -88,9 +81,12 @@ def convert_ROI_table_to_indices(
     ROI: ad.AnnData,
     level: int = 0,
     coarsening_xy: int = 2,
-) -> List[List]:
+    pixel_sizes_zyx: Union[List[float], Tuple[float]] = None,
+) -> List[List[int]]:
 
     list_indices = []
+
+    pixel_size_z, pixel_size_y, pixel_size_x = pixel_sizes_zyx
 
     for FOV in sorted(ROI.obs_names):
 
@@ -101,9 +97,6 @@ def convert_ROI_table_to_indices(
         len_x_micrometer = ROI[FOV, "len_x_micrometer"].X[0, 0]
         len_y_micrometer = ROI[FOV, "len_y_micrometer"].X[0, 0]
         len_z_micrometer = ROI[FOV, "len_z_micrometer"].X[0, 0]
-        pixel_size_x = ROI[FOV, "pixel_size_x"].X[0, 0]
-        pixel_size_y = ROI[FOV, "pixel_size_y"].X[0, 0]
-        pixel_size_z = ROI[FOV, "pixel_size_z"].X[0, 0]
 
         # Set pyramid-level pixel sizes
         prefactor = coarsening_xy**level
@@ -151,7 +144,10 @@ def split_3D_indices_into_z_layers(
 
 
 def _inspect_ROI_table(
-    path: str = None, level: int = 0, coarsening_xy: int = 2
+    path: str = None,
+    level: int = 0,
+    coarsening_xy: int = 2,
+    pixel_sizes_zyx=[1.0, 0.1625, 0.1625],
 ) -> None:
 
     adata = ad.read_zarr(path)
@@ -161,7 +157,10 @@ def _inspect_ROI_table(
     print()
 
     list_indices = convert_ROI_table_to_indices(
-        adata, level=level, coarsening_xy=coarsening_xy
+        adata,
+        level=level,
+        coarsening_xy=coarsening_xy,
+        pixel_sizes_zyx=pixel_sizes_zyx,
     )
 
     list_indices = split_3D_indices_into_z_layers(list_indices)
@@ -174,10 +173,120 @@ def _inspect_ROI_table(
     print()
 
 
-if __name__ == "__main__":
-    import sys
+def temporary_test():
 
-    args = sys.argv[1:]
-    types = [str, int, int]
-    args = [types[ix](x) for ix, x in enumerate(args)]
-    _inspect_ROI_table(*args)
+    pixel_size_z = 1.0
+    pixel_size_y = 0.1625
+    pixel_size_x = 0.1625
+
+    df = pd.DataFrame(np.zeros((2, 10)), dtype=int)
+    df.index = ["FOV1", "FOV2"]
+    df.columns = [
+        "x_micrometer",
+        "y_micrometer",
+        "z_micrometer",
+        "x_pixel",
+        "y_pixel",
+        "z_pixel",
+        "pixel_size_x",
+        "pixel_size_y",
+        "pixel_size_z",
+        "bit_depth",
+    ]
+    df["x_micrometer"] = [0.0, 416.0]
+    df["y_micrometer"] = [0.0, 0.0]
+    df["z_micrometer"] = [0.0, 0.0]
+    df["x_pixel"] = [2560, 2560]
+    df["y_pixel"] = [2160, 2160]
+    df["z_pixel"] = [5, 5]
+    df["pixel_size_x"] = [pixel_size_x] * 2
+    df["pixel_size_y"] = [pixel_size_y] * 2
+    df["pixel_size_z"] = [pixel_size_z] * 2
+    df["bit_depth"] = [16.0, 16.0]
+
+    print("DataFrame")
+    print(df)
+    print()
+
+    adata = prepare_FOV_ROI_table(df)
+
+    print("AnnData table")
+    print(adata.var_names)
+    print(adata.obs_names)
+    print(adata.X)
+    print()
+
+    print("Indices 3D")
+    pixel_sizes_zyx = [pixel_size_z, pixel_size_y, pixel_size_x]
+    list_indices = convert_ROI_table_to_indices(
+        adata, level=0, coarsening_xy=2, pixel_sizes_zyx=pixel_sizes_zyx
+    )
+    for indices in list_indices:
+        print(indices)
+    print()
+
+    print("Indices 3D / split")
+    list_indices = split_3D_indices_into_z_layers(list_indices)
+    for indices in list_indices:
+        print(indices)
+    print()
+
+    print("Indices 2D")
+    adata = convert_FOV_ROIs_3D_to_2D(adata, pixel_size_z)
+    list_indices = convert_ROI_table_to_indices(
+        adata, level=0, coarsening_xy=2, pixel_sizes_zyx=pixel_sizes_zyx
+    )
+    for indices in list_indices:
+        print(indices)
+    print()
+
+
+def extract_zyx_pixel_sizes_from_zattrs(zattrs_path: str, level: int = 0):
+    with open(zattrs_path, "r") as jsonfile:
+        zattrs = json.load(jsonfile)
+
+    try:
+
+        # Identify multiscales
+        multiscales = zattrs["multiscales"]
+
+        # Check that there is a single multiscale
+        if len(multiscales) > 1:
+            raise Exception(f"ERROR: There are {len(multiscales)} multiscales")
+
+        # Check that there are no datasets-global transformations
+        if "coordinateTransformations" in multiscales[0].keys():
+            raise Exception(
+                "ERROR: coordinateTransformations at the multiscales "
+                "level are not currently supported"
+            )
+
+        # Identify all datasets (AKA pyramid levels)
+        datasets = multiscales[0]["datasets"]
+
+        # Select highest-resolution dataset
+        transformations = datasets[level]["coordinateTransformations"]
+        for t in transformations:
+            if t["type"] == "scale":
+                return t["scale"]
+        raise Exception(
+            "ERROR:"
+            f" no scale transformation found for level {level}"
+            f" in {zattrs_path}"
+        )
+
+    except KeyError as e:
+        raise KeyError(
+            "extract_zyx_pixel_sizes_from_zattrs failed, for {zattrs_path}\n",
+            e,
+        )
+
+
+if __name__ == "__main__":
+    # import sys
+    # args = sys.argv[1:]
+    # types = [str, int, int]
+    # args = [types[ix](x) for ix, x in enumerate(args)]
+    # _inspect_ROI_table(*args)
+
+    temporary_test()

@@ -19,6 +19,9 @@ import zarr
 from anndata.experimental import write_elem
 
 from fractal.tasks.lib_regions_of_interest import convert_FOV_ROIs_3D_to_2D
+from fractal.tasks.lib_regions_of_interest import (
+    extract_zyx_pixel_sizes_from_zattrs,
+)
 
 
 def replicate_zarr_structure_mip(zarrurl):
@@ -113,7 +116,7 @@ def replicate_zarr_structure_mip(zarrurl):
         group_FOV = group_well.create_group(f"{FOV}/")
 
         # Copy .zattrs file at the COL/ROW/FOV level
-        path_FOV_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
+        path_FOV_zattrs = f"{zarrurl}{row}/{column}/{FOV}/.zattrs"
         with open(path_FOV_zattrs) as FOV_zattrs_file:
             FOV_zattrs = json.load(FOV_zattrs_file)
         for key in FOV_zattrs.keys():
@@ -121,11 +124,17 @@ def replicate_zarr_structure_mip(zarrurl):
 
         # Read FOV ROI table
         FOV_ROI_table = ad.read_zarr(
-            zarrurl + f"{row}/{column}/0/tables/FOV_ROI_table"
+            f"{zarrurl}{row}/{column}/0/tables/FOV_ROI_table"
         )
 
+        # Read pixel sizes from zattrs file
+        pixel_sizes_zyx = extract_zyx_pixel_sizes_from_zattrs(path_FOV_zattrs)
+        pixel_size_z = pixel_sizes_zyx[0]
+
         # Convert 3D FOVs to 2D
-        new_FOV_ROI_table = convert_FOV_ROIs_3D_to_2D(FOV_ROI_table)
+        new_FOV_ROI_table = convert_FOV_ROIs_3D_to_2D(
+            FOV_ROI_table, pixel_size_z
+        )
 
         # Create table group and write new table
         group_tables = group_FOV.create_group("tables/")
