@@ -12,8 +12,8 @@ from fractal.tasks.illumination_correction import correct
 from fractal.tasks.illumination_correction import illumination_correction
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("overwrite", [True, False])
+@pytest.mark.skip("Missing ROIs table in test data")
 def test_illumination_correction(
     overwrite: bool,
     tmp_path: pathlib.Path,
