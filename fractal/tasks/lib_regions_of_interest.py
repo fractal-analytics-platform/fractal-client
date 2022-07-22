@@ -9,9 +9,7 @@ import numpy as np
 import pandas as pd
 
 
-def prepare_FOV_ROI_table(
-    df: pd.DataFrame,
-) -> ad.AnnData:
+def prepare_FOV_ROI_table(df: pd.DataFrame) -> ad.AnnData:
 
     for mu in ["x", "y", "z"]:
 
