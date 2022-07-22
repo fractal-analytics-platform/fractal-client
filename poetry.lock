@@ -368,6 +368,14 @@ distributed = ["distributed (==2022.7.0)"]
 test = ["pytest", "pytest-rerunfailures", "pytest-xdist", "pre-commit"]
 
 [[package]]
+name = "defusedxml"
+version = "0.7.1"
+description = "XML bomb protection for Python stdlib modules"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
 name = "devtools"
 version = "0.8.0"
 description = "Python's missing debug print command and other development tools."
@@ -1875,7 +1883,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "9d4a4cd34b7411759224f1ae07241b8c0aaacb7a7419c426fa320e03afa0b38d"
+content-hash = "1fbddd2d6ec2b8460fe5d4307b5b8f0d7f4756a0ea77a96c46dce9eb1210c44b"
 
 [metadata.files]
 aiobotocore = [
@@ -2142,6 +2150,7 @@ dask = [
     {file = "dask-2022.7.0-py3-none-any.whl", hash = "sha256:3301725a654796ba5942536646689a37c27513c89724b34a40281bb6848b2963"},
     {file = "dask-2022.7.0.tar.gz", hash = "sha256:50ad63035d6429cfa71d4c1832888a668e4260b1ef11163c795edc0ed177b4b3"},
 ]
+defusedxml = []
 devtools = [
     {file = "devtools-0.8.0-py3-none-any.whl", hash = "sha256:00717ef184223cf36c65bbd17c6eb412f8a7564f47957f9e8b2b7610661b17fb"},
     {file = "devtools-0.8.0.tar.gz", hash = "sha256:6162a2f61c70242479dff3163e7837e6a9bf32451661af1347bfa3115602af16"},
