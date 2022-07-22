@@ -17,6 +17,7 @@ import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import anndata as ad
 import dask
 import dask.array as da
 import numpy as np
@@ -25,6 +26,7 @@ from cellpose import core
 from cellpose import models
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
+from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
 from fractal.tasks.lib_regions_of_interest import (
     extract_zyx_pixel_sizes_from_zattrs,
 )
@@ -64,6 +66,9 @@ def segment_FOV(
         anisotropy=anisotropy,
         cellprob_threshold=cellprob_threshold,
     )
+    """
+    mask = np.zeros_like(column)
+    """
     if not do_3D:
         mask = np.expand_dims(mask, axis=0)
     t1 = time.perf_counter()
@@ -125,6 +130,35 @@ def image_labeling(
     # Load ZYX data
     data_zyx = da.from_zarr(f"{zarrurl}{labeling_level}")[ind_channel]
 
+    # Read FOV ROIs
+    FOV_ROI_table = ad.read_zarr(f"{zarrurl}tables/FOV_ROI_table")
+
+    # Read pixel sizes from zattrs file
+    pixel_sizes_zyx = extract_zyx_pixel_sizes_from_zattrs(zarrurl + ".zattrs")
+
+    # Create list of indices for 3D FOVs spanning the entire Z direction
+    list_indices = convert_ROI_table_to_indices(
+        FOV_ROI_table,
+        level=0,
+        coarsening_xy=coarsening_xy,
+        pixel_sizes_zyx=pixel_sizes_zyx,
+    )
+
+    # Extract image size from FOV-ROI indices
+    # Note: this works at level=0, where FOVs should all be of the exact same
+    #       size (in pixels)
+    ref_img_size = None
+    for indices in list_indices:
+        img_size = (indices[3] - indices[2], indices[5] - indices[4])
+        if ref_img_size is None:
+            ref_img_size = img_size
+        else:
+            if img_size != ref_img_size:
+                raise Exception(
+                    "ERROR: inconsistent image sizes in list_indices"
+                )
+    img_size_y, img_size_x = img_size[:]
+
     # Select 2D/3D behavior and set some parameters
     do_3D = data_zyx.shape[0] > 1
     if do_3D:
@@ -141,6 +175,10 @@ def image_labeling(
                     f"pixel_size_y={pixel_size_y}"
                 )
             anisotropy = pixel_size_z / pixel_size_x
+    else:
+        raise NotImplementedError(
+            "TODO: check the integration of 2D labeling with ROIs"
+        )
 
     # Check model_type
     if model_type not in ["nuclei", "cyto2", "cyto"]:
@@ -177,8 +215,6 @@ def image_labeling(
         label_name = f"label_{ind_channel}"
 
     # Check that input array is made of images (in terms of shape/chunks)
-    img_size_y = 2160
-    img_size_x = 2560
     nz, ny, nx = data_zyx.shape
     if (ny % img_size_y != 0) or (nx % img_size_x != 0):
         raise Exception(
@@ -207,7 +243,36 @@ def image_labeling(
         out.write(f"{data_zyx.shape}\n")
         out.write(f"{data_zyx.chunks}\n\n")
 
-    # Map labeling function onto all chunks (i.e., FOV colums)
+    # Prepare delayed function
+    delayed_segment_FOV = dask.delayed(segment_FOV)
+
+    # Prepare empty mask
+    mask = da.empty(
+        data_zyx.shape, dtype=label_dtype, chunks=(1, img_size_y, img_size_x)
+    )
+
+    # Map labeling function onto all FOVs
+    for indices in list_indices:
+        s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
+        shape = [e_z - s_z, e_y - s_y, e_x - s_x]
+        if min(shape) == 0:
+            raise Exception(f"ERROR: ROI indices lead to shape {shape}")
+        FOV_mask = delayed_segment_FOV(
+            data_zyx[s_z:e_z, s_y:e_y, s_x:e_x],
+            model=model,
+            do_3D=do_3D,
+            anisotropy=anisotropy,
+            label_dtype=label_dtype,
+            diameter=diameter,
+            cellprob_threshold=cellprob_threshold,
+            logfile=logfile,
+        )
+        mask[s_z:e_z, s_y:e_y, s_x:e_x] = da.from_delayed(
+            FOV_mask, shape, label_dtype
+        )
+
+    # Map labeling function onto all chunks (i.e., FOV columns)
+    """
     mask = (
         data_zyx.rechunk((nz, img_size_y, img_size_x))
         .map_blocks(
@@ -223,6 +288,7 @@ def image_labeling(
         )
         .rechunk((1, img_size_y, img_size_x))
     )
+    """
 
     with open(logfile, "a") as out:
         out.write(
@@ -255,8 +321,8 @@ def image_labeling(
                 overwrite=False,
                 coarsening_xy=coarsening_xy,
                 num_levels=1,
-                chunk_size_x=2560,
-                chunk_size_y=2160,
+                chunk_size_x=img_size_x,
+                chunk_size_y=img_size_y,
             )
 
         with open(logfile, "a") as out:
@@ -325,8 +391,8 @@ def image_labeling(
             overwrite=False,
             coarsening_xy=coarsening_xy,
             num_levels=num_levels,
-            chunk_size_x=2560,
-            chunk_size_y=2160,
+            chunk_size_x=img_size_x,
+            chunk_size_y=img_size_y,
         )
 
         t1 = time.perf_counter()
@@ -343,8 +409,8 @@ def image_labeling(
                 overwrite=False,
                 coarsening_xy=coarsening_xy,
                 num_levels=num_levels,
-                chunk_size_x=2560,
-                chunk_size_y=2160,
+                chunk_size_x=img_size_x,
+                chunk_size_y=img_size_y,
                 aggregation_function=np.max,
             )
 
