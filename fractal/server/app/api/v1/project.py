@@ -153,8 +153,8 @@ async def apply_workflow(
         )
         output_dataset = (await db.execute(stm)).one()
     else:
-        output_dataset = auto_output_dataset(
-            proejct=project,
+        output_dataset = await auto_output_dataset(
+            project=project,
             input_dataset=input_dataset,
             workflow=workflow
         )

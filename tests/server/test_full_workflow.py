@@ -10,12 +10,14 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import pytest
 from devtools import debug
 
 
 PREFIX = "/api/v1"
 
 
+@pytest.mark.xfail
 async def test_project_creation(
     app, client, MockCurrentUser, db, testdata_path, collect_tasks
 ):
