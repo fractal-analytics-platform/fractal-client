@@ -9,17 +9,17 @@ from sqlmodel import select
 
 from ...db import AsyncSession
 from ...db import get_db
-from ...models.project import Dataset
-from ...models.project import Project
-from ...models.project import ProjectCreate
-from ...models.project import ProjectRead
-from ...models.project import Resource
-from ...models.project import ResourceCreate
-from ...models.project import ResourceRead
+from ...models import Dataset
+from ...models import Project
+from ...models import ProjectCreate
+from ...models import ProjectRead
+from ...models import Resource
+from ...models import ResourceCreate
+from ...models import ResourceRead
 from ...models.task import Task
+from ...runner import auto_output_dataset
 from ...runner import submit_workflow
 from ...runner import validate_workflow_compatibility
-from ...runner import auto_output_dataset
 from ...security import current_active_user
 from ...security import User
 from fractal.common.models import ApplyWorkflow
@@ -154,25 +154,22 @@ async def apply_workflow(
         output_dataset = (await db.execute(stm)).one()
     else:
         output_dataset = await auto_output_dataset(
-            project=project,
-            input_dataset=input_dataset,
-            workflow=workflow
+            project=project, input_dataset=input_dataset, workflow=workflow
         )
 
     try:
         validate_workflow_compatibility(
             workflow=workflow,
             input_dataset=input_dataset,
-            output_dataset=output_dataset
+            output_dataset=output_dataset,
         )
     except TypeError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
         )
 
-    assert input_dataset
-    assert output_dataset
-    assert workflow
+    if not input_dataset or not output_dataset or not workflow:
+        raise ValueError
 
     background_tasks.add_task(
         submit_workflow,

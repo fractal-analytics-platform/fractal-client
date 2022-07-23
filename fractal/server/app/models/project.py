@@ -4,50 +4,16 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from pydantic import root_validator
 from pydantic import UUID4
 from sqlalchemy import Column
 from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
-from sqlmodel import SQLModel
 
 from .security import UserOAuth
-
-
-def slugify(value: str):
-    return value.lower().replace(" ", "_")
-
-
-class DatasetBase(SQLModel):
-    name: str
-    project_id: Optional[int]
-    type: Optional[str]
-    meta: Dict[str, Any] = {}
-    read_only: Optional[bool] = False
-
-
-class DatasetCreate(DatasetBase):
-    pass
-
-
-class DatasetRead(DatasetBase):
-    id: int
-
-
-class ProjectBase(SQLModel):
-    name: str
-    project_dir: str
-    read_only: bool = False
-
-
-class ResourceBase(SQLModel):
-    path: str
-    glob_pattern: Optional[str] = ""
-
-    @property
-    def glob_path(self) -> Path:
-        return Path(self.path) / self.glob_pattern
+from fractal.common.models import DatasetBase
+from fractal.common.models import ProjectBase
+from fractal.common.models import ResourceBase
 
 
 class Dataset(DatasetBase, table=True):  # type: ignore
@@ -66,24 +32,6 @@ class Dataset(DatasetBase, table=True):  # type: ignore
         return [r.glob_path for r in self.resource_list]
 
 
-class ProjectCreate(ProjectBase):
-    slug: Optional[str] = Field(sa_column_kwargs={"unique": True})
-    default_dataset_name: Optional[str] = "default"
-
-    @root_validator(pre=True)
-    def compute_slug_if_not_provided(cls, values):
-        """
-        Creates the project's slug
-
-        Or double checks the user provided one if any.
-        """
-        slug = values.get("slug", None)
-        if not slug:
-            slug = values["name"]
-            values["slug"] = slugify(slug)
-        return values
-
-
 class Project(ProjectBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     slug: str
@@ -96,21 +44,6 @@ class Project(ProjectBase, table=True):  # type: ignore
     )
 
 
-class ResourceCreate(ResourceBase):
-    pass
-
-
 class Resource(ResourceBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     dataset_id: int = Field(foreign_key="dataset.id")
-
-
-class ProjectRead(ProjectBase):
-    id: int
-    slug: str
-    dataset_list: List[DatasetRead] = []
-
-
-class ResourceRead(ResourceBase):
-    id: int
-    dataset_id: int
