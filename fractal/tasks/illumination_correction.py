@@ -23,11 +23,9 @@ from skimage.io import imread
 from fractal.tasks.lib_pyramid_creation import write_pyramid
 from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
 from fractal.tasks.lib_regions_of_interest import (
-    extract_zyx_pixel_sizes_from_zattrs,
-)
-from fractal.tasks.lib_regions_of_interest import (
     split_3D_indices_into_z_layers,
 )
+from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
 def correct(
@@ -141,14 +139,16 @@ def illumination_correction(
     FOV_ROI_table = ad.read_zarr(f"{zarrurl}tables/FOV_ROI_table")
 
     # Read pixel sizes from zattrs file
-    pixel_sizes_zyx = extract_zyx_pixel_sizes_from_zattrs(zarrurl + ".zattrs")
+    full_res_pxl_sizes_zyx = extract_zyx_pixel_sizes(
+        zarrurl + ".zattrs", level=0
+    )
 
     # Create list of indices for 3D FOVs spanning the entire Z direction
     list_indices = convert_ROI_table_to_indices(
         FOV_ROI_table,
         level=0,
         coarsening_xy=coarsening_xy,
-        pixel_sizes_zyx=pixel_sizes_zyx,
+        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
 
     # Extract image size from FOV-ROI indices

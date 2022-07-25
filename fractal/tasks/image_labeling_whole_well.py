@@ -21,6 +21,7 @@ from cellpose import core
 from cellpose import models
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
+from fractal.tasks.lib_zattrs_utils import rescale_datasets
 
 
 def image_labeling_whole_well(
@@ -155,34 +156,12 @@ def image_labeling_whole_well(
             f"da.from_array(upscaled_mask) [with rechunking]: {mask_da}\n\n"
         )
 
-    # Construct rescaled datasets
-    datasets = multiscales[0]["datasets"]
-    new_datasets = []
-    for ds in datasets:
-        new_ds = {}
-
-        # Copy all keys that are not coordinateTransformations (e.g. path)
-        for key in ds.keys():
-            if key != "coordinateTransformations":
-                new_ds[key] = ds[key]
-
-        # Update coordinateTransformations
-        old_transformations = ds["coordinateTransformations"]
-        new_transformations = []
-        for t in old_transformations:
-            if t["type"] == "scale":
-                new_t = {"type": "scale"}
-                new_t["scale"] = [
-                    t["scale"][0],
-                    t["scale"][1] * coarsening_xy**labeling_level,
-                    t["scale"][2] * coarsening_xy**labeling_level,
-                ]
-                new_transformations.append(new_t)
-            else:
-                new_transformations.append(t)
-        new_ds["coordinateTransformations"] = new_transformations
-
-        new_datasets.append(new_ds)
+    # Rescale datasets (only relevant for labeling_level>0)
+    new_datasets = rescale_datasets(
+        datasets=multiscales[0]["datasets"],
+        coarsening_xy=coarsening_xy,
+        reference_level=labeling_level,
+    )
 
     # Write zattrs for labels and for specific label
     # FIXME deal with: (1) many channels, (2) overwriting

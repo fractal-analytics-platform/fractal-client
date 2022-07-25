@@ -19,9 +19,7 @@ import zarr
 from anndata.experimental import write_elem
 
 from fractal.tasks.lib_regions_of_interest import convert_FOV_ROIs_3D_to_2D
-from fractal.tasks.lib_regions_of_interest import (
-    extract_zyx_pixel_sizes_from_zattrs,
-)
+from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
 def replicate_zarr_structure_mip(zarrurl):
@@ -128,7 +126,7 @@ def replicate_zarr_structure_mip(zarrurl):
         )
 
         # Read pixel sizes from zattrs file
-        pixel_sizes_zyx = extract_zyx_pixel_sizes_from_zattrs(path_FOV_zattrs)
+        pixel_sizes_zyx = extract_zyx_pixel_sizes(path_FOV_zattrs, level=0)
         pixel_size_z = pixel_sizes_zyx[0]
 
         # Convert 3D FOVs to 2D

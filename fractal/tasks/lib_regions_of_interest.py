@@ -1,4 +1,3 @@
-import json
 import math
 from typing import List
 from typing import Tuple
@@ -79,13 +78,16 @@ def convert_ROI_table_to_indices(
     ROI: ad.AnnData,
     level: int = 0,
     coarsening_xy: int = 2,
-    pixel_sizes_zyx: Union[List[float], Tuple[float]] = None,
+    full_res_pxl_sizes_zyx: Union[List[float], Tuple[float]] = None,
 ) -> List[List[int]]:
 
+    # Set pyramid-level pixel sizes
+    pxl_size_z, pxl_size_y, pxl_size_x = full_res_pxl_sizes_zyx
+    prefactor = coarsening_xy**level
+    pxl_size_x *= prefactor
+    pxl_size_y *= prefactor
+
     list_indices = []
-
-    pixel_size_z, pixel_size_y, pixel_size_x = pixel_sizes_zyx
-
     for FOV in sorted(ROI.obs_names):
 
         # Extract data from anndata table
@@ -96,18 +98,13 @@ def convert_ROI_table_to_indices(
         len_y_micrometer = ROI[FOV, "len_y_micrometer"].X[0, 0]
         len_z_micrometer = ROI[FOV, "len_z_micrometer"].X[0, 0]
 
-        # Set pyramid-level pixel sizes
-        prefactor = coarsening_xy**level
-        pixel_size_x *= prefactor
-        pixel_size_y *= prefactor
-
         # Identify indices along the three dimensions
-        start_x = x_micrometer / pixel_size_x
-        end_x = (x_micrometer + len_x_micrometer) / pixel_size_x
-        start_y = y_micrometer / pixel_size_y
-        end_y = (y_micrometer + len_y_micrometer) / pixel_size_y
-        start_z = z_micrometer / pixel_size_z
-        end_z = (z_micrometer + len_z_micrometer) / pixel_size_z
+        start_x = x_micrometer / pxl_size_x
+        end_x = (x_micrometer + len_x_micrometer) / pxl_size_x
+        start_y = y_micrometer / pxl_size_y
+        end_y = (y_micrometer + len_y_micrometer) / pxl_size_y
+        start_z = z_micrometer / pxl_size_z
+        end_z = (z_micrometer + len_z_micrometer) / pxl_size_z
         indices = [start_z, end_z, start_y, end_y, start_x, end_x]
 
         # Round indices to lower integer
@@ -115,7 +112,7 @@ def convert_ROI_table_to_indices(
         indices = list(map(math.floor, indices))
 
         # Append ROI indices to to list
-        list_indices.append(indices)
+        list_indices.append(indices[:])
 
     return list_indices
 
@@ -145,7 +142,7 @@ def _inspect_ROI_table(
     path: str = None,
     level: int = 0,
     coarsening_xy: int = 2,
-    pixel_sizes_zyx=[1.0, 0.1625, 0.1625],
+    full_res_pxl_sizes_zyx=[1.0, 0.1625, 0.1625],
 ) -> None:
 
     adata = ad.read_zarr(path)
@@ -158,7 +155,7 @@ def _inspect_ROI_table(
         adata,
         level=level,
         coarsening_xy=coarsening_xy,
-        pixel_sizes_zyx=pixel_sizes_zyx,
+        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
 
     list_indices = split_3D_indices_into_z_layers(list_indices)
@@ -215,9 +212,12 @@ def temporary_test():
     print()
 
     print("Indices 3D")
-    pixel_sizes_zyx = [pixel_size_z, pixel_size_y, pixel_size_x]
+    full_res_pxl_sizes_zyx = [pixel_size_z, pixel_size_y, pixel_size_x]
     list_indices = convert_ROI_table_to_indices(
-        adata, level=0, coarsening_xy=2, pixel_sizes_zyx=pixel_sizes_zyx
+        adata,
+        level=0,
+        coarsening_xy=2,
+        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
     for indices in list_indices:
         print(indices)
@@ -232,52 +232,14 @@ def temporary_test():
     print("Indices 2D")
     adata = convert_FOV_ROIs_3D_to_2D(adata, pixel_size_z)
     list_indices = convert_ROI_table_to_indices(
-        adata, level=0, coarsening_xy=2, pixel_sizes_zyx=pixel_sizes_zyx
+        adata,
+        level=0,
+        coarsening_xy=2,
+        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
     for indices in list_indices:
         print(indices)
     print()
-
-
-def extract_zyx_pixel_sizes_from_zattrs(zattrs_path: str, level: int = 0):
-    with open(zattrs_path, "r") as jsonfile:
-        zattrs = json.load(jsonfile)
-
-    try:
-
-        # Identify multiscales
-        multiscales = zattrs["multiscales"]
-
-        # Check that there is a single multiscale
-        if len(multiscales) > 1:
-            raise Exception(f"ERROR: There are {len(multiscales)} multiscales")
-
-        # Check that there are no datasets-global transformations
-        if "coordinateTransformations" in multiscales[0].keys():
-            raise Exception(
-                "ERROR: coordinateTransformations at the multiscales "
-                "level are not currently supported"
-            )
-
-        # Identify all datasets (AKA pyramid levels)
-        datasets = multiscales[0]["datasets"]
-
-        # Select highest-resolution dataset
-        transformations = datasets[level]["coordinateTransformations"]
-        for t in transformations:
-            if t["type"] == "scale":
-                return t["scale"]
-        raise Exception(
-            "ERROR:"
-            f" no scale transformation found for level {level}"
-            f" in {zattrs_path}"
-        )
-
-    except KeyError as e:
-        raise KeyError(
-            "extract_zyx_pixel_sizes_from_zattrs failed, for {zattrs_path}\n",
-            e,
-        )
 
 
 if __name__ == "__main__":
