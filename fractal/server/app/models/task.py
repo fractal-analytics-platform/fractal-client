@@ -145,11 +145,13 @@ class Task(TaskBase, table=True):  # type: ignore
         if not self._is_atomic:
             return flatten(st.preprocess() for st in self.subtask_list)
         else:
-            return [PreprocessedTask(
-                name=self.name,
-                module=self.module,
-                args=self.default_args,
-            )]
+            return [
+                PreprocessedTask(
+                    name=self.name,
+                    module=self.module,
+                    args=self.default_args,
+                )
+            ]
 
     @property
     def _arguments(self):
@@ -180,9 +182,9 @@ class Task(TaskBase, table=True):  # type: ignore
         self,
         db: AsyncSession,
         subtask: "Task",
-        order=None,
-        args=None,
-        commit_and_refresh=True,
+        order: Optional[int] = None,
+        args: Optional[Dict[str, Any]] = None,
+        commit_and_refresh: bool = True,
     ):
         if not args:
             args = dict()
