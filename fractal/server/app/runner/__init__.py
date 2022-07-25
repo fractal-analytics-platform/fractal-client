@@ -132,7 +132,7 @@ async def auto_output_dataset(
     project: Project,
     input_dataset: Dataset,
     workflow: Task,
-    overwrite_input: bool = False
+    overwrite_input: bool = False,
 ):
     """
     Determine the output dataset if it was not provided explicitly
@@ -203,6 +203,8 @@ async def submit_workflow(
     output_dataset: Dataset,
 ):
     """
+    Prepares a workflow and applies it to a dataset
+
     Arguments
     ---------
     output_dataset (Dataset | str) :
@@ -228,14 +230,8 @@ async def submit_workflow(
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
 
-    wf = _process_workflow(
+    _process_workflow(
         task=workflow,
         input_paths=input_paths,
         output_path=output_path,
     )
-    from devtools import debug
-    debug(wf)
-    from time import sleep
-    sleep(2)
-    debug(wf)
-    raise NotImplementedError

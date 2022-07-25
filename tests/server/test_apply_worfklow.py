@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from time import sleep
 
 import pytest
 from devtools import debug
@@ -173,7 +174,6 @@ def test_process_workflow(tmp_path, nontrivial_workflow):
     assert data[2]["message"] == "dummy2"
 
 
-@pytest.mark.xfail
 async def test_apply_workflow(
     db,
     client,
@@ -183,6 +183,7 @@ async def test_apply_workflow(
     dataset_factory,
     resource_factory,
     task_factory,
+    tmp_path,
 ):
     """
     GIVEN
@@ -202,7 +203,10 @@ async def test_apply_workflow(
         out_ds = await dataset_factory(prj, type="image", name="out_ds")
 
         resource = await resource_factory(ds)
-        resource = await resource_factory(out_ds)
+        output_path = (tmp_path / "0.json").as_posix()
+        resource = await resource_factory(
+            out_ds, path=output_path, glob_pattern=None
+        )
 
         debug(ds)
         debug(resource)
@@ -214,13 +218,21 @@ async def test_apply_workflow(
         resource_type="workflow",
         input_type="image",
     )
-    debug(wf)
 
     stm = select(Task).where(Task.name == "dummy")
     res = await db.execute(stm)
     dummy_task = res.scalar()
 
-    await wf.add_subtask(db, subtask=dummy_task)
+    MESSAGE = "test apply workflow"
+    await wf.add_subtask(db, subtask=dummy_task, args=dict(message=MESSAGE))
     debug(TaskRead.from_orm(wf))
 
+    # DONE CREATING WORKFLOW
+
     await submit_workflow(input_dataset=ds, output_dataset=out_ds, workflow=wf)
+    sleep(0.1)  # to make sure that the task has completed
+    with open(output_path, "r") as f:
+        data = json.load(f)
+        debug(data)
+    assert len(data) == 1
+    assert data[0]["message"] == MESSAGE
