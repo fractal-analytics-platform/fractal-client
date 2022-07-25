@@ -203,22 +203,6 @@ def image_labeling(
     except (KeyError, IndexError):
         label_name = f"label_{ind_channel}"
 
-    # Check that input array is made of images (in terms of shape/chunks)
-    nz, ny, nx = data_zyx.shape
-    """
-    if (ny % img_size_y != 0) or (nx % img_size_x != 0):
-        raise Exception(
-            "Error in image_labeling, data_zyx.shape: {data_zyx.shape}"
-        )
-    chunks_z, chunks_y, chunks_x = data_zyx.chunks
-    if len(set(chunks_z)) != 1 or chunks_z[0] != 1:
-        raise Exception(f"Error in image_labeling, chunks_z: {chunks_z}")
-    if len(set(chunks_y)) != 1 or chunks_y[0] != img_size_y:
-        raise Exception(f"Error in image_labeling, chunks_y: {chunks_y}")
-    if len(set(chunks_x)) != 1 or chunks_x[0] != img_size_x:
-        raise Exception(f"Error in image_labeling, chunks_x: {chunks_x}")
-    """
-
     # Initialize cellpose
     use_gpu = core.use_gpu()
     model = models.Cellpose(gpu=use_gpu, model_type=model_type)
@@ -313,24 +297,21 @@ def image_labeling(
 
         # Load non-relabeled mask from disk
         mask = da.from_zarr(zarrurl, component=f"labels/{label_name}/{0}")
-        mask_rechunked = mask.rechunk((nz, img_size_y, img_size_x))
-        newmask_rechunked = da.empty(
-            shape=mask_rechunked.shape,
-            chunks=mask_rechunked.chunks,
+        newmask = da.empty(
+            shape=mask.shape,
+            chunks=mask.chunks,
             dtype=label_dtype,
         )
 
         # Sequential relabeling
-        # https://stackoverflow.com/a/72018364/19085332
         num_labels_tot = 0
         num_labels_column = 0
-
         for indices in list_indices:
             s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
             shape = [e_z - s_z, e_y - s_y, e_x - s_x]
 
-            # Select a specific chunk (=column in 3D, =image in 2D)
-            column_mask = mask_rechunked[s_z:e_z, s_y:e_y, s_x:e_x].compute()
+            # Extract a specific FOV (=column in 3D, =image in 2D)
+            column_mask = mask[s_z:e_z, s_y:e_y, s_x:e_x].compute()
             num_labels_column = np.max(column_mask)
 
             # Apply re-labeling and update total number of labels
@@ -353,9 +334,7 @@ def image_labeling(
                     f"but dtype={label_dtype}"
                 )
             # Re-assign the chunk to the new array
-            newmask_rechunked[s_z:e_z, s_y:e_y, s_x:e_x] = column_mask + shift
-
-        newmask = newmask_rechunked.rechunk(data_zyx.chunks)
+            newmask[s_z:e_z, s_y:e_y, s_x:e_x] = column_mask + shift
 
         # FIXME: this is ugly
         shutil.rmtree(zarrurl + f"labels/{label_name}/{0}")
