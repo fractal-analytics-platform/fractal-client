@@ -19,7 +19,7 @@ max_workers = 2  # This is the maximum number of workers per block
 # each SLURM submission scripts
 nodes_per_block = 1  # This implies that a block corresponds to a node
 max_blocks = 24  # Maximum number of blocks (=nodes) that parsl can use
-max_blocks_gpu = 2
+max_blocks_gpu = 4
 exclusive = True
 cores_per_node = 16
 mem_per_node_GB = 60
