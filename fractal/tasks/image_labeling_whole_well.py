@@ -87,8 +87,8 @@ def image_labeling_whole_well(
     if len(multiscales) > 1:
         raise Exception(f"ERROR: There are {len(multiscales)} multiscales")
     if "coordinateTransformations" in multiscales[0].keys():
-        raise Exception(
-            "ERROR: coordinateTransformations at the multiscales "
+        raise NotImplementedError(
+            "global coordinateTransformations at the multiscales "
             "level are not currently supported"
         )
 

@@ -19,8 +19,8 @@ def extract_zyx_pixel_sizes(zattrs_path: str, level: int = 0):
 
         # Check that there are no datasets-global transformations
         if "coordinateTransformations" in multiscales[0].keys():
-            raise Exception(
-                "ERROR: coordinateTransformations at the multiscales "
+            raise NotImplementedError(
+                "global coordinateTransformations at the multiscales "
                 "level are not currently supported"
             )
 

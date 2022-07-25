@@ -183,10 +183,13 @@ def image_labeling(
     # Preliminary checks on multiscales
     multiscales = zattrs["multiscales"]
     if len(multiscales) > 1:
-        raise Exception(f"ERROR: There are {len(multiscales)} multiscales")
+        raise NotImplementedError(
+            f"Found {len(multiscales)} multiscales, "
+            "but only one is currently supported."
+        )
     if "coordinateTransformations" in multiscales[0].keys():
-        raise Exception(
-            "ERROR: coordinateTransformations at the multiscales "
+        raise NotImplementedError(
+            "global coordinateTransformations at the multiscales "
             "level are not currently supported"
         )
 
