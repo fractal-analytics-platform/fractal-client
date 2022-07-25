@@ -79,3 +79,5 @@ def rescale_datasets(
                 new_transformations.append(t)
         new_ds["coordinateTransformations"] = new_transformations
         new_datasets.append(new_ds)
+
+    return new_datasets
