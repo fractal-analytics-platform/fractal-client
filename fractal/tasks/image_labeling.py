@@ -289,6 +289,7 @@ def image_labeling(
                 num_levels=1,
                 chunk_size_x=img_size_x,
                 chunk_size_y=img_size_y,
+                aggregation_function=np.max,
             )
 
         with open(logfile, "a") as out:
@@ -347,6 +348,7 @@ def image_labeling(
             num_levels=num_levels,
             chunk_size_x=img_size_x,
             chunk_size_y=img_size_y,
+            aggregation_function=np.max,
         )
 
         t1 = time.perf_counter()
