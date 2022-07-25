@@ -267,7 +267,7 @@ def image_labeling(
 
     with open(logfile, "a") as out:
         out.write(
-            f"After map_block, mask will have shape {mask.shape} "
+            f"mask will have shape {mask.shape} "
             f"and chunks {mask.chunks}\n\n"
         )
 
