@@ -1,4 +1,5 @@
 import importlib
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -10,6 +11,7 @@ import parsl
 from parsl.app.python import PythonApp
 from parsl.config import Config
 from parsl.dataflow.futures import AppFuture
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.project import Dataset
 from ..models.project import Project
@@ -19,8 +21,15 @@ from ..models.task import Task
 
 
 @parsl.python_app
-def _collect_results(inputs: List[PythonApp]):
-    return [x for x in inputs]
+def _collect_results(
+    inputs: List[PythonApp],
+    metadata: Optional[Dict[str, Any]] = None,
+):
+    if metadata is None:
+        metadata = {}
+    [x for x in inputs]
+    # metadata = update_metadata_from_subtasks(data)
+    return metadata
 
 
 parsl.load(Config())
@@ -77,10 +86,11 @@ def _atomic_task_factory(
     if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
         return _collect_results(
+            metadata=metadata,
             inputs=[
                 _task_app(component={parall_level: item})
                 for item in parall_item_gen
-            ]
+            ],
         )
     else:
         return _task_app(inputs=depends_on)
@@ -90,6 +100,7 @@ def _process_workflow(
     task: Union[Task, Subtask],
     input_paths: List[Path],
     output_path: Path,
+    metadata: Dict[str, Any],
 ) -> PythonApp:
     """
     Creates the PARSL app that will execute the full workflow, taking care of
@@ -110,6 +121,7 @@ def _process_workflow(
 
     this_input = input_paths
     this_output = output_path
+    this_metadata = deepcopy(metadata)
 
     apps: List[PythonApp] = []
 
@@ -119,6 +131,7 @@ def _process_workflow(
             input_paths=this_input,
             output_path=this_output,
             depends_on=[apps[i - 1] if i > 0 else None],
+            metadata=this_metadata,
         )
         apps.append(this_task_app)
         this_input = [this_output]
@@ -198,6 +211,7 @@ def validate_workflow_compatibility(
 
 async def submit_workflow(
     *,
+    db: AsyncSession,
     workflow: Task,
     input_dataset: Dataset,
     output_dataset: Dataset,
@@ -230,8 +244,13 @@ async def submit_workflow(
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
 
-    _process_workflow(
+    final_metadata = _process_workflow(
         task=workflow,
         input_paths=input_paths,
         output_path=output_path,
+        metadata=input_dataset.meta,
     )
+    output_dataset.meta = final_metadata.result()
+
+    db.add(output_dataset)
+    await db.commit()

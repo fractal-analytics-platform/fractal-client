@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from time import sleep
 
 import pytest
 from devtools import debug
@@ -111,14 +110,11 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path):
     )
 
     debug(parsl_app)
-    res = parsl_app.result()
-    debug(res)
-    assert res
+    metadata = parsl_app.result()
+    debug(metadata)
+    assert metadata
 
     assert sum(1 for item in output_path.glob("*.json")) == nfiles
-
-    if not isinstance(res, list):
-        res = [res]
 
     for r in output_path.glob("*.json"):
         with open(r, "r") as output_file:
@@ -225,13 +221,18 @@ async def test_apply_workflow(
 
     # DONE CREATING WORKFLOW
 
-    await submit_workflow(input_dataset=ds, output_dataset=out_ds, workflow=wf)
-    sleep(0.1)  # to make sure that the task has completed
+    await submit_workflow(
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+    )
     with open(output_path, "r") as f:
         data = json.load(f)
         debug(data)
     assert len(data) == 1
     assert data[0]["message"] == MESSAGE
+
+    await db.refresh(out_ds)
+    debug(out_ds)
+    assert out_ds.meta
 
 
 async def test_create_zarr(
@@ -282,9 +283,9 @@ async def test_create_zarr(
 
     # DONE CREATING WORKFLOW
 
-    await submit_workflow(input_dataset=ds, output_dataset=out_ds, workflow=wf)
-    sleep(2)  # to make sure that the task has completed
-
+    await submit_workflow(
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+    )
     zattrs = Path(output_path) / "myplate.zarr/.zattrs"
     with open(zattrs) as f:
         data = json.load(f)
