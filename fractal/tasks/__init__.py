@@ -13,7 +13,7 @@ __FRACTAL_MANIFEST__ = [
         "module": f"{__name__}.create_zarr_structure:create_zarr_structure",
         "input_type": "image",
         "output_type": "zarr",
-        "default_parameters": {
+        "default_args": {
             "num_levels": 2,
             "channel_parameters": {
                 "A01_C01": {
