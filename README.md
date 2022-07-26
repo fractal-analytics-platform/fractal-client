@@ -1,5 +1,23 @@
 # Fractal
-## Minimal working example
+Fractal is a framework to process high content screening data at scale and prepares it for interactive visualization.
+
+Fractal provides distributed workflows that convert TBs of image data into OME-Zarr files. The platform then processes the 3D image data by applying tasks like illumination correction and maximum intensity projection. The pyramidal OME-Zarr files enable interactive visualization in the napari viewer.
+We are building towards integrating object segmentation (nuclei, cells, organoids) and feature measurements into Fractal.
+
+Fractal is currently an **early alpha build**. We currently support only Yokogawa CV7000 image data as an input. Also, we're in the process of refactoring the workflow management into a client-server architecture. Thus, proceed with it at your own risk, there will still be significant breaking changes. While we don't have any releases or stable versions and thus don't provide user support, we welcome questions and discussions. Open an issue to get in touch.
+
+
+![Fractal_multiwell_plate](https://user-images.githubusercontent.com/18033446/177169496-09784413-6ba9-4041-80e2-c70a70e0a5d9.gif)
+
+Shortened movie of browsing an OME-Zarr file generated with Fractal in napari, using the [napari-ome-zarr plugin](https://github.com/ome/napari-ome-zarr). Actual loading times vary and can be a bit slower than in this GIF.
+
+### Contributors
+Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi). The project was originally led by [@dvischi](https://github.com/dvischi).
+The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
+
+*Installation instructions below have not been fully updated yet*
+
+-----------------------------
 
 ### Requirements and configuration
 
@@ -243,3 +261,8 @@ fractal workflow add-task [project_name] [workflow_name] [tasks_names] - add new
 fractal workflow apply [project_name] [workflow_name] [dataset_name] [resource_in] [resource_out] [wf_parameters_json_file] - run workflow using the parameters into the .json
 
 ```
+
+# Server database initialisation / migration
+
+Use `alembic revision --autogenerate -m "<commit message>"` to generate a new
+schema revision, `alembic upgrade head` to appy it.

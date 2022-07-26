@@ -1,3 +1,16 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Marco Franzon <marco.franzon@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import os
 import re
 from glob import glob
@@ -31,7 +44,6 @@ def yokogawa_to_zarr(
     chl_list=None,
     num_levels=5,
     coarsening_xy=2,
-    coarsening_z=1,
     delete_input=False,
 ):
     """
@@ -55,8 +67,6 @@ def yokogawa_to_zarr(
     :type num_levels: int
     :param coarsening_xy: coarsening factor along X and Y
     :type coarsening_xy: int
-    :param coarsening_z: coarsening factor along Z
-    :type coarsening_z: int
     """
 
     if not in_path.endswith("/"):
@@ -85,15 +95,13 @@ def yokogawa_to_zarr(
         A, C = chl.split("_")
 
         l_rows = []
-        all_rows = []
+        data_zfyx = []
 
         print(zarrurl, well_ID)
-        print(in_path + f"*_{well_ID}_*{A}_*{C}." + ext)
-        filenames = sorted(
-            glob(in_path + f"*_{well_ID}_*{A}*{C}." + ext), key=sort_fun
-        )
+        glob_path = f"{in_path}*_{well_ID}_*{A}*{C}.{ext}"
+        print(f"glob path: {glob_path}")
+        filenames = sorted(glob(glob_path), key=sort_fun)
         if len(filenames) == 0:
-            glob_path = in_path + f"*_{well_ID}_*{A}*{C}." + ext
             raise Exception(
                 "Error in yokogawa_to_zarr: len(filenames)=0.\n"
                 f"  in_path: {in_path}\n"
@@ -116,7 +124,6 @@ def yokogawa_to_zarr(
 
         for ro in range(int(rows)):
             cell = []
-
             for co in range(int(cols)):
                 lazy_arrays = [lazy_imread(fn) for fn in filenames[start:end]]
                 start += int(max_z)
@@ -130,30 +137,28 @@ def yokogawa_to_zarr(
                 z_stack = da.stack(dask_arrays, axis=0)
                 cell.append(z_stack)
             l_rows = da.block(cell)
-            all_rows.append(l_rows)
-        # At this point, all_rows has four dimensions: z,site,y,x
+            data_zfyx.append(l_rows)
+        data_zyx = da.concatenate(data_zfyx, axis=1).rechunk(
+            {1: chunk_size_y, 2: chunk_size_x}, balance=True
+        )
 
         # Define coarsening options
-        coarsening = {1: coarsening_xy, 2: coarsening_xy}
         f_matrices = {}
         for level in range(num_levels):
             if level == 0:
-                f_matrices[level] = da.concatenate(all_rows, axis=1).rechunk(
-                    {1: chunk_size_y, 2: chunk_size_x}, balance=True
-                )
-                # After concatenate, f_matrices[0] has three dimensions: z,y,x
-                if coarsening_z > 1:
-                    f_matrices[level] = da.coarsen(
-                        np.min,
-                        f_matrices[level],
-                        {0: coarsening_z},
-                        trim_excess=True,
-                    )
+                f_matrices[level] = data_zyx
             else:
+                if min(f_matrices[level - 1].shape[1:]) < coarsening_xy:
+                    raise Exception(
+                        f"ERROR at pyramid level={level}: "
+                        f"coarsening_xy={coarsening_xy} but "
+                        f"level={level-1} has shape "
+                        f"{f_matrices[level - 1].shape}"
+                    )
                 f_matrices[level] = da.coarsen(
-                    np.min,
+                    np.mean,
                     f_matrices[level - 1],
-                    coarsening,
+                    {1: coarsening_xy, 2: coarsening_xy},
                     trim_excess=True,
                 ).rechunk(
                     {
@@ -162,7 +167,7 @@ def yokogawa_to_zarr(
                     },
                     balance=True,
                 )
-            fc_list[level].append(f_matrices[level])
+            fc_list[level].append(f_matrices[level].astype(sample.dtype))
 
         if delete_input:
             for f in filenames:
@@ -241,14 +246,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-cz",
-        "--coarsening_z",
-        default=1,
-        type=int,
-        help="coarsening factor along Z (optional, defaults to 1)",
-    )
-
-    parser.add_argument(
         "-d",
         "--delete_input",
         action="store_true",
@@ -266,6 +263,5 @@ if __name__ == "__main__":
         chl_list=args.chl_list,
         num_levels=args.num_levels,
         coarsening_xy=args.coarsening_xy,
-        coarsening_z=args.coarsening_z,
         delete_input=args.delete_input,
     )

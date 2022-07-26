@@ -1,7 +1,25 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Marco Franzon <marco.franzon@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import json
 from glob import glob
 
+import anndata as ad
 import zarr
+from anndata.experimental import write_elem
+
+from fractal.tasks.lib_regions_of_interest import convert_FOV_ROIs_3D_to_2D
+from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
 def replicate_zarr_structure_mip(zarrurl):
@@ -28,9 +46,6 @@ def replicate_zarr_structure_mip(zarrurl):
     # Identify properties of input zarr file
     well_rows_columns = sorted(
         [rc.split("/")[-2:] for rc in glob(zarrurl + "*/*")]
-    )
-    levels = sorted(
-        list(set([rc.split("/")[-1] for rc in glob(zarrurl + "*/*/*/*")]))
     )
 
     group_plate = zarr.group(zarrurl_mip)
@@ -74,43 +89,54 @@ def replicate_zarr_structure_mip(zarrurl):
     for row, column in well_rows_columns:
 
         # Find sites in COL/ROW/.zattrs
-        path_zattrs = zarrurl + f"{row}/{column}/.zattrs"
-        with open(path_zattrs) as zattrs_file:
-            zattrs = json.load(zattrs_file)
-        well_images = zattrs["well"]["images"]
+        path_well_zattrs = zarrurl + f"{row}/{column}/.zattrs"
+        with open(path_well_zattrs) as well_zattrs_file:
+            well_zattrs = json.load(well_zattrs_file)
+        well_images = well_zattrs["well"]["images"]
         list_FOVs = sorted([img["path"] for img in well_images])
 
+        # Create well group
         group_well = group_plate.create_group(f"{row}/{column}/")
-
         group_well.attrs["well"] = {
             "images": well_images,
             "version": "0.3",
         }
 
-        for FOV in list_FOVs:
-            group_field = group_well.create_group(f"{FOV}/")  # noqa: F841
-            group_field.attrs["multiscales"] = [
-                {
-                    "version": "0.3",
-                    "axes": [
-                        {"name": "c", "type": "channel"},
-                        {
-                            "name": "z",
-                            "type": "space",
-                            "unit": "micrometer",
-                        },
-                        {"name": "y", "type": "space"},
-                        {"name": "x", "type": "space"},
-                    ],
-                    "datasets": [{"path": level} for level in levels],
-                }
-            ]
+        # Check that only the 0-th FOV exists
+        FOV = 0
+        if len(list_FOVs) > 1:
+            raise Exception(
+                "ERROR: we are in a single-merged-FOV scheme, "
+                f"but there are {len(list_FOVs)} FOVs."
+            )
 
-            # Copy .zattrs file at the COL/ROW/SITE level
-            path_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
-            with open(path_zattrs) as zattrs_file:
-                zattrs = json.load(zattrs_file)
-                group_field.attrs["omero"] = zattrs["omero"]
+        # Create FOV group
+        group_FOV = group_well.create_group(f"{FOV}/")
+
+        # Copy .zattrs file at the COL/ROW/FOV level
+        path_FOV_zattrs = f"{zarrurl}{row}/{column}/{FOV}/.zattrs"
+        with open(path_FOV_zattrs) as FOV_zattrs_file:
+            FOV_zattrs = json.load(FOV_zattrs_file)
+        for key in FOV_zattrs.keys():
+            group_FOV.attrs[key] = FOV_zattrs[key]
+
+        # Read FOV ROI table
+        FOV_ROI_table = ad.read_zarr(
+            f"{zarrurl}{row}/{column}/0/tables/FOV_ROI_table"
+        )
+
+        # Read pixel sizes from zattrs file
+        pixel_sizes_zyx = extract_zyx_pixel_sizes(path_FOV_zattrs, level=0)
+        pixel_size_z = pixel_sizes_zyx[0]
+
+        # Convert 3D FOVs to 2D
+        new_FOV_ROI_table = convert_FOV_ROIs_3D_to_2D(
+            FOV_ROI_table, pixel_size_z
+        )
+
+        # Create table group and write new table
+        group_tables = group_FOV.create_group("tables/")
+        write_elem(group_tables, "FOV_ROI_table", new_FOV_ROI_table)
 
 
 if __name__ == "__main__":

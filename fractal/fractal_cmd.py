@@ -1,3 +1,17 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Marco Franzon <marco.franzon@exact-lab.it>
+Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import json
 import os
 from pathlib import Path
@@ -9,12 +23,12 @@ import parsl
 from devtools import debug
 from parsl import python_app
 from parsl.config import Config
-from parsl_config import define_HighThroughputExecutor
-from parsl_config import define_MonitoringHub
-from parsl_config import define_SlurmProvider
 from pydantic import BaseModel
 
 import fractal.fractal_config as fractal_config
+from fractal.parsl_config import define_HighThroughputExecutor
+from fractal.parsl_config import define_MonitoringHub
+from fractal.parsl_config import define_SlurmProvider
 
 
 """
@@ -438,7 +452,6 @@ def workflow_apply(
         params = json.load(file_params)
     ext = prj["datasets"][input_dataset]["type"]
     coarsening_xy = params["coarsening_xy"]
-    coarsening_z = params["coarsening_z"]
     num_levels = params["num_levels"]
     rows, cols = params["dims"]
     workflow_name = params["workflow_name"]
@@ -464,11 +477,30 @@ def workflow_apply(
         exclusive=fractal_config.exclusive,
     )
     htex = define_HighThroughputExecutor(
-        provider=provider, max_workers=fractal_config.max_workers
+        provider=provider,
+        max_workers=fractal_config.max_workers,
+        label="cpu",
     )
+    provider_gpu = define_SlurmProvider(
+        nodes_per_block=fractal_config.nodes_per_block,
+        cores_per_node=fractal_config.cores_per_node,
+        mem_per_node_GB=fractal_config.mem_per_node_GB,
+        partition=fractal_config.partition_gpu,
+        worker_init=fractal_config.worker_init,
+        max_blocks=fractal_config.max_blocks_gpu,
+        exclusive=fractal_config.exclusive,
+    )
+    htex_gpu = define_HighThroughputExecutor(
+        provider=provider_gpu,
+        max_workers=fractal_config.max_workers,
+        label="gpu",
+    )
+
     monitoring = define_MonitoringHub(workflow_name=workflow_name)
-    config = Config(executors=[htex], monitoring=monitoring)
-    # config = Config(executors=[htex])
+    config = Config(
+        executors=[htex, htex_gpu],
+        monitoring=monitoring,
+    )
     parsl.clear()
     parsl.load(config)
 
@@ -476,7 +508,7 @@ def workflow_apply(
 
     debug(dict_tasks)
 
-    @parsl.python_app
+    @parsl.python_app(executors=["cpu"])
     def collect_intermediate_results(inputs=[]):
         return [x for x in inputs]
 
@@ -491,9 +523,10 @@ def workflow_apply(
             path_dict_channels=path_dict_channels,
             ext=ext,
             num_levels=num_levels,
+            coarsening_xy=coarsening_xy,
         )
 
-        @parsl.python_app
+        @parsl.python_app(executors=["cpu"])
         def app_create_zarr_structure(**kwargs_):
             os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
             import fractal.dictionary_tasks  # noqa: F401
@@ -528,6 +561,7 @@ def workflow_apply(
                 "yokogawa_to_zarr and take a global dict of paths."
             )
 
+        executor = "cpu"
         if task == "yokogawa_to_zarr":
             kwargs = dict(
                 in_path=resources_in[0],  # FIXME
@@ -538,7 +572,6 @@ def workflow_apply(
                 chl_list=chl_list,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
-                coarsening_z=coarsening_z,
             )
         if task == "yokogawa_to_zarr_multifov":
             kwargs = dict(
@@ -549,7 +582,6 @@ def workflow_apply(
                 # sites_dict=well_to_sites,
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
-                coarsening_z=coarsening_z,
             )
 
         elif task == "maximum_intensity_projection":
@@ -568,8 +600,12 @@ def workflow_apply(
                 overwrite=True,
                 # background=background,
             )
+        elif task == "image_labeling" or task == "image_labeling_whole_well":
+            kwargs = params[task]
+            kwargs["chl_list"] = chl_list
+            executor = "gpu"
 
-        @python_app
+        @python_app(executors=[executor])
         def app(zarrurl, **kwargs_):
             os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
             import fractal.dictionary_tasks  # noqa: F401

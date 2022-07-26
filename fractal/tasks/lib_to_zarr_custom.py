@@ -1,4 +1,19 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Marco Franzon <marco.franzon@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import shutil
+
+import dask.array as da
 
 
 def to_zarr_custom(newzarrurl=None, array=None, component="", overwrite=False):
@@ -9,7 +24,7 @@ def to_zarr_custom(newzarrurl=None, array=None, component="", overwrite=False):
     (https://github.com/dask/dask/issues/5942), where a dask array loaded with
     from_zarr cannot be written with to_zarr(..., overwrite=True).
 
-    :param newzarrurl: ouput zarr file
+    :param newzarrurl: output zarr file
     :type newzarrurl: str
     :param array: dask array to be stored
     :type array: dask array
@@ -38,10 +53,20 @@ def to_zarr_custom(newzarrurl=None, array=None, component="", overwrite=False):
             newzarrurl,
             component=component + tmp_suffix,
             dimension_separator="/",
+            compute=True,
         )
         shutil.rmtree(newzarrurl + component)
         shutil.move(
             newzarrurl + component + tmp_suffix, newzarrurl + component
         )
+        output = da.from_zarr(newzarrurl, component=component)
     else:
-        array.to_zarr(newzarrurl, component=component, dimension_separator="/")
+        output = array.to_zarr(
+            newzarrurl,
+            component=component,
+            dimension_separator="/",
+            compute=True,
+            return_stored=True,
+        )
+
+    return output

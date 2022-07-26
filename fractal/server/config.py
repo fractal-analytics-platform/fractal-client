@@ -1,6 +1,19 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 from enum import Enum
 from os import getenv
 from os.path import abspath
+from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -38,12 +51,12 @@ class Settings(BaseSettings):
     ###########################################################################
 
     # LDAP
-    LDAP_SERVER: str | None = getenv("LDAP_SERVER", None)
+    LDAP_SERVER: Optional[str] = getenv("LDAP_SERVER", None)
     LDAP_SSL: bool = getenv("LDAP_SSL", "1") == "1"
 
     # OAUTH
-    OAUTH_ADMIN_CLIENT_ID = getenv("OAUTH_ADMIN_CLIENT_ID")
-    OAUTH_ADMIN_CLIENT_SECRET = getenv("OAUTH_ADMIN_CLIENT_SECRET")
+    OAUTH_ADMIN_CLIENT_ID: str = getenv("OAUTH_ADMIN_CLIENT_ID")
+    OAUTH_ADMIN_CLIENT_SECRET: str = getenv("OAUTH_ADMIN_CLIENT_SECRET")
 
     # JWT TOKEN
     JWT_EXPIRE_SECONDS: int = int(getenv("JWT_EXPIRE_SECONDS", default=180))
@@ -67,14 +80,23 @@ class Settings(BaseSettings):
         )
     elif DB_ENGINE == "sqlite":
         SQLITE_PATH: str = getenv("SQLITE_PATH", "")
+
         DATABASE_URL = (
-            "sqlite+aiosqlite://"
+            "sqlite+aiosqlite:///"
             f"{abspath(SQLITE_PATH) if SQLITE_PATH else SQLITE_PATH}"
         )
 
     @property
     def DB_ECHO(self):
-        return self.DEPLOYMENT_TYPE != DeploymentType.PRODUCTION
+        db_echo = bool(
+            int(
+                getenv(
+                    "DB_ECHO",
+                    self.DEPLOYMENT_TYPE != DeploymentType.PRODUCTION,
+                )
+            )
+        )
+        return db_echo
 
     ###########################################################################
     # FRACTAL SPECIFIC

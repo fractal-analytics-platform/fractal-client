@@ -1,8 +1,21 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Marco Franzon <marco.franzon@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import json
 
 import dask.array as da
 
-from fractal.tasks.lib_pyramid_creation import create_pyramid
+from fractal.tasks.lib_pyramid_creation import write_pyramid
 
 
 def maximum_intensity_projection(
@@ -17,7 +30,7 @@ def maximum_intensity_projection(
     :param zarrurl: input zarr file, at the site level (e.g. x.zarr/B/03/0/)
     :type zarrurl: str
     :param coarsening_xy: coarsening factor along X and Y
-    :type coarsening_z: xy
+    :type coarsening_xy: xy
 
     """
 
@@ -25,8 +38,8 @@ def maximum_intensity_projection(
     # both at level 0 (before coarsening) and at levels 1,2,.. (after
     # repeated coarsening).
     # Note that balance=True may override these values.
-    chunk_size_x = 2560
-    chunk_size_y = 2160
+    img_size_x = 2560
+    img_size_y = 2160
 
     if not zarrurl.endswith("/"):
         zarrurl += "/"
@@ -53,20 +66,16 @@ def maximum_intensity_projection(
     accumulate_chl = da.stack(accumulate_chl, axis=0)
     print()
 
-    pyramid = create_pyramid(
+    # Construct resolution pyramid
+    write_pyramid(
         accumulate_chl,
-        coarsening_z=1,
+        newzarrurl=zarrurl_mip,
+        overwrite=False,
         coarsening_xy=coarsening_xy,
         num_levels=num_levels,
-        chunk_size_x=chunk_size_x,
-        chunk_size_y=chunk_size_y,
-        num_channels=num_channels,
+        chunk_size_x=img_size_x,
+        chunk_size_y=img_size_y,
     )
-
-    for ind_level in range(num_levels):
-        pyramid[ind_level].to_zarr(
-            zarrurl_mip + f"{ind_level}/", dimension_separator="/"
-        )
 
 
 if __name__ == "__main__":

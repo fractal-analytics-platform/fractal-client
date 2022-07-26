@@ -1,0 +1,9 @@
+{
+"workflow_name": "test_workflow",
+"dims": [1, 2],
+"coarsening_xy": 4,
+"coarsening_z": 1,
+"num_levels": 2,
+"channel_file": "tests/data/parameters_workflow_on_fake_data/wf_params_channels.json",
+"path_dict_corr": "tests/data/parameters_workflow_on_fake_data/wf_params_illumination.json"
+}

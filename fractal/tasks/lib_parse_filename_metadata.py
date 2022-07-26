@@ -1,3 +1,16 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Marco Franzon <marco.franzon@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import re
 
 
@@ -26,12 +39,9 @@ def parse_metadata(filename):
             "correct."
         )
     f = filename.rsplit(".", 1)[0]
-
     well = re.findall(r"_(.*)_T", f)[0].split("_")[-1]
     plate_prefix = f.split(f"_{well}_")[0]
-
     fields = plate_prefix.split("_")
-
     if (
         len(fields) == 4
         and len(fields[0]) == 6
@@ -55,13 +65,14 @@ def parse_metadata(filename):
         plate = fields[0]
 
     # Parse filename for additional fields
-    # Example filename: (...)_B03_T0001F001L01A01Z06C01.png
-    T = re.findall(r"_T(.*)F", f)[0]
-    F = re.findall(rf"_T{T}F(.*)L", f)[0]
-    L = re.findall(rf"_T{T}F{F}L(.*)A", f)[0]
-    A = re.findall(rf"_T{T}F{F}L{L}A(.*)Z", f)[0]
-    Z = re.findall(rf"_T{T}F{F}L{L}A{A}Z(.*)C", f)[0]
-    C = re.findall(r"[0-9]C(.*)", f)[0].split(".")[0]
+    # Example of f_without_prefix: B03_T0001F001L01A01Z06C01.png
+    f_without_prefix = f.split(plate_prefix + "_")[1]
+    T = re.findall(r"_T(.*)F", f_without_prefix)[0]
+    F = re.findall(rf"_T{T}F(.*)L", f_without_prefix)[0]
+    L = re.findall(rf"_T{T}F{F}L(.*)A", f_without_prefix)[0]
+    A = re.findall(rf"_T{T}F{F}L{L}A(.*)Z", f_without_prefix)[0]
+    Z = re.findall(rf"_T{T}F{F}L{L}A{A}Z(.*)C", f_without_prefix)[0]
+    C = re.findall(rf"_T{T}F{F}L{L}A{A}Z{Z}C(.*)", f_without_prefix)[0]
 
     result = dict(
         plate=plate,

@@ -1,3 +1,16 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Marco Franzon <marco.franzon@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import os
 import re
 from glob import glob
@@ -32,7 +45,6 @@ def yokogawa_to_zarr_multifov(
     chl_list=None,
     num_levels=5,
     coarsening_xy=2,
-    coarsening_z=1,
     delete_input=False,
 ):
 
@@ -125,17 +137,10 @@ def yokogawa_to_zarr_multifov(
         for level in range(num_levels):
             if level == 0:
                 matrices_site_channel_levels = [matrix_site_channel]
-                if coarsening_z > 1:
-                    matrices_site_channel_levels[level] = da.coarsen(
-                        np.min,
-                        matrices_site_channel_levels[level],
-                        {0: coarsening_z},
-                        trim_excess=True,
-                    )
             else:
                 matrices_site_channel_levels.append(
                     da.coarsen(
-                        np.min,
+                        np.mean,
                         matrices_site_channel_levels[level - 1],
                         coarsening,
                         trim_excess=True,
@@ -217,14 +222,6 @@ if __name__ == "__main__":
         help="coarsening factor along X and Y (optional, defaults to 2)",
     )
 
-    parser.add_argument(
-        "-cz",
-        "--coarsening_z",
-        default=1,
-        type=int,
-        help="coarsening factor along Z (optional, defaults to 1)",
-    )
-
     args = parser.parse_args()
 
     yokogawa_to_zarr_multifov(
@@ -234,6 +231,5 @@ if __name__ == "__main__":
         chl_list=args.chl_list,
         num_levels=args.num_levels,
         coarsening_xy=args.coarsening_xy,
-        coarsening_z=args.coarsening_z,
         delete_input=args.delete_input,
     )
