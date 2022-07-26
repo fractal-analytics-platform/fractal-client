@@ -120,7 +120,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path):
     if not isinstance(res, list):
         res = [res]
 
-    for r in res:
+    for r in output_path.glob("*.json"):
         with open(r, "r") as output_file:
             data = json.load(output_file)
             debug(data)
@@ -159,6 +159,7 @@ def test_process_workflow(tmp_path, nontrivial_workflow):
         task=nontrivial_workflow,
         input_paths=[tmp_path / "0.json"],
         output_path=tmp_path / "0.json",
+        metadata={},
     )
     debug(app)
     app.result()
