@@ -176,6 +176,7 @@ async def apply_workflow(
         workflow=workflow,
         input_dataset=input_dataset,
         output_dataset=output_dataset,
+        db=db,
     )
 
     # TODO we should return a job id of some sort
