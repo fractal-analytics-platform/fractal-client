@@ -283,7 +283,7 @@ async def test_create_zarr(
     # DONE CREATING WORKFLOW
 
     await submit_workflow(input_dataset=ds, output_dataset=out_ds, workflow=wf)
-    sleep(1)  # to make sure that the task has completed
+    sleep(2)  # to make sure that the task has completed
 
     zattrs = Path(output_path) / "myplate.zarr/.zattrs"
     with open(zattrs) as f:
