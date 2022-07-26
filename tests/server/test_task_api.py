@@ -3,6 +3,9 @@ from sqlmodel import select
 
 from fractal.server.app.models import Task
 from fractal.server.tasks import collect_tasks
+from fractal.tasks import __FRACTAL_MANIFEST__
+
+N_CORE_TASKS = len(__FRACTAL_MANIFEST__)
 
 
 async def test_collection(db, client, MockCurrentUser):
@@ -23,7 +26,7 @@ async def test_collection(db, client, MockCurrentUser):
         assert res.status_code == 201
         data = res.json()
         debug(data)
-        assert data["inserted"] == 2
+        assert data["inserted"] == N_CORE_TASKS
         assert data["updated"] == 0
 
     res = await db.execute(select(Task))
@@ -36,7 +39,7 @@ async def test_collection(db, client, MockCurrentUser):
         data = res.json()
         assert res.status_code == 201
         assert data["inserted"] == 0
-        assert data["updated"] == 2
+        assert data["updated"] == N_CORE_TASKS
 
     res = await db.execute(select(Task))
     n_tasks = len(res.scalars().all())  # FIXME: run query server side!
