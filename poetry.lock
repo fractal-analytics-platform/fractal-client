@@ -2562,14 +2562,10 @@ numpy = [
     {file = "numpy-1.23.1-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:55df0f7483b822855af67e38fb3a526e787adf189383b4934305565d71c4b148"},
     {file = "numpy-1.23.1.tar.gz", hash = "sha256:d748ef349bfef2e1194b59da37ed5a29c19ea8d7e6342019921ba2ba4fd8b624"},
 ]
-<<<<<<< HEAD
-ome-zarr = []
-=======
 ome-zarr = [
     {file = "ome-zarr-0.5.2.tar.gz", hash = "sha256:f874aa4d9e218d57f7ca205df8803fb15907ec3cec8a869210d9f24cc97bff48"},
     {file = "ome_zarr-0.5.2-py3-none-any.whl", hash = "sha256:1fc48af4681f186b4902d38c66370f008edb78ac02b3c70b52d3da0ac7f29c4c"},
 ]
->>>>>>> tasks-ROIs
 opencv-python-headless = [
     {file = "opencv-python-headless-4.6.0.66.tar.gz", hash = "sha256:d5291d7e10aa2c19cab6fd86f0d61af8617290ecd2d7ffcb051e446868d04cc5"},
     {file = "opencv_python_headless-4.6.0.66-cp36-abi3-macosx_10_15_x86_64.whl", hash = "sha256:21e70f8b0c04098cdf466d27184fe6c3820aaef944a22548db95099959c95889"},
