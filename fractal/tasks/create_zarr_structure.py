@@ -284,7 +284,7 @@ def create_zarr_structure(
 
             group_FOV = group_well.create_group("0/")  # noqa: F841
             zarrurls["well"].append(
-                output_path.as_posix() + f"{plate}.zarr/{row}/{column}/0/"
+                output_path.as_posix() + f"/{plate}.zarr/{row}/{column}/0/"
             )
 
             group_FOV.attrs["multiscales"] = [
