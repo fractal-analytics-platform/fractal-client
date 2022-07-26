@@ -50,7 +50,9 @@ def dummy(
     from json.decoder import JSONDecodeError
 
     if metadata is None:
-        metadata = {}
+        metadata = {"history": []}
+    elif "history" not in metadata:
+        metadata["history"] = []
 
     payload = dict(
         task="DUMMY TASK",
@@ -75,5 +77,8 @@ def dummy(
     data.append(payload)
     with open(out_fullpath, "w") as fout:
         json.dump(data, fout, indent=2)
+
+    # Update metadata
+    metadata["history"].append(f"Running dummy index={index}")
 
     return metadata
