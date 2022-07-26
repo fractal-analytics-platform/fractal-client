@@ -21,7 +21,7 @@ def test_create_zarr_structure(tmp_path, testdata_path):
 
     debug(glob(input_paths[0].as_posix()))
 
-    create_zarr_structure(
+    zarrurls, actual_channels = create_zarr_structure(
         input_paths=input_paths, output_path=output_path, **default_args
     )
 
@@ -31,3 +31,5 @@ def test_create_zarr_structure(tmp_path, testdata_path):
         data = json.load(f)
         debug(data)
     assert len(data["plate"]["wells"]) == 1
+
+    debug(zarrurls["well"])
