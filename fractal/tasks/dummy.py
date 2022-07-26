@@ -42,11 +42,15 @@ def dummy(
 
     Retrun
     ------
-    path to the resource the task wrote into
+    metadata (Dict[str, Any]) :
+        the metadata dictionary, updated if needed
     """
     from datetime import datetime, timezone
     import json
     from json.decoder import JSONDecodeError
+
+    if metadata is None:
+        metadata = {}
 
     payload = dict(
         task="DUMMY TASK",
@@ -72,4 +76,4 @@ def dummy(
     with open(out_fullpath, "w") as fout:
         json.dump(data, fout, indent=2)
 
-    return out_fullpath
+    return metadata
