@@ -13,6 +13,7 @@ Zurich.
 """
 import json
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 
 import anndata as ad
 import dask
@@ -92,6 +93,7 @@ def illumination_correction(
     path_dict_corr=None,
     coarsening_xy=2,
     background=110,
+    num_threads=10,
 ):
 
     """
@@ -252,15 +254,16 @@ def illumination_correction(
     accumulated_data = da.stack(data_czyx_new, axis=0)
 
     # Construct resolution pyramid
-    write_pyramid(
-        accumulated_data,
-        newzarrurl=newzarrurl,
-        overwrite=overwrite,
-        coarsening_xy=coarsening_xy,
-        num_levels=num_levels,
-        chunk_size_x=img_size_x,
-        chunk_size_y=img_size_y,
-    )
+    with dask.config.set(pool=ThreadPoolExecutor(num_threads)):
+        write_pyramid(
+            accumulated_data,
+            newzarrurl=newzarrurl,
+            overwrite=overwrite,
+            coarsening_xy=coarsening_xy,
+            num_levels=num_levels,
+            chunk_size_x=img_size_x,
+            chunk_size_y=img_size_y,
+        )
 
 
 if __name__ == "__main__":
