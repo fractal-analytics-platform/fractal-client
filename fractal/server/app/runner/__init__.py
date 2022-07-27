@@ -22,12 +22,10 @@ from ..models.task import Task
 
 @parsl.python_app
 def _collect_results(
+    *,
+    metadata: Dict[str, Any],
     inputs: List[PythonApp],
-    metadata: Optional[Dict[str, Any]] = None,
 ):
-    if metadata is None:
-        metadata = {}
-    [x for x in inputs]
     # metadata = update_metadata_from_subtasks(data)
     return metadata
 
@@ -62,12 +60,12 @@ def _atomic_task_factory(
     @parsl.python_app
     def _task_app(
         *,
-        input_paths: List[Path] = input_paths,
-        output_path: Path = output_path,
-        metadata: Optional[Dict[str, Any]] = metadata,
-        task_args: Optional[Dict[str, Any]] = task_args,
-        component: Optional[Dict[str, Any]] = None,
-        inputs=None,
+        input_paths: List[Path],
+        output_path: Path,
+        metadata: Optional[Dict[str, Any]],
+        task_args: Optional[Dict[str, Any]],
+        component: Optional[Dict[str, Any]],
+        inputs,
     ):
         if component is None:
             component = {}
@@ -85,15 +83,30 @@ def _atomic_task_factory(
     parall_level = task_args.get("parallelization_level", None)
     if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
+        dependencies = [
+            _task_app(
+                input_paths=input_paths,
+                output_path=output_path,
+                metadata=deepcopy(metadata),
+                task_args=task_args,
+                component={parall_level: item},
+                inputs=[],
+            )
+            for item in parall_item_gen
+        ]
         return _collect_results(
-            metadata=metadata,
-            inputs=[
-                _task_app(component={parall_level: item})
-                for item in parall_item_gen
-            ],
+            metadata=deepcopy(metadata),
+            inputs=dependencies,
         )
     else:
-        return _task_app(inputs=depends_on)
+        return _task_app(
+            input_paths=input_paths,
+            output_path=output_path,
+            metadata=deepcopy(metadata),
+            task_args=task_args,
+            component=None,
+            inputs=depends_on,
+        )
 
 
 def _process_workflow(
