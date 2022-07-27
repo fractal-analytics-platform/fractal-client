@@ -10,10 +10,11 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import asyncclick as click
 import httpx
+from devtools import debug  # FIXME remove noqa
 
+from ._auth import AuthToken
 from .config import settings
 
 
@@ -57,9 +58,29 @@ async def project_new(name: str, path: str, dataset: str) -> None:
 
     project = Project(name=name, project_dir=path)
     async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
         res = await client.post(
-            f"{settings.BASE_URL}/project/", json=project.dict()
+            f"{settings.BASE_URL}/project/",
+            json=project.dict(),
+            headers=await auth.header(),
         )
-        from devtools import debug
-
         debug(res.json())
+
+
+@project.command(name="list")
+async def project_list():
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/project/",
+            headers=await auth.header(),
+        )
+        debug(res.json())
+
+
+@cli.command(name="login")
+async def login():
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        await auth()
+        debug(await auth.header())

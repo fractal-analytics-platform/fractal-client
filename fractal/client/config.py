@@ -10,7 +10,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 from os import getenv
 
 from dotenv import load_dotenv
@@ -40,6 +39,7 @@ class Settings(BaseSettings):
     FRACTAL_SERVER: str = getenv("FRACTAL_SERVER", "http://localhost:8000")
 
     BASE_URL: str = f"{FRACTAL_SERVER}/api/v1"
+    SESSION_CACHE_PATH: str = "~/.fractal"
 
 
 settings = Settings()
