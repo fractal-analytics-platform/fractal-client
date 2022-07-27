@@ -5,7 +5,7 @@ import numpy as np
 
 
 num_C = 2
-num_Z = 1
+num_Z = 2
 num_Y = 2
 num_X = 1
 num_levels = 5
