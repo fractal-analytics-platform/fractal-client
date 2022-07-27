@@ -234,6 +234,8 @@ async def submit_workflow(
 
     Arguments
     ---------
+    db: (AsyncSession):
+        Asynchronous database session
     output_dataset (Dataset | str) :
         the destination dataset of the workflow. If not provided, overwriting
         of the input dataset is implied and an error is raised if the dataset
@@ -241,19 +243,6 @@ async def submit_workflow(
         exist, a new dataset with that name is created and within it a new
         resource with the same name.
     """
-    if output_dataset is None:
-        if input_dataset.read_only:
-            raise ValueError(
-                "Input dataset is read-only: cannot overwrite. "
-                "Please provide `output_dataset` explicitly."
-            )
-        else:
-            output_dataset = input_dataset
-    else:
-        pass
-        # TODO: check that dataset exists and if not create dataset and
-        # resource.
-
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
 
