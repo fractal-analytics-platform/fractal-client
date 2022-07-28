@@ -1,7 +1,6 @@
 import math
+from typing import Iterable
 from typing import List
-from typing import Tuple
-from typing import Union
 
 import anndata as ad
 import numpy as np
@@ -78,7 +77,7 @@ def convert_ROI_table_to_indices(
     ROI: ad.AnnData,
     level: int = 0,
     coarsening_xy: int = 2,
-    full_res_pxl_sizes_zyx: Union[List[float], Tuple[float]] = None,
+    full_res_pxl_sizes_zyx: Iterable[float] = None,
 ) -> List[List[int]]:
 
     # Set pyramid-level pixel sizes

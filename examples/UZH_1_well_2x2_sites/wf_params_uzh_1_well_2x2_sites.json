@@ -24,6 +24,6 @@
         "labeling_level": 2,
         "labeling_channel": "A01_C01",
         "diameter_level0": 80.0,
-        "cellprob_threshold": 0.0
+        "cellprob_threshold": -1.5
     }
 }
