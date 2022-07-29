@@ -47,7 +47,6 @@ def patch_settings(testdata_path):
 
     from fractal.server.config import settings
 
-    settings.LDAP_SERVER = "testserver"
     return settings
 
 
