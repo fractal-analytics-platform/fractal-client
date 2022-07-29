@@ -23,6 +23,7 @@ from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
 from fractal.common.models import ApplyWorkflow
+from fractal.common.models import DatasetRead
 
 router = APIRouter()
 
@@ -76,14 +77,30 @@ async def create_project(
     return db_project
 
 
-@router.post("/{project_id}")
+@router.post("/{project_id}/",
+    response_model=DatasetRead,
+    status_code=status.HTTP_201_CREATED,) 
 async def add_dataset(
     project_id: int,
+    dataset: Dataset,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Add new dataset to current project
     """
-    raise NotImplementedError
+    stm = (
+        select(Project)
+        .where(Project.user_owner_id == user.id)
+        .where(Project.id == project_id)
+    )
+    project = (await db.execute(stm)).one()
+    db_dataset = Dataset(**dataset.dict())
+    db.add(db_dataset)
+    await db.commit()
+    await db.refresh(db_dataset)
+    return db_dataset
+    #raise NotImplementedError
 
 
 @router.post(
