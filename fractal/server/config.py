@@ -13,7 +13,6 @@ Zurich.
 from enum import Enum
 from os import getenv
 from os.path import abspath
-from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -50,13 +49,9 @@ class Settings(BaseSettings):
     # AUTH
     ###########################################################################
 
-    # LDAP
-    LDAP_SERVER: Optional[str] = getenv("LDAP_SERVER", None)
-    LDAP_SSL: bool = getenv("LDAP_SSL", "1") == "1"
-
     # OAUTH
-    OAUTH_ADMIN_CLIENT_ID: str = getenv("OAUTH_ADMIN_CLIENT_ID")
-    OAUTH_ADMIN_CLIENT_SECRET: str = getenv("OAUTH_ADMIN_CLIENT_SECRET")
+    OAUTH_GITHUB_CLIENT_ID: str = getenv("OAUTH_GITHUB_CLIENT_ID")
+    OAUTH_GITHUB_CLIENT_SECRET: str = getenv("OAUTH_GITHUB_CLIENT_SECRET")
 
     # JWT TOKEN
     JWT_EXPIRE_SECONDS: int = int(getenv("JWT_EXPIRE_SECONDS", default=180))

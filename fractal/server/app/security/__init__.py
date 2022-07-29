@@ -8,6 +8,7 @@ from fastapi_users import FastAPIUsers
 from fastapi_users import UUIDIDMixin
 from fastapi_users.authentication import AuthenticationBackend
 from fastapi_users.authentication import BearerTransport
+from fastapi_users.authentication import CookieTransport
 from fastapi_users.authentication import JWTStrategy
 from fastapi_users_db_sqlmodel import SQLModelUserDatabaseAsync
 from httpx_oauth.clients.github import GitHubOAuth2
@@ -23,7 +24,7 @@ from ..models.security import UserUpdate
 
 
 github_client = GitHubOAuth2(
-    settings.OAUTH_ADMIN_CLIENT_ID, settings.OAUTH_ADMIN_CLIENT_SECRET
+    settings.OAUTH_GITHUB_CLIENT_ID, settings.OAUTH_GITHUB_CLIENT_SECRET
 )
 
 
@@ -43,7 +44,8 @@ async def get_user_manager(
     yield UserManager(user_db)
 
 
-bearer_transport = BearerTransport(tokenUrl="/auth/github/token")
+bearer_transport = BearerTransport(tokenUrl="/auth/token/login")
+cookie_transport = CookieTransport()
 
 
 def get_jwt_strategy() -> JWTStrategy:
@@ -53,16 +55,21 @@ def get_jwt_strategy() -> JWTStrategy:
     )
 
 
-auth_backend = AuthenticationBackend(
+token_backend = AuthenticationBackend(
     name="bearer-jwt",
     transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
+)
+cookie_backend = AuthenticationBackend(
+    name="cookie-jwt",
+    transport=cookie_transport,
     get_strategy=get_jwt_strategy,
 )
 
 
 fastapi_users = FastAPIUsers[User, uuid.UUID](
     get_user_manager,
-    [auth_backend],
+    [token_backend, cookie_backend],
 )
 
 
@@ -74,8 +81,11 @@ current_active_user = fastapi_users.current_user(active=True)
 auth_router = APIRouter()
 
 auth_router.include_router(
-    fastapi_users.get_auth_router(auth_backend),
+    fastapi_users.get_auth_router(token_backend),
     prefix="/token",
+)
+auth_router.include_router(
+    fastapi_users.get_auth_router(cookie_backend),
 )
 auth_router.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
@@ -95,7 +105,7 @@ auth_router.include_router(
 auth_router.include_router(
     fastapi_users.get_oauth_router(
         github_client,
-        auth_backend,
+        cookie_backend,
         settings.JWT_SECRET_KEY,
         # WARNING:
         # associate_by_email=True exposes to security risks if the OAuth
