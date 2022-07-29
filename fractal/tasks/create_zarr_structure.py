@@ -15,9 +15,13 @@ import json
 import os
 from glob import glob
 
+import pandas as pd
 import zarr
+from anndata.experimental import write_elem
 
 from fractal.tasks.lib_parse_filename_metadata import parse_metadata
+from fractal.tasks.lib_regions_of_interest import prepare_FOV_ROI_table
+from fractal.tasks.metadata_parsing import parse_yokogawa_metadata
 
 
 def create_zarr_structure(
@@ -26,6 +30,8 @@ def create_zarr_structure(
     ext=None,
     path_dict_channels=None,
     num_levels=None,
+    coarsening_xy=None,
+    metadata_table="mrf_mlf",
 ):
 
     """
@@ -41,6 +47,7 @@ def create_zarr_structure(
     :type path_dict_channels: str
     :param num_levels: number of coarsening levels in the pyramid
     :type num_levels: int
+    FIXME
     """
 
     try:
@@ -59,6 +66,21 @@ def create_zarr_structure(
     if in_paths is None:
         raise Exception(
             "ERROR in create_zarr_structure_multifov: in_paths is None"
+        )
+
+    # Preliminary checks on metadata_table
+    if metadata_table != "mrf_mlf" and not isinstance(
+        metadata_table, pd.core.frame.DataFrame
+    ):
+        raise Exception(
+            "ERROR: metadata_table must be a known string or a "
+            "pandas DataFrame}"
+        )
+    if metadata_table != "mrf_mlf":
+        raise NotImplementedError(
+            "We currently only support "
+            'metadata_table="mrf_mlf", '
+            f"and not {metadata_table}"
         )
 
     # Identify all plates and all channels, across all input folders
@@ -118,6 +140,9 @@ def create_zarr_structure(
         else:
             plates.append(plate)
 
+        # Update dict_plate_paths
+        dict_plate_paths[plate] = in_path
+
         # Check that channels are the same as in previous plates
         if channels is None:
             channels = tmp_channels[:]
@@ -126,9 +151,6 @@ def create_zarr_structure(
                 raise Exception(
                     f"ERROR\n{info}\nERROR: expected channels " "{channels}"
                 )
-
-            # Update dict_plate_paths
-            dict_plate_paths[plate] = in_path
 
     # Check that all channels are in the allowed_channels
     if not set(channels).issubset(set(dict_channels.keys())):
@@ -145,18 +167,40 @@ def create_zarr_structure(
     print(f"actual_channels: {actual_channels}")
 
     zarrurls = {"plate": [], "well": []}
-    # zarrurls_in_paths = {}
 
+    # Sanitize out_path
     if not out_path.endswith("/"):
         out_path += "/"
+
+    # Loop over plates
     for plate in plates:
+
+        # Retrieve path corresponding to this plate
+        in_path = dict_plate_paths[plate]
 
         # Define plate zarr
         zarrurl = f"{out_path}{plate}.zarr"
         print(f"Creating {zarrurl}")
         group_plate = zarr.group(zarrurl)
         zarrurls["plate"].append(zarrurl)
-        # zarrurls_in_paths[zarrurl] = dict_plate_paths[plate]
+
+        # Obtain FOV-metadata dataframe
+        if metadata_table == "mrf_mlf":
+            mrf_path = f"{in_path}MeasurementDetail.mrf"
+            mlf_path = f"{in_path}MeasurementData.mlf"
+            site_metadata, total_files = parse_yokogawa_metadata(
+                mrf_path, mlf_path
+            )
+
+        # Extract pixel sizes
+        pixel_size_z = site_metadata["pixel_size_z"][0]
+        pixel_size_y = site_metadata["pixel_size_y"][0]
+        pixel_size_x = site_metadata["pixel_size_x"][0]
+
+        # Extract bit_depth #FIXME
+        # bit_depth = site_metadata["bit_depth"][0]
+        # if bit_depth == 8:
+        #    dtype
 
         # Identify all wells
         plate_prefix = dict_plate_prefixes[plate]
@@ -233,12 +277,12 @@ def create_zarr_structure(
                 "version": "0.3",
             }
 
-            group_field = group_well.create_group("0/")  # noqa: F841
+            group_FOV = group_well.create_group("0/")  # noqa: F841
             zarrurls["well"].append(
                 out_path + f"{plate}.zarr/{row}/{column}/0/"
             )
 
-            group_field.attrs["multiscales"] = [
+            group_FOV.attrs["multiscales"] = [
                 {
                     "version": "0.3",
                     "axes": [
@@ -248,16 +292,39 @@ def create_zarr_structure(
                             "type": "space",
                             "unit": "micrometer",
                         },
-                        {"name": "y", "type": "space"},
-                        {"name": "x", "type": "space"},
+                        {
+                            "name": "y",
+                            "type": "space",
+                            "unit": "micrometer",
+                        },
+                        {
+                            "name": "x",
+                            "type": "space",
+                            "unit": "micrometer",
+                        },
                     ],
                     "datasets": [
-                        {"path": f"{level}"} for level in range(num_levels)
+                        {
+                            "path": f"{ind_level}",
+                            "coordinateTransformations": [
+                                {
+                                    "type": "scale",
+                                    "scale": [
+                                        pixel_size_z,
+                                        pixel_size_y
+                                        * coarsening_xy**ind_level,
+                                        pixel_size_x
+                                        * coarsening_xy**ind_level,
+                                    ],
+                                }
+                            ],
+                        }
+                        for ind_level in range(num_levels)
                     ],
                 }
             ]
 
-            group_field.attrs["omero"] = {
+            group_FOV.attrs["omero"] = {
                 "id": 1,  # FIXME does this depend on the plate number?
                 "name": "TBD",
                 "version": "0.4",
@@ -279,6 +346,13 @@ def create_zarr_structure(
                     for channel in actual_channels
                 ],
             }
+
+            # Prepare and write anndata table of FOV ROIs
+            FOV_ROIs_table = prepare_FOV_ROI_table(
+                site_metadata.loc[f"{row+column}"],
+            )
+            group_tables = group_FOV.create_group("tables/")  # noqa: F841
+            write_elem(group_tables, "FOV_ROI_table", FOV_ROIs_table)
 
     return zarrurls, actual_channels
 
@@ -307,7 +381,12 @@ if __name__ == "__main__":
         type=int,
         help="number of levels in the Zarr pyramid",
     )
-
+    parser.add_argument(
+        "-cxy",
+        "--coarsening_xy",
+        type=int,
+        help="FIXME",
+    )
     parser.add_argument(
         "-c",
         "--path_dict_channels",
@@ -320,5 +399,7 @@ if __name__ == "__main__":
         out_path=args.out_path,
         ext=args.ext,
         num_levels=args.num_levels,
+        coarsening_xy=args.coarsening_xy,
         path_dict_channels=args.path_dict_channels,
+        # metadata_table=args.metadata_table,   #FIXME
     )

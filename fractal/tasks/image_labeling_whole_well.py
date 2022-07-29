@@ -21,6 +21,7 @@ from cellpose import core
 from cellpose import models
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
+from fractal.tasks.lib_zattrs_utils import rescale_datasets
 
 
 def image_labeling_whole_well(
@@ -76,15 +77,28 @@ def image_labeling_whole_well(
             " but there can be only one Z plane."
         )
 
-    # Load .zattrs file
+    # Load zattrs file
     zattrs_file = f"{zarrurl}.zattrs"
     with open(zattrs_file, "r") as jsonfile:
         zattrs = json.load(jsonfile)
 
+    # Preliminary checks on multiscales
+    multiscales = zattrs["multiscales"]
+    if len(multiscales) > 1:
+        raise Exception(f"ERROR: There are {len(multiscales)} multiscales")
+    if "coordinateTransformations" in multiscales[0].keys():
+        raise NotImplementedError(
+            "global coordinateTransformations at the multiscales "
+            "level are not currently supported"
+        )
+
     # Extract num_levels
-    num_levels = len(zattrs["multiscales"][0]["datasets"])
+    num_levels = len(multiscales[0]["datasets"])
     print("num_levels", num_levels)
     print()
+
+    # Extract axes, and remove channel
+    new_axes = [ax for ax in multiscales[0]["axes"] if ax["type"] != "channel"]
 
     # Try to read channel label from OMERO metadata
     try:
@@ -142,6 +156,13 @@ def image_labeling_whole_well(
             f"da.from_array(upscaled_mask) [with rechunking]: {mask_da}\n\n"
         )
 
+    # Rescale datasets (only relevant for labeling_level>0)
+    new_datasets = rescale_datasets(
+        datasets=multiscales[0]["datasets"],
+        coarsening_xy=coarsening_xy,
+        reference_level=labeling_level,
+    )
+
     # Write zattrs for labels and for specific label
     # FIXME deal with: (1) many channels, (2) overwriting
     labels_group = zarr.group(f"{zarrurl}labels")
@@ -152,30 +173,8 @@ def image_labeling_whole_well(
         {
             "name": label_name,
             "version": "0.4",
-            "axes": [
-                {"name": axis_name, "type": "space"}
-                for axis_name in ["z", "y", "x"]
-            ],
-            "datasets": [
-                {
-                    "path": f"{ind_level}",
-                    "coordinateTransformations": [
-                        {
-                            "type": "scale",
-                            "scale": [
-                                1.0,
-                                1.0
-                                * coarsening_xy
-                                ** (labeling_level + ind_level),
-                                1.0
-                                * coarsening_xy
-                                ** (labeling_level + ind_level),
-                            ],
-                        }
-                    ],
-                }
-                for ind_level in range(num_levels)
-            ],
+            "axes": new_axes,
+            "datasets": new_datasets,
         }
     ]
 
