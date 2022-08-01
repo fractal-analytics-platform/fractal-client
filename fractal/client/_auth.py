@@ -21,7 +21,7 @@ class AuthToken:
             password=settings.FRACTAL_PASSWORD,
         )
         res = await self.client.post(
-            f"{settings.FRACTAL_SERVER}/auth/token/login/", data=data
+            f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
         )
         if res.status_code != 200:
             raise ValueError("ERROR! FIXME")
