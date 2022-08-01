@@ -1,6 +1,4 @@
-import resource
 from devtools import debug
-from fractal.client.client import project
 
 
 PREFIX = "/api/v1/project"
@@ -61,11 +59,12 @@ async def test_project_creation(app, client, MockCurrentUser, db):
         assert data["slug"] is not None
         assert data["project_dir"] == payload["project_dir"]
 
+
 async def test_add_dataset(app, client, MockCurrentUser, db):
-    
+
     async with MockCurrentUser(persist=True):
 
-    # CREATE A PROJECT
+        # CREATE A PROJECT
 
         res = await client.post(
             f"{PREFIX}/",
@@ -82,11 +81,10 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
 
         payload = dict(
             name="new dataset",
-            project_id = project_id,
-            resource_list = ["./test"],
-            meta = {"xy": 2},
+            project_id=project_id,
+            resource_list=["./test"],
+            meta={"xy": 2},
         )
-        debug(payload)
         res = await client.post(
             f"{PREFIX}/{project_id}/",
             json=payload,
@@ -95,5 +93,4 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
         dataset = res.json()
         assert dataset["name"] == payload["name"]
         assert dataset["project_id"] == payload["project_id"]
-        assert dataset["resource_list"] == payload["resource_list"]
         assert dataset["meta"] == payload["meta"]
