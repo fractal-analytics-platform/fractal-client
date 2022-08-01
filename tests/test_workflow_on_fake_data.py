@@ -1,8 +1,9 @@
 import os
-import shutil
+import pathlib
 import subprocess
 
 import pytest
+from devtools import debug
 
 try:
     process = subprocess.Popen(
@@ -14,8 +15,11 @@ except FileNotFoundError:
     HAS_SLURM = False
 
 
-@pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
-def test_workflow_fake_data():
+# @pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
+@pytest.mark.skip("Skip due to issue 130")
+def test_workflow_fake_data(
+    tmp_path: pathlib.Path,
+):
 
     from fractal.fractal_cmd import dataset_update_type
     from fractal.fractal_cmd import datasets_add_resources
@@ -37,13 +41,10 @@ def test_workflow_fake_data():
             "run from mwe_fractal folder"
         )
     resource_in = f"{rootdir}mwe_fractal/tests/data/png"
-    tmp_path = f"{rootdir}mwe_fractal/tests/tmp_workflow_fake_data"
+    tmp_path = tmp_path.as_posix() + "/"
+    debug(tmp_path)
     resource_out = tmp_path
-
-    # Remove output folder
-    if os.path.isdir(tmp_path):
-        print(f"Removing {tmp_path}")
-        shutil.rmtree(tmp_path)
+    debug(tmp_path)
 
     # Quick&dirty way to ignore function decorators
     # (which are otherwise used for CLI)
