@@ -10,24 +10,28 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import json
 from typing import Any
 from typing import Dict
 from typing import Optional
+
 import asyncclick as click
 import httpx
-from rich import print_json
-from rich.table import Table
-from rich.console import Console
 from devtools import debug  # FIXME remove noqa
+from rich import print_json
+from rich.console import Console
+from rich.table import Table
 
 from ._auth import AuthToken
 from .config import settings
 
 console = Console()
 
+
 @click.group()
 async def cli():
     pass
+
 
 @cli.command(name="login")
 async def login():
@@ -35,6 +39,9 @@ async def login():
         auth = AuthToken(client=client)
         await auth()
         debug(await auth.header())
+
+
+# PROJECT GROUP
 
 
 @cli.group()
@@ -78,8 +85,9 @@ async def project_new(name: str, path: str, dataset: str) -> None:
             json=project.dict(),
             headers=await auth.header(),
         )
-        #debug(res.json())
+        # debug(res.json())
         print_json(data=res.json())
+
 
 @project.command(name="list")
 async def project_list():
@@ -102,72 +110,96 @@ async def project_list():
         table.add_column("Read only", justify="center")
 
         for p in project_list:
-            if p.read_only==True:
+            if p.read_only:
                 p_read_only = "✅"
             p_read_only = "❌"
 
             p_dataset_list = str([dataset.name for dataset in p.dataset_list])
 
-            table.add_row(str(p.id), p.name, p.project_dir, 
-                          str(p_dataset_list),  p_read_only)
-        
+            table.add_row(
+                str(p.id),
+                p.name,
+                p.project_dir,
+                str(p_dataset_list),
+                p_read_only,
+            )
+
         console.print(table)
 
 
 @project.command(name="add-dataset")
 @click.argument("project_id", required=True, nargs=1)
 @click.argument(
-    "name",
+    "name_dataset",
     required=True,
     nargs=1,
 )
 @click.argument(
     "meta",
     required=True,
+    type=click.File("rb"),
     nargs=1,
 )
 @click.option(
     "--type",
     required=True,
     nargs=1,
-    default="default",
-    help=(
-        "The type of objects into the dataset"
-    ),
+    default="zarr",
+    help=("The type of objects into the dataset"),
 )
-@click.option(
-    "--read_only",
-    required=True,
-    nargs=1,
-    default="default",
-    help=(
-        "Behaviour of the dataset"
-    ),
-)
-
-async def add_dataset(project_id: str,
-                      name:str,
-                      type: Optional[str],
-                      meta: Dict[str,Any] = None,
-                      read_only: Optional[bool] = False,
- ) -> None:
+async def add_dataset(
+    project_id: str,
+    name_dataset: str,
+    type: Optional[str],
+    meta: Dict[str, Any],
+) -> None:
     """
     Add an existing dataset to an exisisting project
-
-    project_id (int): project id
-
-    dataset_id (str): dataset id
     """
-    from fractal.common.models import DatasetBase
+    from fractal.common.models import DatasetCreate
 
-    dataset = DatasetBase(name=name, project_id=project_id,
-                         type=type, meta=meta, read_only=read_only)
+    meta_json = json.load(meta)
+
+    dataset = DatasetCreate(
+        name=name_dataset, project_id=project_id, type=type, meta=meta_json
+    )
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
         res = await client.post(
-            f"{settings.BASE_URL}/{project_id}/",
+            f"{settings.BASE_URL}/project/{project_id}/",
             json=dataset.dict(),
             headers=await auth.header(),
         )
-        debug(res.json())
+        print_json(data=res.json())
 
+
+# DATASET GROUP
+
+
+@cli.group()
+async def dataset():
+    pass
+
+
+@dataset.command(name="show")
+@click.argument("project_id", required=True, type=int, nargs=1)
+@click.argument("dataset_name", required=True, type=str, nargs=1)
+async def dataset_show(project_id: int, dataset_name: str) -> None:
+    """
+    Show details of an exisisting dataset
+    """
+
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/project/",
+            headers=await auth.header(),
+        )
+        projects = res.json()
+        dataset_list = [
+            project["dataset_list"]
+            for project in projects
+            if project["id"] == project_id
+        ][0]
+        dataset = [ds for ds in dataset_list if ds["name"] == dataset_name]
+        print_json(data=dataset)
