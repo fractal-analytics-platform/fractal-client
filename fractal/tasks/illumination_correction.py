@@ -311,6 +311,13 @@ if __name__ == "__main__":
             " (optional, defaults to 110)"
         ),
     )
+    parser.add_argument(
+        "-nt",
+        "--num_threads",
+        default=2,
+        type=int,
+        help="number of simultaneous executions of illumination-correction",
+    )
 
     args = parser.parse_args()
     illumination_correction(
@@ -321,4 +328,5 @@ if __name__ == "__main__":
         chl_list=args.chl_list,
         coarsening_xy=args.coarsening_xy,
         background=args.background,
+        num_threads=args.num_threads,
     )
