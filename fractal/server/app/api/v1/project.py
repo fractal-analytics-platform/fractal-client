@@ -77,9 +77,11 @@ async def create_project(
     return db_project
 
 
-@router.post("/{project_id}/",
+@router.post(
+    "/{project_id}/",
     response_model=DatasetRead,
-    status_code=status.HTTP_201_CREATED,) 
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_dataset(
     project_id: int,
     dataset: Dataset,
@@ -89,18 +91,17 @@ async def add_dataset(
     """
     Add new dataset to current project
     """
-    stm = (
-        select(Project)
-        .where(Project.user_owner_id == user.id)
-        .where(Project.id == project_id)
-    )
-    project = (await db.execute(stm)).one()
+    project = await db.get(Project, project_id)
+    if project.user_owner_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed on project",
+        )
     db_dataset = Dataset(**dataset.dict())
     db.add(db_dataset)
     await db.commit()
     await db.refresh(db_dataset)
     return db_dataset
-    #raise NotImplementedError
 
 
 @router.post(
