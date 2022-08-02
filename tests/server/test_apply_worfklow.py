@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import dask.array as da
 import pytest
 from devtools import debug
 from sqlmodel import select
@@ -356,7 +357,7 @@ async def test_yokogawa(
     await wf.add_subtask(
         db,
         subtask=yokogawa,
-        args=dict(parallelization_level="well", rows=1, cols=2),
+        args=dict(parallelization_level="well", rows=2, cols=1),
     )
     debug(TaskRead.from_orm(wf))
 
@@ -367,5 +368,12 @@ async def test_yokogawa(
     )
     out_ds = await db.get(Dataset, out_ds.id)
     debug(out_ds)
-    # FIXME
-    # Add assertion
+
+    assert (
+        out_ds.meta["history"][-1]
+        == "Yokogawa to Zarr: ['myplate.zarr/B/03/0/']"
+    )
+    zarrurl = out_ds.resource_list[0].path + "/" + out_ds.meta["well"][0] + "0"
+    data_czyx = da.from_zarr(zarrurl)
+    assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+    assert data_czyx[0, 0, 0, 0].compute() == 0
