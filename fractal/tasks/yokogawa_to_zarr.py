@@ -14,6 +14,11 @@ Zurich.
 import os
 import re
 from glob import glob
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
 import dask.array as da
 import numpy as np
@@ -36,15 +41,14 @@ def sort_fun(s):
 
 
 def yokogawa_to_zarr(
-    zarrurl,
-    in_path=None,
-    ext=None,
-    rows=None,
-    cols=None,
-    chl_list=None,
-    num_levels=5,
-    coarsening_xy=2,
+    *,
+    input_paths: Iterable[Path],
+    output_path: Path,
+    rows: int = None,
+    cols: int = None,
     delete_input=False,
+    metadata: Optional[Dict[str, Any]] = None,
+    component: str = None,
 ):
     """
     Convert Yokogawa output (png, tif) to zarr file
@@ -69,8 +73,18 @@ def yokogawa_to_zarr(
     :type coarsening_xy: int
     """
 
-    if not in_path.endswith("/"):
-        in_path += "/"
+    # component = plate.zarr/B/03/0/
+
+    from devtools import debug
+
+    debug(component)
+
+    chl_list = metadata["channel_list"]
+    original_path_list = metadata["original_paths"]
+    in_path = Path(original_path_list[0]).parent
+    ext = Path(original_path_list[0]).name
+    num_levels = metadata["num_levels"]
+    coarsening_xy = metadata["coarsening_xy"]
 
     # Hard-coded values (by now) of chunk sizes to be passed to rechunk,
     # both at level 0 (before coarsening) and at levels 1,2,.. (after
@@ -80,10 +94,10 @@ def yokogawa_to_zarr(
     chunk_size_y = 2160
 
     # Define well
-    if not zarrurl.endswith("/"):
-        zarrurl += "/"
-    well_row = zarrurl.split("/")[-4]
-    well_column = zarrurl.split("/")[-3]
+    component_split = component.split("/")
+    well_row = component_split[1]
+    well_column = component_split[2]
+
     well_ID = well_row + well_column
 
     lazy_imread = delayed(imread)
@@ -97,7 +111,6 @@ def yokogawa_to_zarr(
         l_rows = []
         data_zfyx = []
 
-        print(zarrurl, well_ID)
         glob_path = f"{in_path}*_{well_ID}_*{A}*{C}.{ext}"
         print(f"glob path: {glob_path}")
         filenames = sorted(glob(glob_path), key=sort_fun)
@@ -180,14 +193,14 @@ def yokogawa_to_zarr(
         da.stack(fc_list[level], axis=0) for level in range(num_levels)
     ]
 
-    shape_list = []
-    for i, level in enumerate(level_data):
-        level.to_zarr(zarrurl + f"{i}/", dimension_separator="/")
-        print(f"Chunks at level {i}:\n", level.chunks)
-        shape_list.append(level.shape)
-    print()
+    for level_index, level in enumerate(level_data):
+        level.to_zarr(
+            output_path.as_posix() + f"{component}{level_index}/",
+            dimension_separator="/",
+        )
+        print(f"Chunks at level {level_index}:\n", level.chunks)
 
-    return shape_list
+    return {}
 
 
 if __name__ == "__main__":

@@ -365,6 +365,7 @@ def create_zarr_structure(
         num_levels=num_levels,
         coarsening_xy=coarsening_xy,
         channel_list=actual_channels,
+        original_paths=[str(p) for p in input_paths],
     )
     return metadata_update
 

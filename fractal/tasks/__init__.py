@@ -42,7 +42,8 @@ __FRACTAL_MANIFEST__ = [
     {
         "name": "Yokogawa to Zarr",
         "resource_type": "core task",
-        "input_type": "image",
+        "input_type": "zarr",
         "output_type": "zarr",
+        "module": f"{__name__}.yokogawa_to_zarr:yokogawa_to_zarr",
     },
 ]
