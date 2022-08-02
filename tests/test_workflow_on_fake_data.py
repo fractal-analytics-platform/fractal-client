@@ -32,14 +32,8 @@ def test_workflow_fake_data(
     from fractal.fractal_cmd import workflow_list
     from fractal.fractal_cmd import workflow_new
 
-    # General variables and paths (relative to mwe_fractal folder)
-    rootdir, relative_dir = os.getcwd().split("mwe_fractal")
-    if relative_dir != "":
-        raise Exception(
-            "ERROR: this test has hard-coded paths, it should be "
-            "run from mwe_fractal folder"
-        )
-    resource_in = f"{rootdir}mwe_fractal/tests/data/png"
+    testdir = os.path.dirname(__file__)
+    resource_in = f"{testdir}/data/png"
     tmp_path = tmp_path.as_posix() + "/"
     debug(tmp_path)
     resource_out = tmp_path
