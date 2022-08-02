@@ -362,6 +362,8 @@ def create_zarr_structure(
     metadata_update = dict(
         plate=zarrurls["plate"],
         well=zarrurls["well"],
+        num_levels=num_levels,
+        coarsening_xy=coarsening_xy,
         channel_list=actual_channels,
     )
     return metadata_update
