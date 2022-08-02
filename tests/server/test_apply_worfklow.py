@@ -296,3 +296,68 @@ async def test_create_zarr(
     out_ds = await db.get(Dataset, out_ds.id)
     debug(out_ds)
     assert out_ds.meta
+    # FIXME
+    # The assertion above needs be spcified to the metadata of the task
+    assert False
+
+
+async def test_yokogawa(
+    db,
+    client,
+    collect_tasks,
+    MockCurrentUser,
+    project_factory,
+    dataset_factory,
+    resource_factory,
+    task_factory,
+    tmp_path,
+):
+    """
+    GIVEN
+        * some test png images
+        * create ome-zarr structure task
+        * a project, dataset and resource that represent the images
+    WHEN
+        * the task is applied on the resource
+    THEN
+        * the ZARR structure is correctly created
+    """
+    # CREATE RESOURCES
+    async with MockCurrentUser(persist=True) as user:
+        prj = await project_factory(user)
+        ds = await dataset_factory(prj, type="image")
+        out_ds = await dataset_factory(prj, type="image", name="out_ds")
+
+        await resource_factory(ds)
+        output_path = (tmp_path).as_posix()
+        await resource_factory(out_ds, path=output_path, glob_pattern=None)
+
+    # CREATE NONTRIVIAL WORKFLOW
+    wf = await task_factory(
+        name="worfklow",
+        module=None,
+        resource_type="workflow",
+        input_type="image",
+    )
+
+    stm = select(Task).where(Task.name == "Create OME-ZARR structure")
+    res = await db.execute(stm)
+    create_ome_zarr_task = res.scalar()
+
+    await wf.add_subtask(db, subtask=create_ome_zarr_task)
+    debug(TaskRead.from_orm(wf))
+
+    stm = select(Task).where(Task.name == "Yokogawa to Zarr")
+    res = await db.execute(stm)
+    yokogawa = res.scalar()
+    await wf.add_subtask(db, subtask=yokogawa)
+    debug(TaskRead.from_orm(wf))
+
+    # DONE CREATING WORKFLOW
+
+    await submit_workflow(
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+    )
+    out_ds = await db.get(Dataset, out_ds.id)
+    debug(out_ds)
+    assert False
