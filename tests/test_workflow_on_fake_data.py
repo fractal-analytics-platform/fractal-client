@@ -15,8 +15,7 @@ except FileNotFoundError:
     HAS_SLURM = False
 
 
-# @pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
-@pytest.mark.skip("Skip due to issue 130")
+@pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
 def test_workflow_fake_data(
     tmp_path: pathlib.Path,
 ):
@@ -33,14 +32,8 @@ def test_workflow_fake_data(
     from fractal.fractal_cmd import workflow_list
     from fractal.fractal_cmd import workflow_new
 
-    # General variables and paths (relative to mwe_fractal folder)
-    rootdir, relative_dir = os.getcwd().split("mwe_fractal")
-    if relative_dir != "":
-        raise Exception(
-            "ERROR: this test has hard-coded paths, it should be "
-            "run from mwe_fractal folder"
-        )
-    resource_in = f"{rootdir}mwe_fractal/tests/data/png"
+    testdir = os.path.dirname(__file__)
+    resource_in = f"{testdir}/data/png"
     tmp_path = tmp_path.as_posix() + "/"
     debug(tmp_path)
     resource_out = tmp_path
@@ -92,7 +85,3 @@ def test_workflow_fake_data(
         resource_out,
         "tests/data/parameters_workflow_on_fake_data/wf_params.json",
     )
-
-
-if __name__ == "__main__":
-    test_workflow_fake_data()
