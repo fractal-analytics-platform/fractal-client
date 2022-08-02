@@ -28,26 +28,21 @@ def _task_app(
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
-    component: Optional[Dict[str, Any]],
     inputs,
 ):
-    if component is None:
-        component = {}
-
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
     metadata_update = _callable(
         input_paths=input_paths,
         output_path=output_path,
         metadata=metadata,
-        **component,
         **task_args,
     )
     metadata.update(metadata_update)
     try:
-        metadata["history"].append(f"{task.name}")
+        metadata["history"].append(task.name)
     except KeyError:
-        metadata["history"] = [f"{task.name}"]
+        metadata["history"] = [task.name]
     return metadata
 
 
@@ -55,15 +50,13 @@ def _task_app(
 def _task_parallel_app(
     *,
     task: Task,
+    component: str,
     input_paths: List[Path],
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
-    component: Optional[Dict[str, Any]],
     inputs,
 ):
-    if component is None:
-        component = {}
 
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
@@ -71,10 +64,10 @@ def _task_parallel_app(
         input_paths=input_paths,
         output_path=output_path,
         metadata=metadata,
-        **component,
+        component=component,
         **task_args,
     )
-    return f"{task.name}"
+    return task.name, component
 
 
 @parsl.python_app
@@ -83,10 +76,13 @@ def _collect_results(
     metadata: Dict[str, Any],
     inputs: List[PythonApp],
 ):
+    task_name = inputs[0][0]
+    component_list = [_in[1] for _in in inputs]
+    history = f"{task_name}: {component_list}"
     try:
-        metadata["history"].extend(inputs)
+        metadata["history"].append(history)
     except KeyError:
-        metadata["history"] = inputs
+        metadata["history"] = [history]
     return metadata
 
 
@@ -125,7 +121,7 @@ def _atomic_task_factory(
                 task=task,
                 input_paths=input_paths,
                 output_path=output_path,
-                metadata=deepcopy(metadata),
+                metadata=metadata,
                 task_args=task_args,
                 component={parall_level: item},
                 inputs=[],
@@ -141,9 +137,8 @@ def _atomic_task_factory(
             task=task,
             input_paths=input_paths,
             output_path=output_path,
-            metadata=deepcopy(metadata),
+            metadata=metadata,
             task_args=task_args,
-            component=None,
             inputs=depends_on,
         )
 
@@ -182,8 +177,7 @@ def _process_workflow(
             task=task,
             input_paths=this_input,
             output_path=this_output,
-            depends_on=[apps[i - 1] if i > 0 else None],
-            metadata=this_metadata,
+            metadata=apps[i - 1] if i > 0 else this_metadata,
         )
         apps.append(this_task_app)
         this_input = [this_output]
