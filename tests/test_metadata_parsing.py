@@ -140,7 +140,3 @@ def test_metadata_parsing(
     assert np.allclose(site_metadata["x_pixel"], x_pixel)
     assert np.allclose(site_metadata["y_pixel"], y_pixel)
     assert np.allclose(site_metadata["bit_depth"], bit_depth)
-
-
-# TODO: Test some of the subfunctions with mocked inputs
-# Can I trigger the correct exceptions based on wrong inputs?
