@@ -5,6 +5,7 @@ import pytest
 from devtools import debug
 from sqlmodel import select
 
+from fractal.server.app.models import Dataset
 from fractal.server.app.models import Subtask
 from fractal.server.app.models import Task
 from fractal.server.app.models import TaskRead
@@ -260,7 +261,7 @@ async def test_create_zarr(
     async with MockCurrentUser(persist=True) as user:
         prj = await project_factory(user)
         ds = await dataset_factory(prj, type="image")
-        out_ds = await dataset_factory(prj, type="image", name="out_ds")
+        out_ds = await dataset_factory(prj, type="zarr", name="out_ds")
 
         await resource_factory(ds)
         output_path = (tmp_path).as_posix()
@@ -291,3 +292,7 @@ async def test_create_zarr(
         data = json.load(f)
         debug(data)
     assert len(data["plate"]["wells"]) == 1
+
+    out_ds = await db.get(Dataset, out_ds.id)
+    debug(out_ds)
+    assert out_ds.meta

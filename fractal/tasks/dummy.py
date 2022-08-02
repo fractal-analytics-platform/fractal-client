@@ -42,17 +42,12 @@ def dummy(
 
     Retrun
     ------
-    metadata (Dict[str, Any]) :
-        the metadata dictionary, updated if needed
+    metadata_update (Dict[str, Any]) :
+        a dictionary that will update the metadata
     """
     from datetime import datetime, timezone
     import json
     from json.decoder import JSONDecodeError
-
-    if metadata is None:
-        metadata = {"history": []}
-    elif "history" not in metadata:
-        metadata["history"] = []
 
     payload = dict(
         task="DUMMY TASK",
@@ -79,6 +74,6 @@ def dummy(
         json.dump(data, fout, indent=2)
 
     # Update metadata
-    metadata["history"].append(f"Running dummy index={index}")
+    metadata_update = {"dummy": "dummy"}
 
-    return metadata
+    return metadata_update

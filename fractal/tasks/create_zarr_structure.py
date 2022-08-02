@@ -170,9 +170,9 @@ def create_zarr_structure(
     ################################################################
     for plate in plates:
         # Define plate zarr
-        zarrurl = f"{output_path.as_posix()}/{plate}.zarr"
+        zarrurl = f"{plate}.zarr"
         print(f"Creating {zarrurl}")
-        group_plate = zarr.group(zarrurl)
+        group_plate = zarr.group(output_path / zarrurl)
         zarrurls["plate"].append(zarrurl)
 
         # Obtain FOV-metadata dataframe
@@ -283,9 +283,7 @@ def create_zarr_structure(
             }
 
             group_FOV = group_well.create_group("0/")  # noqa: F841
-            zarrurls["well"].append(
-                output_path.as_posix() + f"/{plate}.zarr/{row}/{column}/0/"
-            )
+            zarrurls["well"].append(f"{plate}.zarr/{row}/{column}/0/")
 
             group_FOV.attrs["multiscales"] = [
                 {
@@ -361,7 +359,12 @@ def create_zarr_structure(
                 group_tables = group_FOV.create_group("tables/")  # noqa: F841
                 write_elem(group_tables, "FOV_ROI_table", FOV_ROIs_table)
 
-    return zarrurls, actual_channels
+    metadata_update = dict(
+        plate=zarrurls["plate"],
+        well=zarrurls["well"],
+        channel_list=actual_channels,
+    )
+    return metadata_update
 
 
 if __name__ == "__main__":

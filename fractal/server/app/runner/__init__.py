@@ -21,12 +21,72 @@ from ..models.task import Task
 
 
 @parsl.python_app
+def _task_app(
+    *,
+    task: Task,
+    input_paths: List[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]],
+    task_args: Optional[Dict[str, Any]],
+    component: Optional[Dict[str, Any]],
+    inputs,
+):
+    if component is None:
+        component = {}
+
+    task_module = importlib.import_module(task.import_path)
+    _callable = getattr(task_module, task.callable)
+    metadata_update = _callable(
+        input_paths=input_paths,
+        output_path=output_path,
+        metadata=metadata,
+        **component,
+        **task_args,
+    )
+    metadata.update(metadata_update)
+    try:
+        metadata["history"].append(f"{task.name}")
+    except KeyError:
+        metadata["history"] = [f"{task.name}"]
+    return metadata
+
+
+@parsl.python_app
+def _task_parallel_app(
+    *,
+    task: Task,
+    input_paths: List[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]],
+    task_args: Optional[Dict[str, Any]],
+    component: Optional[Dict[str, Any]],
+    inputs,
+):
+    if component is None:
+        component = {}
+
+    task_module = importlib.import_module(task.import_path)
+    _callable = getattr(task_module, task.callable)
+    _callable(
+        input_paths=input_paths,
+        output_path=output_path,
+        metadata=metadata,
+        **component,
+        **task_args,
+    )
+    return f"{task.name}"
+
+
+@parsl.python_app
 def _collect_results(
     *,
     metadata: Dict[str, Any],
     inputs: List[PythonApp],
 ):
-    # metadata = update_metadata_from_subtasks(data)
+    try:
+        metadata["history"].extend(inputs)
+    except KeyError:
+        metadata["history"] = inputs
     return metadata
 
 
@@ -57,34 +117,12 @@ def _atomic_task_factory(
     # executor = task_args.get("executor", "cpu")
     # @parsl.python_app(executors=[executor])
 
-    @parsl.python_app
-    def _task_app(
-        *,
-        input_paths: List[Path],
-        output_path: Path,
-        metadata: Optional[Dict[str, Any]],
-        task_args: Optional[Dict[str, Any]],
-        component: Optional[Dict[str, Any]],
-        inputs,
-    ):
-        if component is None:
-            component = {}
-
-        task_module = importlib.import_module(task.import_path)
-        _callable = getattr(task_module, task.callable)
-        return _callable(
-            input_paths=input_paths,
-            output_path=output_path,
-            metadata=metadata,
-            **component,
-            **task_args,
-        )
-
     parall_level = task_args.get("parallelization_level", None)
     if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
         dependencies = [
-            _task_app(
+            _task_parallel_app(
+                task=task,
                 input_paths=input_paths,
                 output_path=output_path,
                 metadata=deepcopy(metadata),
@@ -100,6 +138,7 @@ def _atomic_task_factory(
         )
     else:
         return _task_app(
+            task=task,
             input_paths=input_paths,
             output_path=output_path,
             metadata=deepcopy(metadata),
