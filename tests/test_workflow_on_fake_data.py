@@ -15,8 +15,7 @@ except FileNotFoundError:
     HAS_SLURM = False
 
 
-# @pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
-@pytest.mark.skip("Skip due to issue 130")
+@pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
 def test_workflow_fake_data(
     tmp_path: pathlib.Path,
 ):
@@ -92,7 +91,3 @@ def test_workflow_fake_data(
         resource_out,
         "tests/data/parameters_workflow_on_fake_data/wf_params.json",
     )
-
-
-if __name__ == "__main__":
-    test_workflow_fake_data()
