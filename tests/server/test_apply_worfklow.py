@@ -344,13 +344,20 @@ async def test_yokogawa(
     res = await db.execute(stm)
     create_ome_zarr_task = res.scalar()
 
-    await wf.add_subtask(db, subtask=create_ome_zarr_task)
+    await wf.add_subtask(
+        db,
+        subtask=create_ome_zarr_task,
+    )
     debug(TaskRead.from_orm(wf))
 
     stm = select(Task).where(Task.name == "Yokogawa to Zarr")
     res = await db.execute(stm)
     yokogawa = res.scalar()
-    await wf.add_subtask(db, subtask=yokogawa)
+    await wf.add_subtask(
+        db,
+        subtask=yokogawa,
+        args=dict(parallelization_level="well", rows=1, cols=2),
+    )
     debug(TaskRead.from_orm(wf))
 
     # DONE CREATING WORKFLOW
@@ -360,4 +367,5 @@ async def test_yokogawa(
     )
     out_ds = await db.get(Dataset, out_ds.id)
     debug(out_ds)
-    assert False
+    # FIXME
+    # Add assertion
