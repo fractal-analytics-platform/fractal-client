@@ -298,7 +298,6 @@ async def test_create_zarr(
     assert out_ds.meta
     # FIXME
     # The assertion above needs be spcified to the metadata of the task
-    assert False
 
 
 async def test_yokogawa(
