@@ -13,12 +13,12 @@ Zurich.
 """
 import json
 import warnings
-from concurrent.futures import ThreadPoolExecutor
 
 import anndata as ad
 import dask
 import dask.array as da
 import numpy as np
+from devtools import debug
 from skimage.io import imread
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
@@ -90,7 +90,6 @@ def illumination_correction(
     path_dict_corr=None,
     coarsening_xy=2,
     background=110,
-    num_threads=10,
 ):
 
     """
@@ -221,16 +220,15 @@ def illumination_correction(
 
     # Loop over channels
     data_czyx_new = []
+    data_czyx_new = da.empty(
+        data_czyx.shape,
+        chunks="auto",
+        dtype=data_czyx.dtype,
+    )
     for ind_ch, ch in enumerate(chl_list):
         # Set correction matrix
         illum_img = corrections[ch]
         # 3D data for multiple FOVs
-        data_zyx_new = da.empty(
-            data_czyx[ind_ch].shape,
-            chunks=data_czyx[ind_ch].chunks,
-            dtype=data_czyx.dtype,
-        )
-
         # Loop over FOVs
         for indices in list_indices:
             s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
@@ -245,21 +243,26 @@ def illumination_correction(
                     background=background,
                 )
                 tmp_zyx.append(da.from_delayed(new_img, shape, dtype))
-            data_zyx_new[s_z:e_z, s_y:e_y, s_x:e_x] = da.stack(tmp_zyx, axis=0)
-        data_czyx_new.append(data_zyx_new)
-    accumulated_data = da.stack(data_czyx_new, axis=0)
+            data_czyx_new[ind_ch, s_z:e_z, s_y:e_y, s_x:e_x] = da.stack(
+                tmp_zyx, axis=0
+            )
+    tmp_accumulated_data = data_czyx_new
+    accumulated_data = tmp_accumulated_data.rechunk(data_czyx.chunks)
+
+    debug("tmp_accumulated_data", tmp_accumulated_data)
+    debug("accumulated_data", accumulated_data)
+    debug("nbytes", accumulated_data.nbytes)
 
     # Construct resolution pyramid
-    with dask.config.set(pool=ThreadPoolExecutor(num_threads)):
-        write_pyramid(
-            accumulated_data,
-            newzarrurl=newzarrurl,
-            overwrite=overwrite,
-            coarsening_xy=coarsening_xy,
-            num_levels=num_levels,
-            chunk_size_x=img_size_x,
-            chunk_size_y=img_size_y,
-        )
+    write_pyramid(
+        accumulated_data,
+        newzarrurl=newzarrurl,
+        overwrite=overwrite,
+        coarsening_xy=coarsening_xy,
+        num_levels=num_levels,
+        chunk_size_x=img_size_x,
+        chunk_size_y=img_size_y,
+    )
 
 
 if __name__ == "__main__":
@@ -307,13 +310,6 @@ if __name__ == "__main__":
             " (optional, defaults to 110)"
         ),
     )
-    parser.add_argument(
-        "-nt",
-        "--num_threads",
-        default=2,
-        type=int,
-        help="num threads",
-    )
 
     args = parser.parse_args()
     illumination_correction(
@@ -324,5 +320,4 @@ if __name__ == "__main__":
         chl_list=args.chl_list,
         coarsening_xy=args.coarsening_xy,
         background=args.background,
-        num_threads=args.num_threads,
     )
