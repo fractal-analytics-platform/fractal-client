@@ -262,7 +262,9 @@ def read_mlf_file(mlf_path, mrf_frame):
 def calculate_steps(site_series: pd.Series):
     # site_series is the z_micrometer series for a given site of a given
     # channel. This function calculates the step size in Z
-    steps = site_series.diff()[1:]
+
+    # First diff is always NaN because there is nothing to compare it to
+    steps = site_series.diff().dropna()
     if not steps.std().sum() == 0.0:
         raise Exception(
             "When parsing the Yokogawa mlf file, some sites "
@@ -276,14 +278,24 @@ def get_z_steps(mlf_frame):
     # Process mlf_frame to extract Z information (pixel size & steps).
     # Run checks on consistencies & return site-based z step dataframe
     # Group by well, field & channel
-    grouped_sites_z = mlf_frame.loc[
-        :, ["well_id", "field_id", "action_id", "channel_id", "z_micrometer"]
-    ].groupby(by=["well_id", "field_id", "action_id", "channel_id"])
-    # Group the whole site (combine channels), because Z steps need to be
-    # consistent between channels for OME-Zarr.
-    z_data = grouped_sites_z.apply(calculate_steps).groupby(
-        ["well_id", "field_id"]
+    grouped_sites_z = (
+        mlf_frame.loc[
+            :,
+            ["well_id", "field_id", "action_id", "channel_id", "z_micrometer"],
+        ]
+        .set_index(["well_id", "field_id", "action_id", "channel_id"])
+        .groupby(level=[0, 1, 2, 3])
     )
+
+    # If there is only 1 Z step, set the Z spacing to the count of planes => 1
+    if grouped_sites_z.count()["z_micrometer"].max() == 1:
+        z_data = grouped_sites_z.count().groupby(["well_id", "field_id"])
+    else:
+        # Group the whole site (combine channels), because Z steps need to be
+        # consistent between channels for OME-Zarr.
+        z_data = grouped_sites_z.apply(calculate_steps).groupby(
+            ["well_id", "field_id"]
+        )
     if not z_data.std().sum().sum() == 0.0:
         raise Exception(
             "When parsing the Yokogawa mlf file, channels had "
