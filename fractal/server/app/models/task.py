@@ -125,6 +125,10 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
         else:
             return [st.preprocess() for st in self.subtask.subtask_list]
 
+    @property
+    def name(self):
+        return self.subtask.name
+
 
 class SubtaskRead(SubtaskBase):
     subtask: "TaskRead"

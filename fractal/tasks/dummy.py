@@ -10,6 +10,7 @@ def dummy(
     input_paths: Iterable[Path],
     output_path: Path,
     metadata: Optional[Dict[str, Any]] = None,
+    component: Optional[Any] = None,
     # arguments of this task
     message: str,
     index: int = 0,
@@ -48,6 +49,9 @@ def dummy(
     from datetime import datetime, timezone
     import json
     from json.decoder import JSONDecodeError
+
+    if component:
+        index = component
 
     payload = dict(
         task="DUMMY TASK",
