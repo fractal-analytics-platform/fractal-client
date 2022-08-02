@@ -1,4 +1,5 @@
 import importlib
+from concurrent.futures import Future
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -89,12 +90,13 @@ def _collect_results(
 parsl.load(Config())
 
 
+@parsl.join_app
 def _atomic_task_factory(
     *,
     task: Union[Task, Subtask, PreprocessedTask],
     input_paths: List[Path],
     output_path: Path,
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: Optional[Union[Future, Dict[str, Any]]] = None,
     depends_on: Optional[List[AppFuture]] = None,
 ) -> PythonApp:
     """
@@ -113,7 +115,7 @@ def _atomic_task_factory(
     # executor = task_args.get("executor", "cpu")
     # @parsl.python_app(executors=[executor])
 
-    parall_level = task_args.get("parallelization_level", None)
+    parall_level = task_args.pop("parallelization_level", None)
     if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
         dependencies = [
@@ -123,7 +125,7 @@ def _atomic_task_factory(
                 output_path=output_path,
                 metadata=metadata,
                 task_args=task_args,
-                component={parall_level: item},
+                component=item,
                 inputs=[],
             )
             for item in parall_item_gen

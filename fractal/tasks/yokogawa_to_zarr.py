@@ -44,8 +44,8 @@ def yokogawa_to_zarr(
     *,
     input_paths: Iterable[Path],
     output_path: Path,
-    rows: int = None,
-    cols: int = None,
+    rows: int,
+    cols: int,
     delete_input=False,
     metadata: Optional[Dict[str, Any]] = None,
     component: str = None,
@@ -111,7 +111,7 @@ def yokogawa_to_zarr(
         l_rows = []
         data_zfyx = []
 
-        glob_path = f"{in_path}*_{well_ID}_*{A}*{C}.{ext}"
+        glob_path = f"{in_path}/*_{well_ID}_*{A}*{C}{ext}"
         print(f"glob path: {glob_path}")
         filenames = sorted(glob(glob_path), key=sort_fun)
         if len(filenames) == 0:
