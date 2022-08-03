@@ -115,7 +115,7 @@ async def MockCurrentUser(app, db):
         Context managed user override
         """
 
-        sub: Optional[str] = "sub"
+        name: str = "User Name"
         scopes: Optional[List[str]] = field(
             default_factory=lambda: ["project"]
         )
@@ -126,8 +126,7 @@ async def MockCurrentUser(app, db):
 
         def _create_user(self):
             self.user = User(
-                sub=self.sub,
-                name=self.sub,
+                name=self.name,
                 email=self.email,
                 hashed_password="fake_hashed_password",
             )
