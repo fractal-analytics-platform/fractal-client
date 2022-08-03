@@ -20,6 +20,8 @@ from pytest import MonkeyPatch
 from fractal.tasks.yokogawa_to_zarr import yokogawa_to_zarr
 
 
+# FIXME: try with two channels
+
 images = [
     "plate_well_T0001F001L01A01Z01C01.png",
     "plate_well_T0001F002L01A01Z01C01.png",
@@ -27,7 +29,7 @@ images = [
     "plate_well_T0001F004L01A01Z01C01.png",
 ]
 
-chl_list = ["01"]
+chl_list = ["A01_C01"]
 num_levels = 5
 coarsening_factor_xy = 2
 coarsening_factor_z = 1

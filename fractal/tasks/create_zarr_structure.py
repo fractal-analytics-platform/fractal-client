@@ -358,6 +358,7 @@ def create_zarr_structure(
     for zarrurl in zarrurls["plate"] + zarrurls["well"]:
         if not os.path.isdir(zarrurl):
             raise FileNotFoundError(f"Missing file {zarrurl}")
+    print("All files in zarrurls are there")
 
     return zarrurls, actual_channels
 

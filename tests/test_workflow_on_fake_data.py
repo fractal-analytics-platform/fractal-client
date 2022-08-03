@@ -1,7 +1,9 @@
 import os
 import pathlib
+import shutil
 import subprocess
 
+import dask.array as da
 import pytest
 from devtools import debug
 
@@ -17,7 +19,7 @@ except FileNotFoundError:
 
 @pytest.mark.skipif(not HAS_SLURM, reason="SLURM not available")
 def test_workflow_fake_data(
-    tmp_path: pathlib.Path,
+    # tmp_path: pathlib.Path,
 ):
 
     from fractal.fractal_cmd import dataset_update_type
@@ -33,11 +35,15 @@ def test_workflow_fake_data(
     from fractal.fractal_cmd import workflow_new
 
     testdir = os.path.dirname(__file__)
+    tmp_path = pathlib.Path(f"{testdir}/tmp")
+
+    tmp_dir = tmp_path.as_posix() + "/"
+    if os.path.isdir(tmp_dir):
+        shutil.rmtree(tmp_dir)
+
     resource_in = f"{testdir}/data/png"
-    tmp_path = tmp_path.as_posix() + "/"
-    debug(tmp_path)
-    resource_out = tmp_path
-    debug(tmp_path)
+    debug(tmp_dir)
+    resource_out = tmp_dir
 
     # Quick&dirty way to ignore function decorators
     # (which are otherwise used for CLI)
@@ -59,7 +65,7 @@ def test_workflow_fake_data(
     workflow_name = "wftest"
 
     # Prepare and execute a workflow
-    project_new(project_name, tmp_path, dataset_name)
+    project_new(project_name, tmp_dir, dataset_name)
     projects_list()
     print()
 
@@ -68,9 +74,12 @@ def test_workflow_fake_data(
     datasets_list(project_name)
     print()
 
+    # Create workflow with only create_zarr_structure
     task_add("create_zarr_structure", "png", "zarr", "none")
-    task_add("yokogawa_to_zarr", "zarr", "zarr", "well")
     workflow_new(project_name, workflow_name, ["create_zarr_structure"])
+
+    # Add yokogawa_to_zarr to list of tasks and to workflow
+    task_add("yokogawa_to_zarr", "zarr", "zarr", "well")
     workflow_add_task(project_name, workflow_name, ["yokogawa_to_zarr"])
 
     workflow_list(project_name)
@@ -85,3 +94,18 @@ def test_workflow_fake_data(
         resource_out,
         "tests/data/parameters_workflow_on_fake_data/wf_params.json",
     )
+
+    zarrurl = resource_out + "myplate.zarr"
+    debug(zarrurl)
+    assert os.path.isdir(zarrurl)
+
+    zarrurl = resource_out + "myplate.zarr/B/03/0/0"
+    data_czyx = da.from_zarr(zarrurl)
+    assert data_czyx.shape == (1, 2, 2160, 2560 * 2)
+    assert data_czyx[0, 0, 0, 0].compute() == 0
+
+    shutil.rmtree(tmp_dir)
+
+
+if __name__ == "__main__":
+    test_workflow_fake_data()

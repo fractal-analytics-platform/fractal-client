@@ -373,6 +373,7 @@ def workflow_new(project_name, workflow_name, tasks):
             ).dict()
         }
     )
+    debug(prj)
     save_project_file(project_name, prj)
 
 
@@ -512,10 +513,7 @@ def workflow_apply(
         return [x for x in inputs]
 
     # Task 0
-    if task_names[0] in [
-        "create_zarr_structure",
-        "create_zarr_structure_multifov",
-    ]:
+    if task_names[0] == "create_zarr_structure":
         kwargs = dict(
             in_paths=resources_in,
             out_path=resource_out,
@@ -532,18 +530,21 @@ def workflow_apply(
 
             return dict_tasks[task_names[0]](**kwargs)
 
-        future = app_create_zarr_structure(**kwargs)
+        debug(task_names[0])
+        debug(kwargs)
 
-        if task_names[0] == "create_zarr_structure":
-            zarrurls, chl_list = future.result()
-            debug(zarrurls)
-            debug(chl_list)
-        elif task_names[0] == "create_zarr_structure_multifov":
-            zarrurls, chl_list, well_to_sites = future.result()
-            debug(zarrurls)
-            debug(chl_list)
-            debug(well_to_sites)
+        future = app_create_zarr_structure(**kwargs)
+        print(future)
+        zarrurls, chl_list = future.result()
+        debug(zarrurls)
+        debug(chl_list)
+        # FIXME
+        for zarrurl in zarrurls["plate"] + zarrurls["well"]:
+            if not os.path.isdir(zarrurl):
+                raise FileNotFoundError(zarrurl)
+
         task_names = task_names[1:]  # FIXME
+        print(future)
     else:
         print(
             "ERROR/WARNING: Workflows must start with create_zarr_structure*"
@@ -572,16 +573,6 @@ def workflow_apply(
                 num_levels=num_levels,
                 coarsening_xy=coarsening_xy,
             )
-        if task == "yokogawa_to_zarr_multifov":
-            kwargs = dict(
-                in_path=resources_in[0],  # FIXME
-                ext=ext,
-                delete_input=delete_input,
-                chl_list=chl_list,
-                # sites_dict=well_to_sites,
-                num_levels=num_levels,
-                coarsening_xy=coarsening_xy,
-            )
 
         elif task == "maximum_intensity_projection":
             kwargs = dict(
@@ -601,9 +592,6 @@ def workflow_apply(
             kwargs["chl_list"] = chl_list
             executor = "gpu"
 
-        debug(task)
-        debug(kwargs)
-
         @python_app(executors=[executor])
         def app(zarrurl, **kwargs_):
             os.environ["OPENBLAS_NUM_THREADS"] = OPENBLAS_NUM_THREADS
@@ -618,6 +606,10 @@ def workflow_apply(
         for zarrurl in zarrurls[parallelization_level]:
             future = app(zarrurl, **kwargs)
             futures.append(future)
+
+        debug(task)
+        debug(zarrurls[parallelization_level])
+        debug(kwargs)
 
         print(futures)
         # [future.result() for future in futures]
