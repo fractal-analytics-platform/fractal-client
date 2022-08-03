@@ -1,3 +1,4 @@
+from enum import Enum
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -94,3 +95,49 @@ class ResourceRead(ResourceBase):
 
 
 ProjectRead.update_forward_refs()
+
+
+# TASK
+
+
+class ResourceTypeEnum(str, Enum):
+    CORE_WORKFLOW = "core workflow"
+    CORE_TASK = "core task"
+    CORE_STEP = "core step"
+
+    WORKFLOW = "workflow"
+    TASK = "task"
+    STEP = "step"
+
+
+class TaskBase(SQLModel):
+    name: str = Field(sa_column_kwargs=dict(unique=True))
+    resource_type: ResourceTypeEnum
+    module: Optional[str]
+    input_type: str
+    output_type: str
+    default_args: Dict[str, Any] = Field(default={})
+    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class TaskCreate(TaskBase):
+    pass
+
+
+class SubtaskBase(SQLModel):
+    pass
+
+
+class SubtaskRead(SubtaskBase):
+    subtask: "TaskRead"
+
+
+class TaskRead(TaskBase):
+    id: int
+    subtask_list: List[SubtaskRead]
+
+
+SubtaskRead.update_forward_refs()

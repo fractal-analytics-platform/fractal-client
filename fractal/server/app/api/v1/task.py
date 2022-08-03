@@ -14,9 +14,9 @@ from ....tasks import collect_tasks
 from ...db import async_session_maker
 from ...db import AsyncSession
 from ...db import get_db
-from ...models.task import Task
-from ...models.task import TaskCreate
-from ...models.task import TaskRead
+from ...models import Task
+from ...models import TaskCreate
+from ...models import TaskRead
 from ...security import current_active_user
 from ...security import User
 

@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Any
 from typing import Dict
 from typing import List
@@ -11,7 +10,9 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
-from sqlmodel import SQLModel
+
+from fractal.common.models import SubtaskBase
+from fractal.common.models import TaskBase
 
 
 def flatten(xx):
@@ -39,37 +40,6 @@ class PreprocessedTask(BaseModel):
     @property
     def import_path(self):
         return self.module.partition(":")[0]
-
-
-class ResourceTypeEnum(str, Enum):
-    CORE_WORKFLOW = "core workflow"
-    CORE_TASK = "core task"
-    CORE_STEP = "core step"
-
-    WORKFLOW = "workflow"
-    TASK = "task"
-    STEP = "step"
-
-
-class TaskBase(SQLModel):
-    name: str = Field(sa_column_kwargs=dict(unique=True))
-    resource_type: ResourceTypeEnum
-    module: Optional[str]
-    input_type: str
-    output_type: str
-    default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
-    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class TaskCreate(TaskBase):
-    pass
-
-
-class SubtaskBase(SQLModel):
-    pass
 
 
 class Subtask(SubtaskBase, table=True):  # type: ignore
@@ -130,12 +100,9 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
         return self.subtask.name
 
 
-class SubtaskRead(SubtaskBase):
-    subtask: "TaskRead"
-
-
 class Task(TaskBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
+    default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
     subtask_list: List["Subtask"] = Relationship(
         sa_relationship_kwargs=dict(
             primaryjoin="Task.id==Subtask.parent_task_id",
@@ -202,11 +169,3 @@ class Task(TaskBase, table=True):  # type: ignore
         if commit_and_refresh:
             await db.commit()
             await db.refresh(self)
-
-
-class TaskRead(TaskBase):
-    id: int
-    subtask_list: List[SubtaskRead]
-
-
-SubtaskRead.update_forward_refs()
