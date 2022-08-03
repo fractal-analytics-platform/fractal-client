@@ -13,6 +13,7 @@ readme = "README.md"
 python = "^3.8"
 python-dotenv = "^0.20.0"
 anndata = "^0.8.0"
+rich = "^12.5.1"
 
 [tool.poetry.group.dev.dependencies]
 asgi-lifespan = "^1.0.1"

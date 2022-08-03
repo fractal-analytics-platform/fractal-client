@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from jwt.exceptions import ExpiredSignatureError
 
 from .config import settings
-
+from pathlib import Path
 
 class AuthToken:
     def __init__(self, client: AsyncClient):
@@ -27,7 +27,7 @@ class AuthToken:
             raise ValueError("ERROR! FIXME")
         raw_token = res.json()
         self.token = raw_token["access_token"]
-        with open(settings.SESSION_CACHE_PATH, "w") as f:
+        with open(Path(settings.SESSION_CACHE_PATH).expanduser(), "w") as f:
             f.write(self.token)
 
     @property
