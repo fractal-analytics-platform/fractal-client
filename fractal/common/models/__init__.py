@@ -65,6 +65,11 @@ class DatasetBase(SQLModel):
     read_only: Optional[bool] = False
 
 
+class DatasetUpdate(DatasetBase):
+    name: Optional[str]
+    meta: Optional[Dict[str, Any]] = None
+
+
 class DatasetCreate(DatasetBase):
     pass
 

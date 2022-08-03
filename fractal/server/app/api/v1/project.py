@@ -5,12 +5,15 @@ from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-from fastapi.encoders import jsonable_encoder
 from sqlmodel import select
 
 from ...db import AsyncSession
 from ...db import get_db
+from ...models import ApplyWorkflow
 from ...models import Dataset
+from ...models import DatasetCreate
+from ...models import DatasetRead
+from ...models import DatasetUpdate
 from ...models import Project
 from ...models import ProjectCreate
 from ...models import ProjectRead
@@ -23,9 +26,6 @@ from ...runner import submit_workflow
 from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
-from fractal.common.models import ApplyWorkflow
-from fractal.common.models import DatasetCreate
-from fractal.common.models import DatasetRead
 
 router = APIRouter()
 
@@ -77,6 +77,67 @@ async def create_project(
     await db.commit()
     await db.refresh(db_project)
     return db_project
+
+
+@router.post(
+    "/apply/",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def apply_workflow(
+    apply_workflow: ApplyWorkflow,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stm = (
+        select(Project, Dataset)
+        .join(Dataset)
+        .where(Project.user_owner_id == user.id)
+        .where(Project.id == apply_workflow.project_id)
+        .where(Dataset.id == apply_workflow.input_dataset_id)
+    )
+    project, input_dataset = (await db.execute(stm)).one()
+
+    # TODO check that user is allowed to use this task
+
+    workflow = await db.get(Task, apply_workflow.workflow_id)
+
+    if apply_workflow.output_dataset_id:
+        stm = (
+            select(Dataset)
+            .where(Dataset.project_id == project.id)
+            .where(Dataset.id == apply_workflow.output_dataset_id)
+        )
+        output_dataset = (await db.execute(stm)).one()
+    else:
+        output_dataset = await auto_output_dataset(
+            project=project, input_dataset=input_dataset, workflow=workflow
+        )
+
+    try:
+        validate_workflow_compatibility(
+            workflow=workflow,
+            input_dataset=input_dataset,
+            output_dataset=output_dataset,
+        )
+    except TypeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
+        )
+
+    if not input_dataset or not output_dataset or not workflow:
+        raise ValueError
+
+    background_tasks.add_task(
+        submit_workflow,
+        workflow=workflow,
+        input_dataset=input_dataset,
+        output_dataset=output_dataset,
+        db=db,
+    )
+
+    # TODO we should return a job id of some sort
+    return dict(status="submitted")
 
 
 @router.post(
@@ -163,11 +224,11 @@ async def add_resource(
     return db_resource
 
 
-@router.patch("/{project_id}/{dataset_id}", response_model=Dataset)
-async def modify_dataset(
+@router.patch("/{project_id}/{dataset_id}", response_model=DatasetRead)
+async def patch_dataset(
     project_id: int,
     dataset_id: int,
-    dataset: DatasetCreate,
+    dataset_update: DatasetUpdate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -179,73 +240,10 @@ async def modify_dataset(
             detail="Not allowed on project",
         )
 
-    stored_dataset_data = await db.get(Dataset, dataset_id)
-    stored_dataset_model = Dataset(**stored_dataset_data)
-    update_data = dataset.dict(exclude_unset=True)
-    updated_dataset = stored_dataset_model.copy(update=update_data)
-    patch_dataset = jsonable_encoder(updated_dataset)
-    db.add(patch_dataset)
+    db_dataset = await db.get(Dataset, dataset_id)
+    for key, value in dataset_update.dict(exclude_unset=True).items():
+        setattr(db_dataset, key, value)
+
     await db.commit()
-    await db.refresh(patch_dataset)
-    return patch_dataset
-
-
-@router.post(
-    "/apply/",
-    status_code=status.HTTP_202_ACCEPTED,
-)
-async def apply_workflow(
-    apply_workflow: ApplyWorkflow,
-    background_tasks: BackgroundTasks,
-    user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
-):
-    stm = (
-        select(Project, Dataset)
-        .join(Dataset)
-        .where(Project.user_owner_id == user.id)
-        .where(Project.id == apply_workflow.project_id)
-        .where(Dataset.id == apply_workflow.input_dataset_id)
-    )
-    project, input_dataset = (await db.execute(stm)).one()
-
-    # TODO check that user is allowed to use this task
-
-    workflow = await db.get(Task, apply_workflow.workflow_id)
-
-    if apply_workflow.output_dataset_id:
-        stm = (
-            select(Dataset)
-            .where(Dataset.project_id == project.id)
-            .where(Dataset.id == apply_workflow.output_dataset_id)
-        )
-        output_dataset = (await db.execute(stm)).one()
-    else:
-        output_dataset = await auto_output_dataset(
-            project=project, input_dataset=input_dataset, workflow=workflow
-        )
-
-    try:
-        validate_workflow_compatibility(
-            workflow=workflow,
-            input_dataset=input_dataset,
-            output_dataset=output_dataset,
-        )
-    except TypeError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
-        )
-
-    if not input_dataset or not output_dataset or not workflow:
-        raise ValueError
-
-    background_tasks.add_task(
-        submit_workflow,
-        workflow=workflow,
-        input_dataset=input_dataset,
-        output_dataset=output_dataset,
-        db=db,
-    )
-
-    # TODO we should return a job id of some sort
-    return dict(status="submitted")
+    await db.refresh(db_dataset)
+    return db_dataset
