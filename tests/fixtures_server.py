@@ -58,7 +58,9 @@ async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
 
 
 @pytest.fixture
-async def db(db_engine, app) -> AsyncGenerator[AsyncSession, None]:
+async def db_session_maker(
+    db_engine, app
+) -> AsyncGenerator[AsyncSession, None]:
     from sqlmodel import SQLModel
 
     async with db_engine.begin() as conn:
@@ -66,12 +68,24 @@ async def db(db_engine, app) -> AsyncGenerator[AsyncSession, None]:
         async_session_maker = sessionmaker(
             db_engine, class_=AsyncSession, expire_on_commit=False
         )
-        async with async_session_maker() as session:
-            from fractal.server.app.db import get_db
 
-            app.dependency_overrides[get_db] = lambda: session
-            yield session
+        async def _get_db():
+            async with async_session_maker() as session:
+                yield session
+
+        from fractal.server.app.db import get_db
+
+        app.dependency_overrides[get_db] = _get_db
+
+        yield async_session_maker
+
         await conn.run_sync(SQLModel.metadata.drop_all)
+
+
+@pytest.fixture
+async def db(db_session_maker):
+    async with db_session_maker() as session:
+        yield session
 
 
 @pytest.fixture
