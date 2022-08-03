@@ -19,7 +19,6 @@ def test_dummy_task(tmp_path):
         metadata=None,
     )
     debug(metadata)
-    assert len(metadata["history"]) == 1
 
     with open(outfile, "r") as f:
         debug(f.read())
@@ -36,7 +35,6 @@ def test_dummy_task(tmp_path):
         metadata=metadata,
     )
     debug(metadata)
-    assert len(metadata["history"]) == 2
 
     with open(outfile, "r") as f:
         data = json.load(f)
