@@ -75,7 +75,7 @@ async def get_list_task(
     return task_list
 
 
-@router.post("/", response_model=TaskRead)
+@router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def create_task(
     task: TaskCreate,
     user: User = Depends(current_active_user),
@@ -88,7 +88,11 @@ async def create_task(
     return db_task
 
 
-@router.post("/{parent_task_id}/subtask/", response_model=TaskRead)
+@router.post(
+    "/{parent_task_id}/subtask/",
+    response_model=TaskRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_subtask(
     parent_task_id: int,
     subtask: SubtaskCreate,
