@@ -48,17 +48,19 @@ async def test_collection(db, client, MockCurrentUser):
 
 
 async def test_task_get_list(db, client, task_factory, MockCurrentUser):
-    t1 = await task_factory(index=1)
-    await task_factory(index=2, subtask_list=[t1])
+    t0 = await task_factory(name="task0")
+    t1 = await task_factory(name="task1")
+    t2 = await task_factory(index=2, subtask_list=[t0, t1])
 
     async with MockCurrentUser(persist=True):
         res = await client.get("api/v1/task/")
         data = res.json()
         assert res.status_code == 200
         debug(data)
-        assert len(data) == 2
-        assert data[1]["id"] == 2
-        assert data[1]["subtask_list"][0]["subtask"]["id"] == t1.id
+        assert len(data) == 3
+        assert data[2]["id"] == t2.id
+        assert data[2]["subtask_list"][0]["subtask"]["id"] == t0.id
+        assert data[2]["subtask_list"][1]["subtask"]["id"] == t1.id
 
 
 async def test_task_create(db, client, MockCurrentUser):
@@ -81,7 +83,7 @@ async def test_task_create(db, client, MockCurrentUser):
             assert data[key] == item
 
 
-async def test_subtask_create(db, client, MockCurrentUser, task_factory):
+async def test_subtask_create(client, MockCurrentUser, task_factory):
     """
     GIVEN two tasks `mother` and `daugher` in the database
     WHEN the create subtask endpoint is called to add `daughter` as subtask of
