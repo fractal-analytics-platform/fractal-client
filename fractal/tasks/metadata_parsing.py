@@ -57,7 +57,14 @@ def parse_yokogawa_metadata(mrf_path, mlf_path):
     # only relative positions to the autofocus
     site_metadata["z_micrometer"] = 0
 
-    site_metadata = pd.concat([site_metadata, get_z_steps(mlf_frame)], axis=1)
+    site_metadata = pd.concat(
+        [
+            site_metadata,
+            get_z_steps(mlf_frame),
+            get_earliest_time_per_site(mlf_frame),
+        ],
+        axis=1,
+    )
 
     if error_count > 0:
         print(
@@ -69,9 +76,6 @@ def parse_yokogawa_metadata(mrf_path, mlf_path):
     # relevant input images in the input folder. Returning it for now
     # Maybe return it here for further checks and produce a warning if it does
     # not match
-
-    # TODO: What do we do with the metadata now? Who calls the
-    # parse_yokogawa_metadata function?
 
     return site_metadata, total_files
 
@@ -172,6 +176,7 @@ def read_mlf_file(mlf_path, mrf_frame):
         "channel_id",
         "camera_no",
         "file_name",
+        "time",
     ]
     mlf_frame = pd.DataFrame(columns=mlf_columns, index=range(0, nb_lines))
 
@@ -211,6 +216,7 @@ def read_mlf_file(mlf_path, mrf_frame):
         well_row_id = record.get("{%s}Row" % ns["bts"])
         well_col_id = record.get("{%s}Column" % ns["bts"])
         well_id = chr(64 + int(well_row_id)) + str(well_col_id).zfill(2)
+        time = pd.to_datetime(record.get("{%s}Time" % ns["bts"]))
 
         bit_depth = np.nan
         width = np.nan
@@ -254,6 +260,7 @@ def read_mlf_file(mlf_path, mrf_frame):
         mlf_frame.iat[idx, 20] = channel_id
         mlf_frame.iat[idx, 21] = camera_no
         mlf_frame.iat[idx, 22] = record.text  # file_name
+        mlf_frame.iat[idx, 23] = time  # file_name
 
     mlf_frame = mlf_frame.dropna(thresh=(len(mlf_frame.columns)))
     return mlf_frame, error_count
@@ -346,3 +353,11 @@ def check_grouped_sites_consistency(grouped_sites, per_site_parameters):
                 f"some of the parameters {per_site_parameters} varied within "
                 "the site. That is not supported for the OME-Zarr parsing"
             )
+
+
+def get_earliest_time_per_site(mlf_frame) -> pd.DataFrame:
+    # Get the time information per site
+    # Because a site will contain time information for each plane
+    # of each channel, we just return the earliest time infromation
+    # per site.
+    return mlf_frame.groupby(["well_id", "field_id"]).min()["time"]
