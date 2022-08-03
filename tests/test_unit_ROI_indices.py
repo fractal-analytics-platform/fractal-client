@@ -99,7 +99,7 @@ def test_ROI_indices_3D(level, coarsening_xy):
         2 * IMG_SIZE_Y // coarsening_xy**level,
         2 * IMG_SIZE_X // coarsening_xy**level,
     )
-    print(f"Original shaep: {original_shape}")
+    print(f"Original shape: {original_shape}")
     print(f"coarsening_xy={coarsening_xy}, level={level}")
     print(f"Expected shape: {expected_shape}")
     print("FOV-ROI indices:")
