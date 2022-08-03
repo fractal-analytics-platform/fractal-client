@@ -71,6 +71,7 @@ class DatasetCreate(DatasetBase):
 
 class DatasetRead(DatasetBase):
     id: int
+    resource_list: List["ResourceRead"]
 
 
 # RESOURCE
@@ -150,3 +151,4 @@ class TaskRead(TaskBase):
 
 
 SubtaskRead.update_forward_refs()
+DatasetRead.update_forward_refs()
