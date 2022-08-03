@@ -17,31 +17,34 @@ def prepare_FOV_ROI_table(df: pd.DataFrame) -> ad.AnnData:
         # Obtain box size in physical units
         df[f"len_{mu}_micrometer"] = df[f"{mu}_pixel"] * df[f"pixel_size_{mu}"]
 
-        # Remove information about pixel sizes in physical units
-        df.drop(f"pixel_size_{mu}", inplace=True, axis=1)
-
-        # Remove information about array size in pixels
-        df.drop(f"{mu}_pixel", inplace=True, axis=1)
-
-    # Remove unused column
-    df.drop("bit_depth", inplace=True, axis=1)
+    # Select only the numeric positional columns needed to define ROIs
+    # (to avoid) casting things like the data column to float32
+    # or to use unnecessary columns like bit_depth
+    positional_columns = [
+        "x_micrometer",
+        "y_micrometer",
+        "z_micrometer",
+        "len_x_micrometer",
+        "len_y_micrometer",
+        "len_z_micrometer",
+    ]
 
     # Assign dtype explicitly, to avoid
     # >> UserWarning: X converted to numpy array with dtype float64
     # when creating AnnData object
-    df = df.astype(np.float32)
+    df_roi = df.loc[:, positional_columns].astype(np.float32)
 
     # Convert DataFrame index to str, to avoid
     # >> ImplicitModificationWarning: Transforming to str index
     # when creating AnnData object
-    df.index = df.index.astype(str)
+    df_roi.index = df_roi.index.astype(str)
 
     # Create an AnnData object directly from the DataFrame
-    adata = ad.AnnData(X=df)
+    adata = ad.AnnData(X=df_roi)
 
     # Rename rows and columns
     adata.obs_names = [f"FOV_{i+1:d}" for i in range(adata.n_obs)]
-    adata.var_names = list(map(str, df.columns))
+    adata.var_names = list(map(str, df_roi.columns))
 
     return adata
 
