@@ -106,19 +106,14 @@ async def add_subtask(
         **subtask.dict(exclude={"parent_task_id"}),
     )
 
-    # FIXME
-    # Right now we are loading all tasks in memory to make sure no subquery is
-    # run upon calling TaskRead.from_orm().
-    # A better lazy loading solution must be put in place to fix this.
-
-    stm = select(Task)
+    # Preload subtasks so that `parent_task` can be coerced to TaskRead without
+    # implicit queries
+    stm = (
+        select(Subtask, Task)
+        .join(Subtask.subtask)
+        .where(Subtask.parent_task_id == parent_task_id)
+    )
     res = await db.execute(stm)
-    task_list = res.scalars().all()  # noqa: F841
-
-    stm = select(Subtask)
-    res = await db.execute(stm)
-    subtask_list = res.scalars().all()  # noqa: F841
-
-    # END FIXME
+    res.scalars().all()
 
     return parent_task
