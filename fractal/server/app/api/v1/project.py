@@ -86,7 +86,7 @@ async def create_project(
 )
 async def add_dataset(
     project_id: int,
-    dataset: Dataset,
+    dataset: DatasetCreate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -99,7 +99,8 @@ async def add_dataset(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not allowed on project",
         )
-    db_dataset = Dataset(**dataset.dict())
+    dataset.project_id = project.id
+    db_dataset = Dataset.from_orm(dataset)
     db.add(db_dataset)
     await db.commit()
     await db.refresh(db_dataset)
