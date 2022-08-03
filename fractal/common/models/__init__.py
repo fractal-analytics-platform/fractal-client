@@ -128,10 +128,19 @@ class TaskCreate(TaskBase):
 
 
 class SubtaskBase(SQLModel):
-    pass
+    parent_task_id: Optional[int] = None
+    subtask_id: Optional[int] = None
+    order: Optional[int] = None
+    args: Dict[str, Any] = Field(default={})
+
+
+class SubtaskCreate(SubtaskBase):
+    subtask_id: int
 
 
 class SubtaskRead(SubtaskBase):
+    parent_task_id: int
+    subtask_id: int
     subtask: "TaskRead"
 
 
