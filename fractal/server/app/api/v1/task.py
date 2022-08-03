@@ -74,6 +74,14 @@ async def get_list_task(
     return task_list
 
 
-@router.post("/")
-async def create_task():
-    raise NotImplementedError
+@router.post("/", response_model=TaskRead)
+async def create_task(
+    task: TaskCreate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    db_task = Task.from_orm(task)
+    db.add(db_task)
+    await db.commit()
+    await db.refresh(db_task)
+    return db_task

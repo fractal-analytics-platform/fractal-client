@@ -2,6 +2,7 @@ from devtools import debug
 from sqlmodel import select
 
 from fractal.server.app.models import Task
+from fractal.server.app.models import TaskCreate
 from fractal.server.tasks import collect_tasks
 from fractal.tasks import __FRACTAL_MANIFEST__
 
@@ -58,3 +59,23 @@ async def test_task_get_list(db, client, task_factory, MockCurrentUser):
         assert len(data) == 2
         assert data[1]["id"] == 2
         assert data[1]["subtask_list"][0]["subtask"]["id"] == t1.id
+
+
+async def test_task_create(db, client, MockCurrentUser):
+    """
+    GIVEN a CreateTask object
+    WHEN it is fed to the `POST task` endpoint
+    THEN a new task is correctly created
+    """
+    task = TaskCreate(
+        name="mytask",
+        resource_type="workflow",
+        input_type="Any",
+        output_type="Any",
+    )
+    async with MockCurrentUser(persist=True):
+        res = await client.post("api/v1/task/", json=task.dict())
+        debug(res.json())
+        data = res.json()
+        for key, item in task.dict().items():
+            assert data[key] == item
