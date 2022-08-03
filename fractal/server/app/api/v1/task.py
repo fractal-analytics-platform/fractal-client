@@ -14,6 +14,7 @@ from ....tasks import collect_tasks
 from ...db import async_session_maker
 from ...db import AsyncSession
 from ...db import get_db
+from ...models import Subtask
 from ...models import SubtaskCreate
 from ...models import Task
 from ...models import TaskCreate
@@ -104,4 +105,20 @@ async def add_subtask(
         db=db,
         **subtask.dict(exclude={"parent_task_id"}),
     )
+
+    # FIXME
+    # Right now we are loading all tasks in memory to make sure no subquery is
+    # run upon calling TaskRead.from_orm().
+    # A better lazy loading solution must be put in place to fix this.
+
+    stm = select(Task)
+    res = await db.execute(stm)
+    task_list = res.scalars().all()  # noqa: F841
+
+    stm = select(Subtask)
+    res = await db.execute(stm)
+    subtask_list = res.scalars().all()  # noqa: F841
+
+    # END FIXME
+
     return parent_task
