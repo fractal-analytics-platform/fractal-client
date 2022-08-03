@@ -216,7 +216,8 @@ def read_mlf_file(mlf_path, mrf_frame):
         well_row_id = record.get("{%s}Row" % ns["bts"])
         well_col_id = record.get("{%s}Column" % ns["bts"])
         well_id = chr(64 + int(well_row_id)) + str(well_col_id).zfill(2)
-        time = pd.to_datetime(record.get("{%s}Time" % ns["bts"]))
+        # Convert all times to UTC time zone to avoid later timezone handling
+        time = pd.to_datetime(record.get("{%s}Time" % ns["bts"]), utc=True)
 
         bit_depth = np.nan
         width = np.nan
