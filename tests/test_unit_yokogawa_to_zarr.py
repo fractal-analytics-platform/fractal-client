@@ -76,8 +76,8 @@ def test_yokogawa_to_zarr(
 
     # Read number of calls to imread
     num_calls_imread = np.loadtxt(logfile, dtype=int).sum()
-    # Subtract one, for the dummy call at the beginning of the task (used to
-    # determine shape and dtype)
-    num_calls_imread -= 1
+    # Subtract one for each channel, for the dummy call at the beginning of
+    # the task (used to determine shape and dtype)
+    num_calls_imread -= len(chl_list)
 
     assert num_calls_imread == len(images)
