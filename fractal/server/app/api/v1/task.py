@@ -14,6 +14,7 @@ from ....tasks import collect_tasks
 from ...db import async_session_maker
 from ...db import AsyncSession
 from ...db import get_db
+from ...models import SubtaskCreate
 from ...models import Task
 from ...models import TaskCreate
 from ...models import TaskRead
@@ -85,3 +86,18 @@ async def create_task(
     await db.commit()
     await db.refresh(db_task)
     return db_task
+
+
+@router.post("/{parent_task_id}/subtask/", response_model=TaskRead)
+async def add_subtask(
+    parent_task_id: int,
+    subtask: SubtaskCreate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    parent_task = await db.get(Task, parent_task_id)
+    await parent_task.add_subtask(
+        db=db,
+        **subtask.dict(exclude={"parent_task_id"}),
+    )
+    return parent_task

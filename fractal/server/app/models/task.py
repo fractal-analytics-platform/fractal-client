@@ -152,11 +152,15 @@ class Task(TaskBase, table=True):  # type: ignore
     async def add_subtask(
         self,
         db: AsyncSession,
-        subtask: "Task",
+        subtask_id: Optional[int] = None,
+        subtask: Optional["Task"] = None,
         order: Optional[int] = None,
         args: Optional[Dict[str, Any]] = None,
         commit_and_refresh: bool = True,
     ):
+        if subtask is None:
+            subtask = await db.get(Task, subtask_id)
+
         if not args:
             args = dict()
         st = Subtask(parent=self, subtask=subtask, args=args)
