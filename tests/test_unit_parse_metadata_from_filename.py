@@ -44,7 +44,7 @@ parameters = [
 
 
 @pytest.mark.parametrize("filename,plate,A,C", parameters)
-def test_metadata(filename, plate, A, C):
+def test_parse_metadata_from_image_filename(filename, plate, A, C):
     metadata = parse_metadata(filename)
     assert metadata["plate"] == plate
     assert metadata["A"] == A

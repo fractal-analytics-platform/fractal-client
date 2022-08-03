@@ -107,34 +107,12 @@ def convert_ROI_table_to_indices(
         indices = [start_z, end_z, start_y, end_y, start_x, end_x]
 
         # Round indices to lower integer
-        # FIXME: to be checked/tested
         indices = list(map(math.floor, indices))
 
         # Append ROI indices to to list
         list_indices.append(indices[:])
 
     return list_indices
-
-
-def split_3D_indices_into_z_layers(
-    list_indices: List[List[int]],
-) -> List[List[int]]:
-
-    num_z_layers = None
-    new_list_indices = []
-    for indices in list_indices:
-        if num_z_layers is None:
-            num_z_layers = indices[1]
-        else:
-            if indices[1] != num_z_layers:
-                raise Exception(
-                    "Inconsistent num_z_layers in split_indices_into_2D_layers"
-                )
-        for ind_z in range(num_z_layers):
-            new_indices = [ind_z, ind_z + 1] + indices[2:]
-            new_list_indices.append(new_indices)
-
-    return new_list_indices
 
 
 def _inspect_ROI_table(
@@ -157,95 +135,9 @@ def _inspect_ROI_table(
         full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
 
-    list_indices = split_3D_indices_into_z_layers(list_indices)
-
     print(f"level:         {level}")
     print(f"coarsening_xy: {coarsening_xy}")
     print("list_indices:")
     for indices in list_indices:
         print(indices)
     print()
-
-
-def temporary_test():
-
-    pixel_size_z = 1.0
-    pixel_size_y = 0.1625
-    pixel_size_x = 0.1625
-
-    df = pd.DataFrame(np.zeros((2, 10)), dtype=int)
-    df.index = ["FOV1", "FOV2"]
-    df.columns = [
-        "x_micrometer",
-        "y_micrometer",
-        "z_micrometer",
-        "x_pixel",
-        "y_pixel",
-        "z_pixel",
-        "pixel_size_x",
-        "pixel_size_y",
-        "pixel_size_z",
-        "bit_depth",
-    ]
-    df["x_micrometer"] = [0.0, 416.0]
-    df["y_micrometer"] = [0.0, 0.0]
-    df["z_micrometer"] = [0.0, 0.0]
-    df["x_pixel"] = [2560, 2560]
-    df["y_pixel"] = [2160, 2160]
-    df["z_pixel"] = [5, 5]
-    df["pixel_size_x"] = [pixel_size_x] * 2
-    df["pixel_size_y"] = [pixel_size_y] * 2
-    df["pixel_size_z"] = [pixel_size_z] * 2
-    df["bit_depth"] = [16.0, 16.0]
-
-    print("DataFrame")
-    print(df)
-    print()
-
-    adata = prepare_FOV_ROI_table(df)
-
-    print("AnnData table")
-    print(adata.var_names)
-    print(adata.obs_names)
-    print(adata.X)
-    print()
-
-    print("Indices 3D")
-    full_res_pxl_sizes_zyx = [pixel_size_z, pixel_size_y, pixel_size_x]
-    list_indices = convert_ROI_table_to_indices(
-        adata,
-        level=0,
-        coarsening_xy=2,
-        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
-    )
-    for indices in list_indices:
-        print(indices)
-    print()
-
-    print("Indices 3D / split")
-    list_indices = split_3D_indices_into_z_layers(list_indices)
-    for indices in list_indices:
-        print(indices)
-    print()
-
-    print("Indices 2D")
-    adata = convert_FOV_ROIs_3D_to_2D(adata, pixel_size_z)
-    list_indices = convert_ROI_table_to_indices(
-        adata,
-        level=0,
-        coarsening_xy=2,
-        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
-    )
-    for indices in list_indices:
-        print(indices)
-    print()
-
-
-if __name__ == "__main__":
-    # import sys
-    # args = sys.argv[1:]
-    # types = [str, int, int]
-    # args = [types[ix](x) for ix, x in enumerate(args)]
-    # _inspect_ROI_table(*args)
-
-    temporary_test()

@@ -11,9 +11,6 @@ from pytest import MonkeyPatch
 from fractal.tasks.illumination_correction import correct
 from fractal.tasks.illumination_correction import illumination_correction
 from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
-from fractal.tasks.lib_regions_of_interest import (
-    split_3D_indices_into_z_layers,
-)
 from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
@@ -52,8 +49,8 @@ def test_illumination_correction(
     list_indices = convert_ROI_table_to_indices(
         ROIs, level=0, full_res_pxl_sizes_zyx=pixels
     )
-    list_indices = split_3D_indices_into_z_layers(list_indices)
-    num_FOVs = len(list_indices)
+    num_z_planes = list_indices[0][1]
+    num_FOVs = len(list_indices) * num_z_planes
 
     # Load some useful variables
     with open(zarrurl + "0/.zarray", "r") as f:

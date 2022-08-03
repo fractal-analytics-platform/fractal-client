@@ -5,9 +5,6 @@ import pytest
 from fractal.tasks.lib_regions_of_interest import convert_FOV_ROIs_3D_to_2D
 from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
 from fractal.tasks.lib_regions_of_interest import prepare_FOV_ROI_table
-from fractal.tasks.lib_regions_of_interest import (
-    split_3D_indices_into_z_layers,
-)
 
 
 PIXEL_SIZE_X = 0.1625
@@ -102,7 +99,7 @@ def test_ROI_indices_3D(level, coarsening_xy):
         2 * IMG_SIZE_Y // coarsening_xy**level,
         2 * IMG_SIZE_X // coarsening_xy**level,
     )
-    print(f"Original shaep: {original_shape}")
+    print(f"Original shape: {original_shape}")
     print(f"coarsening_xy={coarsening_xy}, level={level}")
     print(f"Expected shape: {expected_shape}")
     print("FOV-ROI indices:")
@@ -131,24 +128,6 @@ def test_ROI_indices_3D(level, coarsening_xy):
     for indices in list_indices:
         assert indices[0] == 0
         assert indices[1] == NUM_Z_PLANES
-
-
-@pytest.mark.parametrize("level,coarsening_xy", list_params)
-def test_ROI_indices_split(level, coarsening_xy):
-
-    metadata_dataframe = get_metadata_dataframe()
-    adata = prepare_FOV_ROI_table(metadata_dataframe)
-
-    full_res_pxl_sizes_zyx = [PIXEL_SIZE_Z, PIXEL_SIZE_Y, PIXEL_SIZE_X]
-    list_indices = convert_ROI_table_to_indices(
-        adata,
-        level=level,
-        coarsening_xy=coarsening_xy,
-        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
-    )
-
-    list_indices = split_3D_indices_into_z_layers(list_indices)
-    assert len(list_indices) == NUM_Z_PLANES * 2 * 2
 
 
 @pytest.mark.parametrize("level,coarsening_xy", list_params)
