@@ -20,8 +20,8 @@ def get_metadata_dataframe():
     """
     Create artificial metadata dataframe
     """
-    df = pd.DataFrame(np.zeros((4, 10)), dtype=int)
-    df.index = ["FOV1", "FOV2", "FOV3", "FOV4"]
+    df = pd.DataFrame(np.zeros((4, 11)), dtype=int)
+    df.index = ["FOV_1", "FOV_2", "FOV_3", "FOV_4"]
     df.columns = [
         "x_micrometer",
         "y_micrometer",
@@ -33,6 +33,7 @@ def get_metadata_dataframe():
         "pixel_size_y",
         "pixel_size_z",
         "bit_depth",
+        "time",
     ]
     img_size_x_micrometer = IMG_SIZE_X * PIXEL_SIZE_X
     img_size_y_micrometer = IMG_SIZE_Y * PIXEL_SIZE_Y
@@ -56,6 +57,7 @@ def get_metadata_dataframe():
     df["pixel_size_y"] = [PIXEL_SIZE_Y] * 4
     df["pixel_size_z"] = [PIXEL_SIZE_Z] * 4
     df["bit_depth"] = [16.0] * 4
+    df["time"] = "2020-08-12 15:36:36.234000+0000"
 
     return df
 

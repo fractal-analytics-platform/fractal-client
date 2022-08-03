@@ -1,3 +1,16 @@
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Joel Lüthi <joel.luethi@uzh.ch>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import math
 from typing import Iterable
 from typing import List
@@ -7,8 +20,17 @@ import numpy as np
 import pandas as pd
 
 
-def prepare_FOV_ROI_table(df: pd.DataFrame) -> ad.AnnData:
+def prepare_FOV_ROI_table(
+    df: pd.DataFrame, metadata: list = ["time"]
+) -> ad.AnnData:
 
+    # Convert DataFrame index to str, to avoid
+    # >> ImplicitModificationWarning: Transforming to str index
+    # when creating AnnData object.
+    # Do this in the beginning to allow concatenation with e.g. time
+    df.index = df.index.astype(str)
+
+    # Calculate bounding box extents in physical units
     for mu in ["x", "y", "z"]:
 
         # Reset reference values for coordinates
@@ -34,16 +56,21 @@ def prepare_FOV_ROI_table(df: pd.DataFrame) -> ad.AnnData:
     # when creating AnnData object
     df_roi = df.loc[:, positional_columns].astype(np.float32)
 
-    # Convert DataFrame index to str, to avoid
-    # >> ImplicitModificationWarning: Transforming to str index
-    # when creating AnnData object
-    df_roi.index = df_roi.index.astype(str)
-
     # Create an AnnData object directly from the DataFrame
     adata = ad.AnnData(X=df_roi)
 
-    # Rename rows and columns
-    adata.obs_names = [f"FOV_{i+1:d}" for i in range(adata.n_obs)]
+    # Save any metadata that is specified to the obs df
+    for col in metadata:
+        if col in df:
+            # Cast all metadata to str.
+            # Reason: AnnData Zarr writers don't support all pandas types.
+            # e.g. pandas.core.arrays.datetimes.DatetimeArray can't be written
+            adata.obs[col] = df[col].astype(str)
+
+    # Rename rows and columns: Maintain FOV indices from the dataframe
+    # (they are already enforced to be unique by Pandas and may contain
+    # information for the user, as they are based on the filenames)
+    adata.obs_names = "FOV_" + adata.obs.index
     adata.var_names = list(map(str, df_roi.columns))
 
     return adata
@@ -70,7 +97,7 @@ def convert_FOV_ROIs_3D_to_2D(
     new_adata = ad.AnnData(X=df)
 
     # Rename rows and columns
-    new_adata.obs_names = [f"FOV_{i+1:d}" for i in range(new_adata.n_obs)]
+    adata.obs_names = "FOV_" + new_adata.obs.index
     new_adata.var_names = list(map(str, df.columns))
 
     return new_adata
