@@ -11,16 +11,21 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import pathlib
+
 import numpy as np
-import pytest
+from devtools import debug
+from pytest import MonkeyPatch
 
 from fractal.tasks.yokogawa_to_zarr import yokogawa_to_zarr
 
 
-f1 = "plate_well_T0001F001L01A01Z01C01.png"
-f2 = "plate_well_T0001F002L01A01Z01C01.png"
-f3 = "plate_well_T0001F003L01A01Z01C01.png"
-f4 = "plate_well_T0001F004L01A01Z01C01.png"
+images = [
+    "plate_well_T0001F001L01A01Z01C01.png",
+    "plate_well_T0001F002L01A01Z01C01.png",
+    "plate_well_T0001F003L01A01Z01C01.png",
+    "plate_well_T0001F004L01A01Z01C01.png",
+]
 
 chl_list = ["01"]
 num_levels = 5
@@ -28,39 +33,39 @@ coarsening_factor_xy = 2
 coarsening_factor_z = 1
 
 
-@pytest.mark.skip(
-    reason="TODO: update after porting to new server-based architecture"
-)
-def test_yokogawa_to_zarr(mocker):
+def test_yokogawa_to_zarr(
+    mocker,
+    tmp_path: pathlib.Path,
+    monkeypatch: MonkeyPatch,
+):
 
-    mocker.patch(
-        "fractal.tasks.yokogawa_to_zarr.sorted", return_value=[f1, f2, f3, f4]
-    )
+    debug(tmp_path)
 
+    # Mock list of images
+    mocker.patch("fractal.tasks.yokogawa_to_zarr.sorted", return_value=images)
+
+    # Mock maximum Z-plane index
     mocker.patch("fractal.tasks.yokogawa_to_zarr.max", return_value="01")
 
-    mocker.patch(
-        "fractal.tasks.yokogawa_to_zarr.imread", return_value=np.ones((64, 64))
+    # Patch correct() function, to keep track of the number of calls
+    logfile = (tmp_path / "log_function_correct.txt").resolve().as_posix()
+    with open(logfile, "w") as log:
+        log.write("")
+
+    logfile = (tmp_path / "log_function_correct.txt").resolve().as_posix()
+
+    def patched_imread(*args, **kwargs):
+        with open(logfile, "a") as log:
+            log.write("1\n")
+        return np.ones((64, 64), dtype=np.uint16)
+
+    monkeypatch.setattr(
+        "fractal.tasks.yokogawa_to_zarr.imread", patched_imread
     )
 
-    mocker.patch(
-        "dask.delayed",
-        new_callable=mocker.PropertyMock,
-        return_value=[
-            np.ones((64, 64)),
-            np.ones((64, 64)),
-            np.ones((64, 64)),
-            np.ones((64, 64)),
-        ],
-    )
-
-    mocker.patch(
-        "dask.array.core.to_zarr", return_value=np.ones((64, 64)).shape
-    )
-
-    res = yokogawa_to_zarr(
-        "plate.zarr/row/column/fov/",
-        in_path="/tmp/",
+    yokogawa_to_zarr(
+        (tmp_path / "plate.zarr/row/column/fov/").as_posix(),
+        in_path=tmp_path.as_posix(),
         ext="png",
         rows=2,
         cols=2,
@@ -69,10 +74,10 @@ def test_yokogawa_to_zarr(mocker):
         coarsening_xy=2,
     )
 
-    assert res == [
-        (1, 1, 128, 128),
-        (1, 1, 64, 64),
-        (1, 1, 32, 32),
-        (1, 1, 16, 16),
-        (1, 1, 8, 8),
-    ]
+    # Read number of calls to imread
+    num_calls_imread = np.loadtxt(logfile, dtype=int).sum()
+    # Subtract one, for the dummy call at the beginning of the task (used to
+    # determine shape and dtype)
+    num_calls_imread -= 1
+
+    assert num_calls_imread == len(images)
