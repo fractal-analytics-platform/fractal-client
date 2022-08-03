@@ -354,6 +354,11 @@ def create_zarr_structure(
             group_tables = group_FOV.create_group("tables/")  # noqa: F841
             write_elem(group_tables, "FOV_ROI_table", FOV_ROIs_table)
 
+    # FIXME: is this needed?
+    for zarrurl in zarrurls["plate"] + zarrurls["well"]:
+        if not os.path.isdir(zarrurl):
+            raise FileNotFoundError(f"Missing file {zarrurl}")
+
     return zarrurls, actual_channels
 
 
