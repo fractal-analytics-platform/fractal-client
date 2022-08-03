@@ -1,6 +1,7 @@
 from devtools import debug
 from sqlmodel import select
 
+from fractal.server.app.models import SubtaskCreate
 from fractal.server.app.models import Task
 from fractal.server.app.models import TaskCreate
 from fractal.server.tasks import collect_tasks
@@ -79,3 +80,34 @@ async def test_task_create(db, client, MockCurrentUser):
         data = res.json()
         for key, item in task.dict().items():
             assert data[key] == item
+
+
+async def test_subtask_create(db, client, MockCurrentUser, task_factory):
+    """
+    GIVEN two tasks `mother` and `daugher` in the database
+    WHEN the create subtask endpoint is called to add `daughter` as subtask of
+         `mother`
+    THEN `daughter` is correctly added as subtask of `mother`
+    """
+    t0 = await task_factory(name="mother")
+    t1 = await task_factory(name="daughter")
+
+    debug(t0)
+    debug(t1)
+
+    assert t0.subtask_list == []
+
+    subtask = SubtaskCreate(subtask_id=t1.id)
+
+    async with MockCurrentUser(persist=True):
+        res = await client.post(
+            f"api/v1/task/{t0.id}/subtask/", json=subtask.dict()
+        )
+        debug(res.json())
+        data = res.json()
+
+    assert data["subtask_list"][0]["subtask_id"] == t1.id
+    data_subtask = data["subtask_list"][0]["subtask"]
+    t1_dict = t1.dict()
+    for key, value in data_subtask.items():
+        value == t1_dict[key]
