@@ -19,7 +19,7 @@ engine = create_async_engine(
 )
 
 engine_sync = create_engine(
-    settings.DATABASE_URL,
+    settings.DATABASE_SYNC_URL,
     echo=settings.DB_ECHO,
     future=True,
     connect_args={"check_same_thread": False},

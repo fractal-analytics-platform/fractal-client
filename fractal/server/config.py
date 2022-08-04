@@ -88,6 +88,7 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
             f"@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
         )
+        DATABASE_SYNC_URL = DATABASE_URL.replace("asyncpg", "psycopg2")
     elif DB_ENGINE == "sqlite":
         SQLITE_PATH: str = fail_getenv("SQLITE_PATH")
 
@@ -95,6 +96,7 @@ class Settings(BaseSettings):
             "sqlite+aiosqlite:///"
             f"{abspath(SQLITE_PATH) if SQLITE_PATH else SQLITE_PATH}"
         )
+        DATABASE_SYNC_URL = DATABASE_URL.replace("aiosqlite", "pysqlite")
 
     @property
     def DB_ECHO(self):

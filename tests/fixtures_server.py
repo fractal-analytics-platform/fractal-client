@@ -43,7 +43,9 @@ def patch_settings(testdata_path):
     environ["DATA_DIR_ROOT"] = testdata_path.as_posix()
 
     environ["DB_ENGINE"] = "sqlite"
-    environ["SQLITE_PATH"] = ""  # in memory
+    # Shared in memory database,
+    # c.f., https://stackoverflow.com/a/38089822/283972
+    environ["SQLITE_PATH"] = "file:cachedb?mode=memory&cache=shared"
 
     from fractal.server.config import settings
 
@@ -92,17 +94,14 @@ async def db_session_maker(
 
 @pytest.fixture
 def db_sync_session_maker(db_sync_engine, app):
-    sync_session_maker = sessionmaker(
-        db_sync_engine, autocommit=False, autoflush=False
-    )
     from fractal.server.app.db import get_sync_db
+    from sqlmodel import Session
 
     def _get_sync_db():
-        with sync_session_maker() as session:
+        with Session(db_sync_engine) as session:
             yield session
 
     app.dependency_overrides[get_sync_db] = _get_sync_db
-    yield sync_session_maker
 
 
 @pytest.fixture
@@ -112,9 +111,14 @@ async def db(db_session_maker):
 
 
 @pytest.fixture()
-def db_sync(db_sync_session_maker):
-    with db_sync_session_maker() as sync_session:
-        yield sync_session
+def db_sync(db_sync_engine):
+    from sqlmodel import Session
+
+    with Session(db_sync_engine) as session:
+        from devtools import debug
+
+        debug(f"yielding session {id(session)}")
+        yield session
 
 
 @pytest.fixture
