@@ -63,6 +63,20 @@ async def test_task_get_list(db, client, task_factory, MockCurrentUser):
         assert data[2]["subtask_list"][1]["subtask"]["id"] == t1.id
 
 
+async def test_task_get(db, client, task_factory, MockCurrentUser):
+    grandgrandchild = await task_factory(name="grandgrandchild")
+    grandchild = await task_factory(
+        name="grandchild", subtask_list=[grandgrandchild]
+    )
+    child = await task_factory(name="child", subtask_list=[grandchild])
+    parent = await task_factory(name="parent", subtask_list=[child])
+
+    async with MockCurrentUser(persist=True):
+        res = await client.get(f"api/v1/task/{parent.id}")
+        assert res.status_code == 200
+        debug(res)
+
+
 async def test_task_create(db, client, MockCurrentUser):
     """
     GIVEN a CreateTask object
