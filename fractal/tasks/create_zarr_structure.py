@@ -172,7 +172,7 @@ def create_zarr_structure(
         # Define plate zarr
         zarrurl = f"{plate}.zarr"
         print(f"Creating {zarrurl}")
-        group_plate = zarr.group(output_path / zarrurl)
+        group_plate = zarr.group(output_path.parent / zarrurl)
         zarrurls["plate"].append(zarrurl)
 
         # Obtain FOV-metadata dataframe
