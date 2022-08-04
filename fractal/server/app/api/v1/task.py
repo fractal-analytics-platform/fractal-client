@@ -16,7 +16,6 @@ from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
 from ...db import get_sync_db
-from ...models import Subtask
 from ...models import SubtaskCreate
 from ...models import Task
 from ...models import TaskCreate
@@ -111,6 +110,7 @@ async def add_subtask(
     subtask: SubtaskCreate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
+    db_sync: DBSyncSession = Depends(get_sync_db),
 ):
     parent_task = await db.get(Task, parent_task_id)
     await parent_task.add_subtask(
@@ -118,14 +118,6 @@ async def add_subtask(
         **subtask.dict(exclude={"parent_task_id"}),
     )
 
-    # Preload subtasks so that `parent_task` can be coerced to TaskRead without
-    # implicit queries
-    stm = (
-        select(Subtask, Task)
-        .join(Subtask.subtask)
-        .where(Subtask.parent_task_id == parent_task_id)
-    )
-    res = await db.execute(stm)
-    res.scalars().all()
-
+    # Fetch parent task synchronously to lazily resolve children
+    parent_task = db_sync.get(Task, parent_task_id)
     return parent_task
