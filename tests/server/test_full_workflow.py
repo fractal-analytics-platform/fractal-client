@@ -14,6 +14,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+import dask.array as da
 from devtools import debug
 
 
@@ -157,3 +158,21 @@ async def test_project_creation(
         )
         debug(res.json())
         assert res.status_code == 202
+
+        res = await client.get(f"{PREFIX}/project/{project_id}")
+        debug(res.json())
+
+        out_ds = [
+            ds
+            for ds in res.json()["dataset_list"]
+            if ds["name"] == "output dataset"
+        ][0]
+
+        output_path = out_ds["resource_list"][0]["path"]
+        component = out_ds["meta"]["well"][0]
+
+        zarrurl = output_path + "/" + component + "0"
+        debug(zarrurl)
+        data_czyx = da.from_zarr(zarrurl)
+        assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+        assert data_czyx[0, 0, 0, 0].compute() == 0
