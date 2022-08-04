@@ -195,7 +195,7 @@ def yokogawa_to_zarr(
 
     for level_index, level in enumerate(level_data):
         level.to_zarr(
-            output_path.as_posix() + f"/{component}{level_index}/",
+            output_path.parent.as_posix() + f"/{component}{level_index}/",
             dimension_separator="/",
         )
         print(f"Chunks at level {level_index}:\n", level.chunks)
