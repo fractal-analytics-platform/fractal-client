@@ -8,7 +8,9 @@ from fastapi import status
 from sqlmodel import select
 
 from ...db import AsyncSession
+from ...db import DBSyncSession
 from ...db import get_db
+from ...db import get_sync_db
 from ...models import ApplyWorkflow
 from ...models import Dataset
 from ...models import DatasetCreate
@@ -88,6 +90,7 @@ async def apply_workflow(
     background_tasks: BackgroundTasks,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
+    db_sync: DBSyncSession = Depends(get_sync_db),
 ):
     stm = (
         select(Project, Dataset)
@@ -100,7 +103,7 @@ async def apply_workflow(
 
     # TODO check that user is allowed to use this task
 
-    workflow = await db.get(Task, apply_workflow.workflow_id)
+    workflow = db_sync.get(Task, apply_workflow.workflow_id)
 
     if apply_workflow.output_dataset_id:
         stm = (
@@ -108,7 +111,7 @@ async def apply_workflow(
             .where(Dataset.project_id == project.id)
             .where(Dataset.id == apply_workflow.output_dataset_id)
         )
-        output_dataset = (await db.execute(stm)).one()
+        output_dataset = (await db.execute(stm)).scalars().one()
     else:
         output_dataset = await auto_output_dataset(
             project=project, input_dataset=input_dataset, workflow=workflow

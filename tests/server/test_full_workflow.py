@@ -133,7 +133,10 @@ async def test_project_creation(
         assert res.status_code == 201
         res = await client.post(
             f"{PREFIX}/task/{workflow_id}/subtask/",
-            json=dict(subtask_id=task_id_yokogawa),
+            json=dict(
+                subtask_id=task_id_yokogawa,
+                args=dict(parallelization_level="well", rows=2, cols=1),
+            ),
         )
         assert res.status_code == 201
         debug(res.json())
