@@ -74,7 +74,23 @@ async def test_task_get(db, client, task_factory, MockCurrentUser):
     async with MockCurrentUser(persist=True):
         res = await client.get(f"api/v1/task/{parent.id}")
         assert res.status_code == 200
-        debug(res)
+    res_parent = res.json()
+    debug(res_parent)
+    assert res_parent
+    assert res_parent["name"] == parent.name
+    assert len(res_parent["subtask_list"]) == 1
+
+    res_child = res_parent["subtask_list"][0]["subtask"]
+    assert res_child["name"] == child.name
+    assert len(res_child["subtask_list"]) == 1
+
+    res_grandchild = res_child["subtask_list"][0]["subtask"]
+    assert res_grandchild["name"] == grandchild.name
+    assert len(res_grandchild["subtask_list"]) == 1
+
+    res_grandgrandchild = res_grandchild["subtask_list"][0]["subtask"]
+    assert res_grandgrandchild["name"] == grandgrandchild.name
+    assert len(res_grandgrandchild["subtask_list"]) == 0
 
 
 async def test_task_create(db, client, MockCurrentUser):

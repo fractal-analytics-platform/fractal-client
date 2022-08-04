@@ -13,7 +13,9 @@ from sqlmodel import select
 from ....tasks import collect_tasks
 from ...db import async_session_maker
 from ...db import AsyncSession
+from ...db import DBSyncSession
 from ...db import get_db
+from ...db import get_sync_db
 from ...models import Subtask
 from ...models import SubtaskCreate
 from ...models import Task
@@ -74,6 +76,16 @@ async def get_list_task(
     task_list = res.scalars().unique().fetchall()
     await asyncio.gather(*[db.refresh(t) for t in task_list])
     return task_list
+
+
+@router.get("/{task_id}", response_model=TaskRead)
+def get_task(
+    task_id: int,
+    user: User = Depends(current_active_user),
+    db_sync: DBSyncSession = Depends(get_sync_db),
+):
+    task = db_sync.get(Task, task_id)
+    return task
 
 
 @router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
