@@ -61,6 +61,7 @@ async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
 async def db_session_maker(
     db_engine, app
 ) -> AsyncGenerator[AsyncSession, None]:
+    import fractal.server.app.models  # noqa F401 make sure models are imported
     from sqlmodel import SQLModel
 
     async with db_engine.begin() as conn:
