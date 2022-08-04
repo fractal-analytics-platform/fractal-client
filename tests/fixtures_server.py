@@ -57,6 +57,13 @@ async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
     yield engine
 
 
+@pytest.fixture(scope="session")
+def db_sync_engine(patch_settings):
+    from fractal.server.app.db import engine_sync
+
+    yield engine_sync
+
+
 @pytest.fixture
 async def db_session_maker(
     db_engine, app
@@ -84,9 +91,30 @@ async def db_session_maker(
 
 
 @pytest.fixture
+def db_sync_session_maker(db_sync_engine, app):
+    sync_session_maker = sessionmaker(
+        db_sync_engine, autocommit=False, autoflush=False
+    )
+    from fractal.server.app.db import get_sync_db
+
+    def _get_sync_db():
+        with sync_session_maker() as session:
+            yield session
+
+    app.dependency_overrides[get_sync_db] = _get_sync_db
+    yield sync_session_maker
+
+
+@pytest.fixture
 async def db(db_session_maker):
     async with db_session_maker() as session:
         yield session
+
+
+@pytest.fixture()
+def db_sync(db_sync_session_maker):
+    with db_sync_session_maker() as sync_session:
+        yield sync_session
 
 
 @pytest.fixture
@@ -111,7 +139,7 @@ async def collect_tasks(db):
 
 @pytest.fixture
 async def client(
-    app: FastAPI, register_routers
+    app: FastAPI, register_routers, db, db_sync
 ) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
         app=app, base_url="http://test"
