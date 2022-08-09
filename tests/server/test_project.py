@@ -77,7 +77,7 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
         project = res.json()
         project_id = project["id"]
 
-        # ADD  DATASET
+        # ADD DATASET
 
         payload = dict(
             name="new dataset",
@@ -94,3 +94,16 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
         assert dataset["name"] == payload["name"]
         assert dataset["project_id"] == payload["project_id"]
         assert dataset["meta"] == payload["meta"]
+
+        # EDIT DATASET
+
+        payload = dict(name="new dataset name", meta={})
+        res = await client.patch(
+            f"{PREFIX}/{project_id}/{dataset['id']}",
+            json=payload,
+        )
+        patched_dataset = res.json()
+        debug(patched_dataset)
+        assert res.status_code == 200
+        for k, v in payload.items():
+            assert patched_dataset[k] == payload[k]

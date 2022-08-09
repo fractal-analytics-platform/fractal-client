@@ -13,7 +13,9 @@ from sqlmodel import select
 from ....tasks import collect_tasks
 from ...db import async_session_maker
 from ...db import AsyncSession
+from ...db import DBSyncSession
 from ...db import get_db
+from ...db import get_sync_db
 from ...models import SubtaskCreate
 from ...models import Task
 from ...models import TaskCreate
@@ -75,7 +77,17 @@ async def get_list_task(
     return task_list
 
 
-@router.post("/", response_model=TaskRead)
+@router.get("/{task_id}", response_model=TaskRead)
+def get_task(
+    task_id: int,
+    user: User = Depends(current_active_user),
+    db_sync: DBSyncSession = Depends(get_sync_db),
+):
+    task = db_sync.get(Task, task_id)
+    return task
+
+
+@router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def create_task(
     task: TaskCreate,
     user: User = Depends(current_active_user),
@@ -88,16 +100,24 @@ async def create_task(
     return db_task
 
 
-@router.post("/{parent_task_id}/subtask/", response_model=TaskRead)
+@router.post(
+    "/{parent_task_id}/subtask/",
+    response_model=TaskRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_subtask(
     parent_task_id: int,
     subtask: SubtaskCreate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
+    db_sync: DBSyncSession = Depends(get_sync_db),
 ):
     parent_task = await db.get(Task, parent_task_id)
     await parent_task.add_subtask(
         db=db,
         **subtask.dict(exclude={"parent_task_id"}),
     )
+
+    # Fetch parent task synchronously to lazily resolve children
+    parent_task = db_sync.get(Task, parent_task_id)
     return parent_task

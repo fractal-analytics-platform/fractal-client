@@ -43,7 +43,9 @@ def patch_settings(testdata_path):
     environ["DATA_DIR_ROOT"] = testdata_path.as_posix()
 
     environ["DB_ENGINE"] = "sqlite"
-    environ["SQLITE_PATH"] = ""  # in memory
+    # Shared in memory database,
+    # c.f., https://stackoverflow.com/a/38089822/283972
+    environ["SQLITE_PATH"] = "file:cachedb?mode=memory&cache=shared"
 
     from fractal.server.config import settings
 
@@ -57,8 +59,18 @@ async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
     yield engine
 
 
+@pytest.fixture(scope="session")
+def db_sync_engine(patch_settings):
+    from fractal.server.app.db import engine_sync
+
+    yield engine_sync
+
+
 @pytest.fixture
-async def db(db_engine, app) -> AsyncGenerator[AsyncSession, None]:
+async def db_session_maker(
+    db_engine, app
+) -> AsyncGenerator[AsyncSession, None]:
+    import fractal.server.app.models  # noqa F401 make sure models are imported
     from sqlmodel import SQLModel
 
     async with db_engine.begin() as conn:
@@ -66,12 +78,47 @@ async def db(db_engine, app) -> AsyncGenerator[AsyncSession, None]:
         async_session_maker = sessionmaker(
             db_engine, class_=AsyncSession, expire_on_commit=False
         )
-        async with async_session_maker() as session:
-            from fractal.server.app.db import get_db
 
-            app.dependency_overrides[get_db] = lambda: session
-            yield session
+        async def _get_db():
+            async with async_session_maker() as session:
+                yield session
+
+        from fractal.server.app.db import get_db
+
+        app.dependency_overrides[get_db] = _get_db
+
+        yield async_session_maker
+
         await conn.run_sync(SQLModel.metadata.drop_all)
+
+
+@pytest.fixture
+def db_sync_session_maker(db_sync_engine, app):
+    from fractal.server.app.db import get_sync_db
+    from sqlmodel import Session
+
+    def _get_sync_db():
+        with Session(db_sync_engine) as session:
+            yield session
+
+    app.dependency_overrides[get_sync_db] = _get_sync_db
+
+
+@pytest.fixture
+async def db(db_session_maker):
+    async with db_session_maker() as session:
+        yield session
+
+
+@pytest.fixture()
+def db_sync(db_sync_engine):
+    from sqlmodel import Session
+
+    with Session(db_sync_engine) as session:
+        from devtools import debug
+
+        debug(f"yielding session {id(session)}")
+        yield session
 
 
 @pytest.fixture
@@ -96,7 +143,7 @@ async def collect_tasks(db):
 
 @pytest.fixture
 async def client(
-    app: FastAPI, register_routers
+    app: FastAPI, register_routers, db, db_sync
 ) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
         app=app, base_url="http://test"
@@ -115,7 +162,7 @@ async def MockCurrentUser(app, db):
         Context managed user override
         """
 
-        sub: Optional[str] = "sub"
+        name: str = "User Name"
         scopes: Optional[List[str]] = field(
             default_factory=lambda: ["project"]
         )
@@ -126,8 +173,7 @@ async def MockCurrentUser(app, db):
 
         def _create_user(self):
             self.user = User(
-                sub=self.sub,
-                name=self.sub,
+                name=self.name,
                 email=self.email,
                 hashed_password="fake_hashed_password",
             )

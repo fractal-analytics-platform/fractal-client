@@ -10,16 +10,30 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-import pytest
+from typing import Any
+from typing import Dict
+from typing import List
+
 from devtools import debug
 
 
 PREFIX = "/api/v1"
 
 
-@pytest.mark.xfail
+def task_id_by_name(name: str, task_list: List[Dict[str, Any]]) -> int:
+    for task in task_list:
+        if task["name"] == name:
+            return task["id"]
+    raise ValueError("No task `{name}`")
+
+
 async def test_project_creation(
-    app, client, MockCurrentUser, db, testdata_path, collect_tasks
+    app,
+    client,
+    MockCurrentUser,
+    testdata_path,
+    collect_tasks,
+    tmp_path,
 ):
     async with MockCurrentUser(persist=True):
 
@@ -29,38 +43,114 @@ async def test_project_creation(
             f"{PREFIX}/project/",
             json=dict(
                 name="test project",
-                project_dir="/tmp/",
+                project_dir=tmp_path.as_posix(),
             ),
         )
         assert res.status_code == 201
         project = res.json()
         project_id = project["id"]
-        dataset_id = project["dataset_list"][0]["id"]
+        input_dataset_id = project["dataset_list"][0]["id"]
 
-        # ADD RESOURCE TO DATASET
+        # EDIT DEFAULT DATASET TO SET TYPE IMAGE
+
+        res = await client.patch(
+            f"{PREFIX}/project/{project_id}/{input_dataset_id}",
+            json={"type": "image", "read_only": True},
+        )
+        debug(res.json())
+        assert res.status_code == 200
+
+        # ADD TEST IMAGES AS RESOURCE TO INPUT DATASET
 
         res = await client.post(
-            f"{PREFIX}/project/{project_id}/{dataset_id}",
-            json={"path": testdata_path.as_posix()},
+            f"{PREFIX}/project/{project_id}/{input_dataset_id}",
+            json={
+                "path": (testdata_path / "png").as_posix(),
+                "glob_pattern": "*.png",
+            },
         )
         debug(res.json())
         assert res.status_code == 201
 
-        # GET WORKFLOW ID (in this case just a dummy task)
+        # CREATE OUTPUT DATASET AND RESOURCE
+
+        res = await client.post(
+            f"{PREFIX}/project/{project_id}/",
+            json=dict(
+                name="output dataset",
+                type="zarr",
+            ),
+        )
+        debug(res.json())
+        assert res.status_code == 201
+        output_dataset = res.json()
+        output_dataset_id = output_dataset["id"]
+
+        res = await client.post(
+            f"{PREFIX}/project/{project_id}/{output_dataset['id']}",
+            json=dict(path=tmp_path.as_posix(), glob_pattern="*.zarr"),
+        )
+        out_resource = res.json()
+        debug(out_resource)
+        assert res.status_code == 201
+
+        # CHECK WHERE WE ARE AT
+        res = await client.get(f"{PREFIX}/project/{project_id}")
+        debug(res.json())
+
+        # CREATE WORKFLOW
+
+        res = await client.post(
+            f"{PREFIX}/task/",
+            json=dict(
+                name="my workflow",
+                resource_type="workflow",
+                input_type="image",
+                output_type="zarr",
+            ),
+        )
+        wf = res.json()
+        workflow_id = wf["id"]
+        debug(wf)
+        assert res.status_code == 201
+
         res = await client.get(f"{PREFIX}/task/")
         assert res.status_code == 200
-        data = res.json()
-        debug(data)
-        task = data[0]
-        workflow_id = task["id"]
+        task_list = res.json()
+
+        task_id_create_zarr = task_id_by_name(
+            name="Create OME-ZARR structure", task_list=task_list
+        )
+        task_id_yokogawa = task_id_by_name(
+            name="Yokogawa to Zarr", task_list=task_list
+        )
+
+        # add subtasks
+        res = await client.post(
+            f"{PREFIX}/task/{workflow_id}/subtask/",
+            json=dict(subtask_id=task_id_create_zarr),
+        )
+        assert res.status_code == 201
+        res = await client.post(
+            f"{PREFIX}/task/{workflow_id}/subtask/",
+            json=dict(
+                subtask_id=task_id_yokogawa,
+                args=dict(parallelization_level="well", rows=2, cols=1),
+            ),
+        )
+        assert res.status_code == 201
+        debug(res.json())
 
         # EXECUTE WORKFLOW
 
         payload = dict(
             project_id=project_id,
+            input_dataset_id=input_dataset_id,
+            output_dataset_id=output_dataset_id,
             workflow_id=workflow_id,
-            input_dataset_id=dataset_id,
+            overwrite_input=False,
         )
+        debug(payload)
         res = await client.post(
             f"{PREFIX}/project/apply/",
             json=payload,
