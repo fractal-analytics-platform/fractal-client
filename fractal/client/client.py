@@ -27,7 +27,7 @@ from rich.table import Table
 from ._auth import AuthToken
 from .config import settings
 from fractal.common.models import ResourceRead
-from fractal.common.models import ResourceTypeEnum
+from fractal.common.models import SubtaskCreate
 
 console = Console()
 
@@ -146,7 +146,6 @@ async def project_list():
 )
 @click.option(
     "--type",
-    required=True,
     nargs=1,
     default="zarr",
     help=("The type of objects into the dataset"),
@@ -285,20 +284,24 @@ async def get_resource(
 @click.argument("dataset_id", required=True, type=int, nargs=1)
 @click.option(
     "--name_dataset",
-    required=True,
+    default="",
     nargs=1,
 )
 @click.option(
     "--meta",
-    required=True,
     type=click.File("rb"),
     nargs=1,
 )
 @click.option(
     "--type",
-    required=True,
     nargs=1,
     help=("The type of objects into the dataset"),
+)
+@click.option(
+    "--read_only",
+    nargs=1,
+    default=False,
+    help=("Writing permissions"),
 )
 async def modify_dataset(
     project_id: int,
@@ -306,8 +309,27 @@ async def modify_dataset(
     name_dataset: str = "",
     meta: Dict = None,
     type: str = "",
+    read_only: bool = False,
 ):
-    pass
+
+    if not meta:
+        meta = {}
+
+    updates = dict(
+        name=name_dataset,
+        meta=meta,
+        type=type,
+        read_only=read_only,
+    )
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.patch(
+            f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+            json=updates,
+            headers=await auth.header(),
+        )
+
+        print_json(data=res.json())
 
 
 # TASK GROUP
@@ -328,7 +350,7 @@ async def get_task():
             headers=await auth.header(),
         )
 
-        print_json(res.json())
+        print_json(data=res.json())
 
 
 @task.command(name="new")
@@ -348,30 +370,39 @@ async def get_task():
     required=True,
     nargs=1,
 )
-@click.argument(
-    "default_args",
-    required=True,
+@click.option(
+    "--module",
     nargs=1,
+    help=("default args"),
+)
+@click.option(
+    "--default_args",
+    nargs=1,
+    help=("default args"),
 )
 @click.option(
     "--subtask_list",
-    required=True,
     nargs=1,
-    default="default",
     help=("subtask list of the current task"),
 )
 async def new_task(
     name: str,
-    resource_type: ResourceTypeEnum,
+    resource_type: str,
     input_type: str,
     output_type: str,
-    default_args: Dict,
+    default_args: Dict = None,
     module: str = "",
     subtask_list: List = None,
 ):
 
     from fractal.common.models import TaskCreate
 
+    if not default_args:
+        default_args = {}
+    if not subtask_list:
+        subtask_list = []
+
+    resource_type = resource_type.replace("_", " ")
     task = TaskCreate(
         name=name,
         resource_type=resource_type,
@@ -390,12 +421,24 @@ async def new_task(
             headers=await auth.header(),
         )
 
-        debug(res.json())
+        print_json(data=res.json())
 
 
 @task.command(name="add-subtask")
-async def add_subtask():
-    pass
+@click.argument("parent_task_id", required=True, nargs=1)
+@click.argument("subtask_id", required=True, nargs=1)
+async def add_subtask(parent_task_id: int, subtask_id: int):
+    subtask = SubtaskCreate(subtask_id=subtask_id)
+
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.post(
+            f"{settings.BASE_URL}/task/{parent_task_id}/subtask/",
+            json=subtask.dict(),
+            headers=await auth.header(),
+        )
+
+        print_json(data=res.json())
 
 
 # APPLY GROUP
@@ -406,36 +449,30 @@ def workflow():
     pass
 
 
-@workflow.command(name="new")
+@workflow.command(name="apply")
 @click.argument("project_id", required=True, nargs=1)
 @click.argument(
     "input_dataset_id",
     required=True,
     nargs=1,
 )
-@click.argument(
-    "overwrite_input",
-    required=True,
-    nargs=1,
-)
 @click.option(
     "--output_dataset_id",
-    required=True,
     nargs=1,
     help=("id output dataset"),
 )
+@click.argument("workflow_id", required=True, nargs=1)
 @click.option(
-    "--workflow_id",
-    required=True,
+    "--overwrite_input",
+    default=False,
     nargs=1,
-    help=("workflow id"),
 )
-async def new_workflow(
+async def apply_workflow(
     project_id: int,
     input_dataset_id: int,
-    overwrite_input: bool,
     output_dataset_id: int,
     workflow_id: int,
+    overwrite_input: bool,
 ):
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
@@ -446,12 +483,12 @@ async def new_workflow(
             project_id=project_id,
             input_dataset_id=input_dataset_id,
             output_dataset_id=output_dataset_id,
-            overwrite_input=overwrite_input,
             workflow_id=workflow_id,
+            overwrite_input=overwrite_input,
         )
 
         res = await client.post(
-            f"{settings.BASE_URL}/workflow/",
+            f"{settings.BASE_URL}/project/apply/",
             json=workflow.dict(),
             headers=await auth.header(),
         )
