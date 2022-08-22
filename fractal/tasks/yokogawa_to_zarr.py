@@ -54,27 +54,12 @@ def yokogawa_to_zarr(
     """
     Convert Yokogawa output (png, tif) to zarr file
 
-    :param zarrurl: structure of the zarr folder
-    :type zarrurl: str
-    :param in_path: directory containing the input files
-    :type in_path: str
-    :param ext: source images extension
-    :type ext: str
-    :param delete_input: delete input files
-    :type delete_input: bool
-    :param rows: number of rows of the well
-    :type rows: list
-    :param cols: number of columns of the well
-    :type cols: list
-    :param chl_list: list of channel names (e.g. A01_C01)
-    :type chl_list: list
-    :param num_levels: number of levels in the zarr pyramid
-    :type num_levels: int
-    :param coarsening_xy: coarsening factor along X and Y
-    :type coarsening_xy: int
+    Example arguments:
+      input_paths[0] = /tmp/input/*png  (Path)
+      output_path = /tmp/output/*zarr   (Path)
+      metadata = {"channel_list": [...], "num_levels": ..., }
+      component = plate.zarr/B/03/0/
     """
-
-    # component = plate.zarr/B/03/0/
 
     from devtools import debug
 

@@ -11,28 +11,50 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-import json
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
 import dask.array as da
+from devtools import debug
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
 
 
 def maximum_intensity_projection(
-    zarrurl,
-    coarsening_xy=2,
+    *,
+    input_paths: Iterable[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]] = None,
+    component: str = None,
+    project_to_2D: bool = True,
 ):
 
     """
     Perform maximum-intensity projection along Z axis, and store the output in
     a new zarr file.
 
-    :param zarrurl: input zarr file, at the site level (e.g. x.zarr/B/03/0/)
-    :type zarrurl: str
-    :param coarsening_xy: coarsening factor along X and Y
-    :type coarsening_xy: xy
-
+    Examples
+      input_paths[0] = /tmp/input/*png  (Path)
+      output_path = /tmp/output/*zarr   (Path)
+      metadata = {"num_levels": 2, "coarsening_xy": 2, ...}
+      component = plate.zarr/B/03/0     (str)
     """
+
+    # Read some parameters from metadata
+    num_levels = metadata["num_levels"]
+    coarsening_xy = metadata["coarsening_xy"]
+
+    # FIXME: this block is broken
+    # Identify old/new zarr paths
+    if len(input_paths) > 1:
+        raise NotImplementedError
+    zarrurl_old = input_paths[0].parent / component
+    zarrurl_new = "xxxxxxx"
+    debug(zarrurl_old)
+    debug(zarrurl_new)
 
     # Hard-coded values (by now) of chunk sizes to be passed to rechunk,
     # both at level 0 (before coarsening) and at levels 1,2,.. (after
@@ -41,35 +63,21 @@ def maximum_intensity_projection(
     img_size_x = 2560
     img_size_y = 2160
 
-    if not zarrurl.endswith("/"):
-        zarrurl += "/"
-
-    zarrurl_mip = zarrurl.replace(".zarr/", "_mip.zarr/")
-
-    with open(zarrurl_mip + ".zattrs", "r") as inputjson:
-        zattrs = json.load(inputjson)
-    num_levels = len(zattrs["multiscales"][0]["datasets"])
-
     # Load 0-th level
-    data_chl_z_y_x = da.from_zarr(zarrurl + "/0")
-    num_channels = data_chl_z_y_x.shape[0]
+    data_czyx = da.from_zarr(zarrurl_old + "/0")
+    num_channels = data_czyx.shape[0]
     # Loop over channels
     accumulate_chl = []
     for ind_ch in range(num_channels):
-
         # Perform MIP for each channel of level 0
-        mip_yx = da.stack([da.max(data_chl_z_y_x[ind_ch], axis=0)], axis=0)
-
+        mip_yx = da.stack([da.max(data_czyx[ind_ch], axis=0)], axis=0)
         accumulate_chl.append(mip_yx)
-        print(ind_ch, mip_yx.shape, mip_yx.chunks)
-        print(zarrurl_mip + f"0/{ind_ch}")
     accumulate_chl = da.stack(accumulate_chl, axis=0)
-    print()
 
     # Construct resolution pyramid
     write_pyramid(
         accumulate_chl,
-        newzarrurl=zarrurl_mip,
+        newzarrurl=zarrurl_new,
         overwrite=False,
         coarsening_xy=coarsening_xy,
         num_levels=num_levels,
