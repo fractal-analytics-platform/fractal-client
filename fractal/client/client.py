@@ -271,10 +271,10 @@ async def get_resource(
         table.add_column("Id", style="cyan", no_wrap=True)
         table.add_column("Path", justify="right", style="green")
         table.add_column("Dataset Id", style="white")
-
+        table.add_column("Glob Pattern", style="red")
         for r in resource_list:
 
-            table.add_row(str(r.id), r.path, str(r.dataset_id))
+            table.add_row(str(r.id), r.path, str(r.dataset_id), r.glob_pattern)
 
         console.print(table)
 
