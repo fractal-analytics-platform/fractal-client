@@ -38,7 +38,7 @@ uvicorn = "^0.18.2"
 
 [tool.poetry.group.runner.dependencies]
 parsl = {extras = ["monitoring"], git="https://github.com/fractal-analytics-platform/parsl.git", branch="1.2.1-unofficial"}
-dask = "^2022.6.1"
+dask = ">=2022.6,<2022.8"
 scikit-image = "^0.19.3"
 cellpose = "2"
 ome-zarr = "^0.5.1"
