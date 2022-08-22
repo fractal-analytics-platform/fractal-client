@@ -284,7 +284,6 @@ async def get_resource(
 @click.argument("dataset_id", required=True, type=int, nargs=1)
 @click.option(
     "--name_dataset",
-    default="",
     nargs=1,
 )
 @click.option(
@@ -299,16 +298,15 @@ async def get_resource(
 @click.option(
     "--read_only",
     nargs=1,
-    default=False,
     help=("Writing permissions"),
 )
 async def modify_dataset(
     project_id: int,
     dataset_id: int,
-    name_dataset: str = "",
+    name_dataset: str = None,
     meta: Dict = None,
-    type: str = "",
-    read_only: bool = False,
+    type: str = None,
+    read_only: bool = None,
 ):
 
     if not meta:
@@ -323,11 +321,15 @@ async def modify_dataset(
         type=type,
         read_only=read_only,
     )
+    updates_not_none = {
+        key: value for key, value in updates.items() if value is not None
+    }
+
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
         res = await client.patch(
             f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-            json=updates,
+            json=updates_not_none,
             headers=await auth.header(),
         )
 
