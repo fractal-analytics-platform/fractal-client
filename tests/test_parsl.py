@@ -11,24 +11,24 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-import itertools
 import os
 import pathlib
 import subprocess
 
 import parsl
 import pytest
+from devtools import debug
 from parsl.addresses import address_by_hostname
-from parsl.app.app import bash_app
 from parsl.app.app import python_app
 from parsl.channels import LocalChannel
 from parsl.config import Config
-from parsl.data_provider.files import File
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
+
+PARSL_DEBUG = False
 
 try:
     process = subprocess.Popen(
@@ -58,7 +58,7 @@ def initialize_SlurmProvider():
         mem_per_node=1,  # specified in GB
         parallelism=0,
         partition="main",
-        launcher=SrunLauncher(debug=True),
+        launcher=SrunLauncher(debug=PARSL_DEBUG),
     )
     return slurm
 
@@ -70,7 +70,7 @@ def initialize_LocalProvider():
         min_blocks=1,
         max_blocks=1,
         parallelism=0,
-        launcher=SingleNodeLauncher(debug=True),
+        launcher=SingleNodeLauncher(debug=PARSL_DEBUG),
     )
     return local
 
@@ -80,7 +80,7 @@ def initialize_HighThroughputExecutor(provider=None):
     htex = HighThroughputExecutor(
         label="htex",
         address=address_by_hostname(),
-        worker_debug=True,
+        worker_debug=PARSL_DEBUG,
         provider=provider,
     )
     return htex
@@ -109,102 +109,6 @@ def test_single_app():
     assert incremented_numbers == [i + 1 for i in range(N)]
 
 
-def test_workflow_generate_combine_split(tmp_path: pathlib.Path):
-    if HAS_SLURM:
-        provider = initialize_SlurmProvider()
-    else:
-        provider = initialize_LocalProvider()
-    htex = initialize_HighThroughputExecutor(provider=provider)
-    config = Config(executors=[htex])
-    parsl.clear()
-    parsl.load(config)
-
-    # Generate a file with three numbers (well, channel, randint(0, 100))
-    @python_app
-    def task_generate(inputs=[], outputs=[]):
-        import random
-
-        with open(outputs[0], "w") as out:
-            random_number = random.randint(0, 100)
-            out.write(f"{inputs[0]} {inputs[1]} {random_number}\n")
-
-    # Combine input files into a single output file
-    @bash_app
-    def task_combine(inputs=[], outputs=[]):
-        return "cat {0} > {1}".format(
-            " ".join([i.filepath for i in inputs]), outputs[0]
-        )
-
-    # Scan input file, find relevant line, write it on output file
-    @python_app
-    def task_split(inputs=[], outputs=[]):
-        with open(inputs[0], "r") as f1:
-            for line in f1:
-                w, c, num = [int(i) for i in line.split()]
-                if w == inputs[1] and c == inputs[2]:
-                    with open(outputs[0], "w") as f2:
-                        f2.write(f"{w} {c} {num}\n")
-
-    # Create files
-    tmp_dir = tmp_path.resolve().as_posix()
-    n_wells = 2
-    n_channels = 2
-    output_files = []
-    for well, channel in itertools.product(range(n_wells), range(n_channels)):
-        output_files.append(
-            task_generate(
-                inputs=[well, channel],
-                outputs=[
-                    File(
-                        os.path.join(
-                            tmp_dir,
-                            f"file-w{well}-c{channel}.txt",
-                        )
-                    )
-                ],
-            )
-        )
-
-    # Concatenate the files into a single file
-    cc = task_combine(
-        inputs=[i.outputs[0] for i in output_files],
-        outputs=[File(os.path.join(tmp_dir, "combined_data.txt"))],
-    )
-
-    # Split the single file back into many files
-    inputs = []
-    outputs = []
-    for well, channel in itertools.product(range(n_wells), range(n_channels)):
-        inputs.append([cc.outputs[0], well, channel])
-        outputs.append(
-            [
-                File(
-                    os.path.join(
-                        tmp_dir,
-                        f"processed_file-w{well}-c{channel}.txt",
-                    )
-                )
-            ]
-        )
-
-    split = [
-        task_split(inputs=inputs[i], outputs=outputs[i])
-        for i in range(len(inputs))
-    ]
-    [x.result() for x in split]
-
-    # Verify that all files are generated
-    for well, channel in itertools.product(range(n_wells), range(n_channels)):
-        assert os.path.isfile(
-            os.path.join(tmp_dir, f"file-w{well}-c{channel}.txt")
-        )
-    assert os.path.isfile(os.path.join(tmp_dir, "combined_data.txt"))
-    for well, channel in itertools.product(range(n_wells), range(n_channels)):
-        assert os.path.isfile(
-            os.path.join(tmp_dir, f"processed_file-w{well}-c{channel}.txt")
-        )
-
-
 def test_import_numpy(tmp_path: pathlib.Path):
     if HAS_SLURM:
         provider = initialize_SlurmProvider()
@@ -214,6 +118,8 @@ def test_import_numpy(tmp_path: pathlib.Path):
     config = Config(executors=[htex])
     parsl.clear()
     parsl.load(config)
+
+    debug(tmp_path)
 
     @python_app
     def importnumpy():
@@ -237,9 +143,7 @@ def test_import_numpy(tmp_path: pathlib.Path):
     app = importnumpy()
     info = app.result()
 
-    tmp_dir = tmp_path.as_posix()
-    print(tmp_dir)
-    with open(f"{tmp_dir}/info.txt", "w") as out:
+    with open(tmp_path / "info.txt", "w") as out:
         out.write(info)
 
 
@@ -290,10 +194,10 @@ def test_use_tensorflow_on_gpu():
     slurm = SlurmProvider(
         partition="gpu",
         channel=LocalChannel(),
-        launcher=SrunLauncher(debug=True),
+        launcher=SrunLauncher(debug=PARSL_DEBUG),
     )
     htex = HighThroughputExecutor(
-        address=address_by_hostname(), worker_debug=True, provider=slurm
+        address=address_by_hostname(), worker_debug=PARSL_DEBUG, provider=slurm
     )
     config = Config(executors=[htex])
     parsl.clear()
@@ -322,23 +226,23 @@ def test_multiexecutor_workflow():
     slurm_cpu = SlurmProvider(
         partition="main",
         channel=LocalChannel(),
-        launcher=SrunLauncher(debug=True),
+        launcher=SrunLauncher(debug=PARSL_DEBUG),
     )
     slurm_gpu = SlurmProvider(
         partition="gpu",
         channel=LocalChannel(),
-        launcher=SrunLauncher(debug=True),
+        launcher=SrunLauncher(debug=PARSL_DEBUG),
     )
     htex_cpu = HighThroughputExecutor(
         address=address_by_hostname(),
         label="htex_cpu",
-        worker_debug=True,
+        worker_debug=PARSL_DEBUG,
         provider=slurm_cpu,
     )
     htex_gpu = HighThroughputExecutor(
         address=address_by_hostname(),
         label="htex_gpu",
-        worker_debug=True,
+        worker_debug=PARSL_DEBUG,
         provider=slurm_gpu,
     )
     config = Config(executors=[htex_cpu, htex_gpu])
@@ -374,31 +278,31 @@ def test_multiexecutor_workflow_flexible():
     slurm_cpu = SlurmProvider(
         partition="main",
         channel=LocalChannel(),
-        launcher=SrunLauncher(debug=True),
+        launcher=SrunLauncher(debug=PARSL_DEBUG),
     )
     slurm_gpu = SlurmProvider(
         partition="gpu",
         channel=LocalChannel(),
-        launcher=SrunLauncher(debug=True),
+        launcher=SrunLauncher(debug=PARSL_DEBUG),
     )
 
     htex_cpu = HighThroughputExecutor(
         address=address_by_hostname(),
         label="htex_cpu",
-        worker_debug=True,
+        worker_debug=PARSL_DEBUG,
         provider=slurm_cpu,
     )
 
     htex_cpu = HighThroughputExecutor(
         address=address_by_hostname(),
         label="htex_cpu",
-        worker_debug=True,
+        worker_debug=PARSL_DEBUG,
         provider=slurm_cpu,
     )
     htex_gpu = HighThroughputExecutor(
         address=address_by_hostname(),
         label="htex_gpu",
-        worker_debug=True,
+        worker_debug=PARSL_DEBUG,
         provider=slurm_gpu,
     )
     config = Config(
@@ -482,13 +386,3 @@ def test_multiexecutor_workflow_flexible():
 
     print(f"seven: {seven}")
     assert seven == 7
-
-
-if __name__ == "__main__":
-    test_single_app()
-    test_workflow_generate_combine_split()
-    test_workflow_compute_pi()
-    test_import_numpy()
-    test_use_tensorflow_on_gpu()
-    test_multiexecutor_workflow()
-    test_multiexecutor_workflow_flexible()

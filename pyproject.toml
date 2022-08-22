@@ -42,7 +42,7 @@ SQLAlchemy-Utils = "^0.38.3"
 
 [tool.poetry.group.runner.dependencies]
 parsl = {extras = ["monitoring"], git="https://github.com/fractal-analytics-platform/parsl.git", branch="1.2.1-unofficial"}
-dask = "^2022.6.1"
+dask = ">=2022.6,<2022.8"
 scikit-image = "^0.19.3"
 cellpose = "2"
 ome-zarr = "^0.5.1"
@@ -50,6 +50,11 @@ pandas = "^1.2.0"
 imagecodecs = "^2022.2.22"
 graphviz = "^0.20"
 defusedxml = "^0.7.1"
+napari-workflows = "^0.2.3"
+napari-skimage-regionprops = "^0.5.3"
+PyQt5-sip = "^12.11.0"
+PyQt5-Qt5 = "^5.15.2"
+PyQt5 = "^5.15.7"
 
 
 [tool.poetry.group.client.dependencies]
