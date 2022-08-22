@@ -116,7 +116,8 @@ async def project_list():
         for p in project_list:
             if p.read_only:
                 p_read_only = "✅"
-            p_read_only = "❌"
+            else:
+                p_read_only = "❌"
 
             p_dataset_list = str([dataset.name for dataset in p.dataset_list])
 
@@ -189,7 +190,7 @@ async def dataset():
 @click.argument("dataset_name", required=True, type=str, nargs=1)
 async def dataset_show(project_id: int, dataset_name: str) -> None:
     """
-    Show details of an exisisting dataset
+    Show details of an existing dataset
     """
 
     async with httpx.AsyncClient() as client:
@@ -211,12 +212,19 @@ async def dataset_show(project_id: int, dataset_name: str) -> None:
         table.add_column("Name", justify="right", style="green")
         table.add_column("Type", style="white")
         table.add_column("Meta", justify="center")
+        table.add_column("Read only", justify="center")
+
+        if dataset["read_only"]:
+            ds_read_only = "✅"
+        else:
+            ds_read_only = "❌"
 
         table.add_row(
             str(dataset["id"]),
             dataset["name"],
             dataset["type"],
             str(dataset["meta"]),
+            ds_read_only,
         )
 
         console.print(table)
