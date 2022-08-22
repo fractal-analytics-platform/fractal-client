@@ -46,6 +46,8 @@ pandas = "^1.2.0"
 imagecodecs = "^2022.2.22"
 graphviz = "^0.20"
 defusedxml = "^0.7.1"
+napari-workflows = "^0.2.3"
+napari-skimage-regionprops = "^0.5.3"
 
 [build-system]
 requires = ["poetry-core"]
