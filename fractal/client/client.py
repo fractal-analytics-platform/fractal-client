@@ -139,11 +139,11 @@ async def project_list():
     required=True,
     nargs=1,
 )
-@click.argument(
-    "meta",
-    required=True,
-    type=click.File("rb"),
+@click.option(
+    "--meta",
     nargs=1,
+    default=None,
+    help="JSON file with meta",
 )
 @click.option(
     "--type",
@@ -154,15 +154,19 @@ async def project_list():
 async def add_dataset(
     project_id: str,
     name_dataset: str,
-    type: Optional[str],
     meta: Dict[str, Any],
+    type: Optional[str],
 ) -> None:
     """
-    Add an existing dataset to an exisisting project
+    Add an existing dataset to an existing project
     """
     from fractal.common.models import DatasetCreate
 
-    meta_json = json.load(meta)
+    if meta is None:
+        meta_json = {}
+    else:
+        with open(meta, "r", encoding="utf-8") as json_file:
+            meta_json = json.load(json_file)
 
     dataset = DatasetCreate(
         name=name_dataset, project_id=project_id, type=type, meta=meta_json
