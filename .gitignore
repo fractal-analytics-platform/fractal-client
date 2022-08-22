@@ -21,3 +21,5 @@ mprofile_*.dat
 .nfs*
 nohup
 nohup.out
+
+fractal/server/migrations/versions/
