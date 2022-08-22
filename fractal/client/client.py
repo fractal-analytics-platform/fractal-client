@@ -312,9 +312,10 @@ async def modify_dataset(
 ):
 
     if not meta:
-        meta = {}
-    with open(meta, "r", encoding="utf-8") as m:
-        mt = json.load(m)
+        mt = {}
+    else:
+        with open(meta, "r", encoding="utf-8") as m:
+            mt = json.load(m)
 
     updates = dict(
         name=name_dataset,
