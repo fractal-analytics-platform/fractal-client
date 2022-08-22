@@ -289,7 +289,6 @@ async def get_resource(
 )
 @click.option(
     "--meta",
-    type=click.File("rb"),
     nargs=1,
 )
 @click.option(
@@ -314,10 +313,12 @@ async def modify_dataset(
 
     if not meta:
         meta = {}
+    with open(meta, "r", encoding="utf-8") as m:
+        mt = json.load(m)
 
     updates = dict(
         name=name_dataset,
-        meta=meta,
+        meta=mt,
         type=type,
         read_only=read_only,
     )
