@@ -486,7 +486,10 @@ async def new_task(
 @task.command(name="add-subtask")
 @click.argument("parent_task_name", type=str, required=True, nargs=1)
 @click.argument("subtask_name", type=str, required=True, nargs=1)
-async def add_subtask(parent_task_name: str, subtask_name: str):
+@click.option("--args_json", type=str, nargs=1)
+async def add_subtask(
+    parent_task_name: str, subtask_name: str, args_json: str = None
+):
 
     # Extract subtask_id
     from fractal.common.models import TaskRead
@@ -504,7 +507,16 @@ async def add_subtask(parent_task_name: str, subtask_name: str):
         ][0]
         subtask_id = [t.id for t in task_list if t.name == subtask_name][0]
 
-    subtask = SubtaskCreate(subtask_id=subtask_id)
+    # Read args
+    if args_json is None:
+        args = {}
+    else:
+        with open(args_json, "r", encoding="utf-8") as json_file:
+            args = json.load(json_file)
+
+    # Create subtask
+    debug(subtask_id, args)
+    subtask = SubtaskCreate(subtask_id=subtask_id, args=args)
 
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
