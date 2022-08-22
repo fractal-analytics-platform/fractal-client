@@ -438,6 +438,22 @@ async def new_task(
     subtask_list: List = None,
 ):
 
+    # Check that there is no other dataset with the same name
+    from fractal.common.models import TaskRead
+
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/task/",
+            headers=await auth.header(),
+        )
+        data = res.json()
+        task_list = [TaskRead(**item) for item in data]
+        existing_task_names = [t.name for t in task_list]
+
+        if name in existing_task_names:
+            raise Exception(f"Task name {name} already in use.")
+
     from fractal.common.models import TaskCreate
 
     if not default_args:
