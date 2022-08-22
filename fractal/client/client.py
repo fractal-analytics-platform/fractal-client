@@ -397,7 +397,7 @@ async def get_task():
 
 
 @task.command(name="new")
-@click.argument("name", required=True, nargs=1)
+@click.argument("name", required=True, nargs=1, type=str)
 @click.argument(
     "resource_type",
     required=True,
@@ -484,9 +484,26 @@ async def new_task(
 
 
 @task.command(name="add-subtask")
-@click.argument("parent_task_id", required=True, nargs=1)
-@click.argument("subtask_id", required=True, nargs=1)
-async def add_subtask(parent_task_id: int, subtask_id: int):
+@click.argument("parent_task_name", type=str, required=True, nargs=1)
+@click.argument("subtask_name", type=str, required=True, nargs=1)
+async def add_subtask(parent_task_name: str, subtask_name: str):
+
+    # Extract subtask_id
+    from fractal.common.models import TaskRead
+
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/task/",
+            headers=await auth.header(),
+        )
+        data = res.json()
+        task_list = [TaskRead(**item) for item in data]
+        parent_task_id = [
+            t.id for t in task_list if t.name == parent_task_name
+        ][0]
+        subtask_id = [t.id for t in task_list if t.name == subtask_name][0]
+
     subtask = SubtaskCreate(subtask_id=subtask_id)
 
     async with httpx.AsyncClient() as client:
