@@ -209,7 +209,12 @@ async def dataset_show(project_id: int, dataset_name: str) -> None:
             for project in projects
             if project["id"] == project_id
         ][0]
-        dataset = [ds for ds in dataset_list if ds["name"] == dataset_name][0]
+        try:
+            dataset = [
+                ds for ds in dataset_list if ds["name"] == dataset_name
+            ][0]
+        except IndexError:
+            raise IndexError("Dataset name not found")
 
         table = Table(title="Dataset")
         table.add_column("Id", style="cyan", no_wrap=True)
