@@ -205,7 +205,7 @@ def test_workflow_generate_combine_split(tmp_path: pathlib.Path):
         )
 
 
-def test_import_numpy():
+def test_import_numpy(tmp_path: pathlib.Path):
     if HAS_SLURM:
         provider = initialize_SlurmProvider()
     else:
@@ -237,9 +237,9 @@ def test_import_numpy():
     app = importnumpy()
     info = app.result()
 
-    if not os.path.isdir("tmp_data"):
-        os.makedirs("tmp_data")
-    with open(os.path.join(os.getcwd(), "tmp_data/info.txt"), "w") as out:
+    tmp_dir = tmp_path.as_posix()
+    print(tmp_dir)
+    with open(f"{tmp_dir}/info.txt", "w") as out:
         out.write(info)
 
 
