@@ -21,9 +21,10 @@ from typing import Iterable
 from typing import Optional
 
 import dask.array as da
-import numpy as np
 from dask import delayed
 from skimage.io import imread
+
+from fractal.tasks.lib_pyramid_creation import write_pyramid
 
 
 def sort_fun(s):
@@ -77,6 +78,7 @@ def yokogawa_to_zarr(
 
     from devtools import debug
 
+    debug(output_path)
     debug(component)
 
     chl_list = metadata["channel_list"]
@@ -100,16 +102,13 @@ def yokogawa_to_zarr(
 
     well_ID = well_row + well_column
 
-    lazy_imread = delayed(imread)
-    fc_list = {level: [] for level in range(num_levels)}
+    delayed_imread = delayed(imread)
 
     print(f"Channels: {chl_list}")
 
+    list_channels = []
     for chl in chl_list:
         A, C = chl.split("_")
-
-        l_rows = []
-        data_zfyx = []
 
         glob_path = f"{in_path}/*_{well_ID}_*{A}*{C}{ext}"
         print(f"glob path: {glob_path}")
@@ -132,75 +131,47 @@ def yokogawa_to_zarr(
 
         sample = imread(filenames[0])
 
+        # Loop over FOVs, corresponding to filenames[start:end]
         start = 0
         end = int(max_z)
-
-        for ro in range(int(rows)):
-            cell = []
-            for co in range(int(cols)):
-                lazy_arrays = [lazy_imread(fn) for fn in filenames[start:end]]
+        data_zfyx = []
+        for row in range(int(rows)):
+            FOV_rows = []
+            for col in range(int(cols)):
+                images = [delayed_imread(fn) for fn in filenames[start:end]]
+                lazy_images = [
+                    da.from_delayed(
+                        image, shape=sample.shape, dtype=sample.dtype
+                    )
+                    for image in images
+                ]
+                z_stack = da.stack(lazy_images, axis=0)
                 start += int(max_z)
                 end += int(max_z)
-                dask_arrays = [
-                    da.from_delayed(
-                        delayed_reader, shape=sample.shape, dtype=sample.dtype
-                    )
-                    for delayed_reader in lazy_arrays
-                ]
-                z_stack = da.stack(dask_arrays, axis=0)
-                cell.append(z_stack)
-            l_rows = da.block(cell)
-            data_zfyx.append(l_rows)
-        data_zyx = da.concatenate(data_zfyx, axis=1).rechunk(
-            {1: chunk_size_y, 2: chunk_size_x}, balance=True
-        )
+                FOV_rows.append(z_stack)
+            data_zfyx.append(da.block(FOV_rows))
+        # Remove FOV index
+        data_zyx = da.concatenate(data_zfyx, axis=1)
+        list_channels.append(data_zyx)
+    data_czyx = da.stack(list_channels, axis=0)
 
-        # Define coarsening options
-        f_matrices = {}
-        for level in range(num_levels):
-            if level == 0:
-                f_matrices[level] = data_zyx
-            else:
-                if min(f_matrices[level - 1].shape[1:]) < coarsening_xy:
-                    raise Exception(
-                        f"ERROR at pyramid level={level}: "
-                        f"coarsening_xy={coarsening_xy} but "
-                        f"level={level-1} has shape "
-                        f"{f_matrices[level - 1].shape}"
-                    )
-                f_matrices[level] = da.coarsen(
-                    np.mean,
-                    f_matrices[level - 1],
-                    {1: coarsening_xy, 2: coarsening_xy},
-                    trim_excess=True,
-                ).rechunk(
-                    {
-                        1: chunk_size_y,
-                        2: chunk_size_x,
-                    },
-                    balance=True,
-                )
-            fc_list[level].append(f_matrices[level].astype(sample.dtype))
+    if delete_input:
+        for f in filenames:
+            try:
+                os.remove(f)
+            except OSError as e:
+                print("Error: %s : %s" % (f, e.strerror))
 
-        if delete_input:
-            for f in filenames:
-                try:
-                    os.remove(f)
-                except OSError as e:
-                    print("Error: %s : %s" % (f, e.strerror))
-
-    level_data = [
-        da.stack(fc_list[level], axis=0) for level in range(num_levels)
-    ]
-
-    for level_index, level in enumerate(level_data):
-        level.to_zarr(
-            output_path.parent.as_posix() + f"/{component}{level_index}/",
-            dimension_separator="/",
-        )
-        print(f"Chunks at level {level_index}:\n", level.chunks)
-
-    return {}
+    # Construct resolution pyramid
+    write_pyramid(
+        data_czyx,
+        newzarrurl=output_path.parent.as_posix() + f"/{component}",
+        overwrite=False,
+        coarsening_xy=coarsening_xy,
+        num_levels=num_levels,
+        chunk_size_x=chunk_size_x,
+        chunk_size_y=chunk_size_y,
+    )
 
 
 if __name__ == "__main__":

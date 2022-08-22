@@ -66,14 +66,17 @@ def test_yokogawa_to_zarr(
     )
 
     yokogawa_to_zarr(
-        (tmp_path / "plate.zarr/row/column/fov/").as_posix(),
-        in_path=tmp_path.as_posix(),
-        ext="png",
+        input_paths=[tmp_path / "*.png"],
+        output_path=tmp_path,
         rows=2,
         cols=2,
-        chl_list=["A01_C01"],
-        num_levels=5,
-        coarsening_xy=2,
+        metadata=dict(
+            channel_list=["A01_C01"],
+            original_paths=["/tmp"],
+            num_levels=5,
+            coarsening_xy=2,
+        ),
+        component="row/column/fov/",
     )
 
     # Read number of calls to imread

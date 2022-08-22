@@ -171,6 +171,7 @@ def create_zarr_structure(
     for plate in plates:
         # Define plate zarr
         zarrurl = f"{plate}.zarr"
+        in_path = dict_plate_paths[plate]
         print(f"Creating {zarrurl}")
         group_plate = zarr.group(output_path.parent / zarrurl)
         zarrurls["plate"].append(zarrurl)
@@ -181,8 +182,8 @@ def create_zarr_structure(
             # Find a smart way to include these metadata files in the dataset
             # e.g., as resources
             if metadata_table == "mrf_mlf":
-                mrf_path = f"{in_path}MeasurementDetail.mrf"
-                mlf_path = f"{in_path}MeasurementData.mlf"
+                mrf_path = f"{in_path}/MeasurementDetail.mrf"
+                mlf_path = f"{in_path}/MeasurementData.mlf"
                 site_metadata, total_files = parse_yokogawa_metadata(
                     mrf_path, mlf_path
                 )
@@ -204,7 +205,6 @@ def create_zarr_structure(
 
         # Identify all wells
         plate_prefix = dict_plate_prefixes[plate]
-        in_path = dict_plate_paths[plate]
 
         plate_image_iter = glob(f"{in_path}/{plate_prefix}_{ext_glob_pattern}")
 

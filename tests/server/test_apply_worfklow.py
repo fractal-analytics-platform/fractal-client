@@ -265,7 +265,7 @@ async def test_create_zarr(
         out_ds = await dataset_factory(prj, type="zarr", name="out_ds")
 
         await resource_factory(ds)
-        output_path = (tmp_path).as_posix()
+        output_path = (tmp_path / "*.zarr").as_posix()
         await resource_factory(out_ds, path=output_path, glob_pattern=None)
 
     # CREATE NONTRIVIAL WORKFLOW
@@ -288,7 +288,7 @@ async def test_create_zarr(
     await submit_workflow(
         db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
     )
-    zattrs = Path(output_path) / "myplate.zarr/.zattrs"
+    zattrs = Path(output_path).parent / "myplate.zarr/.zattrs"
     with open(zattrs) as f:
         data = json.load(f)
         debug(data)
@@ -329,7 +329,7 @@ async def test_yokogawa(
         out_ds = await dataset_factory(prj, type="image", name="out_ds")
 
         await resource_factory(ds)
-        output_path = (tmp_path).as_posix()
+        output_path = (tmp_path / "*.zarr").as_posix()
         await resource_factory(out_ds, path=output_path, glob_pattern=None)
 
     # CREATE NONTRIVIAL WORKFLOW
@@ -372,7 +372,13 @@ async def test_yokogawa(
         out_ds.meta["history"][-1]
         == "Yokogawa to Zarr: ['myplate.zarr/B/03/0/']"
     )
-    zarrurl = out_ds.resource_list[0].path + "/" + out_ds.meta["well"][0] + "0"
+    debug(out_ds.resource_list[0])
+    zarrurl = (
+        Path(out_ds.resource_list[0].path).parent
+        / out_ds.meta["well"][0]
+        / "0"
+    ).as_posix()
+    debug(zarrurl)
     data_czyx = da.from_zarr(zarrurl)
     assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
     assert data_czyx[0, 0, 0, 0].compute() == 0
