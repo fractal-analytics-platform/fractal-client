@@ -133,7 +133,7 @@ async def project_list():
 
 
 @project.command(name="add-dataset")
-@click.argument("project_id", required=True, nargs=1)
+@click.argument("project_id", required=True, nargs=1, type=int)
 @click.argument(
     "name_dataset",
     required=True,
@@ -152,7 +152,7 @@ async def project_list():
     help=("The type of objects into the dataset"),
 )
 async def add_dataset(
-    project_id: str,
+    project_id: int,
     name_dataset: str,
     meta: Dict[str, Any],
     type: Optional[str],
@@ -167,6 +167,28 @@ async def add_dataset(
     else:
         with open(meta, "r", encoding="utf-8") as json_file:
             meta_json = json.load(json_file)
+
+    # Check that there is no other dataset with the same name
+    from fractal.common.models import ProjectRead
+
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/project/",
+            headers=await auth.header(),
+        )
+        data = res.json()
+        project_list = [ProjectRead(**item) for item in data]
+        debug(project_list)
+        debug(project_id)
+        project = [p for p in project_list if p.id == project_id][0]
+        list_dataset_names = [dataset.name for dataset in project.dataset_list]
+
+        if name_dataset in list_dataset_names:
+            raise Exception(
+                f"Dataset name {name_dataset} already in use, "
+                "pick another one"
+            )
 
     dataset = DatasetCreate(
         name=name_dataset, project_id=project_id, type=type, meta=meta_json
