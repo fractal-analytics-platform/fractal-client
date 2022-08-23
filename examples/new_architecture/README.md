@@ -1,7 +1,7 @@
 Follow these steps from main repo folder.
 
 
-## THE FIRST TIME ONLY
+## First-time setup
 
 1. The first time, run
 ```
@@ -31,19 +31,19 @@ mkdir data
 mkdir fractal/server/migrations/versions/
 ```
 
-5. `sudo apt install httpie`
+5. Install `http` (e.g. with `sudo apt install httpie`, or with conda, snap, ...).
 
-# EVERY TIME YOU NEED TO CREATE THE DB
+## Every time you want to create `data/fractal_server.db`
 
 ```
 poetry run alembic revision --autogenerate -m 'init'
 poetry run alembic upgrade head
 ```
 
-# TO START THE SERVER
+## Every time you want to start the server and register the test user
 
 1. `poetry run server`
 2. In a different terminal: `http POST localhost:8000/auth/register email=test@me.com password=test`
 
 
-Ready to go :)
+Now you are ready to go, with `poetry run client` commands.
