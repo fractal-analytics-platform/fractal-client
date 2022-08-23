@@ -35,12 +35,14 @@ mkdir fractal/server/migrations/versions/
 
 # EVERY TIME YOU NEED TO CREATE THE DB
 
+```
 poetry run alembic revision --autogenerate -m 'init'
 poetry run alembic upgrade head
+```
 
 # TO START THE SERVER
 
-1. poetry run server
+1. `poetry run server`
 2. In a different terminal: `http POST localhost:8000/auth/register email=test@me.com password=test`
 
 
