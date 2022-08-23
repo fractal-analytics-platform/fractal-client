@@ -1,8 +1,8 @@
-rm -r tmp-client
-mkdir tmp-client
+rm -r tmp-proj
+mkdir tmp-proj
 
 # Create project
-poetry run client project new test-prj tmp-client
+poetry run client project new test-prj tmp-proj
 
 
 PROJECT_ID=1

@@ -47,3 +47,13 @@ poetry run alembic upgrade head
 
 
 Now you are ready to go, with `poetry run client` commands.
+
+## Or you can use a few scripts..
+
+```bash
+./server_setup.sh
+./server_start.sh
+# Open new terminal
+./register_user.sh
+poetry run client project list
+```
