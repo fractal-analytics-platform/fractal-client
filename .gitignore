@@ -23,4 +23,4 @@ nohup
 nohup.out
 
 fractal/server/migrations/versions/
-file:cachedb
+file:cachedb*
