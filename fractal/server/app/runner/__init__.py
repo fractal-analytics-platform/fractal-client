@@ -15,6 +15,7 @@ from devtools import debug
 from parsl.addresses import address_by_hostname
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
+from parsl.channels import LocalChannel
 from parsl.config import Config
 from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
@@ -48,6 +49,7 @@ def parsl_config():
         prov_slurm_cpu = SlurmProvider(
             partition="main",
             launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
         )
         htex_slurm_cpu = HighThroughputExecutor(
             label="cpu",
@@ -56,7 +58,10 @@ def parsl_config():
         )
         executors = [htex_slurm_cpu]
     else:
-        prov_local = LocalProvider(launcher=SingleNodeLauncher(debug=False))
+        prov_local = LocalProvider(
+            launcher=SingleNodeLauncher(debug=False),
+            channel=LocalChannel(),
+        )
         htex_local = HighThroughputExecutor(
             label="cpu",
             provider=prov_local,
