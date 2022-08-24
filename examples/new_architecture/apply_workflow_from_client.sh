@@ -5,7 +5,8 @@ mkdir tmp-proj
 poetry run client project new test-prj tmp-proj
 
 
-TESTDATA=/data/homes/fractal/mwe_fractal/tests/data
+
+TESTDATA=../../tests/data
 
 
 PROJECT_ID=1
