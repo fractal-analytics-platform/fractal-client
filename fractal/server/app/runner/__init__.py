@@ -35,7 +35,7 @@ try:
     process = subprocess.Popen(
         ["sinfo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )  # nosec
-    stdout, stderr = process.communicate() # nosec
+    stdout, stderr = process.communicate()  # nosec
     HAS_SLURM = True
 except FileNotFoundError:
     HAS_SLURM = False
@@ -388,8 +388,6 @@ async def submit_workflow(
 
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
-
-    # config = parsl_config()
 
     final_metadata = _process_workflow(
         task=workflow,

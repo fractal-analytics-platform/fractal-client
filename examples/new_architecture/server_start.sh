@@ -1,3 +1,3 @@
 #!/bin/bash
 
-poetry run server
+poetry run uvicorn fractal.server.main:app --workers 2
