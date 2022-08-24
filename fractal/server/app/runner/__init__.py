@@ -30,6 +30,7 @@ from ..models.project import Project
 from ..models.task import PreprocessedTask
 from ..models.task import Subtask
 from ..models.task import Task
+from .runner_utils import async_wrap
 
 try:
     process = subprocess.Popen(
@@ -364,6 +365,10 @@ def validate_workflow_compatibility(
     return output_path
 
 
+def get_app_future_result(app_future: AppFuture):
+    return app_future.result()
+
+
 async def submit_workflow(
     *,
     db: AsyncSession,
@@ -396,8 +401,11 @@ async def submit_workflow(
         metadata=input_dataset.meta,
     )
     debug(final_metadata)
-    output_dataset.meta = final_metadata.result()
+    output_dataset.meta = await async_wrap(get_app_future_result)(
+        app_future=final_metadata
+    )
     debug(final_metadata)
+    debug(final_metadata.result())
 
     db.add(output_dataset)
 
