@@ -182,7 +182,10 @@ async def add_dataset(
         project_list = [ProjectRead(**item) for item in data]
         debug(project_list)
         debug(project_id)
-        project = [p for p in project_list if p.id == project_id][0]
+        try:
+            project = [p for p in project_list if p.id == project_id][0]
+        except IndexError as e:
+            raise IndexError("No project found with this project_id", str(e))
         list_dataset_names = [dataset.name for dataset in project.dataset_list]
 
         if name_dataset in list_dataset_names:
