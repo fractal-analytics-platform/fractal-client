@@ -46,13 +46,4 @@ __FRACTAL_MANIFEST__ = [
         "output_type": "zarr",
         "module": f"{__name__}.yokogawa_to_zarr:yokogawa_to_zarr",
     },
-    {
-        "name": "Replicate Zarr structure",
-        "resource_type": "core task",
-        "input_type": "zarr",
-        "output_type": "zarr",
-        "module": (
-            f"{__name__}.replicate_zarr_structure:" "replicate_zarr_structure"
-        ),
-    },
 ]

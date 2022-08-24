@@ -1,17 +1,28 @@
 import importlib
+import subprocess
 from concurrent.futures import Future
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Literal
 from typing import Optional
 from typing import Union
 
 import parsl
+from devtools import debug
+from parsl.addresses import address_by_hostname
+from parsl.app.app import join_app
 from parsl.app.python import PythonApp
 from parsl.config import Config
+from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
+from parsl.executors import HighThroughputExecutor
+from parsl.launchers import SingleNodeLauncher
+from parsl.launchers import SrunLauncher
+from parsl.providers import LocalProvider
+from parsl.providers import SlurmProvider
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.project import Dataset
@@ -19,10 +30,48 @@ from ..models.project import Project
 from ..models.task import PreprocessedTask
 from ..models.task import Subtask
 from ..models.task import Task
+from .runner_utils import async_wrap
+
+try:
+    process = subprocess.Popen(
+        ["sinfo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )  # nosec
+    stdout, stderr = process.communicate()  # nosec
+    HAS_SLURM = True
+except FileNotFoundError:
+    HAS_SLURM = False
 
 
-@parsl.python_app
-def _task_app(
+def parsl_config():
+
+    if HAS_SLURM:
+        prov_slurm_cpu = SlurmProvider(
+            partition="main",
+            launcher=SrunLauncher(debug=False),
+        )
+        htex_slurm_cpu = HighThroughputExecutor(
+            label="cpu",
+            provider=prov_slurm_cpu,
+            address=address_by_hostname(),
+        )
+        executors = [htex_slurm_cpu]
+    else:
+        prov_local = LocalProvider(launcher=SingleNodeLauncher(debug=False))
+        htex_local = HighThroughputExecutor(
+            label="cpu",
+            provider=prov_local,
+            address=address_by_hostname(),
+        )
+        executors = [htex_local]
+
+    config = Config(executors=executors)
+    parsl.clear()
+    parsl.load(config)
+
+    debug(DataFlowKernelLoader.dfk().config.executors)
+
+
+def _task_fun(
     *,
     task: Task,
     input_paths: List[Path],
@@ -47,8 +96,29 @@ def _task_app(
     return metadata
 
 
-@parsl.python_app
-def _task_parallel_app(
+def _task_app(
+    *,
+    task: Task,
+    input_paths: List[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]],
+    task_args: Optional[Dict[str, Any]],
+    inputs,
+    executors: Union[List[str], Literal["all"]] = "all",
+) -> AppFuture:
+
+    app = PythonApp(_task_fun, executors=executors)
+    return app(
+        task=task,
+        input_paths=input_paths,
+        output_path=output_path,
+        metadata=metadata,
+        task_args=task_args,
+        inputs=inputs,
+    )
+
+
+def _task_parallel_fun(
     *,
     task: Task,
     component: str,
@@ -71,11 +141,34 @@ def _task_parallel_app(
     return task.name, component
 
 
-@parsl.python_app
-def _collect_results(
+def _task_parallel_app(
+    *,
+    task: Task,
+    component: str,
+    input_paths: List[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]],
+    task_args: Optional[Dict[str, Any]],
+    inputs,
+    executors: Union[List[str], Literal["all"]] = "all",
+) -> AppFuture:
+
+    app = PythonApp(_task_parallel_fun, executors=executors)
+    return app(
+        task=task,
+        component=component,
+        input_paths=input_paths,
+        output_path=output_path,
+        metadata=metadata,
+        task_args=task_args,
+        inputs=inputs,
+    )
+
+
+def _collect_results_fun(
     *,
     metadata: Dict[str, Any],
-    inputs: List[PythonApp],
+    inputs: List[AppFuture],
 ):
     task_name = inputs[0][0]
     component_list = [_in[1] for _in in inputs]
@@ -87,10 +180,17 @@ def _collect_results(
     return metadata
 
 
-parsl.load(Config())
+def _collect_results_app(
+    *,
+    metadata: Dict[str, Any],
+    inputs: List[AppFuture],
+    executors: Union[List[str], Literal["all"]] = "all",
+) -> AppFuture:
+    app = PythonApp(_collect_results_fun, executors=executors)
+    return app(metadata=metadata, inputs=inputs)
 
 
-@parsl.join_app
+@join_app
 def _atomic_task_factory(
     *,
     task: Union[Task, Subtask, PreprocessedTask],
@@ -98,7 +198,7 @@ def _atomic_task_factory(
     output_path: Path,
     metadata: Optional[Union[Future, Dict[str, Any]]] = None,
     depends_on: Optional[List[AppFuture]] = None,
-) -> PythonApp:
+) -> AppFuture:
     """
     Single task processing
 
@@ -110,10 +210,12 @@ def _atomic_task_factory(
 
     task_args = task._arguments
 
-    # TODO
-    # Pass executor
-    # executor = task_args.get("executor", "cpu")
-    # @parsl.python_app(executors=[executor])
+    if "executor" in task_args:
+        executors = [task_args["executor"]]
+    else:
+        executors = "all"
+
+    debug(executors)
 
     parall_level = task_args.pop("parallelization_level", None)
     if metadata and parall_level:
@@ -127,22 +229,26 @@ def _atomic_task_factory(
                 task_args=task_args,
                 component=item,
                 inputs=[],
+                executors=executors,
             )
             for item in parall_item_gen
         ]
-        return _collect_results(
+        res = _collect_results_app(
             metadata=deepcopy(metadata),
             inputs=dependencies,
         )
+        return res
     else:
-        return _task_app(
+        res = _task_app(
             task=task,
             input_paths=input_paths,
             output_path=output_path,
             metadata=metadata,
             task_args=task_args,
             inputs=depends_on,
+            executors=executors,
         )
+        return res
 
 
 def _process_workflow(
@@ -150,7 +256,7 @@ def _process_workflow(
     input_paths: List[Path],
     output_path: Path,
     metadata: Dict[str, Any],
-) -> PythonApp:
+) -> AppFuture:
     """
     Creates the PARSL app that will execute the full workflow, taking care of
     dependencies
@@ -171,6 +277,8 @@ def _process_workflow(
     this_input = input_paths
     this_output = output_path
     this_metadata = deepcopy(metadata)
+
+    parsl_config()
 
     apps: List[PythonApp] = []
 
@@ -257,6 +365,10 @@ def validate_workflow_compatibility(
     return output_path
 
 
+def get_app_future_result(app_future: AppFuture):
+    return app_future.result()
+
+
 async def submit_workflow(
     *,
     db: AsyncSession,
@@ -278,6 +390,7 @@ async def submit_workflow(
         exist, a new dataset with that name is created and within it a new
         resource with the same name.
     """
+
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
 
@@ -287,7 +400,13 @@ async def submit_workflow(
         output_path=output_path,
         metadata=input_dataset.meta,
     )
-    output_dataset.meta = final_metadata.result()
+    debug(final_metadata)
+    output_dataset.meta = await async_wrap(get_app_future_result)(
+        app_future=final_metadata
+    )
+    debug(final_metadata)
+    debug(final_metadata.result())
 
     db.add(output_dataset)
+
     await db.commit()

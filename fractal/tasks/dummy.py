@@ -56,7 +56,7 @@ def dummy(
     payload = dict(
         task="DUMMY TASK",
         timestamp=datetime.now(timezone.utc).isoformat(),
-        input_path=[p.as_posix() for p in input_paths],
+        input_paths=[p.as_posix() for p in input_paths],
         output_path=output_path.as_posix(),
         metadata=metadata,
         message=message,
