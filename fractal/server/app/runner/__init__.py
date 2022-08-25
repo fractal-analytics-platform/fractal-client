@@ -1,5 +1,4 @@
 import importlib
-import subprocess
 from concurrent.futures import Future
 from copy import deepcopy
 from pathlib import Path
@@ -27,6 +26,7 @@ from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...config import settings
 from ..models.project import Dataset
 from ..models.project import Project
 from ..models.task import PreprocessedTask
@@ -34,21 +34,12 @@ from ..models.task import Subtask
 from ..models.task import Task
 from .runner_utils import async_wrap
 
-try:
-    process = subprocess.Popen(
-        ["sinfo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )  # nosec
-    stdout, stderr = process.communicate()  # nosec
-    HAS_SLURM = True
-except FileNotFoundError:
-    HAS_SLURM = False
 
+def parsl_config(workflow_name="workflow"):
 
-def parsl_config(name="workflow"):
-
-    if HAS_SLURM:
+    if settings.USE_SLURM:
         prov_slurm_cpu = SlurmProvider(
-            partition="main",
+            partition=settings.SLURM_PARTITION_CPU,
             launcher=SrunLauncher(debug=False),
             channel=LocalChannel(),
         )
@@ -70,10 +61,9 @@ def parsl_config(name="workflow"):
         )
         executors = [htex_local]
 
-    # Define monitoring - minimal
     monitoring = MonitoringHub(
         hub_address=address_by_hostname(),
-        workflow_name=name,
+        workflow_name=workflow_name,
     )
 
     config = Config(executors=executors, monitoring=monitoring)
@@ -291,12 +281,10 @@ def _process_workflow(
     this_output = output_path
     this_metadata = deepcopy(metadata)
 
-    if isinstance(task, list):
-        name = task[0].name
-    elif isinstance(task, Task):
-        name = task.name
+    debug(task)
+    workflow_name = task.name
 
-    parsl_config(name=name)
+    parsl_config(workflow_name=workflow_name)
 
     apps: List[PythonApp] = []
 

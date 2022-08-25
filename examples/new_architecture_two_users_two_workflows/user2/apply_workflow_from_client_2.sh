@@ -14,7 +14,7 @@ WFNAME="My WF $LABEL"
 PROJECT_ID=2
 DATASET_ID=3
 DATASET_ID_OUT=4
-WORKFLOW_ID=4
+WORKFLOW_ID=5
 
 # Update dataset info
 poetry run client dataset modify-dataset $PROJECT_ID $DATASET_ID --name_dataset test-ds-$LABEL --type image --read_only true
