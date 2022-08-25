@@ -5,7 +5,11 @@ __FRACTAL_MANIFEST__ = [
         "module": f"{__name__}.dummy:dummy",
         "input_type": "Any",
         "output_type": "None",
-        "default_args": {"message": "dummy default", "index": 0},
+        "default_args": {
+            "message": "dummy default",
+            "index": 0,
+            "needs_gpu": False,
+        },
     },
     {
         "resource_type": "core task",
@@ -14,6 +18,7 @@ __FRACTAL_MANIFEST__ = [
         "input_type": "image",
         "output_type": "zarr",
         "default_args": {
+            "needs_gpu": False,
             "num_levels": 2,
             "coarsening_xy": 2,
             "metadata_table": "mrf_mlf",
@@ -45,5 +50,6 @@ __FRACTAL_MANIFEST__ = [
         "input_type": "zarr",
         "output_type": "zarr",
         "module": f"{__name__}.yokogawa_to_zarr:yokogawa_to_zarr",
+        "default_args": {"needs_gpu": False},
     },
 ]
