@@ -129,6 +129,15 @@ class TaskBase(SQLModel):
         arbitrary_types_allowed = True
 
 
+class TaskUpdate(TaskBase):
+    name: Optional[str]
+    resource_type: Optional[ResourceTypeEnum]
+    input_type: Optional[str]
+    output_type: Optional[str]
+    default_args: Optional[Dict[str, Any]] = None
+    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
+
+
 class TaskCreate(TaskBase):
     pass
 
