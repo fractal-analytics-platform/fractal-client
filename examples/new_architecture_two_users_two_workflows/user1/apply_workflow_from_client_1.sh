@@ -1,3 +1,6 @@
+http POST localhost:8000/auth/register email=test@me.com password=test
+
+
 LABEL=1
 TMPDIR=user$LABEL/tmp-proj-$LABEL
 
@@ -29,6 +32,9 @@ poetry run client dataset add-resource $PROJECT_ID $DATASET_ID_OUT ${TMPDIR}/out
 
 # Create workflow
 poetry run client task new "$WFNAME" workflow image zarr
+
+echo "{\"__PROVIDER_ARGS__\" : {\"max_blocks\": 10}}" > /tmp/args_wf_${LABEL}.json
+poetry run client task modify-task $WORKFLOW_ID --default_args /tmp/args_wf_${LABEL}.json
 
 # Add subtasks (with args, if needed)
 poetry run client task add-subtask "$WFNAME" "Create OME-ZARR structure"
