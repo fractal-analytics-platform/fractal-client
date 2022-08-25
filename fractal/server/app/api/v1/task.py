@@ -1,9 +1,11 @@
 import asyncio
 from collections import Counter
+from copy import deepcopy
 from typing import Any
 from typing import Dict
 from typing import List
 
+from devtools import debug
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import status
@@ -20,9 +22,9 @@ from ...models import SubtaskCreate
 from ...models import Task
 from ...models import TaskCreate
 from ...models import TaskRead
+from ...models import TaskUpdate
 from ...security import current_active_user
 from ...security import User
-
 
 router = APIRouter()
 
@@ -54,6 +56,7 @@ async def collect_tasks_headless():
     results = await asyncio.gather(
         *[upsert_task(task) for task in collect_tasks()]
     )
+    results = sorted(results)
     out.update(dict(Counter(results)))
     return out
 
@@ -95,6 +98,36 @@ async def create_task(
 ):
     db_task = Task.from_orm(task)
     db.add(db_task)
+    await db.commit()
+    await db.refresh(db_task)
+    return db_task
+
+
+@router.patch("/{task_id}/", response_model=TaskRead)
+async def patch_task(
+    task_id: int,
+    task_update: TaskUpdate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+
+    # FIXME add user-owned tasks
+    # FIXME (maybe) should we be able to update the inner dict __EXEC_ARGS__?
+    #       Right now, we cannot.
+
+    db_task = await db.get(Task, task_id)
+
+    for key, value in task_update.dict(exclude_unset=True).items():
+        debug(key, value)
+        if key == "name":
+            setattr(db_task, key, value)
+        elif key == "default_args":
+            current_default_args = deepcopy(db_task._arguments)
+            current_default_args.update(value)
+            setattr(db_task, key, current_default_args)
+        else:
+            raise Exception("patch_task endpoint cannot set {key=}")
+
     await db.commit()
     await db.refresh(db_task)
     return db_task
