@@ -24,6 +24,7 @@ from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
+from parsl.monitoring.monitoring import MonitoringHub
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.project import Dataset
@@ -69,10 +70,17 @@ def parsl_config():
         )
         executors = [htex_local]
 
-    config = Config(executors=executors)
+    # Define monitoring - minimal
+    monitoring = MonitoringHub(
+        hub_address=address_by_hostname(),
+        # workflow_name="test_workflow",
+    )
+
+    config = Config(executors=executors, monitoring=monitoring)
     parsl.clear()
     parsl.load(config)
 
+    debug(config)
     debug(DataFlowKernelLoader.dfk().config.executors)
 
 
