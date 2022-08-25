@@ -347,13 +347,13 @@ async def modify_dataset(
     project_id: int,
     dataset_id: int,
     name_dataset: str = None,
-    meta: Dict = None,
+    meta: str = None,
     type: str = None,
     read_only: bool = None,
 ):
 
-    if not meta:
-        mt = {}
+    if meta is None:
+        mt = None
     else:
         with open(meta, "r", encoding="utf-8") as m:
             mt = json.load(m)
@@ -481,6 +481,65 @@ async def new_task(
         res = await client.post(
             f"{settings.BASE_URL}/task/",
             json=task.dict(),
+            headers=await auth.header(),
+        )
+
+        print_json(data=res.json())
+
+
+@task.command(name="modify-task")
+@click.argument("task_id", required=True, type=int, nargs=1)
+@click.option(
+    "--name_task",
+    nargs=1,
+)
+@click.option(
+    "--default_args",
+    nargs=1,
+)
+async def modify_task(
+    task_id: int,
+    name_task: str = None,
+    default_args: str = None,
+):
+
+    if default_args is None:
+        da = None
+    else:
+        with open(default_args, "r", encoding="utf-8") as m:
+            da = json.load(m)
+
+    if name_task is not None:
+
+        # Check that there is no other dataset with the same name
+        from fractal.common.models import TaskRead
+
+        async with httpx.AsyncClient() as client:
+            auth = AuthToken(client=client)
+            res = await client.get(
+                f"{settings.BASE_URL}/task/",
+                headers=await auth.header(),
+            )
+            data = res.json()
+            task_list = [TaskRead(**item) for item in data]
+            existing_task_names = [t.name for t in task_list]
+
+            if name_task in existing_task_names:
+                raise Exception(f"Task name {name_task} already in use.")
+
+    updates = dict(
+        name=name_task,
+        default_args=da,
+    )
+    updates_not_none = {
+        key: value for key, value in updates.items() if value is not None
+    }
+
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.patch(
+            f"{settings.BASE_URL}/task/{task_id}/",
+            json=updates_not_none,
             headers=await auth.header(),
         )
 
