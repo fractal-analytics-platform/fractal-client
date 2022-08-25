@@ -35,25 +35,41 @@ from ..models.task import Task
 from .runner_utils import async_wrap
 
 
-def parsl_config(workflow_name="workflow"):
+def parsl_config(workflow_name="workflow_name", provider_args={}):
 
     if settings.USE_SLURM:
-        prov_slurm_cpu = SlurmProvider(
+        default_provider_args = dict(
             partition=settings.SLURM_PARTITION_CPU,
             launcher=SrunLauncher(debug=False),
             channel=LocalChannel(),
+            nodes_per_block=1,
+            init_blocks=1,
+            min_blocks=1,
+            max_blocks=4,
+            walltime="10:00:00",
         )
+        default_provider_args.update(provider_args)
+        prov_slurm_cpu = SlurmProvider(**default_provider_args)
+
         htex_slurm_cpu = HighThroughputExecutor(
             label="cpu",
             provider=prov_slurm_cpu,
             address=address_by_hostname(),
+            cpu_affinity="block",
         )
         executors = [htex_slurm_cpu]
     else:
-        prov_local = LocalProvider(
+        default_provider_args = dict(
             launcher=SingleNodeLauncher(debug=False),
             channel=LocalChannel(),
+            init_blocks=1,
+            min_blocks=1,
+            max_blocks=4,
         )
+        default_provider_args.update(provider_args)
+        debug("TO USE:")
+        debug(default_provider_args)
+        prov_local = LocalProvider(**default_provider_args)
         htex_local = HighThroughputExecutor(
             label="cpu",
             provider=prov_local,
@@ -213,10 +229,15 @@ def _atomic_task_factory(
 
     task_args = task._arguments
 
-    if "executor" in task_args:
-        executors = [task_args["executor"]]
+    if "needs_gpu" in task_args.keys():
+        if task_args.pop("needs_gpu"):
+            executors = ["gpu"]
+        else:
+            executors = ["cpu"]
     else:
-        executors = "all"
+        executors = ["cpu"]
+    if "__PROVIDER_ARGS__" in task_args:
+        task_args.pop("__PROVIDER_ARGS__")
 
     debug(executors)
 
@@ -284,7 +305,10 @@ def _process_workflow(
     debug(task)
     workflow_name = task.name
 
-    parsl_config(workflow_name=workflow_name)
+    parsl_config(
+        workflow_name=workflow_name,
+        provider_args=task.default_args.get("__PROVIDER_ARGS__", {}),
+    )
 
     apps: List[PythonApp] = []
 
