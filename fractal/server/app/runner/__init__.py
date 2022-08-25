@@ -22,9 +22,9 @@ from parsl.dataflow.futures import AppFuture
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
+from parsl.monitoring.monitoring import MonitoringHub
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
-from parsl.monitoring.monitoring import MonitoringHub
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.project import Dataset
@@ -44,7 +44,7 @@ except FileNotFoundError:
     HAS_SLURM = False
 
 
-def parsl_config():
+def parsl_config(name="workflow"):
 
     if HAS_SLURM:
         prov_slurm_cpu = SlurmProvider(
@@ -73,7 +73,7 @@ def parsl_config():
     # Define monitoring - minimal
     monitoring = MonitoringHub(
         hub_address=address_by_hostname(),
-        # workflow_name="test_workflow",
+        workflow_name=name,
     )
 
     config = Config(executors=executors, monitoring=monitoring)
@@ -291,7 +291,12 @@ def _process_workflow(
     this_output = output_path
     this_metadata = deepcopy(metadata)
 
-    parsl_config()
+    if isinstance(task, list):
+        name = task[0].name
+    elif isinstance(task, Task):
+        name = task.name
+
+    parsl_config(name=name)
 
     apps: List[PythonApp] = []
 
