@@ -112,8 +112,6 @@ async def patch_task(
 ):
 
     # FIXME add user-owned tasks
-    # FIXME (maybe) should we be able to update the inner dict __EXEC_ARGS__?
-    #       Right now, we cannot.
 
     db_task = await db.get(Task, task_id)
 
