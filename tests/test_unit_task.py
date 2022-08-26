@@ -17,6 +17,10 @@ def test_create_zarr_structure(tmp_path, testdata_path):
     output_path = tmp_path / "*.zarr"
     default_args = create_zarr_structure_manifest["default_args"]
 
+    for key in ["needs_gpu", "__PROVIDER_ARGS__"]:
+        if key in default_args.keys():
+            default_args.pop(key)
+
     from glob import glob
 
     debug(glob(input_paths[0].as_posix()))
