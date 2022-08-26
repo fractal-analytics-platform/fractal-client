@@ -33,6 +33,37 @@ from fractal.common.models import SubtaskCreate
 console = Console()
 
 
+async def _extract_project_and_dataset(project_name: str, dataset_name: str):
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/project/",
+            headers=await auth.header(),
+        )
+        projects = res.json()
+        # Find project
+        try:
+            project = [p for p in projects if p["name"] == project_name][0]
+            project_id = project["id"]
+        except IndexError as e:
+            raise IndexError(f"Project {project_name} not found", str(e))
+        # Get dataset list
+        dataset_list = [
+            project["dataset_list"]
+            for project in projects
+            if project["id"] == project_id
+        ][0]
+        # Find dataset
+        try:
+            dataset = [
+                ds for ds in dataset_list if ds["name"] == dataset_name
+            ][0]
+        except IndexError as e:
+            raise IndexError(f"Dataset {dataset_name} not found", str(e))
+
+    return project, dataset
+
+
 @click.group()
 async def cli():
     pass
@@ -81,6 +112,20 @@ async def project_new(name: str, path: str, dataset: str) -> None:
     saved.
     """
     from fractal.common.models import ProjectBase
+    from fractal.common.models import ProjectRead
+
+    # Verify that name is not already in use
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/project/",
+            headers=await auth.header(),
+        )
+        data = res.json()
+        project_list = [ProjectRead(**item) for item in data]
+        project_names = [p.name for p in project_list]
+        if name in project_names:
+            raise Exception(f"Project with {name=} already exists")
 
     project = ProjectBase(name=name, project_dir=path)
     async with httpx.AsyncClient() as client:
@@ -134,9 +179,10 @@ async def project_list():
 
 
 @project.command(name="add-dataset")
-@click.argument("project_id", required=True, nargs=1, type=int)
+@click.argument("project_name", required=True, nargs=1, type=str)
 @click.argument(
-    "name_dataset",
+    "dataset_name",
+    type=str,
     required=True,
     nargs=1,
 )
@@ -153,8 +199,8 @@ async def project_list():
     help=("The type of objects into the dataset"),
 )
 async def add_dataset(
-    project_id: int,
-    name_dataset: str,
+    project_name: str,
+    dataset_name: str,
     meta: Dict[str, Any],
     type: Optional[str],
 ) -> None:
@@ -168,6 +214,21 @@ async def add_dataset(
     else:
         with open(meta, "r", encoding="utf-8") as json_file:
             meta_json = json.load(json_file)
+
+    # Find project_id
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/project/",
+            headers=await auth.header(),
+        )
+        projects = res.json()
+        # Find project
+        try:
+            project = [p for p in projects if p["name"] == project_name][0]
+            project_id = project["id"]
+        except IndexError as e:
+            raise IndexError(f"Project {project_name} not found", str(e))
 
     # Check that there is no other dataset with the same name
     from fractal.common.models import ProjectRead
@@ -188,14 +249,14 @@ async def add_dataset(
             raise IndexError("No project found with this project_id", str(e))
         list_dataset_names = [dataset.name for dataset in project.dataset_list]
 
-        if name_dataset in list_dataset_names:
+        if dataset_name in list_dataset_names:
             raise Exception(
-                f"Dataset name {name_dataset} already in use, "
+                f"Dataset name {dataset_name} already in use, "
                 "pick another one"
             )
 
     dataset = DatasetCreate(
-        name=name_dataset, project_id=project_id, type=type, meta=meta_json
+        name=dataset_name, project_id=project_id, type=type, meta=meta_json
     )
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
@@ -216,62 +277,47 @@ async def dataset():
 
 
 @dataset.command(name="show")
-@click.argument("project_id", required=True, type=int, nargs=1)
+@click.argument("project_name", required=True, type=str, nargs=1)
 @click.argument("dataset_name", required=True, type=str, nargs=1)
-async def dataset_show(project_id: int, dataset_name: str) -> None:
+async def dataset_show(project_name: str, dataset_name: str) -> None:
     """
     Show details of an existing dataset
     """
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/",
-            headers=await auth.header(),
-        )
-        projects = res.json()
-        dataset_list = [
-            project["dataset_list"]
-            for project in projects
-            if project["id"] == project_id
-        ][0]
-        try:
-            dataset = [
-                ds for ds in dataset_list if ds["name"] == dataset_name
-            ][0]
-        except IndexError:
-            raise IndexError("Dataset name not found")
+    project, dataset = await _extract_project_and_dataset(
+        project_name, dataset_name
+    )
 
-        table = Table(title="Dataset")
-        table.add_column("Id", style="cyan", no_wrap=True)
-        table.add_column("Name", justify="right", style="green")
-        table.add_column("Type", style="white")
-        table.add_column("Meta", justify="center")
-        table.add_column("Read only", justify="center")
+    table = Table(title="Dataset")
+    table.add_column("Id", style="cyan", no_wrap=True)
+    table.add_column("Name", justify="right", style="green")
+    table.add_column("Type", style="white")
+    table.add_column("Meta", justify="center")
+    table.add_column("Read only", justify="center")
 
-        if dataset["read_only"]:
-            ds_read_only = "✅"
-        else:
-            ds_read_only = "❌"
+    if dataset["read_only"]:
+        ds_read_only = "✅"
+    else:
+        ds_read_only = "❌"
 
-        table.add_row(
-            str(dataset["id"]),
-            dataset["name"],
-            dataset["type"],
-            str(dataset["meta"]),
-            ds_read_only,
-        )
+    table.add_row(
+        str(dataset["id"]),
+        dataset["name"],
+        dataset["type"],
+        str(dataset["meta"]),
+        ds_read_only,
+    )
 
-        console.print(table)
+    console.print(table)
 
 
 @dataset.command(name="add-resource")
-@click.argument("project_id", required=True, type=int, nargs=1)
-@click.argument("dataset_id", required=True, type=int, nargs=1)
+@click.argument("project_name", required=True, type=str, nargs=1)
+@click.argument("dataset_name", required=True, type=str, nargs=1)
 @click.argument("path", required=True, type=str, nargs=1)
 @click.option("--glob_pattern", required=True, type=str, default="", nargs=1)
 async def add_resource(
-    project_id: int, dataset_id: int, path: str, glob_pattern: str
+    project_name: str, dataset_name: str, path: str, glob_pattern: str
 ):
 
     """
@@ -281,6 +327,12 @@ async def add_resource(
     from fractal.common.models import ResourceCreate
 
     resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
+
+    project, dataset = await _extract_project_and_dataset(
+        project_name, dataset_name
+    )
+    project_id = project["id"]
+    dataset_id = dataset["id"]
 
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
@@ -294,12 +346,18 @@ async def add_resource(
 
 
 @dataset.command(name="show-resources")
-@click.argument("project_id", required=True, type=int, nargs=1)
-@click.argument("dataset_id", required=True, type=int, nargs=1)
+@click.argument("project_name", required=True, type=str, nargs=1)
+@click.argument("dataset_name", required=True, type=str, nargs=1)
 async def get_resource(
-    project_id: int,
-    dataset_id: int,
+    project_name: str,
+    dataset_name: str,
 ):
+
+    project, dataset = await _extract_project_and_dataset(
+        project_name, dataset_name
+    )
+    project_id = project["id"]
+    dataset_id = dataset["id"]
 
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
@@ -323,10 +381,10 @@ async def get_resource(
 
 
 @dataset.command(name="modify-dataset")
-@click.argument("project_id", required=True, type=int, nargs=1)
-@click.argument("dataset_id", required=True, type=int, nargs=1)
+@click.argument("project_name", required=True, type=str, nargs=1)
+@click.argument("dataset_name", required=True, type=str, nargs=1)
 @click.option(
-    "--name_dataset",
+    "--new_dataset_name",
     nargs=1,
 )
 @click.option(
@@ -344,9 +402,9 @@ async def get_resource(
     help=("Writing permissions"),
 )
 async def modify_dataset(
-    project_id: int,
-    dataset_id: int,
-    name_dataset: str = None,
+    project_name: str,
+    dataset_name: str,
+    new_dataset_name: str = None,
     meta: str = None,
     type: str = None,
     read_only: bool = None,
@@ -359,7 +417,7 @@ async def modify_dataset(
             mt = json.load(m)
 
     updates = dict(
-        name=name_dataset,
+        name=new_dataset_name,
         meta=mt,
         type=type,
         read_only=read_only,
@@ -367,6 +425,12 @@ async def modify_dataset(
     updates_not_none = {
         key: value for key, value in updates.items() if value is not None
     }
+
+    project, dataset = await _extract_project_and_dataset(
+        project_name, dataset_name
+    )
+    project_id = project["id"]
+    dataset_id = dataset["id"]
 
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
@@ -488,9 +552,10 @@ async def new_task(
 
 
 @task.command(name="modify-task")
-@click.argument("task_id", required=True, type=int, nargs=1)
+@click.argument("task_name", required=True, type=str, nargs=1)
 @click.option(
-    "--name_task",
+    "--new_task_name",
+    type=str,
     nargs=1,
 )
 @click.option(
@@ -498,8 +563,8 @@ async def new_task(
     nargs=1,
 )
 async def modify_task(
-    task_id: int,
-    name_task: str = None,
+    task_name: str,
+    new_task_name: str = None,
     default_args: str = None,
 ):
 
@@ -509,31 +574,38 @@ async def modify_task(
         with open(default_args, "r", encoding="utf-8") as m:
             da = json.load(m)
 
-    if name_task is not None:
+    from fractal.common.models import TaskRead
 
+    # Extract task list
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/task/",
+            headers=await auth.header(),
+        )
+        data = res.json()
+        task_list = [TaskRead(**item) for item in data]
+
+    if new_task_name is not None:
         # Check that there is no other dataset with the same name
-        from fractal.common.models import TaskRead
-
-        async with httpx.AsyncClient() as client:
-            auth = AuthToken(client=client)
-            res = await client.get(
-                f"{settings.BASE_URL}/task/",
-                headers=await auth.header(),
-            )
-            data = res.json()
-            task_list = [TaskRead(**item) for item in data]
-            existing_task_names = [t.name for t in task_list]
-
-            if name_task in existing_task_names:
-                raise Exception(f"Task name {name_task} already in use.")
+        existing_task_names = [t.name for t in task_list]
+        if new_task_name in existing_task_names:
+            raise Exception(f"Task name {new_task_name} already in use.")
 
     updates = dict(
-        name=name_task,
+        name=new_task_name,
         default_args=da,
     )
     updates_not_none = {
         key: value for key, value in updates.items() if value is not None
     }
+
+    # Find task id
+    try:
+        task = [t for t in task_list if t.name == task_name][0]
+        task_id = task.id
+    except IndexError as e:
+        raise IndexError(f"Task {task_name} not found", str(e))
 
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
@@ -601,30 +673,89 @@ def workflow():
 
 
 @workflow.command(name="apply")
-@click.argument("project_id", required=True, nargs=1)
+@click.argument("project_name", required=True, nargs=1, type=str)
 @click.argument(
-    "input_dataset_id",
+    "input_dataset_name",
     required=True,
+    type=str,
     nargs=1,
 )
 @click.option(
-    "--output_dataset_id",
+    "--output_dataset_name",
     nargs=1,
-    help=("id output dataset"),
+    type=str,
+    help=("output dataset name"),
 )
-@click.argument("workflow_id", required=True, nargs=1)
+@click.argument("workflow_name", required=True, nargs=1, type=str)
 @click.option(
     "--overwrite_input",
     default=False,
     nargs=1,
 )
 async def apply_workflow(
-    project_id: int,
-    input_dataset_id: int,
-    output_dataset_id: int,
-    workflow_id: int,
+    project_name: str,
+    input_dataset_name: str,
+    output_dataset_name: str,
+    workflow_name: str,
     overwrite_input: bool,
 ):
+
+    from fractal.common.models import TaskRead
+
+    # Extract IDs for project and two datasets
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/project/",
+            headers=await auth.header(),
+        )
+        projects = res.json()
+        # Find project
+        try:
+            project = [p for p in projects if p["name"] == project_name][0]
+            project_id = project["id"]
+        except IndexError as e:
+            raise IndexError(f"Project {project_name} not found", str(e))
+        # Get dataset list
+        dataset_list = [
+            project["dataset_list"]
+            for project in projects
+            if project["id"] == project_id
+        ][0]
+        # Find I/O dataset
+        try:
+            input_dataset = [
+                ds for ds in dataset_list if ds["name"] == input_dataset_name
+            ][0]
+            input_dataset_id = input_dataset["id"]
+        except IndexError as e:
+            raise IndexError(f"Dataset {input_dataset_name} not found", str(e))
+        try:
+            output_dataset = [
+                ds for ds in dataset_list if ds["name"] == output_dataset_name
+            ][0]
+            output_dataset_id = output_dataset["id"]
+        except IndexError as e:
+            raise IndexError(
+                f"Dataset {output_dataset_name} not found", str(e)
+            )
+    # Extract ID for task
+    async with httpx.AsyncClient() as client:
+        auth = AuthToken(client=client)
+        res = await client.get(
+            f"{settings.BASE_URL}/task/",
+            headers=await auth.header(),
+        )
+        data = res.json()
+        task_list = [TaskRead(**item) for item in data]
+        # Find task id
+        try:
+            workflow = [t for t in task_list if t.name == workflow_name][0]
+            workflow_id = workflow.id
+        except IndexError as e:
+            raise IndexError(f"Task {workflow_name} not found", str(e))
+
+    # Apply workflow
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
 
