@@ -5,7 +5,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from devtools import debug
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import status
@@ -116,7 +115,6 @@ async def patch_task(
     db_task = await db.get(Task, task_id)
 
     for key, value in task_update.dict(exclude_unset=True).items():
-        debug(key, value)
         if key == "name":
             setattr(db_task, key, value)
         elif key == "default_args":
