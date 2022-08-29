@@ -72,15 +72,17 @@ async def create_project(
     Create new poject
     """
 
-    # Check the project slug is not already in use for this user
-    stm = select(Project).where(Project.user_owner_id == user.id)
+    # Check that there is no project with the same user and name
+    stm = (
+        select(Project)
+        .where(Project.user_owner_id == user.id)
+        .where(Project.name == project.name)
+    )
     res = await db.execute(stm)
-    project_list = res.scalars().all()
-    project_slugs = [p.slug for p in project_list]
-    if project.slug in project_slugs:
+    if res.scalars().all():
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Project {project.slug} already in use",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Project name ({project.name}) already in use",
         )
 
     db_project = Project.from_orm(project)
