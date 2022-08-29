@@ -72,7 +72,16 @@ async def create_project(
     Create new poject
     """
 
-    # TODO check that user has no other projects with the same name
+    # Check the project slug is not already in use for this user
+    stm = select(Project).where(Project.user_owner_id == user.id)
+    res = await db.execute(stm)
+    project_list = res.scalars().all()
+    project_slugs = [p.slug for p in project_list]
+    if project.slug in project_slugs:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Project {project.slug} already in use",
+        )
 
     db_project = Project.from_orm(project)
     db_project.dataset_list.append(Dataset(name=project.default_dataset_name))
