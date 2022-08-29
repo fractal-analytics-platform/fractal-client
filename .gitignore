@@ -21,3 +21,4 @@ mprofile_*.dat
 .nfs*
 nohup
 nohup.out
+file:cachedb
