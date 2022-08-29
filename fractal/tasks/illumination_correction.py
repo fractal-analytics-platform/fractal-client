@@ -18,13 +18,11 @@ import anndata as ad
 import dask
 import dask.array as da
 import numpy as np
+from devtools import debug
 from skimage.io import imread
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
 from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
-from fractal.tasks.lib_regions_of_interest import (
-    split_3D_indices_into_z_layers,
-)
 from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
@@ -50,7 +48,7 @@ def correct(
     """
 
     # Check shapes
-    if illum_img.shape != img.shape[1:]:
+    if illum_img.shape != img.shape:
         raise Exception(
             "Error in illumination_correction\n"
             f"img.shape: {img.shape}\n"
@@ -66,7 +64,7 @@ def correct(
 
     # Apply the illumination correction
     # (normalized by the max value in the illum_img)
-    img_corr = img / (illum_img / np.max(illum_img))[None, :, :]
+    img_corr = img / (illum_img / np.max(illum_img))
 
     # Handle edge case: The illumination correction can increase a value
     # beyond the limit of the encoding, e.g. beyond 65535 for 16bit
@@ -217,39 +215,43 @@ def illumination_correction(
             f"Error in illumination_correction, chunks_x: {chunks_x}"
         )
 
-    # Create the final list of single-Z-layer FOVs
-    list_indices = split_3D_indices_into_z_layers(list_indices)
-
     # Prepare delayed function
     delayed_correct = dask.delayed(correct)
 
     # Loop over channels
     data_czyx_new = []
+    data_czyx_new = da.empty(
+        data_czyx.shape,
+        chunks="auto",
+        dtype=data_czyx.dtype,
+    )
     for ind_ch, ch in enumerate(chl_list):
         # Set correction matrix
         illum_img = corrections[ch]
-        # Select data for given channel
-        data_zyx = data_czyx[ind_ch]
-        # Initialize empty array for corrected images
-        data_zyx_new = da.empty_like(data_zyx)
+        # 3D data for multiple FOVs
         # Loop over FOVs
         for indices in list_indices:
             s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
-            shape = [e_z - s_z, e_y - s_y, e_x - s_x]
-            if min(shape) == 0:
-                raise Exception(f"ERROR: ROI indices lead to shape {shape}")
-            new_img = delayed_correct(
-                data_zyx[s_z:e_z, s_y:e_y, s_x:e_x],
-                illum_img,
-                background=background,
+            # 3D single-FOV data
+            tmp_zyx = []
+            # For each FOV, loop over Z planes
+            for ind_z in range(e_z):
+                shape = [e_y - s_y, e_x - s_x]
+                new_img = delayed_correct(
+                    data_czyx[ind_ch, ind_z, s_y:e_y, s_x:e_x],
+                    illum_img,
+                    background=background,
+                )
+                tmp_zyx.append(da.from_delayed(new_img, shape, dtype))
+            data_czyx_new[ind_ch, s_z:e_z, s_y:e_y, s_x:e_x] = da.stack(
+                tmp_zyx, axis=0
             )
-            data_zyx_new[s_z:e_z, s_y:e_y, s_x:e_x] = da.from_delayed(
-                new_img, shape, dtype
-            )
-        data_czyx_new.append(data_zyx_new)
+    tmp_accumulated_data = data_czyx_new
+    accumulated_data = tmp_accumulated_data.rechunk(data_czyx.chunks)
 
-    # Combine all 3D channel arrays into a single 4D array
-    accumulated_data = da.stack(data_czyx_new, axis=0)
+    debug("tmp_accumulated_data", tmp_accumulated_data)
+    debug("accumulated_data", accumulated_data)
+    debug("nbytes", accumulated_data.nbytes)
 
     # Construct resolution pyramid
     write_pyramid(

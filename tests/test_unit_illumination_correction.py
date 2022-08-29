@@ -1,8 +1,8 @@
 import json
-import math
 import pathlib
 import shutil
 
+import anndata as ad
 import dask.array as da
 import numpy as np
 import pytest
@@ -10,6 +10,8 @@ from pytest import MonkeyPatch
 
 from fractal.tasks.illumination_correction import correct
 from fractal.tasks.illumination_correction import illumination_correction
+from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
+from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
 @pytest.mark.parametrize("overwrite", [True, False])
@@ -20,7 +22,8 @@ def test_illumination_correction(
 ):
     # GIVEN a zarr pyramid on disk, made of all ones
     # WHEN I apply illumination_correction
-    # THEN correct(..) is executed as many times as the number of chunks
+    # THEN correct(..) is executed as many times as
+    #      (number of FOVs) x (number of channels)
     # AND the output array has ones at all pyramid levels
 
     # Copy a reference zarr into a temporary folder
@@ -40,12 +43,20 @@ def test_illumination_correction(
     else:
         newzarrurl = zarrurl.replace("plate.zarr", "newplate.zarr")
 
+    # Read FOV ROIs and create corresponding indices
+    pixels = extract_zyx_pixel_sizes(zarrurl + ".zattrs", level=0)
+    ROIs = ad.read_zarr(zarrurl + "tables/FOV_ROI_table/")
+    list_indices = convert_ROI_table_to_indices(
+        ROIs, level=0, full_res_pxl_sizes_zyx=pixels
+    )
+    num_z_planes = list_indices[0][1]
+    num_FOVs = len(list_indices) * num_z_planes
+
     # Load some useful variables
     with open(zarrurl + "0/.zarray", "r") as f:
         zarray = json.load(f)
     shape = zarray["shape"]
-    chunks = zarray["chunks"]
-    num_chunks = math.prod([shape[dim] // chunks[dim] for dim in range(4)])
+    num_channels = shape[0]
 
     # Patch correct() function, to keep track of the number of calls
     logfile = (tmp_path / "log_function_correct.txt").resolve().as_posix()
@@ -80,7 +91,7 @@ def test_illumination_correction(
     # Verify the total number of calls
     with open(logfile, "r") as f:
         tot_calls_correct = len(f.read().splitlines())
-    assert tot_calls_correct == num_chunks
+    assert tot_calls_correct == (num_channels * num_FOVs)
 
     # Verify the output
     num_levels = 5

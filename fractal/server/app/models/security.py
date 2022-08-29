@@ -19,10 +19,18 @@ Adapted from
 """
 
 
+def new_uuid() -> UUID4:
+    # See https://github.com/tiangolo/sqlmodel/issues/25#issuecomment-982039809
+    id_ = uuid.uuid4()
+    while id_.hex[0] == "0":
+        id_ = uuid.uuid4()
+    return id_
+
+
 class UserOAuth(SQLModelBaseUserDB, table=True):
     __tablename__ = "user_oauth"
     id: UUID4 = Field(
-        default_factory=uuid.uuid4,
+        default_factory=new_uuid,
         nullable=False,
         sa_column=Column(UUIDType(), primary_key=True),
     )

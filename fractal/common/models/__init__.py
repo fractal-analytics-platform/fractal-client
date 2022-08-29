@@ -31,7 +31,7 @@ class ProjectBase(SQLModel):
 
 
 class ProjectCreate(ProjectBase):
-    slug: Optional[str] = Field(sa_column_kwargs={"unique": True})
+    slug: Optional[str] = Field()
     default_dataset_name: Optional[str] = "default"
 
     @root_validator(pre=True)
@@ -127,6 +127,15 @@ class TaskBase(SQLModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class TaskUpdate(TaskBase):
+    name: Optional[str]
+    resource_type: Optional[ResourceTypeEnum]
+    input_type: Optional[str]
+    output_type: Optional[str]
+    default_args: Optional[Dict[str, Any]] = None
+    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
 
 
 class TaskCreate(TaskBase):

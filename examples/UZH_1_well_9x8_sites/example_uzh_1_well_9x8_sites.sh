@@ -5,7 +5,7 @@ PATH_INPUT=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_9x8_si
 WFPARAMS=wf_params_uzh_1_well_9x8_sites.json
 
 MWE_DIR=/data/active/fractal/tests
-PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_9x8_sites_singlefov
+PATH_OUTPUT=${MWE_DIR}/Temporary_data_UZH_1_well_9x8_sites
 
 CMD='poetry run python ../../fractal/fractal_cmd.py'
 

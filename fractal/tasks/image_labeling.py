@@ -47,7 +47,9 @@ def segment_FOV(
         out.write(
             f"[segment_FOV] START Cellpose |"
             f" column: {type(column)}, {column.shape} |"
-            f" do_3D: {do_3D}\n"
+            f" do_3D: {do_3D} |"
+            f" model.diam_mean: {model.diam_mean} |"
+            f" diameter: {diameter}\n"
         )
 
     # Actual labeling
@@ -73,7 +75,9 @@ def segment_FOV(
             f" Elapsed: {t1-t0:.4f} seconds |"
             f" mask shape: {mask.shape},"
             f" mask dtype: {mask.dtype} (before recast to {label_dtype}),"
-            f" max(mask): {np.max(mask)}\n"
+            f" max(mask): {np.max(mask)} |"
+            f" model.diam_mean: {model.diam_mean} |"
+            f" diameter: {diameter}\n"
         )
 
     return mask.astype(label_dtype)

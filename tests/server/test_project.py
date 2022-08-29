@@ -56,8 +56,29 @@ async def test_project_creation(app, client, MockCurrentUser, db):
         assert res.status_code == 201
         debug(data)
         assert data["name"] == payload["name"]
-        assert data["slug"] is not None
         assert data["project_dir"] == payload["project_dir"]
+
+
+async def test_project_creation_name_constraint(
+    app, client, MockCurrentUser, db
+):
+    payload = dict(
+        name="new project",
+        project_dir="/some/path/",
+    )
+    res = await client.post(f"{PREFIX}/", json=payload)
+    assert res.status_code == 401
+
+    async with MockCurrentUser(persist=True):
+
+        # Create a first project named "new project"
+        res = await client.post(f"{PREFIX}/", json=payload)
+        assert res.status_code == 201
+
+        # Create a second project named "new project", and check that this
+        # fails with 422_UNPROCESSABLE_ENTITY
+        res = await client.post(f"{PREFIX}/", json=payload)
+        assert res.status_code == 422
 
 
 async def test_add_dataset(app, client, MockCurrentUser, db):

@@ -71,6 +71,20 @@ async def create_project(
     """
     Create new poject
     """
+
+    # Check that there is no project with the same user and name
+    stm = (
+        select(Project)
+        .where(Project.user_owner_id == user.id)
+        .where(Project.name == project.name)
+    )
+    res = await db.execute(stm)
+    if res.scalars().all():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Project name ({project.name}) already in use",
+        )
+
     db_project = Project.from_orm(project)
     db_project.dataset_list.append(Dataset(name=project.default_dataset_name))
 

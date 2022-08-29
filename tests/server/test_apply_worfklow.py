@@ -10,9 +10,6 @@ from fractal.server.app.models import Dataset
 from fractal.server.app.models import Subtask
 from fractal.server.app.models import Task
 from fractal.server.app.models import TaskRead
-from fractal.server.app.runner import _atomic_task_factory
-from fractal.server.app.runner import _process_workflow
-from fractal.server.app.runner import submit_workflow
 
 
 LEN_NONTRIVIAL_WORKFLOW = 3
@@ -80,6 +77,7 @@ dummy_subtask_parallel = Subtask(
 )
 
 
+@pytest.mark.xfail(reason="parsl config is missing")
 @pytest.mark.parametrize(
     ("task", "message", "nfiles"),
     [
@@ -88,7 +86,7 @@ dummy_subtask_parallel = Subtask(
         (dummy_subtask_parallel, DUMMY_SUBTASK_MESSAGE, N_INDICES),
     ],
 )
-def test_atomic_task_factory(task, message, nfiles, tmp_path):
+def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
     """
     GIVEN
         * a task or subtask
@@ -100,6 +98,9 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path):
         * it can run
         * the output is as expected
     """
+
+    from fractal.server.app.runner import _atomic_task_factory
+
     input_path_str = "/input/path"
     output_path = tmp_path
     metadata = {"index": list(range(N_INDICES))}
@@ -144,7 +145,7 @@ def test_preprocess_workflow(nontrivial_workflow):
     assert i + 1 == LEN_NONTRIVIAL_WORKFLOW
 
 
-def test_process_workflow(tmp_path, nontrivial_workflow):
+def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
     """
     GIVEN a nontrivial workflow
     WHEN the workflow is processed
@@ -153,6 +154,9 @@ def test_process_workflow(tmp_path, nontrivial_workflow):
         * it is executable
         * the output is the one expected from the workflow
     """
+
+    from fractal.server.app.runner import _process_workflow
+
     app = _process_workflow(
         task=nontrivial_workflow,
         input_paths=[tmp_path / "0.json"],
@@ -183,6 +187,7 @@ async def test_apply_workflow(
     resource_factory,
     task_factory,
     tmp_path,
+    patch_settings,
 ):
     """
     GIVEN
@@ -194,6 +199,8 @@ async def test_apply_workflow(
         * the workflow is executed correctly
         * the output is correctly written in the output resource
     """
+
+    from fractal.server.app.runner import submit_workflow
 
     # CREATE RESOURCES
     async with MockCurrentUser(persist=True) as user:
@@ -247,6 +254,7 @@ async def test_create_zarr(
     resource_factory,
     task_factory,
     tmp_path,
+    patch_settings,
 ):
     """
     GIVEN
@@ -258,6 +266,9 @@ async def test_create_zarr(
     THEN
         * the ZARR structure is correctly created
     """
+
+    from fractal.server.app.runner import submit_workflow
+
     # CREATE RESOURCES
     async with MockCurrentUser(persist=True) as user:
         prj = await project_factory(user)
@@ -265,7 +276,7 @@ async def test_create_zarr(
         out_ds = await dataset_factory(prj, type="zarr", name="out_ds")
 
         await resource_factory(ds)
-        output_path = (tmp_path).as_posix()
+        output_path = (tmp_path / "*.zarr").as_posix()
         await resource_factory(out_ds, path=output_path, glob_pattern=None)
 
     # CREATE NONTRIVIAL WORKFLOW
@@ -288,7 +299,7 @@ async def test_create_zarr(
     await submit_workflow(
         db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
     )
-    zattrs = Path(output_path) / "myplate.zarr/.zattrs"
+    zattrs = Path(output_path).parent / "myplate.zarr/.zattrs"
     with open(zattrs) as f:
         data = json.load(f)
         debug(data)
@@ -311,6 +322,7 @@ async def test_yokogawa(
     resource_factory,
     task_factory,
     tmp_path,
+    patch_settings,
 ):
     """
     GIVEN
@@ -322,6 +334,9 @@ async def test_yokogawa(
     THEN
         * the ZARR structure is correctly created
     """
+
+    from fractal.server.app.runner import submit_workflow
+
     # CREATE RESOURCES
     async with MockCurrentUser(persist=True) as user:
         prj = await project_factory(user)
@@ -329,7 +344,7 @@ async def test_yokogawa(
         out_ds = await dataset_factory(prj, type="image", name="out_ds")
 
         await resource_factory(ds)
-        output_path = (tmp_path).as_posix()
+        output_path = (tmp_path / "*.zarr").as_posix()
         await resource_factory(out_ds, path=output_path, glob_pattern=None)
 
     # CREATE NONTRIVIAL WORKFLOW
@@ -372,7 +387,13 @@ async def test_yokogawa(
         out_ds.meta["history"][-1]
         == "Yokogawa to Zarr: ['myplate.zarr/B/03/0/']"
     )
-    zarrurl = out_ds.resource_list[0].path + "/" + out_ds.meta["well"][0] + "0"
+    debug(out_ds.resource_list[0])
+    zarrurl = (
+        Path(out_ds.resource_list[0].path).parent
+        / out_ds.meta["well"][0]
+        / "0"
+    ).as_posix()
+    debug(zarrurl)
     data_czyx = da.from_zarr(zarrurl)
     assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
     assert data_czyx[0, 0, 0, 0].compute() == 0

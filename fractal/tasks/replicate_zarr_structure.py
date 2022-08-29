@@ -13,50 +13,56 @@ Zurich.
 """
 import json
 from glob import glob
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
 import anndata as ad
 import zarr
 from anndata.experimental import write_elem
+from devtools import debug
+
+from fractal.tasks.lib_regions_of_interest import convert_FOV_ROIs_3D_to_2D
+from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
-def replicate_zarr_structure(zarrurl, newzarrurl=None):
+def replicate_zarr_structure(
+    *,
+    input_paths: Iterable[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]] = None,
+    component: str = None,
+    project_to_2D: bool = True,
+):
+
     """
     Duplicate an input zarr structure to a new path.
+    If project_to_2D=True, adapt it to host a maximum-intensity projection
+    (that is, with a single Z layer).
 
-    :param zarrurl: structure of the input zarr folder
-    :type zarrurl: str
-    :param newzarrurl: structure of the input zarr folder
-    :type newzarrurl: str
+    Examples
+      input_paths[0] = /tmp/input/*png  (Path)
+      output_path = /tmp/output/*zarr   (Path)
+      component = plate.zarr            (str)
     """
 
-    # Sanitize and check input zarr path
-    if not zarrurl.endswith("/"):
-        zarrurl += "/"
-    if not zarrurl.endswith(".zarr/"):
-        raise Exception(
-            "Error in replicate_zarr_structure, "
-            f"zarrurl={zarrurl} does not end with .zarr/"
-        )
-
-    # Sanitize and check output zarr path
-    if newzarrurl is None:
-        newzarrurl = zarrurl[-5:] + "_corr.zarr/"
-    else:
-        if not newzarrurl.endswith("/"):
-            newzarrurl += "/"
-        if not newzarrurl.endswith(".zarr/"):
-            raise Exception(
-                "Error in replicate_zarr_structure, "
-                f"newzarrurl={newzarrurl} does not end with .zarr/"
-            )
+    # Identify old/new zarr paths
+    if len(input_paths) > 1:
+        raise NotImplementedError
+    zarrurl_old = input_paths[0].parent / component
+    zarrurl_new = "xxxxxxx"
+    debug(zarrurl_old)
+    debug(zarrurl_new)
 
     # Identify properties of input zarr file
     well_rows_columns = sorted(
-        [rc.split("/")[-2:] for rc in glob(zarrurl + "*/*")]
+        [rc.split("/")[-2:] for rc in glob(zarrurl_old + "*/*")]
     )
 
-    group_plate = zarr.group(newzarrurl)
-    plate = zarrurl.replace(".zarr/", "").split("/")[-1]
+    group_plate = zarr.group(zarrurl_new)
+    plate = zarrurl_old.replace(".zarr/", "").split("/")[-1]
     group_plate.attrs["plate"] = {
         "acquisitions": [{"id": 0, "name": plate}],
         # takes unique cols from (row,col) tuples
@@ -95,8 +101,8 @@ def replicate_zarr_structure(zarrurl, newzarrurl=None):
 
     for row, column in well_rows_columns:
 
-        # Find sites in COL/ROW/.zattrs
-        path_well_zattrs = zarrurl + f"{row}/{column}/.zattrs"
+        # Find FOVs in COL/ROW/.zattrs
+        path_well_zattrs = zarrurl_old + f"{row}/{column}/.zattrs"
         with open(path_well_zattrs) as well_zattrs_file:
             well_zattrs = json.load(well_zattrs_file)
         well_images = well_zattrs["well"]["images"]
@@ -121,7 +127,7 @@ def replicate_zarr_structure(zarrurl, newzarrurl=None):
         group_FOV = group_well.create_group(f"{FOV}/")
 
         # Copy .zattrs file at the COL/ROW/FOV level
-        path_FOV_zattrs = zarrurl + f"{row}/{column}/{FOV}/.zattrs"
+        path_FOV_zattrs = f"{zarrurl_old}{row}/{column}/{FOV}/.zattrs"
         with open(path_FOV_zattrs) as FOV_zattrs_file:
             FOV_zattrs = json.load(FOV_zattrs_file)
         for key in FOV_zattrs.keys():
@@ -129,23 +135,36 @@ def replicate_zarr_structure(zarrurl, newzarrurl=None):
 
         # Read FOV ROI table
         FOV_ROI_table = ad.read_zarr(
-            zarrurl + f"{row}/{column}/0/tables/FOV_ROI_table"
+            f"{zarrurl_old}{row}/{column}/0/tables/FOV_ROI_table"
         )
 
-        # Create table group and write table
+        # Read pixel sizes from zattrs file
+
+        # Convert 3D FOVs to 2D
+        if project_to_2D:
+            pxl_sizes_zyx = extract_zyx_pixel_sizes(path_FOV_zattrs, level=0)
+            pxl_size_z = pxl_sizes_zyx[0]
+            FOV_ROI_table = convert_FOV_ROIs_3D_to_2D(
+                FOV_ROI_table, pxl_size_z
+            )
+
+        # Create table group and write new table
         group_tables = group_FOV.create_group("tables/")
         write_elem(group_tables, "FOV_ROI_table", FOV_ROI_table)
 
+    # metadata_update = {"MIP_source": {plate: zarrurl_old}}
+    # return metadata_update
+
+    return {}
+
 
 if __name__ == "__main__":
+
+    raise NotImplementedError
+
     from argparse import ArgumentParser
 
     parser = ArgumentParser(prog="FIXME")
-    parser.add_argument(
-        "-zo", "--zarrurl_old", help="old zarr url", required=True
-    )
-    parser.add_argument(
-        "-zn", "--zarrurl_new", help="new zarr url", required=True
-    )
+    parser.add_argument("-z", "--zarrurl", help="zarr url", required=True)
     args = parser.parse_args()
-    replicate_zarr_structure(args.zarrurl_old, newzarrurl=args.zarrurl_new)
+    replicate_zarr_structure(args.zarrurl)
