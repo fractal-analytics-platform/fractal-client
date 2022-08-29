@@ -77,7 +77,7 @@ dummy_subtask_parallel = Subtask(
 )
 
 
-@pytest.mark.skip(reason="FIXME: parsl config is missing")
+@pytest.mark.xfail(reason="parsl config is missing")
 @pytest.mark.parametrize(
     ("task", "message", "nfiles"),
     [
