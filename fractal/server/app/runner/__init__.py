@@ -35,7 +35,10 @@ from ..models.task import Task
 from .runner_utils import async_wrap
 
 
-def parsl_config(workflow_name="workflow_name", provider_args={}):
+def parsl_config(workflow_name="workflow_name", provider_args=None):
+
+    if provider_args is None:
+        provider_args = {}
 
     if settings.USE_SLURM:
         default_provider_args = dict(
