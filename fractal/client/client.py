@@ -160,10 +160,11 @@ async def project_list():
         table.add_column("Read only", justify="center")
 
         for p in project_list:
+            # Map p.read_only (True/False) to read_only_icon (✅/❌)
             if p.read_only:
-                p_read_only = "✅"
+                read_only_icon = "✅"
             else:
-                p_read_only = "❌"
+                read_only_icon = "❌"
 
             p_dataset_list = str([dataset.name for dataset in p.dataset_list])
 
@@ -172,7 +173,7 @@ async def project_list():
                 p.name,
                 p.project_dir,
                 str(p_dataset_list),
-                p_read_only,
+                read_only_icon,
             )
 
         console.print(table)
