@@ -20,7 +20,7 @@ Adapted from
 
 
 def new_uuid() -> UUID4:
-    # This should fix the (randomly-appearing) badly-formed UUID errors
+    # See https://github.com/tiangolo/sqlmodel/issues/25#issuecomment-982039809
     id_ = uuid.uuid4()
     while id_.hex[0] == "0":
         id_ = uuid.uuid4()
