@@ -34,7 +34,7 @@ class Dataset(DatasetBase, table=True):  # type: ignore
 
 class Project(ProjectBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
-    slug: Optional[str] = Field(sa_column_kwargs={"unique": True})
+    slug: Optional[str] = Field()
 
     user_owner_id: Optional[UUID4] = Field(foreign_key="user_oauth.id")
     user: Optional[UserOAuth] = Relationship()
