@@ -31,7 +31,7 @@ class ProjectBase(SQLModel):
 
 
 class ProjectCreate(ProjectBase):
-    slug: Optional[str] = Field(sa_column_kwargs={"unique": True})
+    slug: Optional[str] = Field()
     default_dataset_name: Optional[str] = "default"
 
     @root_validator(pre=True)
