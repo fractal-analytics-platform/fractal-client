@@ -26,7 +26,7 @@ class AuthToken:
             f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
         )
         if res.status_code != 200:
-            raise ValueError("ERROR! (probably the user was not registered")
+            raise ValueError("ERROR! (probably the user was not registered)")
         raw_token = res.json()
         self.token = raw_token["access_token"]
         with open(Path(settings.SESSION_CACHE_PATH).expanduser(), "w") as f:
