@@ -10,13 +10,11 @@ from typing import Optional
 from typing import Union
 
 import parsl
-from devtools import debug
 from parsl.addresses import address_by_hostname
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
 from parsl.channels import LocalChannel
 from parsl.config import Config
-from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
@@ -70,8 +68,6 @@ def parsl_config(workflow_name="workflow_name", provider_args=None):
             max_blocks=4,
         )
         default_provider_args.update(provider_args)
-        debug("TO USE:")
-        debug(default_provider_args)
         prov_local = LocalProvider(**default_provider_args)
         htex_local = HighThroughputExecutor(
             label="cpu",
@@ -88,9 +84,6 @@ def parsl_config(workflow_name="workflow_name", provider_args=None):
     config = Config(executors=executors, monitoring=monitoring)
     parsl.clear()
     parsl.load(config)
-
-    debug(config)
-    debug(DataFlowKernelLoader.dfk().config.executors)
 
 
 def _task_fun(
@@ -242,8 +235,6 @@ def _atomic_task_factory(
     if "__PROVIDER_ARGS__" in task_args:
         task_args.pop("__PROVIDER_ARGS__")
 
-    debug(executors)
-
     parall_level = task_args.pop("parallelization_level", None)
     if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
@@ -305,7 +296,6 @@ def _process_workflow(
     this_output = output_path
     this_metadata = deepcopy(metadata)
 
-    debug(task)
     workflow_name = task.name
 
     parsl_config(
@@ -433,12 +423,9 @@ async def submit_workflow(
         output_path=output_path,
         metadata=input_dataset.meta,
     )
-    debug(final_metadata)
     output_dataset.meta = await async_wrap(get_app_future_result)(
         app_future=final_metadata
     )
-    debug(final_metadata)
-    debug(final_metadata.result())
 
     db.add(output_dataset)
 
