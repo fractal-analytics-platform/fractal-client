@@ -71,6 +71,9 @@ async def create_project(
     """
     Create new poject
     """
+
+    # TODO check that user has no other projects with the same name
+
     db_project = Project.from_orm(project)
     db_project.dataset_list.append(Dataset(name=project.default_dataset_name))
 

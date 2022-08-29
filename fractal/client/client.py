@@ -113,22 +113,6 @@ async def project_new(name: str, path: str, dataset: str) -> None:
     """
     from fractal.common.models import ProjectBase
 
-    # Verify that name is not already in use
-    """
-    from fractal.common.models import ProjectRead
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/",
-            headers=await auth.header(),
-        )
-        data = res.json()
-        project_list = [ProjectRead(**item) for item in data]
-        project_names = [p.name for p in project_list]
-        if name in project_names:
-            raise Exception(f"Project with {name=} already exists")
-    """
-
     project = ProjectBase(name=name, project_dir=path)
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
