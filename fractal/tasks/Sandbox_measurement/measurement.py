@@ -1,4 +1,5 @@
 import json
+import os
 
 import anndata as ad
 import dask.array as da
@@ -96,6 +97,12 @@ list_indices = convert_ROI_table_to_indices(
     full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
 )
 
+# Check that the target group is not already there, or fail fast
+target_table_folder = f"{in_path}/{component}/tables/{table_name}"
+if os.path.isdir(target_table_folder):
+    raise Exception(f"ERROR: {target_table_folder} already exists.")
+
+
 # Get the workflow
 napari_workflow = load_workflow(workflow_file)
 
@@ -123,7 +130,8 @@ for indices in list_indices:
 df_well = pd.concat(list_dfs, axis=0)
 
 # Convert all to float (warning: some would be int, in principle)
-df_well = df_well.astype(np.float32)
+measurement_dtype = np.float32
+df_well = df_well.astype(measurement_dtype)
 
 # Drop unnecessary columns
 df_well.drop(labels=["label"], axis=1, inplace=True)
@@ -133,7 +141,8 @@ df_well.drop(labels=["label"], axis=1, inplace=True)
 df_well.index = np.arange(0, len(df_well.index)).astype(str)
 
 # Convert to anndata
-measurement_table = ad.AnnData(df_well, dtype=df_well.dtypes)
+measurement_table = ad.AnnData(df_well, dtype=measurement_dtype)
 
-group_tables = zarr.group(f"{in_path}/{component}/tables/")  # noqa: F841
+# Write to zarr group
+group_tables = zarr.group(f"{in_path}/{component}/tables/")
 write_elem(group_tables, table_name, measurement_table)
