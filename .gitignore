@@ -22,5 +22,4 @@ mprofile_*.dat
 nohup
 nohup.out
 
-fractal/server/migrations/versions/
 file:cachedb*
