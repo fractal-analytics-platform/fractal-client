@@ -389,6 +389,15 @@ def validate_workflow_compatibility(
 
 
 def get_app_future_result(app_future: AppFuture):
+    """
+    See issue #140 and https://stackoverflow.com/q/43241221/19085332
+
+    By replacing
+        .. = final_metadata.result()
+    with
+        .. = await async_wrap(get_app_future_result)(app_future=final_metadata)
+    we avoid a (long) blocking statement.
+    """
     return app_future.result()
 
 
