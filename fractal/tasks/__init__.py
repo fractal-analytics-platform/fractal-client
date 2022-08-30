@@ -58,9 +58,11 @@ __FRACTAL_MANIFEST__ = [
         "input_type": "zarr",
         "output_type": "zarr",
         "module": f"{__name__}.replicate_zarr_structure:replicate_zarr_structure",
-        "default_args": {"needs_gpu": False,
-                         "project_to_2D": True,
-                         "suffix": "mip"},
+        "default_args": {
+            "needs_gpu": False,
+            "project_to_2D": True,
+            "suffix": "mip",
+        },
     },
     {
         "name": "Maximum Intensity Projection",
@@ -70,5 +72,4 @@ __FRACTAL_MANIFEST__ = [
         "module": f"{__name__}.maximum_intensity_projection:maximum_intensity_projection",
         "default_args": {"needs_gpu": False},
     },
-
 ]
