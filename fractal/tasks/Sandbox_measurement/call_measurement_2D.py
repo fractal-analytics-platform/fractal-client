@@ -4,7 +4,9 @@ from fractal.tasks.measurement import measurement
 
 
 input_paths = [
-    Path("/data/active/fractal/tests/Temporary_data_UZH_1_well_2x2_sites")
+    Path(
+        "/data/active/fractal/tests/Temporary_data_UZH_1_well_2x2_sites/*.zarr"
+    )
 ]
 component = "20200812-CardiomyocyteDifferentiation14-Cycle1_MIP.zarr/B/03/0"
 labeling_channel = "A01_C01"

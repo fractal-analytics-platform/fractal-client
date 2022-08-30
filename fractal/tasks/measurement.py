@@ -35,7 +35,7 @@ def measurement(
     # FIXME here we should add all necessary checks on inputs
     if len(input_paths) > 1:
         raise NotImplementedError("We currently only support a single in_path")
-    in_path = input_paths[0].as_posix()
+    in_path = input_paths[0].parent.as_posix()
     coarsening_xy = metadata["coarsening_xy"]
     chl_list = metadata["channel_list"]
 
