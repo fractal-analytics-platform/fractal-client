@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fractal.tasks import measurement
+from fractal.tasks.measurement import measurement
 
 
 input_paths = [
