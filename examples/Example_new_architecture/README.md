@@ -29,4 +29,9 @@ From `user_dir` (in a new terminal):
         'status': 'submitted',
     } (dict) len=1
 ```
-2. `view_info.sh` is useful (after the first script started, so that the user is registered and the environment variables are set) for a list of inspection tools.
+2. `view_info.sh` is useful (after the first script started, so that the user is registered and the environment variables are set) for a list of client-based inspection tools.
+3. The output images can be visualized via
+```bash
+napari --plugin napari-ome-zarr -vvv tmp-proj/output-ds/myplate.zarr
+napari --plugin napari-ome-zarr -vvv tmp-proj/output-ds/myplate_mip.zarr
+```

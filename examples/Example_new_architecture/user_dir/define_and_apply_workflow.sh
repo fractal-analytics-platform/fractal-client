@@ -37,7 +37,7 @@ poetry run client task modify-task "$WORKFLOW_NAME" --default_args /tmp/args_wf_
 
 # Add subtasks (with args, if needed)
 poetry run client task add-subtask "$WORKFLOW_NAME" "Create OME-ZARR structure"
-echo "{\"parallelization_level\" : \"well\", \"rows\":2, \"cols\": 1}" > /tmp/args_yoko_${LABEL}.json
+echo "{\"parallelization_level\" : \"well\", \"rows\":1, \"cols\": 2}" > /tmp/args_yoko_${LABEL}.json
 poetry run client task add-subtask "$WORKFLOW_NAME" "Yokogawa to Zarr" --args_json /tmp/args_yoko_${LABEL}.json
 poetry run client task add-subtask "$WORKFLOW_NAME" "Replicate Zarr structure"
 echo "{\"parallelization_level\" : \"well\"}" > /tmp/args_mip_${LABEL}.json
@@ -45,11 +45,3 @@ poetry run client task add-subtask "$WORKFLOW_NAME" "Maximum Intensity Projectio
 
 # Apply workflow
 poetry run client workflow apply $PROJECT_NAME $DATASET_IN_NAME "$WORKFLOW_NAME" --output_dataset_name $DATASET_OUT_NAME
-
-# Show info
-poetry run client project list
-poetry run client dataset show $PROJECT_NAME $DATASET_IN_NAME
-poetry run client dataset show-resources $PROJECT_NAME $DATASET_IN_NAME
-poetry run client dataset show $PROJECT_NAME $DATASET_OUT_NAME
-poetry run client dataset show-resources $PROJECT_NAME $DATASET_OUT_NAME
-poetry run client task list
