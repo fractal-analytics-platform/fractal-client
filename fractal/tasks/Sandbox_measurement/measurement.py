@@ -140,7 +140,7 @@ for indices in list_indices:
 
     # Use label column as index, and drop unnecessary columns
     df.index = df["label"].astype(str)
-    df.drop(labels=["Unnamed: 0", "label"], axis=1, inplace=True)
+    df.drop(labels=["label"], axis=1, inplace=True)
 
     list_dfs.append(df)
 
