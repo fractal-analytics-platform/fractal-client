@@ -15,13 +15,16 @@ IMG_SIZE_X = 2560
 IMG_SIZE_Y = 2160
 NUM_Z_PLANES = 4
 
+FOV_IDS = ["1", "2", "7", "9"]
+FOV_NAMES = [f"FOV_{ID}" for ID in FOV_IDS]
+
 
 def get_metadata_dataframe():
     """
     Create artificial metadata dataframe
     """
     df = pd.DataFrame(np.zeros((4, 11)), dtype=int)
-    df.index = ["FOV_1", "FOV_2", "FOV_3", "FOV_4"]
+    df.index = FOV_IDS
     df.columns = [
         "x_micrometer",
         "y_micrometer",
@@ -82,6 +85,7 @@ def test_ROI_indices_3D(level, coarsening_xy):
 
     metadata_dataframe = get_metadata_dataframe()
     adata = prepare_FOV_ROI_table(metadata_dataframe)
+    assert list(adata.obs_names) == FOV_NAMES
 
     full_res_pxl_sizes_zyx = [PIXEL_SIZE_Z, PIXEL_SIZE_Y, PIXEL_SIZE_X]
     list_indices = convert_ROI_table_to_indices(
