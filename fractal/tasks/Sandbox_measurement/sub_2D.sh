@@ -8,8 +8,7 @@
 date
 echo
 
-poetry run python measurement.py
-
+poetry run python call_measurement_2D.py
 
 echo
 date
