@@ -106,16 +106,29 @@ if os.path.isdir(target_table_folder):
 # Get the workflow
 napari_workflow = load_workflow(workflow_file)
 
+# Check whether data are 2D or 3D, and squeeze arrays if needed
+is_2D = img.shape[0] == 1
+if is_2D:
+    img = img[0, :, :]
+    label_img_up = label_img_up[0, :, :]
+
+
 print(f"Workflow file:         {workflow_file}")
 print(f"Resolution level:      {level}")
 print(f"Labels upscale factor: {upscale_factor}")
 print(f"Whole-array shape:     {img_shape}")
+print(f"is_2D:                 {is_2D}")
+print()
 
 # Loop over FOV ROIs
 list_dfs = []
 for indices in list_indices:
     s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
     ROI = (slice(s_z, e_z), slice(s_y, e_y), slice(s_x, e_x))
+    if is_2D:
+        if not (s_z, e_z) == (0, 1):
+            raise Exception("Something went wrong with 2D ROI ", ROI)
+        ROI = (slice(s_y, e_y), slice(s_x, e_x))
     print(f"Single-ROI shape:      {img[ROI].shape}")
 
     # Set the input images: DAPI channel image & label image for current ROI
@@ -124,7 +137,13 @@ for indices in list_indices:
 
     # Run the workflow
     df = napari_workflow.get("regionprops_DAPI")
+
+    # Use label column as index, and drop unnecessary columns
+    df.index = df["label"].astype(str)
+    df.drop(labels=["Unnamed: 0", "label"], axis=1, inplace=True)
+
     list_dfs.append(df)
+
 
 # Concatenate all FOV dataframes
 df_well = pd.concat(list_dfs, axis=0)
@@ -132,13 +151,6 @@ df_well = pd.concat(list_dfs, axis=0)
 # Convert all to float (warning: some would be int, in principle)
 measurement_dtype = np.float32
 df_well = df_well.astype(measurement_dtype)
-
-# Drop unnecessary columns
-df_well.drop(labels=["label"], axis=1, inplace=True)
-
-# Reset index (to avoid non-unique labels), and set it to str
-# (to avoid ImplicitModificationWarning in anndata)
-df_well.index = np.arange(0, len(df_well.index)).astype(str)
 
 # Convert to anndata
 measurement_table = ad.AnnData(df_well, dtype=measurement_dtype)
