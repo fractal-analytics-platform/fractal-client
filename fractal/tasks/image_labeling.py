@@ -38,6 +38,7 @@ def segment_FOV(
     anisotropy=None,
     diameter=40.0,
     cellprob_threshold=0.0,
+    flow_threshold=0.4,
     label_dtype=None,
     logfile="LOG_image_labeling",
 ):
@@ -50,6 +51,7 @@ def segment_FOV(
             f" do_3D: {do_3D} |"
             f" model.diam_mean: {model.diam_mean} |"
             f" diameter: {diameter}\n"
+            f" flow threshold: {flow_threshold}\n"
         )
 
     # Actual labeling
@@ -63,6 +65,7 @@ def segment_FOV(
         diameter=diameter,
         anisotropy=anisotropy,
         cellprob_threshold=cellprob_threshold,
+        flow_threshold=flow_threshold,
     )
     if not do_3D:
         mask = np.expand_dims(mask, axis=0)
@@ -78,6 +81,7 @@ def segment_FOV(
             f" max(mask): {np.max(mask)} |"
             f" model.diam_mean: {model.diam_mean} |"
             f" diameter: {diameter}\n"
+            f" flow threshold: {flow_threshold}\n"
         )
 
     return mask.astype(label_dtype)
@@ -94,6 +98,7 @@ def image_labeling(
     anisotropy=None,
     diameter_level0=80.0,
     cellprob_threshold=0.0,
+    flow_threshold=0.4,
     model_type="nuclei",
 ):
 
@@ -250,6 +255,7 @@ def image_labeling(
             label_dtype=label_dtype,
             diameter=diameter_level0 / coarsening_xy**labeling_level,
             cellprob_threshold=cellprob_threshold,
+            flow_threshold=flow_threshold,
             logfile=logfile,
         )
         mask[s_z:e_z, s_y:e_y, s_x:e_x] = da.from_delayed(
