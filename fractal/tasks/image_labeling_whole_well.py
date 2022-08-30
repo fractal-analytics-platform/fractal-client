@@ -34,6 +34,7 @@ def image_labeling_whole_well(
     anisotropy=None,
     diameter_level0=35.0,
     cellprob_threshold=0.0,
+    flow_threshold=0.4,
     model_type="nuclei",
 ):
 
@@ -135,6 +136,7 @@ def image_labeling_whole_well(
         augment=False,
         diameter=(diameter_level0 / coarsening_xy**labeling_level),
         cellprob_threshold=cellprob_threshold,
+        flow_threshold=flow_threshold,
     )
     mask = np.expand_dims(mask, axis=0)
     t1 = time.perf_counter()
