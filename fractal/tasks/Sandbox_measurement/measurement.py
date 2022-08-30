@@ -21,6 +21,7 @@ level = 0
 metadata = dict(coarsening_xy=2, channel_list=["A01_C01"])
 workflow_file = "regionprops_from_existing_labels.yaml"
 table_name = "nuclei"
+whole_well = False
 
 
 # Load metadata
@@ -81,21 +82,32 @@ if not label_img_up.shape == img_shape:
         label_img_up.shape,
     )
 
-# Read FOV ROIs
-FOV_ROI_table = ad.read_zarr(f"{in_path}/{component}/tables/FOV_ROI_table")
+# Check whether data are 2D or 3D, and squeeze arrays if needed
+is_2D = img.shape[0] == 1
+if is_2D:
+    img = img[0, :, :]
+    label_img_up = label_img_up[0, :, :]
 
-# Read pixel sizes from zattrs file
-full_res_pxl_sizes_zyx = extract_zyx_pixel_sizes(
-    f"{in_path}/{component}/.zattrs", level=0
-)
+# Create list of indices
+if whole_well:
+    if not is_2D:
+        raise Exception(f"ERROR {is_2D=} and {whole_well=}")
+    list_indices = [[0, img_shape[0], 0, img_shape[1], 0, img_shape[2]]]
+else:
+    # Read FOV ROIs
+    FOV_ROI_table = ad.read_zarr(f"{in_path}/{component}/tables/FOV_ROI_table")
 
-# Create list of indices for 3D FOVs spanning the entire Z direction
-list_indices = convert_ROI_table_to_indices(
-    FOV_ROI_table,
-    level=level,
-    coarsening_xy=coarsening_xy,
-    full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
-)
+    # Read pixel sizes from zattrs file
+    full_res_pxl_sizes_zyx = extract_zyx_pixel_sizes(
+        f"{in_path}/{component}/.zattrs", level=0
+    )
+
+    list_indices = convert_ROI_table_to_indices(
+        FOV_ROI_table,
+        level=level,
+        coarsening_xy=coarsening_xy,
+        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
+    )
 
 # Check that the target group is not already there, or fail fast
 target_table_folder = f"{in_path}/{component}/tables/{table_name}"
@@ -105,12 +117,6 @@ if os.path.isdir(target_table_folder):
 
 # Get the workflow
 napari_workflow = load_workflow(workflow_file)
-
-# Check whether data are 2D or 3D, and squeeze arrays if needed
-is_2D = img.shape[0] == 1
-if is_2D:
-    img = img[0, :, :]
-    label_img_up = label_img_up[0, :, :]
 
 
 print(f"Workflow file:         {workflow_file}")
