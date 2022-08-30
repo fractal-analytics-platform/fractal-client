@@ -55,8 +55,8 @@ def yokogawa_to_zarr(
     Convert Yokogawa output (png, tif) to zarr file
 
     Example arguments:
-      input_paths[0] = /tmp/input/*png  (Path)
-      output_path = /tmp/output/*zarr   (Path)
+      input_paths[0] = /tmp/outpyt/*.zarr  (Path)
+      output_path = /tmp/output/*.zarr      (Path)
       metadata = {"channel_list": [...], "num_levels": ..., }
       component = plate.zarr/B/03/0/
     """
