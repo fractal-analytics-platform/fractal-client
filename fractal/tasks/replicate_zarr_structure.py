@@ -163,10 +163,9 @@ def replicate_zarr_structure(
                 f"{zarrurl_old}/{row}/{column}/0/tables/FOV_ROI_table"
             )
 
-            # Read pixel sizes from zattrs file
-
             # Convert 3D FOVs to 2D
             if project_to_2D:
+                # Read pixel sizes from zattrs file
                 pxl_sizes_zyx = extract_zyx_pixel_sizes(
                     path_FOV_zattrs, level=0
                 )
