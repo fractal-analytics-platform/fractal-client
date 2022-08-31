@@ -13,57 +13,70 @@ Zurich.
 """
 import json
 import time
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
 import dask.array as da
 import numpy as np
 import zarr
 from cellpose import core
 from cellpose import models
+from devtools import debug
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
 from fractal.tasks.lib_zattrs_utils import rescale_datasets
 
 
 def image_labeling_whole_well(
-    zarrurl,
-    coarsening_xy=2,
-    labeling_level=2,
-    labeling_channel=None,
-    chl_list=None,
-    relabeling=True,
-    anisotropy=None,
-    diameter_level0=35.0,
-    cellprob_threshold=0.0,
-    flow_threshold=0.4,
-    model_type="nuclei",
+    *,
+    input_paths: Iterable[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]] = None,
+    component: str = None,
+    labeling_channel: str = None,
+    labeling_level: int = 2,
+    diameter_level0: float = 80.0,
+    cellprob_threshold: float = 0.0,
+    flow_threshold: float = 0.4,
+    model_type: str = "nuclei",
 ):
 
     """
     FIXME
     """
 
-    # Sanitize zarr path
-    if not zarrurl.endswith("/"):
-        zarrurl += "/"
+    # Preliminary check
+    if len(input_paths) > 1:
+        raise NotImplementedError
+    in_path = input_paths[0]
+
+    # Read some parameters from metadata
+    num_levels = metadata["num_levels"]
+    coarsening_xy = metadata["coarsening_xy"]
+    chl_list = metadata["channel_list"]
+    plate, well = component.split(".zarr/")
 
     # Find well ID
-    # FIXME: only useful for our temporary log files
-    well_ID = "_".join(zarrurl.split("/")[-4:-2])
+    well_ID = well.replace("/", "_")[:-1]
     logfile = f"LOG_image_labeling_{well_ID}_whole_well"
-
-    # Check model_type
-    if model_type not in ["nuclei", "cyto2", "cyto"]:
-        raise Exception(f"ERROR model_type={model_type} is not allowed.")
-
-    # Work on MIP zarr file
-    # FIXME: this is a temporary hack
-    zarrurl = zarrurl.replace(".zarr/", "_mip.zarr/")
+    debug(well_ID)
 
     # Find channel index
     if labeling_channel not in chl_list:
         raise Exception(f"ERROR: {labeling_channel} not in {chl_list}")
     ind_channel = chl_list.index(labeling_channel)
 
+    zarrurl = (in_path.parent.resolve() / component).as_posix() + "/"
+    debug(zarrurl)
+
+    # Check model_type
+    if model_type not in ["nuclei", "cyto2", "cyto"]:
+        raise Exception(f"ERROR model_type={model_type} is not allowed.")
+
+    # FIXME: why is this check here?
     # Check that level>=1
     if labeling_level < 1:
         raise NotImplementedError("By now we can only segment levels >= 1")
