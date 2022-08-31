@@ -157,14 +157,19 @@ def measurement(
         # Run the workflow
         df = napari_workflow.get("regionprops_DAPI")
 
-        # Use label column as index, and drop unnecessary columns
+        # Use label column as index, simply to avoid non-unique indices when
+        # using per-FOV labels
         df.index = df["label"].astype(str)
-        df.drop(labels=["label"], axis=1, inplace=True)
 
+        # Append the new-ROI dataframe to the all-ROIs list
         list_dfs.append(df)
 
     # Concatenate all FOV dataframes
     df_well = pd.concat(list_dfs, axis=0)
+
+    # Extract labels and drop them from df_well
+    labels = df_well["label"].astype(int).to_frame()
+    df_well.drop(labels=["label"], axis=1, inplace=True)
 
     # Convert all to float (warning: some would be int, in principle)
     measurement_dtype = np.float32
@@ -172,6 +177,7 @@ def measurement(
 
     # Convert to anndata
     measurement_table = ad.AnnData(df_well, dtype=measurement_dtype)
+    measurement_table.obs = labels
 
     # Write to zarr group
     group_tables = zarr.group(f"{in_path}/{component}/tables/")
