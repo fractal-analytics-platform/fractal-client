@@ -37,11 +37,17 @@ poetry run client task modify-task "$WORKFLOW_NAME" --default_args /tmp/args_wf_
 
 # Add subtasks (with args, if needed)
 poetry run client task add-subtask "$WORKFLOW_NAME" "Create OME-ZARR structure"
+
 echo "{\"parallelization_level\" : \"well\", \"rows\":1, \"cols\": 2}" > /tmp/args_yoko_${LABEL}.json
 poetry run client task add-subtask "$WORKFLOW_NAME" "Yokogawa to Zarr" --args_json /tmp/args_yoko_${LABEL}.json
+
 poetry run client task add-subtask "$WORKFLOW_NAME" "Replicate Zarr structure"
+
 echo "{\"parallelization_level\" : \"well\"}" > /tmp/args_mip_${LABEL}.json
 poetry run client task add-subtask "$WORKFLOW_NAME" "Maximum Intensity Projection" --args_json /tmp/args_mip_${LABEL}.json
+
+echo "{\"parallelization_level\" : \"well\"}" > /tmp/args_labeling_${LABEL}.json
+poetry run client task add-subtask "$WORKFLOW_NAME" "Per-FOV image labeling" --args_json /tmp/args_labeling_${LABEL}.json
 
 # Apply workflow
 poetry run client workflow apply $PROJECT_NAME $DATASET_IN_NAME "$WORKFLOW_NAME" --output_dataset_name $DATASET_OUT_NAME

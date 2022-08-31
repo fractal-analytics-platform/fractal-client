@@ -72,4 +72,15 @@ __FRACTAL_MANIFEST__ = [
         "module": f"{__name__}.maximum_intensity_projection:maximum_intensity_projection",
         "default_args": {"needs_gpu": False},
     },
+    {
+        "name": "Per-FOV image labeling",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.image_labeling:image_labeling",
+        "default_args": {
+            "labeling_channel": "A01_C01",
+            "needs_gpu": False,  # FIXME
+        },
+    },
 ]
