@@ -94,5 +94,19 @@ __FRACTAL_MANIFEST__ = [
             "needs_gpu": False,  # FIXME
         },
     },
+    {
+        "name": "Measurement",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.measurement:measurement",
+        "default_args": {
+            "labeling_channel": "A01_C01",
+            "level": 0,
+            "table_name": "nuclei",
+            "needs_gpu": False,
+        },
+    },
+
 
 ]
