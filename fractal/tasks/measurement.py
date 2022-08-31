@@ -168,7 +168,7 @@ def measurement(
     df_well = pd.concat(list_dfs, axis=0)
 
     # Extract labels and drop them from df_well
-    labels = df_well["label"].astype(int).to_frame()
+    labels = pd.DataFrame(df_well["label"].astype(str))
     df_well.drop(labels=["label"], axis=1, inplace=True)
 
     # Convert all to float (warning: some would be int, in principle)
