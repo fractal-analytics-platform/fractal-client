@@ -165,8 +165,6 @@ def image_labeling(
         full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
 
-    debug(list_indices)
-
     # Extract image size from FOV-ROI indices
     # Note: this works at level=0, where FOVs should all be of the exact same
     #       size (in pixels)
@@ -175,8 +173,6 @@ def image_labeling(
         level=0,
         full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
-
-    debug(list_indices_level0)
 
     ref_img_size = None
     for indices in list_indices_level0:
