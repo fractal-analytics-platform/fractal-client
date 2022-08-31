@@ -83,4 +83,16 @@ __FRACTAL_MANIFEST__ = [
             "needs_gpu": False,  # FIXME
         },
     },
+    {
+        "name": "Whole-well image labeling",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.image_labeling_whole_well:image_labeling_whole_well",
+        "default_args": {
+            "labeling_channel": "A01_C01",
+            "needs_gpu": False,  # FIXME
+        },
+    },
+
 ]
