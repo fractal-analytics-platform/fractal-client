@@ -9,7 +9,7 @@ from pytest import MonkeyPatch
 from fractal.tasks.image_labeling import image_labeling
 
 
-def test_illumination_correction(
+def test_image_labeling(
     tmp_path: pathlib.Path,
     monkeypatch: MonkeyPatch,
 ):
