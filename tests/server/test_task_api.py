@@ -150,5 +150,6 @@ async def test_subtask_create(client, MockCurrentUser, task_factory):
     assert data["subtask_list"][2]["subtask_id"] == t2.id
     data_subtask = data["subtask_list"][0]["subtask"]
     t1_dict = t1.dict()
+    t1_dict["subtask_list"] = t1.subtask_list
     for key, value in data_subtask.items():
         value == t1_dict[key]
