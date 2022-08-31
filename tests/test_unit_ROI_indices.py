@@ -67,8 +67,8 @@ def get_metadata_dataframe():
 
 list_pxl_sizes = []
 list_pxl_sizes.append([PIXEL_SIZE_Z, PIXEL_SIZE_Y, PIXEL_SIZE_X])
-list_pxl_sizes.append([val + 1e-8 for val in list_pxl_sizes[0]])
-list_pxl_sizes.append([val - 1e-8 for val in list_pxl_sizes[0]])
+list_pxl_sizes.append([val + 1e-6 for val in list_pxl_sizes[0]])
+list_pxl_sizes.append([val - 1e-6 for val in list_pxl_sizes[0]])
 
 
 list_level_coarsening = [
@@ -92,7 +92,6 @@ for pxl_sizes in list_pxl_sizes:
         list_params.append((level, coarsening, pxl_sizes))
 
 
-@pytest.mark.xfail(reason="May fail because of rounding issues (#159)")
 @pytest.mark.parametrize(
     "level,coarsening_xy,full_res_pxl_sizes_zyx", list_params
 )
@@ -151,7 +150,6 @@ def test_ROI_indices_3D(level, coarsening_xy, full_res_pxl_sizes_zyx):
         assert indices[1] == NUM_Z_PLANES
 
 
-@pytest.mark.xfail(reason="May fail because of rounding issues (#159)")
 @pytest.mark.parametrize(
     "level,coarsening_xy,full_res_pxl_sizes_zyx", list_params
 )
