@@ -179,6 +179,11 @@ def replicate_zarr_structure(
             group_tables = group_FOV.create_group("tables/")
             write_elem(group_tables, "FOV_ROI_table", FOV_ROI_table)
 
+    meta_update["well"] = [
+        component.replace(".zarr", f"_{suffix}.zarr")
+        for component in metadata["well"]
+    ]
+
     return meta_update
 
 

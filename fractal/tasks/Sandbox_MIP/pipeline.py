@@ -67,8 +67,8 @@ for component in metadata["well"]:
     yokogawa_to_zarr(
         input_paths=[zarr_path],
         output_path=zarr_path,
-        rows=2,
-        cols=1,
+        rows=1,
+        cols=2,
         metadata=metadata,
         component=component,
     )
@@ -76,7 +76,10 @@ debug(metadata)
 
 # Replicate zarr structure
 metadata_update = replicate_zarr_structure(
-    input_paths=[zarr_path], output_path=zarr_mip_path, suffix="mip"
+    input_paths=[zarr_path],
+    output_path=zarr_mip_path,
+    suffix="mip",
+    metadata=metadata,
 )
 metadata.update(metadata_update)
 debug(metadata)

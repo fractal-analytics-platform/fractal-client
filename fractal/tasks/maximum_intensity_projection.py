@@ -49,15 +49,11 @@ def maximum_intensity_projection(
     # Read some parameters from metadata
     num_levels = metadata["num_levels"]
     coarsening_xy = metadata["coarsening_xy"]
-    suffix = metadata["replicate_zarr"]["suffix"]
     plate, well = component.split(".zarr/")
-    new_plate = f"{plate}_{suffix}"
 
-    zarrurl_old = metadata["replicate_zarr"]["sources"][new_plate] + "/" + well
+    zarrurl_old = metadata["replicate_zarr"]["sources"][plate] + "/" + well
     clean_output_path = output_path.parent.resolve()
-    zarrurl_new = (
-        (clean_output_path / component).as_posix().replace(plate, new_plate)
-    )
+    zarrurl_new = (clean_output_path / component).as_posix()
     debug(zarrurl_old)
     debug(zarrurl_new)
 

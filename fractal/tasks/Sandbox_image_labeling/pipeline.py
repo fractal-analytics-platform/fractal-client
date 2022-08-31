@@ -16,7 +16,7 @@ from fractal.tasks.yokogawa_to_zarr import yokogawa_to_zarr
 # Set images/zarr folders
 img_path = Path(
     "/home/tommaso/Fractal/mwe_fractal/fractal/tasks/"
-    + "Sandbox_labeling/images/*.png"
+    + "Sandbox_image_labeling/images/*.png"
 )
 zarr_path = Path("./tmp_out/*.zarr")
 zarr_mip_path = Path("./tmp_out_mip/*.zarr")
@@ -80,7 +80,10 @@ debug(metadata)
 
 # Replicate zarr structure
 metadata_update = replicate_zarr_structure(
-    input_paths=[zarr_path], output_path=zarr_mip_path, suffix="mip"
+    input_paths=[zarr_path],
+    output_path=zarr_mip_path,
+    suffix="mip",
+    metadata=metadata,
 )
 metadata.update(metadata_update)
 debug(metadata)
@@ -93,10 +96,6 @@ for component in metadata["well"]:
         component=component,
         metadata=metadata,
     )
-
-# FIXME: this is a bit weird
-for ind, val in enumerate(metadata["well"]):
-    metadata["well"][ind] = val.replace(".zarr", "_mip.zarr")
 
 # Labeling
 for component in metadata["well"]:
