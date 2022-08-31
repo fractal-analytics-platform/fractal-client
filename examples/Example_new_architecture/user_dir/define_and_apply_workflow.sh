@@ -32,22 +32,22 @@ poetry run client dataset add-resource $PROJECT_NAME $DATASET_OUT_NAME ${TMPDIR}
 # Create workflow
 poetry run client task new "$WORKFLOW_NAME" workflow image zarr
 
-echo "{\"__PROVIDER_ARGS__\" : {\"max_blocks\": 10}}" > /tmp/args_wf_${LABEL}.json
-poetry run client task modify-task "$WORKFLOW_NAME" --default_args /tmp/args_wf_${LABEL}.json
+echo "{\"__PROVIDER_ARGS__\" : {\"max_blocks\": 10}}" > /tmp/args_wf.json
+poetry run client task modify-task "$WORKFLOW_NAME" --default_args /tmp/args_wf.json
 
 # Add subtasks (with args, if needed)
 poetry run client task add-subtask "$WORKFLOW_NAME" "Create OME-ZARR structure"
 
-echo "{\"parallelization_level\" : \"well\", \"rows\":1, \"cols\": 2}" > /tmp/args_yoko_${LABEL}.json
-poetry run client task add-subtask "$WORKFLOW_NAME" "Yokogawa to Zarr" --args_json /tmp/args_yoko_${LABEL}.json
+echo "{\"parallelization_level\" : \"well\", \"rows\":1, \"cols\": 2}" > /tmp/args_yoko.json
+poetry run client task add-subtask "$WORKFLOW_NAME" "Yokogawa to Zarr" --args_json /tmp/args_yoko.json
 
 poetry run client task add-subtask "$WORKFLOW_NAME" "Replicate Zarr structure"
 
-echo "{\"parallelization_level\" : \"well\"}" > /tmp/args_mip_${LABEL}.json
-poetry run client task add-subtask "$WORKFLOW_NAME" "Maximum Intensity Projection" --args_json /tmp/args_mip_${LABEL}.json
+echo "{\"parallelization_level\" : \"well\"}" > /tmp/args_mip.json
+poetry run client task add-subtask "$WORKFLOW_NAME" "Maximum Intensity Projection" --args_json /tmp/args_mip.json
 
-echo "{\"parallelization_level\" : \"well\"}" > /tmp/args_labeling_${LABEL}.json
-poetry run client task add-subtask "$WORKFLOW_NAME" "Per-FOV image labeling" --args_json /tmp/args_labeling_${LABEL}.json
+echo "{\"parallelization_level\" : \"well\"}" > /tmp/args_labeling.json
+poetry run client task add-subtask "$WORKFLOW_NAME" "Per-FOV image labeling" --args_json /tmp/args_labeling.json
 
 # Apply workflow
 poetry run client workflow apply $PROJECT_NAME $DATASET_IN_NAME "$WORKFLOW_NAME" --output_dataset_name $DATASET_OUT_NAME
