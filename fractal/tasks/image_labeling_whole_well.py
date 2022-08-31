@@ -59,6 +59,9 @@ def image_labeling_whole_well(
     chl_list = metadata["channel_list"]
     plate, well = component.split(".zarr/")
 
+    if labeling_level >= num_levels:
+        raise Exception(f"ERROR: {labeling_level=} but {num_levels=}")
+
     # Find well ID
     well_ID = well.replace("/", "_")[:-1]
     logfile = f"LOG_image_labeling_{well_ID}_whole_well"
@@ -106,10 +109,10 @@ def image_labeling_whole_well(
             "level are not currently supported"
         )
 
-    # Extract num_levels
-    num_levels = len(multiscales[0]["datasets"])
-    print("num_levels", num_levels)
-    print()
+    # Extract num_levels # TODO: remove, use metadata intead
+    # num_levels = len(multiscales[0]["datasets"])
+    # print("num_levels", num_levels)
+    # print()
 
     # Extract axes, and remove channel
     new_axes = [ax for ax in multiscales[0]["axes"] if ax["type"] != "channel"]
