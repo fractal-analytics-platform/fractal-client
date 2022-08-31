@@ -15,6 +15,11 @@ import json
 import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
 import anndata as ad
 import dask
@@ -23,6 +28,7 @@ import numpy as np
 import zarr
 from cellpose import core
 from cellpose import models
+from devtools import debug
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
 from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
@@ -50,7 +56,7 @@ def segment_FOV(
             f" column: {type(column)}, {column.shape} |"
             f" do_3D: {do_3D} |"
             f" model.diam_mean: {model.diam_mean} |"
-            f" diameter: {diameter}\n"
+            f" diameter: {diameter} |"
             f" flow threshold: {flow_threshold}\n"
         )
 
@@ -80,7 +86,7 @@ def segment_FOV(
             f" mask dtype: {mask.dtype} (before recast to {label_dtype}),"
             f" max(mask): {np.max(mask)} |"
             f" model.diam_mean: {model.diam_mean} |"
-            f" diameter: {diameter}\n"
+            f" diameter: {diameter} |"
             f" flow threshold: {flow_threshold}\n"
         )
 
@@ -88,32 +94,46 @@ def segment_FOV(
 
 
 def image_labeling(
-    zarrurl,
-    coarsening_xy=2,
-    labeling_level=1,
-    labeling_channel=None,
-    chl_list=None,
-    num_threads=1,
-    relabeling=True,
-    anisotropy=None,
-    diameter_level0=80.0,
-    cellprob_threshold=0.0,
-    flow_threshold=0.4,
-    model_type="nuclei",
+    *,
+    input_paths: Iterable[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]] = None,
+    component: str = None,
+    labeling_channel: str = None,
+    labeling_level: int = 1,
+    num_threads: int = 1,
+    relabeling: bool = True,
+    anisotropy: float = None,
+    diameter_level0: float = 80.0,
+    cellprob_threshold: float = 0.0,
+    flow_threshold: float = 0.4,
+    model_type: str = "nuclei",
 ):
 
     """
-    FIXME
+    Example inputs:
+      input_paths: PosixPath('tmp_out_mip/*.zarr')
+      output_path: PosixPath('tmp_out_mip/*.zarr')
+      component: myplate.zarr/B/03/0/
+      metadata: {...}
+
     """
 
-    # Sanitize zarr path
-    if not zarrurl.endswith("/"):
-        zarrurl += "/"
+    # Preliminary check
+    if len(input_paths) > 1:
+        raise NotImplementedError
+    in_path = input_paths[0]
+
+    # Read some parameters from metadata
+    num_levels = metadata["num_levels"]
+    coarsening_xy = metadata["coarsening_xy"]
+    chl_list = metadata["channel_list"]
+    plate, well = component.split(".zarr/")
 
     # Find well ID
-    # FIXME: only useful for our temporary log files
-    well_ID = "_".join(zarrurl.split("/")[-4:-2])
+    well_ID = well.replace("/", "_")[:-1]
     logfile = f"LOG_image_labeling_{well_ID}"
+    debug(well_ID)
 
     # Find channel index
     if labeling_channel not in chl_list:
@@ -122,6 +142,9 @@ def image_labeling(
 
     # Set labels dtype
     label_dtype = np.uint32
+
+    zarrurl = (in_path.parent.resolve() / component).as_posix() + "/"
+    debug(zarrurl)
 
     # Load ZYX data
     data_zyx = da.from_zarr(f"{zarrurl}{labeling_level}")[ind_channel]
@@ -142,6 +165,8 @@ def image_labeling(
         full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
 
+    debug(list_indices)
+
     # Extract image size from FOV-ROI indices
     # Note: this works at level=0, where FOVs should all be of the exact same
     #       size (in pixels)
@@ -150,6 +175,9 @@ def image_labeling(
         level=0,
         full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
     )
+
+    debug(list_indices_level0)
+
     ref_img_size = None
     for indices in list_indices_level0:
         img_size = (indices[3] - indices[2], indices[5] - indices[4])
@@ -172,6 +200,7 @@ def image_labeling(
                 zarrurl + ".zattrs", level=labeling_level
             )
             pixel_size_z, pixel_size_y, pixel_size_x = pxl_zyx[:]
+            debug(pxl_zyx)
             if not np.allclose(pixel_size_x, pixel_size_y):
                 raise Exception(
                     "ERROR: XY anisotropy detected\n"
@@ -385,6 +414,8 @@ def image_labeling(
 
         with open(logfile, "a") as out:
             out.write("\nSkip relabeling\n")
+
+    return {}
 
 
 if __name__ == "__main__":
