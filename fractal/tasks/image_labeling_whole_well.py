@@ -109,11 +109,6 @@ def image_labeling_whole_well(
             "level are not currently supported"
         )
 
-    # Extract num_levels # TODO: remove, use metadata intead
-    # num_levels = len(multiscales[0]["datasets"])
-    # print("num_levels", num_levels)
-    # print()
-
     # Extract axes, and remove channel
     new_axes = [ax for ax in multiscales[0]["axes"] if ax["type"] != "channel"]
 
