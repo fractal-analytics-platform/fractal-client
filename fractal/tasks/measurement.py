@@ -105,8 +105,6 @@ def measurement(
 
     # Create list of indices
     if whole_well:
-        if not is_2D:
-            raise Exception(f"ERROR {is_2D=} and {whole_well=}")
         list_indices = [[0, img_shape[0], 0, img_shape[1], 0, img_shape[2]]]
     else:
         # Read FOV ROIs
