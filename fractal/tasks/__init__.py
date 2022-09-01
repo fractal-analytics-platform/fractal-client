@@ -50,7 +50,7 @@ __FRACTAL_MANIFEST__ = [
         "input_type": "zarr",
         "output_type": "zarr",
         "module": f"{__name__}.yokogawa_to_zarr:yokogawa_to_zarr",
-        "default_args": {"executor": "cpu"},
+        "default_args": {"executor": "cpu", "parallelization_level": "well"},
     },
     {
         "name": "Replicate Zarr structure",
@@ -70,7 +70,7 @@ __FRACTAL_MANIFEST__ = [
         "input_type": "zarr",
         "output_type": "zarr",
         "module": f"{__name__}.maximum_intensity_projection:maximum_intensity_projection",
-        "default_args": {"executor": "cpu"},
+        "default_args": {"executor": "cpu", "parallelization_level": "well"},
     },
     {
         "name": "Per-FOV image labeling",
@@ -80,7 +80,8 @@ __FRACTAL_MANIFEST__ = [
         "module": f"{__name__}.image_labeling:image_labeling",
         "default_args": {
             "labeling_channel": "A01_C01",
-            "executor": "cpu",  # FIXME
+            "executor": "cpu",  # FIXME: put gpu
+            "parallelization_level": "well",
         },
     },
     {
@@ -91,7 +92,8 @@ __FRACTAL_MANIFEST__ = [
         "module": f"{__name__}.image_labeling_whole_well:image_labeling_whole_well",
         "default_args": {
             "labeling_channel": "A01_C01",
-            "executor": "cpu",  # FIXME
+            "executor": "cpu",  # FIXME: put gpu
+            "parallelization_level": "well",
         },
     },
     {
@@ -105,6 +107,7 @@ __FRACTAL_MANIFEST__ = [
             "level": 0,
             "table_name": "nuclei",
             "executor": "cpu",
+            "parallelization_level": "well",
         },
     },
 ]
