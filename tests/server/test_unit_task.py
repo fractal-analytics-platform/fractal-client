@@ -102,3 +102,10 @@ async def test_arguments_executor(db, task_factory):
 
     assert "executor" not in t._arguments
     assert t.executor == EXPECTED
+
+    pt = t.preprocess()[0]
+    debug(pt)
+
+    assert pt.executor == EXPECTED
+    assert "executor" not in pt._arguments
+    assert "executor" not in pt.args

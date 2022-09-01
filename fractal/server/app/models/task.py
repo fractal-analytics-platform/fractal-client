@@ -32,10 +32,7 @@ class PreprocessedTask(BaseModel):
     module: str
     args: Dict[str, Any]
     save_intermediate_result: bool = False
-
-    @property
-    def _arguments(self):
-        return self.args
+    executor: Optional[str] = None
 
     @property
     def callable(self):
@@ -44,6 +41,10 @@ class PreprocessedTask(BaseModel):
     @property
     def import_path(self):
         return self.module.partition(":")[0]
+
+    @property
+    def _arguments(self):
+        return self.args
 
 
 class Subtask(SubtaskBase, table=True):  # type: ignore
@@ -103,6 +104,7 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
                 name=self.subtask.name,
                 module=self.subtask.module,
                 args=self._arguments,
+                executor=self.executor,
             )
         else:
             return [st.preprocess() for st in self.subtask.subtask_list]
@@ -132,7 +134,8 @@ class Task(TaskBase, table=True):  # type: ignore
                 PreprocessedTask(
                     name=self.name,
                     module=self.module,
-                    args=self.default_args,
+                    args=self._arguments,
+                    executor=self.executor,
                 )
             ]
 
