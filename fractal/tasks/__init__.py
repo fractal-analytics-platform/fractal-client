@@ -107,6 +107,4 @@ __FRACTAL_MANIFEST__ = [
             "needs_gpu": False,
         },
     },
-
-
 ]
