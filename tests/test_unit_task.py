@@ -17,7 +17,7 @@ def test_create_zarr_structure(tmp_path, testdata_path):
     output_path = tmp_path / "*.zarr"
     default_args = create_zarr_structure_manifest["default_args"]
 
-    for key in ["needs_gpu", "__PROVIDER_ARGS__"]:
+    for key in ["executor", "parallelization_level"]:
         if key in default_args.keys():
             default_args.pop(key)
 
