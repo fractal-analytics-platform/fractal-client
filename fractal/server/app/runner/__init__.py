@@ -228,7 +228,7 @@ def _atomic_task_factory(
     debug(task.executor)
     executors = [task.executor]
 
-    parall_level = task_args.pop("parallelization_level", None)
+    parall_level = task.parallelization_level
     if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
         dependencies = [
