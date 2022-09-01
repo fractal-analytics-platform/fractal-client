@@ -148,6 +148,7 @@ def image_labeling(
 
     # Load ZYX data
     data_zyx = da.from_zarr(f"{zarrurl}{labeling_level}")[ind_channel]
+    debug(data_zyx.shape)
 
     # Read FOV ROIs
     FOV_ROI_table = ad.read_zarr(f"{zarrurl}tables/FOV_ROI_table")
@@ -248,6 +249,7 @@ def image_labeling(
     with open(logfile, "w") as out:
         out.write(f"Start image_labeling task for {zarrurl}\n")
         out.write(f"relabeling: {relabeling}\n")
+        out.write(f"do_3D: {do_3D}\n")
         out.write(f"labeling_level: {labeling_level}\n")
         out.write(f"model_type: {model_type}\n")
         out.write(f"anisotropy: {anisotropy}\n")
