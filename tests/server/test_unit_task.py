@@ -93,3 +93,35 @@ async def test_task_parameter_override(db, task_factory):
     debug(parent)
     assert parent.subtask_list[0]._arguments["a"] == override_args["a"]
     assert parent.subtask_list[0]._arguments["b"] == default_args["b"]
+
+
+async def test_arguments_executor(db, task_factory):
+    EXPECTED = "my executor"
+    default_args = dict(a=1, executor=EXPECTED)
+    t = await task_factory(default_args=default_args)
+
+    assert "executor" not in t._arguments
+    assert t.executor == EXPECTED
+
+    pt = t.preprocess()[0]
+    debug(pt)
+
+    assert pt.executor == EXPECTED
+    assert "executor" not in pt._arguments
+    assert "executor" not in pt.args
+
+
+async def test_arguments_parallelization_level(db, task_factory):
+    EXPECTED = "my par level"
+    default_args = dict(a=1, parallelization_level=EXPECTED)
+    t = await task_factory(default_args=default_args)
+
+    assert "parallelization_level" not in t._arguments
+    assert t.parallelization_level == EXPECTED
+
+    pt = t.preprocess()[0]
+    debug(pt)
+
+    assert pt.parallelization_level == EXPECTED
+    assert "parallelization_level" not in pt._arguments
+    assert "parallelization_level" not in pt.args

@@ -14,20 +14,22 @@ Zurich.
 import json
 import warnings
 
+import anndata as ad
+import dask
 import dask.array as da
 import numpy as np
+from devtools import debug
 from skimage.io import imread
 
 from fractal.tasks.lib_pyramid_creation import write_pyramid
+from fractal.tasks.lib_regions_of_interest import convert_ROI_table_to_indices
+from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
 def correct(
     img,
     illum_img=None,
     background=110,
-    img_size_y=2160,
-    img_size_x=2560,
-    block_info=None,
 ):
     """
     Corrects single Z level input image using an illumination profile
@@ -42,31 +44,27 @@ def correct(
     :type illum_img: np.array
     :param background: value for background subtraction (optional, default 110)
     :type background: int
-    :param img_size_y: image size along Y (optional, default 2160)
-    :type img_size_y: int
-    :param img_size_x: image size along X (optional, default 2560)
-    :type img_size_x: int
 
     """
 
     # Check shapes
-    if img.shape != (1, img_size_y, img_size_x):
+    if illum_img.shape != img.shape:
         raise Exception(
-            f"Error in illumination_correction, img.shape: {img.shape}"
-        )
-    if illum_img.shape != (img_size_y, img_size_x):
-        raise Exception(
-            "Error in illumination_correction, "
+            "Error in illumination_correction\n"
+            f"img.shape: {img.shape}\n"
             f"illum_img.shape: {illum_img.shape}"
         )
 
     # Background subtraction
+    # FIXME: is there a problem with these changes?
+    # devdoc.net/python/dask-2.23.0-doc/delayed-best-practices.html
+    # ?highlight=delayed#don-t-mutate-inputs
     img[img <= background] = 0
     img[img > background] = img[img > background] - background
 
     # Apply the illumination correction
     # (normalized by the max value in the illum_img)
-    img_corr = img / (illum_img / np.max(illum_img))[None, :, :]
+    img_corr = img / (illum_img / np.max(illum_img))
 
     # Handle edge case: The illumination correction can increase a value
     # beyond the limit of the encoding, e.g. beyond 65535 for 16bit
@@ -135,9 +133,36 @@ def illumination_correction(
         if not newzarrurl.endswith("/"):
             newzarrurl += "/"
 
-    # Hard-coded values for the image size
-    img_size_y = 2160
-    img_size_x = 2560
+    # Read FOV ROIs
+    FOV_ROI_table = ad.read_zarr(f"{zarrurl}tables/FOV_ROI_table")
+
+    # Read pixel sizes from zattrs file
+    full_res_pxl_sizes_zyx = extract_zyx_pixel_sizes(
+        zarrurl + ".zattrs", level=0
+    )
+
+    # Create list of indices for 3D FOVs spanning the entire Z direction
+    list_indices = convert_ROI_table_to_indices(
+        FOV_ROI_table,
+        level=0,
+        coarsening_xy=coarsening_xy,
+        full_res_pxl_sizes_zyx=full_res_pxl_sizes_zyx,
+    )
+
+    # Extract image size from FOV-ROI indices
+    # Note: this works at level=0, where FOVs should all be of the exact same
+    #       size (in pixels)
+    ref_img_size = None
+    for indices in list_indices:
+        img_size = (indices[3] - indices[2], indices[5] - indices[4])
+        if ref_img_size is None:
+            ref_img_size = img_size
+        else:
+            if img_size != ref_img_size:
+                raise Exception(
+                    "ERROR: inconsistent image sizes in list_indices"
+                )
+    img_size_y, img_size_x = img_size[:]
 
     # Load paths of correction matrices
     with open(path_dict_corr, "r") as jsonfile:
@@ -190,26 +215,43 @@ def illumination_correction(
             f"Error in illumination_correction, chunks_x: {chunks_x}"
         )
 
+    # Prepare delayed function
+    delayed_correct = dask.delayed(correct)
+
     # Loop over channels
-    # FIXME: map_blocks could take care of this
     data_czyx_new = []
+    data_czyx_new = da.empty(
+        data_czyx.shape,
+        chunks="auto",
+        dtype=data_czyx.dtype,
+    )
     for ind_ch, ch in enumerate(chl_list):
-
-        data_zyx = data_czyx[ind_ch]
+        # Set correction matrix
         illum_img = corrections[ch]
+        # 3D data for multiple FOVs
+        # Loop over FOVs
+        for indices in list_indices:
+            s_z, e_z, s_y, e_y, s_x, e_x = indices[:]
+            # 3D single-FOV data
+            tmp_zyx = []
+            # For each FOV, loop over Z planes
+            for ind_z in range(e_z):
+                shape = [e_y - s_y, e_x - s_x]
+                new_img = delayed_correct(
+                    data_czyx[ind_ch, ind_z, s_y:e_y, s_x:e_x],
+                    illum_img,
+                    background=background,
+                )
+                tmp_zyx.append(da.from_delayed(new_img, shape, dtype))
+            data_czyx_new[ind_ch, s_z:e_z, s_y:e_y, s_x:e_x] = da.stack(
+                tmp_zyx, axis=0
+            )
+    tmp_accumulated_data = data_czyx_new
+    accumulated_data = tmp_accumulated_data.rechunk(data_czyx.chunks)
 
-        # Map correct(..) function onto each block
-        data_zyx_new = data_zyx.map_blocks(
-            correct,
-            chunks=(1, img_size_y, img_size_x),
-            meta=np.array((), dtype=dtype),
-            illum_img=illum_img,
-            background=background,
-            img_size_y=img_size_y,
-            img_size_x=img_size_x,
-        )
-        data_czyx_new.append(data_zyx_new)
-    accumulated_data = da.stack(data_czyx_new, axis=0)
+    debug("tmp_accumulated_data", tmp_accumulated_data)
+    debug("accumulated_data", accumulated_data)
+    debug("nbytes", accumulated_data.nbytes)
 
     # Construct resolution pyramid
     write_pyramid(

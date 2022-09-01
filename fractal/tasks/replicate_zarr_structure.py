@@ -11,133 +11,188 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import json
 from glob import glob
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
+import anndata as ad
 import zarr
+from anndata.experimental import write_elem
+from devtools import debug
+
+from fractal.tasks.lib_regions_of_interest import convert_FOV_ROIs_3D_to_2D
+from fractal.tasks.lib_zattrs_utils import extract_zyx_pixel_sizes
 
 
-def replicate_zarr_structure(zarrurl, newzarrurl=None):
+def replicate_zarr_structure(
+    *,
+    input_paths: Iterable[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]] = None,
+    project_to_2D: bool = True,
+    suffix: str = None,
+):
+
     """
     Duplicate an input zarr structure to a new path.
+    If project_to_2D=True, adapt it to host a maximum-intensity projection
+    (that is, with a single Z layer).
 
-    :param zarrurl: structure of the input zarr folder
-    :type zarrurl: str
-    :param newzarrurl: structure of the input zarr folder
-    :type newzarrurl: str
+    Examples
+      input_paths[0] = /tmp/out/*.zarr    (Path)
+      output_path = /tmp/out_mip/*.zarr   (Path)
     """
 
-    # Sanitize and check input zarr path
-    if not zarrurl.endswith("/"):
-        zarrurl += "/"
-    if not zarrurl.endswith(".zarr/"):
-        raise Exception(
-            "Error in replicate_zarr_structure, "
-            f"zarrurl={zarrurl} does not end with .zarr/"
+    # Preliminary check
+    if len(input_paths) > 1:
+        raise NotImplementedError
+    if suffix is None:
+        # FIXME create a standard suffix (with timestamp)
+        raise NotImplementedError
+
+    # List all plates
+    in_path = input_paths[0]
+    list_plates = [
+        p.as_posix() for p in in_path.parent.resolve().glob(in_path.name)
+    ]
+    debug(list_plates)
+
+    meta_update = {"replicate_zarr": {}}
+    meta_update["replicate_zarr"]["suffix"] = suffix
+    meta_update["replicate_zarr"]["sources"] = {}
+
+    # Loop over all plates
+    for zarrurl_old in list_plates:
+        zarrfile = zarrurl_old.split("/")[-1]
+        old_plate_name = zarrfile.split(".zarr")[0]
+        new_plate_name = f"{old_plate_name}_{suffix}"
+        new_plate_dir = output_path.resolve().parent
+        zarrurl_new = f"{(new_plate_dir / new_plate_name).as_posix()}.zarr"
+        meta_update["replicate_zarr"]["sources"][new_plate_name] = zarrurl_old
+
+        debug(zarrurl_old)
+        debug(zarrurl_new)
+        debug(meta_update)
+
+        # Identify properties of input zarr file
+        well_rows_columns = sorted(
+            [rc.split("/")[-2:] for rc in glob(zarrurl_old + "/*/*")]
         )
 
-    # Sanitize and check output zarr path
-    if newzarrurl is None:
-        newzarrurl = zarrurl[-5:] + "_corr.zarr/"
-    else:
-        if not newzarrurl.endswith("/"):
-            newzarrurl += "/"
-        if not newzarrurl.endswith(".zarr/"):
-            raise Exception(
-                "Error in replicate_zarr_structure, "
-                f"newzarrurl={newzarrurl} does not end with .zarr/"
+        debug(well_rows_columns)
+
+        group_plate = zarr.group(zarrurl_new)
+        plate = zarrurl_old.replace(".zarr", "").split("/")[-1]
+        debug(plate)
+        group_plate.attrs["plate"] = {
+            "acquisitions": [{"id": 0, "name": plate}],
+            # takes unique cols from (row,col) tuples
+            "columns": sorted(
+                [
+                    {"name": u_col}
+                    for u_col in set(
+                        [
+                            well_row_column[1]
+                            for well_row_column in well_rows_columns
+                        ]
+                    )
+                ],
+                key=lambda key: key["name"],
+            ),
+            # takes unique rows from (row,col) tuples
+            "rows": sorted(
+                [
+                    {"name": u_row}
+                    for u_row in set(
+                        [
+                            well_row_column[0]
+                            for well_row_column in well_rows_columns
+                        ]
+                    )
+                ],
+                key=lambda key: key["name"],
+            ),
+            "wells": [
+                {
+                    "path": well_row_column[0] + "/" + well_row_column[1],
+                }
+                for well_row_column in well_rows_columns
+            ],
+        }
+
+        for row, column in well_rows_columns:
+
+            # Find FOVs in COL/ROW/.zattrs
+            path_well_zattrs = f"{zarrurl_old}/{row}/{column}/.zattrs"
+            with open(path_well_zattrs) as well_zattrs_file:
+                well_zattrs = json.load(well_zattrs_file)
+            well_images = well_zattrs["well"]["images"]
+            list_FOVs = sorted([img["path"] for img in well_images])
+
+            # Create well group
+            group_well = group_plate.create_group(f"{row}/{column}/")
+            group_well.attrs["well"] = {
+                "images": well_images,
+                "version": "0.3",
+            }
+
+            # Check that only the 0-th FOV exists
+            FOV = 0
+            if len(list_FOVs) > 1:
+                raise Exception(
+                    "ERROR: we are in a single-merged-FOV scheme, "
+                    f"but there are {len(list_FOVs)} FOVs."
+                )
+
+            # Create FOV group
+            group_FOV = group_well.create_group(f"{FOV}/")
+
+            # Copy .zattrs file at the COL/ROW/FOV level
+            path_FOV_zattrs = f"{zarrurl_old}/{row}/{column}/{FOV}/.zattrs"
+            with open(path_FOV_zattrs) as FOV_zattrs_file:
+                FOV_zattrs = json.load(FOV_zattrs_file)
+            for key in FOV_zattrs.keys():
+                group_FOV.attrs[key] = FOV_zattrs[key]
+
+            # Read FOV ROI table
+            FOV_ROI_table = ad.read_zarr(
+                f"{zarrurl_old}/{row}/{column}/0/tables/FOV_ROI_table"
             )
 
-    # Identify properties of input zarr file
-    well_rows_columns = sorted(
-        [rc.split("/")[-2:] for rc in glob(zarrurl + "*/*")]
-    )
-    levels = sorted(
-        list(set([rc.split("/")[-1] for rc in glob(zarrurl + "*/*/*/*")]))
-    )
-
-    group_plate = zarr.group(newzarrurl)
-    plate = zarrurl.replace(".zarr/", "").split("/")[-1]
-    group_plate.attrs["plate"] = {
-        "acquisitions": [{"id": 0, "name": plate}],
-        # takes unique cols from (row,col) tuples
-        "columns": sorted(
-            [
-                {"name": u_col}
-                for u_col in set(
-                    [
-                        well_row_column[1]
-                        for well_row_column in well_rows_columns
-                    ]
+            # Convert 3D FOVs to 2D
+            if project_to_2D:
+                # Read pixel sizes from zattrs file
+                pxl_sizes_zyx = extract_zyx_pixel_sizes(
+                    path_FOV_zattrs, level=0
                 )
-            ],
-            key=lambda key: key["name"],
-        ),
-        # takes unique rows from (row,col) tuples
-        "rows": sorted(
-            [
-                {"name": u_row}
-                for u_row in set(
-                    [
-                        well_row_column[0]
-                        for well_row_column in well_rows_columns
-                    ]
+                pxl_size_z = pxl_sizes_zyx[0]
+                FOV_ROI_table = convert_FOV_ROIs_3D_to_2D(
+                    FOV_ROI_table, pxl_size_z
                 )
-            ],
-            key=lambda key: key["name"],
-        ),
-        "wells": [
-            {
-                "path": well_row_column[0] + "/" + well_row_column[1],
-            }
-            for well_row_column in well_rows_columns
-        ],
-    }
 
-    for row, column in well_rows_columns:
+            # Create table group and write new table
+            group_tables = group_FOV.create_group("tables/")
+            write_elem(group_tables, "FOV_ROI_table", FOV_ROI_table)
 
-        group_well = group_plate.create_group(f"{row}/{column}/")
+    meta_update["well"] = [
+        component.replace(".zarr", f"_{suffix}.zarr")
+        for component in metadata["well"]
+    ]
 
-        group_well.attrs["well"] = {
-            "images": [{"path": "0"}],  # FOV (only 0, by now)
-            "version": "0.3",
-        }
-        group_field = group_well.create_group("0/")  # noqa: F841
-
-        group_field.attrs["multiscales"] = [
-            {
-                "version": "0.3",
-                "axes": [
-                    {"name": "c", "type": "channel"},
-                    {
-                        "name": "z",
-                        "type": "space",
-                        "unit": "micrometer",
-                    },
-                    {"name": "y", "type": "space"},
-                    {"name": "x", "type": "space"},
-                ],
-                "datasets": [{"path": level} for level in levels],
-            }
-        ]
-
-        # Copy .zattrs file at the COL/ROW/SITE level
-        path_zattrs = zarrurl + f"{row}/{column}/0/.zattrs"
-        with open(path_zattrs) as zattrs_file:
-            zattrs = json.load(zattrs_file)
-            group_field.attrs["omero"] = zattrs["omero"]
+    return meta_update
 
 
 if __name__ == "__main__":
+
+    raise NotImplementedError
+
     from argparse import ArgumentParser
 
     parser = ArgumentParser(prog="FIXME")
-    parser.add_argument(
-        "-zo", "--zarrurl_old", help="old zarr url", required=True
-    )
-    parser.add_argument(
-        "-zn", "--zarrurl_new", help="new zarr url", required=True
-    )
+    parser.add_argument("-z", "--zarrurl", help="zarr url", required=True)
     args = parser.parse_args()
-    replicate_zarr_structure(args.zarrurl_old, newzarrurl=args.zarrurl_new)
+    replicate_zarr_structure(args.zarrurl)

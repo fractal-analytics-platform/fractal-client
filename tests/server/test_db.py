@@ -13,3 +13,39 @@ async def test_db_connection(db):
     stm = select(UserOAuth)
     res = await db.execute(stm)
     debug(res)
+
+
+async def test_sync_db(db_sync, db):
+    """
+    GIVEN a database and a sync and an async connections to it
+    WHEN crud operations are executed with one connection
+    THEN results are consistent with the other connection
+    """
+    assert db_sync.is_active
+    assert db_sync.get_bind()
+
+    from sqlmodel import select
+    from fractal.server.app.models.task import Task
+
+    db.add(
+        Task(
+            name="mytask",
+            resource_type="core task",
+            input_type="image",
+            output_type="zarr",
+        )
+    )
+    await db.commit()
+
+    # Async
+    stm = select(Task)
+    res = await db.execute(stm)
+    task_list = res.scalars().all()
+    assert len(task_list) == 1
+    assert task_list[0].name == "mytask"
+
+    # Sync
+    res = db_sync.exec(stm)
+    task_list = res.all()
+    assert len(task_list) == 1
+    assert task_list[0].name == "mytask"

@@ -56,5 +56,75 @@ async def test_project_creation(app, client, MockCurrentUser, db):
         assert res.status_code == 201
         debug(data)
         assert data["name"] == payload["name"]
-        assert data["slug"] is not None
         assert data["project_dir"] == payload["project_dir"]
+
+
+async def test_project_creation_name_constraint(
+    app, client, MockCurrentUser, db
+):
+    payload = dict(
+        name="new project",
+        project_dir="/some/path/",
+    )
+    res = await client.post(f"{PREFIX}/", json=payload)
+    assert res.status_code == 401
+
+    async with MockCurrentUser(persist=True):
+
+        # Create a first project named "new project"
+        res = await client.post(f"{PREFIX}/", json=payload)
+        assert res.status_code == 201
+
+        # Create a second project named "new project", and check that this
+        # fails with 422_UNPROCESSABLE_ENTITY
+        res = await client.post(f"{PREFIX}/", json=payload)
+        assert res.status_code == 422
+
+
+async def test_add_dataset(app, client, MockCurrentUser, db):
+
+    async with MockCurrentUser(persist=True):
+
+        # CREATE A PROJECT
+
+        res = await client.post(
+            f"{PREFIX}/",
+            json=dict(
+                name="test project",
+                project_dir="/tmp/",
+            ),
+        )
+        assert res.status_code == 201
+        project = res.json()
+        project_id = project["id"]
+
+        # ADD DATASET
+
+        payload = dict(
+            name="new dataset",
+            project_id=project_id,
+            resource_list=["./test"],
+            meta={"xy": 2},
+        )
+        res = await client.post(
+            f"{PREFIX}/{project_id}/",
+            json=payload,
+        )
+        assert res.status_code == 201
+        dataset = res.json()
+        assert dataset["name"] == payload["name"]
+        assert dataset["project_id"] == payload["project_id"]
+        assert dataset["meta"] == payload["meta"]
+
+        # EDIT DATASET
+
+        payload = dict(name="new dataset name", meta={})
+        res = await client.patch(
+            f"{PREFIX}/{project_id}/{dataset['id']}",
+            json=payload,
+        )
+        patched_dataset = res.json()
+        debug(patched_dataset)
+        assert res.status_code == 200
+        for k, v in payload.items():
+            assert patched_dataset[k] == payload[k]

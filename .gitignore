@@ -16,3 +16,10 @@ tmp_data
 LOG_*
 slurm-*.out
 Local_backup
+mprofile_*.dat
+
+.nfs*
+nohup
+nohup.out
+
+file:cachedb*

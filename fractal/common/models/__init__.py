@@ -1,3 +1,4 @@
+from enum import Enum
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -30,7 +31,7 @@ class ProjectBase(SQLModel):
 
 
 class ProjectCreate(ProjectBase):
-    slug: Optional[str] = Field(sa_column_kwargs={"unique": True})
+    slug: Optional[str] = Field()
     default_dataset_name: Optional[str] = "default"
 
     @root_validator(pre=True)
@@ -64,12 +65,18 @@ class DatasetBase(SQLModel):
     read_only: Optional[bool] = False
 
 
+class DatasetUpdate(DatasetBase):
+    name: Optional[str]  # type:ignore
+    meta: Optional[Dict[str, Any]] = None  # type:ignore
+
+
 class DatasetCreate(DatasetBase):
     pass
 
 
 class DatasetRead(DatasetBase):
     id: int
+    resource_list: List["ResourceRead"]
 
 
 # RESOURCE
@@ -94,3 +101,67 @@ class ResourceRead(ResourceBase):
 
 
 ProjectRead.update_forward_refs()
+
+
+# TASK
+
+
+class ResourceTypeEnum(str, Enum):
+    CORE_WORKFLOW = "core workflow"
+    CORE_TASK = "core task"
+    CORE_STEP = "core step"
+
+    WORKFLOW = "workflow"
+    TASK = "task"
+    STEP = "step"
+
+
+class TaskBase(SQLModel):
+    name: str = Field(sa_column_kwargs=dict(unique=True))
+    resource_type: ResourceTypeEnum
+    module: Optional[str]
+    input_type: str
+    output_type: str
+    default_args: Dict[str, Any] = Field(default={})
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class TaskUpdate(TaskBase):
+    name: Optional[str]  # type:ignore
+    resource_type: Optional[ResourceTypeEnum]  # type:ignore
+    input_type: Optional[str]  # type:ignore
+    output_type: Optional[str]  # type:ignore
+    default_args: Optional[Dict[str, Any]] = None  # type:ignore
+    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
+
+
+class TaskCreate(TaskBase):
+    pass
+
+
+class SubtaskBase(SQLModel):
+    parent_task_id: Optional[int] = None
+    subtask_id: Optional[int] = None
+    order: Optional[int] = None
+    args: Dict[str, Any] = Field(default={})
+
+
+class SubtaskCreate(SubtaskBase):
+    subtask_id: int
+
+
+class SubtaskRead(SubtaskBase):
+    parent_task_id: int
+    subtask_id: int
+    subtask: "TaskRead"
+
+
+class TaskRead(TaskBase):
+    id: int
+    subtask_list: List[SubtaskRead]
+
+
+SubtaskRead.update_forward_refs()
+DatasetRead.update_forward_refs()

@@ -1,5 +1,6 @@
 Temporary*
 dictionary_tasks.py
-monitoring.db
+monitoring.db*
 runinfo
 out_*.txt
+nohup*

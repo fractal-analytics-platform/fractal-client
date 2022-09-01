@@ -1,17 +1,15 @@
 import json
 from pathlib import Path
-from time import sleep
 
+import dask.array as da
 import pytest
 from devtools import debug
 from sqlmodel import select
 
+from fractal.server.app.models import Dataset
 from fractal.server.app.models import Subtask
 from fractal.server.app.models import Task
 from fractal.server.app.models import TaskRead
-from fractal.server.app.runner import _atomic_task_factory
-from fractal.server.app.runner import _process_workflow
-from fractal.server.app.runner import submit_workflow
 
 
 LEN_NONTRIVIAL_WORKFLOW = 3
@@ -33,7 +31,9 @@ def nontrivial_workflow():
                             subtask=Task(
                                 name="dummy0",
                                 module="fractal.tasks.dummy:dummy",
-                                default_args=dict(message="dummy0"),
+                                default_args=dict(
+                                    message="dummy0", executor="cpu"
+                                ),
                             ),
                         ),
                         Subtask(
@@ -41,7 +41,9 @@ def nontrivial_workflow():
                             subtask=Task(
                                 name="dummy1",
                                 module="fractal.tasks.dummy:dummy",
-                                default_args=dict(message="dummy1"),
+                                default_args=dict(
+                                    message="dummy1", executor="cpu"
+                                ),
                             ),
                         ),
                     ],
@@ -51,7 +53,7 @@ def nontrivial_workflow():
                 subtask=Task(
                     name="dummy2",
                     module="fractal.tasks.dummy:dummy",
-                    default_args=dict(message="dummy2"),
+                    default_args=dict(message="dummy2", executor="cpu"),
                 )
             ),
         ],
@@ -68,7 +70,7 @@ dummy_task = Task(
     name="dummy",
     resource_type="core task",
     module="fractal.tasks.dummy:dummy",
-    default_args={"message": DUMMY_MESSAGE},
+    default_args={"message": DUMMY_MESSAGE, "executor": "cpu"},
 )
 dummy_subtask = Subtask(
     subtask=dummy_task, args={"message": DUMMY_SUBTASK_MESSAGE}
@@ -79,6 +81,7 @@ dummy_subtask_parallel = Subtask(
 )
 
 
+@pytest.mark.xfail(reason="parsl config is missing")
 @pytest.mark.parametrize(
     ("task", "message", "nfiles"),
     [
@@ -87,7 +90,7 @@ dummy_subtask_parallel = Subtask(
         (dummy_subtask_parallel, DUMMY_SUBTASK_MESSAGE, N_INDICES),
     ],
 )
-def test_atomic_task_factory(task, message, nfiles, tmp_path):
+def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
     """
     GIVEN
         * a task or subtask
@@ -99,6 +102,9 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path):
         * it can run
         * the output is as expected
     """
+
+    from fractal.server.app.runner import _atomic_task_factory
+
     input_path_str = "/input/path"
     output_path = tmp_path
     metadata = {"index": list(range(N_INDICES))}
@@ -111,16 +117,13 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path):
     )
 
     debug(parsl_app)
-    res = parsl_app.result()
-    debug(res)
-    assert res
+    metadata = parsl_app.result()
+    debug(metadata)
+    assert metadata
 
     assert sum(1 for item in output_path.glob("*.json")) == nfiles
 
-    if not isinstance(res, list):
-        res = [res]
-
-    for r in res:
+    for r in output_path.glob("*.json"):
         with open(r, "r") as output_file:
             data = json.load(output_file)
             debug(data)
@@ -146,7 +149,7 @@ def test_preprocess_workflow(nontrivial_workflow):
     assert i + 1 == LEN_NONTRIVIAL_WORKFLOW
 
 
-def test_process_workflow(tmp_path, nontrivial_workflow):
+def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
     """
     GIVEN a nontrivial workflow
     WHEN the workflow is processed
@@ -155,10 +158,14 @@ def test_process_workflow(tmp_path, nontrivial_workflow):
         * it is executable
         * the output is the one expected from the workflow
     """
+
+    from fractal.server.app.runner import _process_workflow
+
     app = _process_workflow(
         task=nontrivial_workflow,
         input_paths=[tmp_path / "0.json"],
         output_path=tmp_path / "0.json",
+        metadata={},
     )
     debug(app)
     app.result()
@@ -174,6 +181,34 @@ def test_process_workflow(tmp_path, nontrivial_workflow):
     assert data[2]["message"] == "dummy2"
 
 
+def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
+    """
+    GIVEN a trivial workflow, with an invalid executor
+    WHEN the workflow is processed
+    THEN ValueError
+    """
+
+    from fractal.server.app.runner import _process_workflow
+
+    dummy_task = Task(
+        name="dummy",
+        resource_type="core task",
+        module="fake_module.dummy:dummy",
+        default_args={"executor": "WRONG EXECUTOR"},
+    )
+
+    app = _process_workflow(
+        task=dummy_task,
+        input_paths=[tmp_path / "0.json"],
+        output_path=tmp_path / "0.json",
+        metadata={},
+    )
+    debug(app)
+
+    with pytest.raises(ValueError):
+        app.result()
+
+
 async def test_apply_workflow(
     db,
     client,
@@ -184,6 +219,7 @@ async def test_apply_workflow(
     resource_factory,
     task_factory,
     tmp_path,
+    patch_settings,
 ):
     """
     GIVEN
@@ -196,20 +232,17 @@ async def test_apply_workflow(
         * the output is correctly written in the output resource
     """
 
+    from fractal.server.app.runner import submit_workflow
+
     # CREATE RESOURCES
     async with MockCurrentUser(persist=True) as user:
         prj = await project_factory(user)
         ds = await dataset_factory(prj, type="image")
         out_ds = await dataset_factory(prj, type="image", name="out_ds")
 
-        resource = await resource_factory(ds)
+        await resource_factory(ds)
         output_path = (tmp_path / "0.json").as_posix()
-        resource = await resource_factory(
-            out_ds, path=output_path, glob_pattern=None
-        )
-
-        debug(ds)
-        debug(resource)
+        await resource_factory(out_ds, path=output_path, glob_pattern=None)
 
     # CREATE NONTRIVIAL WORKFLOW
     wf = await task_factory(
@@ -229,10 +262,170 @@ async def test_apply_workflow(
 
     # DONE CREATING WORKFLOW
 
-    await submit_workflow(input_dataset=ds, output_dataset=out_ds, workflow=wf)
-    sleep(0.1)  # to make sure that the task has completed
+    await submit_workflow(
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+    )
     with open(output_path, "r") as f:
         data = json.load(f)
         debug(data)
     assert len(data) == 1
     assert data[0]["message"] == MESSAGE
+
+    await db.refresh(out_ds)
+    debug(out_ds)
+    assert out_ds.meta
+
+
+async def test_create_zarr(
+    db,
+    client,
+    collect_tasks,
+    MockCurrentUser,
+    project_factory,
+    dataset_factory,
+    resource_factory,
+    task_factory,
+    tmp_path,
+    patch_settings,
+):
+    """
+    GIVEN
+        * some test png images
+        * create ome-zarr structure task
+        * a project, dataset and resource that represent the images
+    WHEN
+        * the task is applied on the resource
+    THEN
+        * the ZARR structure is correctly created
+    """
+
+    from fractal.server.app.runner import submit_workflow
+
+    # CREATE RESOURCES
+    async with MockCurrentUser(persist=True) as user:
+        prj = await project_factory(user)
+        ds = await dataset_factory(prj, type="image")
+        out_ds = await dataset_factory(prj, type="zarr", name="out_ds")
+
+        await resource_factory(ds)
+        output_path = (tmp_path / "*.zarr").as_posix()
+        await resource_factory(out_ds, path=output_path, glob_pattern=None)
+
+    # CREATE NONTRIVIAL WORKFLOW
+    wf = await task_factory(
+        name="worfklow",
+        module=None,
+        resource_type="workflow",
+        input_type="image",
+    )
+
+    stm = select(Task).where(Task.name == "Create OME-ZARR structure")
+    res = await db.execute(stm)
+    create_ome_zarr_task = res.scalar()
+
+    await wf.add_subtask(db, subtask=create_ome_zarr_task)
+    debug(TaskRead.from_orm(wf))
+
+    # DONE CREATING WORKFLOW
+
+    await submit_workflow(
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+    )
+    zattrs = Path(output_path).parent / "myplate.zarr/.zattrs"
+    with open(zattrs) as f:
+        data = json.load(f)
+        debug(data)
+    assert len(data["plate"]["wells"]) == 1
+
+    out_ds = await db.get(Dataset, out_ds.id)
+    debug(out_ds)
+    assert out_ds.meta
+    # FIXME
+    # The assertion above needs be spcified to the metadata of the task
+
+
+async def test_yokogawa(
+    db,
+    client,
+    collect_tasks,
+    MockCurrentUser,
+    project_factory,
+    dataset_factory,
+    resource_factory,
+    task_factory,
+    tmp_path,
+    patch_settings,
+):
+    """
+    GIVEN
+        * some test png images
+        * create ome-zarr structure task
+        * a project, dataset and resource that represent the images
+    WHEN
+        * the task is applied on the resource
+    THEN
+        * the ZARR structure is correctly created
+    """
+
+    from fractal.server.app.runner import submit_workflow
+
+    # CREATE RESOURCES
+    async with MockCurrentUser(persist=True) as user:
+        prj = await project_factory(user)
+        ds = await dataset_factory(prj, type="image")
+        out_ds = await dataset_factory(prj, type="image", name="out_ds")
+
+        await resource_factory(ds)
+        output_path = (tmp_path / "*.zarr").as_posix()
+        await resource_factory(out_ds, path=output_path, glob_pattern=None)
+
+    # CREATE NONTRIVIAL WORKFLOW
+    wf = await task_factory(
+        name="worfklow",
+        module=None,
+        resource_type="workflow",
+        input_type="image",
+    )
+
+    stm = select(Task).where(Task.name == "Create OME-ZARR structure")
+    res = await db.execute(stm)
+    create_ome_zarr_task = res.scalar()
+
+    await wf.add_subtask(
+        db,
+        subtask=create_ome_zarr_task,
+    )
+    debug(TaskRead.from_orm(wf))
+
+    stm = select(Task).where(Task.name == "Yokogawa to Zarr")
+    res = await db.execute(stm)
+    yokogawa = res.scalar()
+    await wf.add_subtask(
+        db,
+        subtask=yokogawa,
+        args=dict(parallelization_level="well", rows=2, cols=1),
+    )
+    debug(TaskRead.from_orm(wf))
+
+    # DONE CREATING WORKFLOW
+
+    await submit_workflow(
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+    )
+    out_ds = await db.get(Dataset, out_ds.id)
+    debug(out_ds)
+
+    assert (
+        out_ds.meta["history"][-1]
+        == "Yokogawa to Zarr: ['myplate.zarr/B/03/0/']"
+    )
+    debug(out_ds.resource_list[0])
+    zarrurl = (
+        Path(out_ds.resource_list[0].path).parent
+        / out_ds.meta["well"][0]
+        / "0"
+    ).as_posix()
+    debug(zarrurl)
+    data_czyx = da.from_zarr(zarrurl)
+    assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+    assert data_czyx[0, 0, 0, 0].compute() == 0

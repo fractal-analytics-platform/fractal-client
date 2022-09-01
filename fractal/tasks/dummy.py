@@ -10,6 +10,7 @@ def dummy(
     input_paths: Iterable[Path],
     output_path: Path,
     metadata: Optional[Dict[str, Any]] = None,
+    component: Optional[Any] = None,
     # arguments of this task
     message: str,
     index: int = 0,
@@ -42,16 +43,20 @@ def dummy(
 
     Retrun
     ------
-    path to the resource the task wrote into
+    metadata_update (Dict[str, Any]) :
+        a dictionary that will update the metadata
     """
     from datetime import datetime, timezone
     import json
     from json.decoder import JSONDecodeError
 
+    if component:
+        index = component
+
     payload = dict(
         task="DUMMY TASK",
         timestamp=datetime.now(timezone.utc).isoformat(),
-        input_path=[p.as_posix() for p in input_paths],
+        input_paths=[p.as_posix() for p in input_paths],
         output_path=output_path.as_posix(),
         metadata=metadata,
         message=message,
@@ -72,4 +77,7 @@ def dummy(
     with open(out_fullpath, "w") as fout:
         json.dump(data, fout, indent=2)
 
-    return out_fullpath
+    # Update metadata
+    metadata_update = {"dummy": "dummy"}
+
+    return metadata_update

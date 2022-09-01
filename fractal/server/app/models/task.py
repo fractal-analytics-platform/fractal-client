@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Any
 from typing import Dict
 from typing import List
@@ -11,10 +10,16 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
-from sqlmodel import SQLModel
+
+from ...utils import popget
+from fractal.common.models import SubtaskBase
+from fractal.common.models import TaskBase
 
 
 def flatten(xx):
+    """
+    Flatten an arbitrarily nested sequence of sequences
+    """
     for x in xx:
         if isinstance(x, PreprocessedTask):
             yield x
@@ -27,10 +32,8 @@ class PreprocessedTask(BaseModel):
     module: str
     args: Dict[str, Any]
     save_intermediate_result: bool = False
-
-    @property
-    def _arguments(self):
-        return self.args
+    executor: Optional[str] = None
+    parallelization_level: Optional[str] = None
 
     @property
     def callable(self):
@@ -40,36 +43,9 @@ class PreprocessedTask(BaseModel):
     def import_path(self):
         return self.module.partition(":")[0]
 
-
-class ResourceTypeEnum(str, Enum):
-    CORE_WORKFLOW = "core workflow"
-    CORE_TASK = "core task"
-    CORE_STEP = "core step"
-
-    WORKFLOW = "workflow"
-    TASK = "task"
-    STEP = "step"
-
-
-class TaskBase(SQLModel):
-    name: str = Field(sa_column_kwargs=dict(unique=True))
-    resource_type: ResourceTypeEnum
-    module: Optional[str]
-    input_type: str
-    output_type: str
-    default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
-    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class TaskCreate(TaskBase):
-    pass
-
-
-class SubtaskBase(SQLModel):
-    pass
+    @property
+    def _arguments(self):
+        return self.args
 
 
 class Subtask(SubtaskBase, table=True):  # type: ignore
@@ -103,9 +79,26 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
 
     @property
     def _arguments(self):
+        """
+        Override default arguments and strip specific arguments (executor and
+        parallelization_level)
+        """
         out = self.subtask.default_args.copy()
         out.update(self.args)
+        popget(out, "executor")
+        popget(out, "parallelization_level")
         return out
+
+    @property
+    def executor(self) -> Optional[str]:
+        return self.args.get("executor") or self.subtask.executor
+
+    @property
+    def parallelization_level(self) -> Optional[str]:
+        return (
+            self.args.get("parallelization_level")
+            or self.subtask.parallelization_level
+        )
 
     @property
     def import_path(self):
@@ -121,17 +114,20 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
                 name=self.subtask.name,
                 module=self.subtask.module,
                 args=self._arguments,
+                executor=self.executor,
+                parallelization_level=self.parallelization_level,
             )
         else:
             return [st.preprocess() for st in self.subtask.subtask_list]
 
-
-class SubtaskRead(SubtaskBase):
-    subtask: "TaskRead"
+    @property
+    def name(self):
+        return self.subtask.name
 
 
 class Task(TaskBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
+    default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
     subtask_list: List["Subtask"] = Relationship(
         sa_relationship_kwargs=dict(
             primaryjoin="Task.id==Subtask.parent_task_id",
@@ -149,7 +145,9 @@ class Task(TaskBase, table=True):  # type: ignore
                 PreprocessedTask(
                     name=self.name,
                     module=self.module,
-                    args=self.default_args,
+                    args=self._arguments,
+                    executor=self.executor,
+                    parallelization_level=self.parallelization_level,
                 )
             ]
 
@@ -157,7 +155,24 @@ class Task(TaskBase, table=True):  # type: ignore
     def _arguments(self):
         if not self._is_atomic:
             raise ValueError("Cannot call _arguments on a non-atomic task")
-        return self.default_args
+        out = self.default_args.copy()
+        popget(out, "executor")
+        popget(out, "parallelization_level")
+        return out
+
+    @property
+    def executor(self) -> Optional[str]:
+        try:
+            return self.default_args["executor"]
+        except KeyError:
+            return None
+
+    @property
+    def parallelization_level(self) -> Optional[str]:
+        try:
+            return self.default_args["parallelization_level"]
+        except KeyError:
+            return None
 
     @property
     def module(self):
@@ -181,11 +196,15 @@ class Task(TaskBase, table=True):  # type: ignore
     async def add_subtask(
         self,
         db: AsyncSession,
-        subtask: "Task",
+        subtask_id: Optional[int] = None,
+        subtask: Optional["Task"] = None,
         order: Optional[int] = None,
         args: Optional[Dict[str, Any]] = None,
         commit_and_refresh: bool = True,
     ):
+        if subtask is None:
+            subtask = await db.get(Task, subtask_id)
+
         if not args:
             args = dict()
         st = Subtask(parent=self, subtask=subtask, args=args)
@@ -198,11 +217,3 @@ class Task(TaskBase, table=True):  # type: ignore
         if commit_and_refresh:
             await db.commit()
             await db.refresh(self)
-
-
-class TaskRead(TaskBase):
-    id: int
-    subtask_list: List[SubtaskRead]
-
-
-SubtaskRead.update_forward_refs()

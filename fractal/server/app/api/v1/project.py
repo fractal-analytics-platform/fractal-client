@@ -8,8 +8,14 @@ from fastapi import status
 from sqlmodel import select
 
 from ...db import AsyncSession
+from ...db import DBSyncSession
 from ...db import get_db
+from ...db import get_sync_db
+from ...models import ApplyWorkflow
 from ...models import Dataset
+from ...models import DatasetCreate
+from ...models import DatasetRead
+from ...models import DatasetUpdate
 from ...models import Project
 from ...models import ProjectCreate
 from ...models import ProjectRead
@@ -22,7 +28,6 @@ from ...runner import submit_workflow
 from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
-from fractal.common.models import ApplyWorkflow
 
 router = APIRouter()
 
@@ -66,6 +71,20 @@ async def create_project(
     """
     Create new poject
     """
+
+    # Check that there is no project with the same user and name
+    stm = (
+        select(Project)
+        .where(Project.user_owner_id == user.id)
+        .where(Project.name == project.name)
+    )
+    res = await db.execute(stm)
+    if res.scalars().all():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Project name ({project.name}) already in use",
+        )
+
     db_project = Project.from_orm(project)
     db_project.dataset_list.append(Dataset(name=project.default_dataset_name))
 
@@ -74,52 +93,6 @@ async def create_project(
     await db.commit()
     await db.refresh(db_project)
     return db_project
-
-
-@router.post("/{project_id}")
-async def add_dataset(
-    project_id: int,
-):
-    """
-    Add new dataset to current project
-    """
-    raise NotImplementedError
-
-
-@router.post(
-    "/{project_id}/{dataset_id}",
-    response_model=ResourceRead,
-    status_code=status.HTTP_201_CREATED,
-)
-async def add_resource(
-    project_id: int,
-    dataset_id: int,
-    resource: ResourceCreate,
-    user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Add resource to an existing dataset
-    """
-    stm = (
-        select(Project, Dataset)
-        .join(Dataset)
-        .where(Project.user_owner_id == user.id)
-    )
-    project, dataset = (await db.execute(stm)).one()
-    db_resource = Resource(dataset_id=dataset.id, **resource.dict())
-    db.add(db_resource)
-    await db.commit()
-    await db.refresh(db_resource)
-    return db_resource
-
-
-@router.patch("/{project_id}/{dataset_id}")
-async def modify_dataset(
-    project_id: int,
-    dataset_id: int,
-):
-    raise NotImplementedError
 
 
 @router.post(
@@ -131,6 +104,7 @@ async def apply_workflow(
     background_tasks: BackgroundTasks,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
+    db_sync: DBSyncSession = Depends(get_sync_db),
 ):
     stm = (
         select(Project, Dataset)
@@ -143,7 +117,7 @@ async def apply_workflow(
 
     # TODO check that user is allowed to use this task
 
-    workflow = await db.get(Task, apply_workflow.workflow_id)
+    workflow = db_sync.get(Task, apply_workflow.workflow_id)
 
     if apply_workflow.output_dataset_id:
         stm = (
@@ -151,7 +125,7 @@ async def apply_workflow(
             .where(Dataset.project_id == project.id)
             .where(Dataset.id == apply_workflow.output_dataset_id)
         )
-        output_dataset = (await db.execute(stm)).one()
+        output_dataset = (await db.execute(stm)).scalars().one()
     else:
         output_dataset = await auto_output_dataset(
             project=project, input_dataset=input_dataset, workflow=workflow
@@ -176,7 +150,117 @@ async def apply_workflow(
         workflow=workflow,
         input_dataset=input_dataset,
         output_dataset=output_dataset,
+        db=db,
     )
 
     # TODO we should return a job id of some sort
     return dict(status="submitted")
+
+
+@router.post(
+    "/{project_id}/",
+    response_model=DatasetRead,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_dataset(
+    project_id: int,
+    dataset: DatasetCreate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Add new dataset to current project
+    """
+    project = await db.get(Project, project_id)
+    if project.user_owner_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed on project",
+        )
+    dataset.project_id = project.id
+    db_dataset = Dataset.from_orm(dataset)
+    db.add(db_dataset)
+    await db.commit()
+    await db.refresh(db_dataset)
+    return db_dataset
+
+
+@router.get(
+    "/{project_id}/{dataset_id}",
+    response_model=List[ResourceRead],
+)
+async def get_resource(
+    project_id: int,
+    dataset_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get resources from a dataset
+    """
+    project = await db.get(Project, project_id)
+    if project.user_owner_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed on project",
+        )
+
+    stm = select(Resource).where(Resource.dataset_id == dataset_id)
+    res = await db.execute(stm)
+    resource_list = res.scalars().all()
+    return resource_list
+
+
+@router.post(
+    "/{project_id}/{dataset_id}",
+    response_model=ResourceRead,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_resource(
+    project_id: int,
+    dataset_id: int,
+    resource: ResourceCreate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Add resource to an existing dataset
+    """
+    stm = (
+        select(Project, Dataset)
+        .join(Dataset)
+        .where(Project.user_owner_id == user.id)
+        .where(Project.id == project_id)
+        .where(Dataset.id == dataset_id)
+    )
+    project, dataset = (await db.execute(stm)).one()
+    db_resource = Resource(dataset_id=dataset.id, **resource.dict())
+    db.add(db_resource)
+    await db.commit()
+    await db.refresh(db_resource)
+    return db_resource
+
+
+@router.patch("/{project_id}/{dataset_id}", response_model=DatasetRead)
+async def patch_dataset(
+    project_id: int,
+    dataset_id: int,
+    dataset_update: DatasetUpdate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+
+    project = await db.get(Project, project_id)
+    if project.user_owner_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed on project",
+        )
+
+    db_dataset = await db.get(Dataset, dataset_id)
+    for key, value in dataset_update.dict(exclude_unset=True).items():
+        setattr(db_dataset, key, value)
+
+    await db.commit()
+    await db.refresh(db_dataset)
+    return db_dataset
