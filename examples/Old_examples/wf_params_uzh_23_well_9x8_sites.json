@@ -1,9 +1,0 @@
-{
-"workflow_name": "uzh_23_well_9x8_sites",
-"dims": [9, 8],
-"coarsening_xy": 4,
-"coarsening_z": 1,
-"num_levels": 4,
-"channel_file": "wf_params_uzh_cardiac_channels.json",
-"path_dict_corr": "wf_params_uzh_cardiac_illumination.json"
-}
