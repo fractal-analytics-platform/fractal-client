@@ -31,7 +31,9 @@ def nontrivial_workflow():
                             subtask=Task(
                                 name="dummy0",
                                 module="fractal.tasks.dummy:dummy",
-                                default_args=dict(message="dummy0"),
+                                default_args=dict(
+                                    message="dummy0", executor="cpu"
+                                ),
                             ),
                         ),
                         Subtask(
@@ -39,7 +41,9 @@ def nontrivial_workflow():
                             subtask=Task(
                                 name="dummy1",
                                 module="fractal.tasks.dummy:dummy",
-                                default_args=dict(message="dummy1"),
+                                default_args=dict(
+                                    message="dummy1", executor="cpu"
+                                ),
                             ),
                         ),
                     ],
@@ -49,7 +53,7 @@ def nontrivial_workflow():
                 subtask=Task(
                     name="dummy2",
                     module="fractal.tasks.dummy:dummy",
-                    default_args=dict(message="dummy2"),
+                    default_args=dict(message="dummy2", executor="cpu"),
                 )
             ),
         ],
@@ -66,7 +70,7 @@ dummy_task = Task(
     name="dummy",
     resource_type="core task",
     module="fractal.tasks.dummy:dummy",
-    default_args={"message": DUMMY_MESSAGE},
+    default_args={"message": DUMMY_MESSAGE, "executor": "cpu"},
 )
 dummy_subtask = Subtask(
     subtask=dummy_task, args={"message": DUMMY_SUBTASK_MESSAGE}
