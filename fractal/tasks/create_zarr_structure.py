@@ -202,8 +202,10 @@ def create_zarr_structure(
         except FileNotFoundError:
             print("Missing metadata files")
             has_mrf_mlf_metadata = False
-
             pixel_size_x = pixel_size_y = pixel_size_z = 1
+
+        if min(pixel_size_z, pixel_size_y, pixel_size_x) < 1e-9:
+            raise Exception(pixel_size_z, pixel_size_y, pixel_size_x)
 
         # Identify all wells
         plate_prefix = dict_plate_prefixes[plate]

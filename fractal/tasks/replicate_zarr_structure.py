@@ -33,8 +33,8 @@ def replicate_zarr_structure(
     input_paths: Iterable[Path],
     output_path: Path,
     metadata: Optional[Dict[str, Any]] = None,
-    component: str = None,
     project_to_2D: bool = True,
+    suffix: str = None,
 ):
 
     """
@@ -43,119 +43,147 @@ def replicate_zarr_structure(
     (that is, with a single Z layer).
 
     Examples
-      input_paths[0] = /tmp/input/*png  (Path)
-      output_path = /tmp/output/*zarr   (Path)
-      component = plate.zarr            (str)
+      input_paths[0] = /tmp/out/*.zarr    (Path)
+      output_path = /tmp/out_mip/*.zarr   (Path)
     """
 
-    # Identify old/new zarr paths
+    # Preliminary check
     if len(input_paths) > 1:
         raise NotImplementedError
-    zarrurl_old = input_paths[0].parent / component
-    zarrurl_new = "xxxxxxx"
-    debug(zarrurl_old)
-    debug(zarrurl_new)
+    if suffix is None:
+        # FIXME create a standard suffix (with timestamp)
+        raise NotImplementedError
 
-    # Identify properties of input zarr file
-    well_rows_columns = sorted(
-        [rc.split("/")[-2:] for rc in glob(zarrurl_old + "*/*")]
-    )
+    # List all plates
+    in_path = input_paths[0]
+    list_plates = [
+        p.as_posix() for p in in_path.parent.resolve().glob(in_path.name)
+    ]
+    debug(list_plates)
 
-    group_plate = zarr.group(zarrurl_new)
-    plate = zarrurl_old.replace(".zarr/", "").split("/")[-1]
-    group_plate.attrs["plate"] = {
-        "acquisitions": [{"id": 0, "name": plate}],
-        # takes unique cols from (row,col) tuples
-        "columns": sorted(
-            [
-                {"name": u_col}
-                for u_col in set(
-                    [
-                        well_row_column[1]
-                        for well_row_column in well_rows_columns
-                    ]
-                )
-            ],
-            key=lambda key: key["name"],
-        ),
-        # takes unique rows from (row,col) tuples
-        "rows": sorted(
-            [
-                {"name": u_row}
-                for u_row in set(
-                    [
-                        well_row_column[0]
-                        for well_row_column in well_rows_columns
-                    ]
-                )
-            ],
-            key=lambda key: key["name"],
-        ),
-        "wells": [
-            {
-                "path": well_row_column[0] + "/" + well_row_column[1],
-            }
-            for well_row_column in well_rows_columns
-        ],
-    }
+    meta_update = {"replicate_zarr": {}}
+    meta_update["replicate_zarr"]["suffix"] = suffix
+    meta_update["replicate_zarr"]["sources"] = {}
 
-    for row, column in well_rows_columns:
+    # Loop over all plates
+    for zarrurl_old in list_plates:
+        zarrfile = zarrurl_old.split("/")[-1]
+        old_plate_name = zarrfile.split(".zarr")[0]
+        new_plate_name = f"{old_plate_name}_{suffix}"
+        new_plate_dir = output_path.resolve().parent
+        zarrurl_new = f"{(new_plate_dir / new_plate_name).as_posix()}.zarr"
+        meta_update["replicate_zarr"]["sources"][new_plate_name] = zarrurl_old
 
-        # Find FOVs in COL/ROW/.zattrs
-        path_well_zattrs = zarrurl_old + f"{row}/{column}/.zattrs"
-        with open(path_well_zattrs) as well_zattrs_file:
-            well_zattrs = json.load(well_zattrs_file)
-        well_images = well_zattrs["well"]["images"]
-        list_FOVs = sorted([img["path"] for img in well_images])
+        debug(zarrurl_old)
+        debug(zarrurl_new)
+        debug(meta_update)
 
-        # Create well group
-        group_well = group_plate.create_group(f"{row}/{column}/")
-        group_well.attrs["well"] = {
-            "images": well_images,
-            "version": "0.3",
-        }
-
-        # Check that only the 0-th FOV exists
-        FOV = 0
-        if len(list_FOVs) > 1:
-            raise Exception(
-                "ERROR: we are in a single-merged-FOV scheme, "
-                f"but there are {len(list_FOVs)} FOVs."
-            )
-
-        # Create FOV group
-        group_FOV = group_well.create_group(f"{FOV}/")
-
-        # Copy .zattrs file at the COL/ROW/FOV level
-        path_FOV_zattrs = f"{zarrurl_old}{row}/{column}/{FOV}/.zattrs"
-        with open(path_FOV_zattrs) as FOV_zattrs_file:
-            FOV_zattrs = json.load(FOV_zattrs_file)
-        for key in FOV_zattrs.keys():
-            group_FOV.attrs[key] = FOV_zattrs[key]
-
-        # Read FOV ROI table
-        FOV_ROI_table = ad.read_zarr(
-            f"{zarrurl_old}{row}/{column}/0/tables/FOV_ROI_table"
+        # Identify properties of input zarr file
+        well_rows_columns = sorted(
+            [rc.split("/")[-2:] for rc in glob(zarrurl_old + "/*/*")]
         )
 
-        # Read pixel sizes from zattrs file
+        debug(well_rows_columns)
 
-        # Convert 3D FOVs to 2D
-        if project_to_2D:
-            pxl_sizes_zyx = extract_zyx_pixel_sizes(path_FOV_zattrs, level=0)
-            pxl_size_z = pxl_sizes_zyx[0]
-            FOV_ROI_table = convert_FOV_ROIs_3D_to_2D(
-                FOV_ROI_table, pxl_size_z
+        group_plate = zarr.group(zarrurl_new)
+        plate = zarrurl_old.replace(".zarr", "").split("/")[-1]
+        debug(plate)
+        group_plate.attrs["plate"] = {
+            "acquisitions": [{"id": 0, "name": plate}],
+            # takes unique cols from (row,col) tuples
+            "columns": sorted(
+                [
+                    {"name": u_col}
+                    for u_col in set(
+                        [
+                            well_row_column[1]
+                            for well_row_column in well_rows_columns
+                        ]
+                    )
+                ],
+                key=lambda key: key["name"],
+            ),
+            # takes unique rows from (row,col) tuples
+            "rows": sorted(
+                [
+                    {"name": u_row}
+                    for u_row in set(
+                        [
+                            well_row_column[0]
+                            for well_row_column in well_rows_columns
+                        ]
+                    )
+                ],
+                key=lambda key: key["name"],
+            ),
+            "wells": [
+                {
+                    "path": well_row_column[0] + "/" + well_row_column[1],
+                }
+                for well_row_column in well_rows_columns
+            ],
+        }
+
+        for row, column in well_rows_columns:
+
+            # Find FOVs in COL/ROW/.zattrs
+            path_well_zattrs = f"{zarrurl_old}/{row}/{column}/.zattrs"
+            with open(path_well_zattrs) as well_zattrs_file:
+                well_zattrs = json.load(well_zattrs_file)
+            well_images = well_zattrs["well"]["images"]
+            list_FOVs = sorted([img["path"] for img in well_images])
+
+            # Create well group
+            group_well = group_plate.create_group(f"{row}/{column}/")
+            group_well.attrs["well"] = {
+                "images": well_images,
+                "version": "0.3",
+            }
+
+            # Check that only the 0-th FOV exists
+            FOV = 0
+            if len(list_FOVs) > 1:
+                raise Exception(
+                    "ERROR: we are in a single-merged-FOV scheme, "
+                    f"but there are {len(list_FOVs)} FOVs."
+                )
+
+            # Create FOV group
+            group_FOV = group_well.create_group(f"{FOV}/")
+
+            # Copy .zattrs file at the COL/ROW/FOV level
+            path_FOV_zattrs = f"{zarrurl_old}/{row}/{column}/{FOV}/.zattrs"
+            with open(path_FOV_zattrs) as FOV_zattrs_file:
+                FOV_zattrs = json.load(FOV_zattrs_file)
+            for key in FOV_zattrs.keys():
+                group_FOV.attrs[key] = FOV_zattrs[key]
+
+            # Read FOV ROI table
+            FOV_ROI_table = ad.read_zarr(
+                f"{zarrurl_old}/{row}/{column}/0/tables/FOV_ROI_table"
             )
 
-        # Create table group and write new table
-        group_tables = group_FOV.create_group("tables/")
-        write_elem(group_tables, "FOV_ROI_table", FOV_ROI_table)
+            # Convert 3D FOVs to 2D
+            if project_to_2D:
+                # Read pixel sizes from zattrs file
+                pxl_sizes_zyx = extract_zyx_pixel_sizes(
+                    path_FOV_zattrs, level=0
+                )
+                pxl_size_z = pxl_sizes_zyx[0]
+                FOV_ROI_table = convert_FOV_ROIs_3D_to_2D(
+                    FOV_ROI_table, pxl_size_z
+                )
 
-    # metadata_update = {"MIP_source": {plate: zarrurl_old}}
-    # return metadata_update
+            # Create table group and write new table
+            group_tables = group_FOV.create_group("tables/")
+            write_elem(group_tables, "FOV_ROI_table", FOV_ROI_table)
 
-    return {}
+    meta_update["well"] = [
+        component.replace(".zarr", f"_{suffix}.zarr")
+        for component in metadata["well"]
+    ]
+
+    return meta_update
 
 
 if __name__ == "__main__":

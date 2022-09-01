@@ -65,7 +65,13 @@ def get_metadata_dataframe():
     return df
 
 
-list_params = [
+list_pxl_sizes = []
+list_pxl_sizes.append([PIXEL_SIZE_Z, PIXEL_SIZE_Y, PIXEL_SIZE_X])
+list_pxl_sizes.append([val + 1e-6 for val in list_pxl_sizes[0]])
+list_pxl_sizes.append([val - 1e-6 for val in list_pxl_sizes[0]])
+
+
+list_level_coarsening = [
     (0, 2),
     (1, 2),
     (2, 2),
@@ -79,15 +85,22 @@ list_params = [
     (2, 7),
 ]
 
+list_params = []
+for pxl_sizes in list_pxl_sizes:
+    for level_coarsening in list_level_coarsening:
+        level, coarsening = level_coarsening[:]
+        list_params.append((level, coarsening, pxl_sizes))
 
-@pytest.mark.parametrize("level,coarsening_xy", list_params)
-def test_ROI_indices_3D(level, coarsening_xy):
+
+@pytest.mark.parametrize(
+    "level,coarsening_xy,full_res_pxl_sizes_zyx", list_params
+)
+def test_ROI_indices_3D(level, coarsening_xy, full_res_pxl_sizes_zyx):
 
     metadata_dataframe = get_metadata_dataframe()
     adata = prepare_FOV_ROI_table(metadata_dataframe)
     assert list(adata.obs_names) == FOV_NAMES
 
-    full_res_pxl_sizes_zyx = [PIXEL_SIZE_Z, PIXEL_SIZE_Y, PIXEL_SIZE_X]
     list_indices = convert_ROI_table_to_indices(
         adata,
         level=level,
@@ -105,6 +118,7 @@ def test_ROI_indices_3D(level, coarsening_xy):
         2 * IMG_SIZE_Y // coarsening_xy**level,
         2 * IMG_SIZE_X // coarsening_xy**level,
     )
+    print(f"Pixel sizes: {full_res_pxl_sizes_zyx}")
     print(f"Original shape: {original_shape}")
     print(f"coarsening_xy={coarsening_xy}, level={level}")
     print(f"Expected shape: {expected_shape}")
@@ -136,14 +150,15 @@ def test_ROI_indices_3D(level, coarsening_xy):
         assert indices[1] == NUM_Z_PLANES
 
 
-@pytest.mark.parametrize("level,coarsening_xy", list_params)
-def test_ROI_indices_2D(level, coarsening_xy):
+@pytest.mark.parametrize(
+    "level,coarsening_xy,full_res_pxl_sizes_zyx", list_params
+)
+def test_ROI_indices_2D(level, coarsening_xy, full_res_pxl_sizes_zyx):
 
     metadata_dataframe = get_metadata_dataframe()
     adata = prepare_FOV_ROI_table(metadata_dataframe)
     adata = convert_FOV_ROIs_3D_to_2D(adata, PIXEL_SIZE_Z)
 
-    full_res_pxl_sizes_zyx = [PIXEL_SIZE_Z, PIXEL_SIZE_Y, PIXEL_SIZE_X]
     list_indices = convert_ROI_table_to_indices(
         adata,
         level=level,

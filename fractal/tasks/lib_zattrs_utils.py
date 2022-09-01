@@ -31,7 +31,13 @@ def extract_zyx_pixel_sizes(zattrs_path: str, level: int = 0):
         transformations = datasets[level]["coordinateTransformations"]
         for t in transformations:
             if t["type"] == "scale":
-                return t["scale"]
+                pixel_sizes = t["scale"]
+                if min(pixel_sizes) < 1e-9:
+                    raise Exception(
+                        f"ERROR: pixel_sizes in {zattrs_path} are", pixel_sizes
+                    )
+                return pixel_sizes
+
         raise Exception(
             "ERROR:"
             f" no scale transformation found for level {level}"

@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-import math
 from typing import Iterable
 from typing import List
 
@@ -137,7 +136,7 @@ def convert_ROI_table_to_indices(
         indices = [start_z, end_z, start_y, end_y, start_x, end_x]
 
         # Round indices to lower integer
-        indices = list(map(math.floor, indices))
+        indices = list(map(round, indices))
 
         # Append ROI indices to to list
         list_indices.append(indices[:])

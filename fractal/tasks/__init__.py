@@ -52,4 +52,59 @@ __FRACTAL_MANIFEST__ = [
         "module": f"{__name__}.yokogawa_to_zarr:yokogawa_to_zarr",
         "default_args": {"needs_gpu": False},
     },
+    {
+        "name": "Replicate Zarr structure",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.replicate_zarr_structure:replicate_zarr_structure",
+        "default_args": {
+            "needs_gpu": False,
+            "project_to_2D": True,
+            "suffix": "mip",
+        },
+    },
+    {
+        "name": "Maximum Intensity Projection",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.maximum_intensity_projection:maximum_intensity_projection",
+        "default_args": {"needs_gpu": False},
+    },
+    {
+        "name": "Per-FOV image labeling",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.image_labeling:image_labeling",
+        "default_args": {
+            "labeling_channel": "A01_C01",
+            "needs_gpu": False,  # FIXME
+        },
+    },
+    {
+        "name": "Whole-well image labeling",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.image_labeling_whole_well:image_labeling_whole_well",
+        "default_args": {
+            "labeling_channel": "A01_C01",
+            "needs_gpu": False,  # FIXME
+        },
+    },
+    {
+        "name": "Measurement",
+        "resource_type": "core task",
+        "input_type": "zarr",
+        "output_type": "zarr",
+        "module": f"{__name__}.measurement:measurement",
+        "default_args": {
+            "labeling_channel": "A01_C01",
+            "level": 0,
+            "table_name": "nuclei",
+            "needs_gpu": False,
+        },
+    },
 ]

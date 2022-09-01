@@ -29,7 +29,6 @@ def maximum_intensity_projection(
     output_path: Path,
     metadata: Optional[Dict[str, Any]] = None,
     component: str = None,
-    project_to_2D: bool = True,
 ):
 
     """
@@ -37,22 +36,24 @@ def maximum_intensity_projection(
     a new zarr file.
 
     Examples
-      input_paths[0] = /tmp/input/*png  (Path)
-      output_path = /tmp/output/*zarr   (Path)
+      input_paths[0] = /tmp/out_mip/*.zarr  (Path)
+      output_path = /tmp/out_mip/*zarr   (Path)
       metadata = {"num_levels": 2, "coarsening_xy": 2, ...}
       component = plate.zarr/B/03/0     (str)
     """
 
+    # Preliminary checks
+    if len(input_paths) > 1:
+        raise NotImplementedError
+
     # Read some parameters from metadata
     num_levels = metadata["num_levels"]
     coarsening_xy = metadata["coarsening_xy"]
+    plate, well = component.split(".zarr/")
 
-    # FIXME: this block is broken
-    # Identify old/new zarr paths
-    if len(input_paths) > 1:
-        raise NotImplementedError
-    zarrurl_old = input_paths[0].parent / component
-    zarrurl_new = "xxxxxxx"
+    zarrurl_old = metadata["replicate_zarr"]["sources"][plate] + "/" + well
+    clean_output_path = output_path.parent.resolve()
+    zarrurl_new = (clean_output_path / component).as_posix()
     debug(zarrurl_old)
     debug(zarrurl_new)
 
@@ -60,8 +61,9 @@ def maximum_intensity_projection(
     # both at level 0 (before coarsening) and at levels 1,2,.. (after
     # repeated coarsening).
     # Note that balance=True may override these values.
-    img_size_x = 2560
-    img_size_y = 2160
+    # FIXME should this be inferred from somewhere?
+    chunk_size_x = 2560
+    chunk_size_y = 2160
 
     # Load 0-th level
     data_czyx = da.from_zarr(zarrurl_old + "/0")
@@ -81,8 +83,8 @@ def maximum_intensity_projection(
         overwrite=False,
         coarsening_xy=coarsening_xy,
         num_levels=num_levels,
-        chunk_size_x=img_size_x,
-        chunk_size_y=img_size_y,
+        chunk_size_x=chunk_size_x,
+        chunk_size_y=chunk_size_y,
     )
 
 
