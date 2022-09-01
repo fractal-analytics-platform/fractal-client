@@ -237,9 +237,12 @@ def _atomic_task_factory(
         depends_on = []
 
     task_args = task._arguments
-    if task.executor not in valid_executors:
+    task_executor = task.executor
+    if task_executor is None:
+        task_executor = settings.PARSL_DEFAULT_EXECUTOR
+    if task_executor not in valid_executors:
         raise ValueError(
-            f"Executor label {task.executor} is not in " f"{valid_executors=}"
+            f"Executor label {task_executor} is not in " f"{valid_executors=}"
         )
 
     parall_level = task.parallelization_level
@@ -254,7 +257,7 @@ def _atomic_task_factory(
                 task_args=task_args,
                 component=item,
                 inputs=[],
-                executors=[task.executor],
+                executors=[task_executor],
             )
             for item in parall_item_gen
         ]
@@ -271,7 +274,7 @@ def _atomic_task_factory(
             metadata=metadata,
             task_args=task_args,
             inputs=depends_on,
-            executors=[task.executor],
+            executors=[task_executor],
         )
         return res
 
