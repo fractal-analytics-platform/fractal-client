@@ -8,6 +8,7 @@ table_path = (
     "20200812-CardiomyocyteDifferentiation14-Cycle1_mip.zarr"
     "/B/03/0/tables/nuclei"
 )
+print(table_path)
 adata = ad.read_zarr(table_path)
 num_labels = len(list(adata.obs_names))
 num_labels_unique = len(set(list(adata.obs_names)))
