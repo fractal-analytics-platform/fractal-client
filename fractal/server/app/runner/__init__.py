@@ -33,13 +33,12 @@ from ..models.task import Task
 from .runner_utils import async_wrap
 
 
-def parsl_config(workflow_name="workflow_name", provider_args=None):
+def parsl_config(workflow_name="workflow_name"):
 
-    if provider_args is None:
-        provider_args = {}
+    # FIXME move hardcoded list somewhere else
 
     if settings.USE_SLURM:
-        default_provider_args = dict(
+        provider_args = dict(
             partition=settings.SLURM_PARTITION_CPU,
             launcher=SrunLauncher(debug=False),
             channel=LocalChannel(),
@@ -49,8 +48,7 @@ def parsl_config(workflow_name="workflow_name", provider_args=None):
             max_blocks=4,
             walltime="10:00:00",
         )
-        default_provider_args.update(provider_args)
-        prov_slurm_cpu = SlurmProvider(**default_provider_args)
+        prov_slurm_cpu = SlurmProvider(**provider_args)
 
         htex_slurm_cpu = HighThroughputExecutor(
             label="cpu",
@@ -58,23 +56,34 @@ def parsl_config(workflow_name="workflow_name", provider_args=None):
             address=address_by_hostname(),
             cpu_affinity="block",
         )
-        executors = [htex_slurm_cpu]
+        htex_slurm_cpu_2 = HighThroughputExecutor(
+            label="cpu-2",
+            provider=prov_slurm_cpu,
+            address=address_by_hostname(),
+            cpu_affinity="block",
+        )
+
+        executors = [htex_slurm_cpu, htex_slurm_cpu_2]
     else:
-        default_provider_args = dict(
+        provider_args = dict(
             launcher=SingleNodeLauncher(debug=False),
             channel=LocalChannel(),
             init_blocks=1,
             min_blocks=1,
             max_blocks=4,
         )
-        default_provider_args.update(provider_args)
-        prov_local = LocalProvider(**default_provider_args)
+        prov_local = LocalProvider(**provider_args)
         htex_local = HighThroughputExecutor(
             label="cpu",
             provider=prov_local,
             address=address_by_hostname(),
         )
-        executors = [htex_local]
+        htex_local_2 = HighThroughputExecutor(
+            label="cpu-2",
+            provider=prov_local,
+            address=address_by_hostname(),
+        )
+        executors = [htex_local, htex_local_2]
 
     monitoring = MonitoringHub(
         hub_address=address_by_hostname(),
@@ -84,6 +93,9 @@ def parsl_config(workflow_name="workflow_name", provider_args=None):
     config = Config(executors=executors, monitoring=monitoring)
     parsl.clear()
     parsl.load(config)
+
+    valid_executors = [executor.label for executor in executors]
+    return valid_executors
 
 
 def _task_fun(
@@ -213,6 +225,7 @@ def _atomic_task_factory(
     output_path: Path,
     metadata: Optional[Union[Future, Dict[str, Any]]] = None,
     depends_on: Optional[List[AppFuture]] = None,
+    valid_executors: List[str] = None,
 ) -> AppFuture:
     """
     Single task processing
@@ -224,18 +237,15 @@ def _atomic_task_factory(
         depends_on = []
 
     task_args = task._arguments
+    task_executor = task.executor
+    if task_executor is None:
+        task_executor = settings.PARSL_DEFAULT_EXECUTOR
+    if task_executor not in valid_executors:
+        raise ValueError(
+            f"Executor label {task_executor} is not in " f"{valid_executors=}"
+        )
 
-    if "needs_gpu" in task_args.keys():
-        if task_args.pop("needs_gpu"):
-            executors = ["gpu"]
-        else:
-            executors = ["cpu"]
-    else:
-        executors = ["cpu"]
-    if "__PROVIDER_ARGS__" in task_args:
-        task_args.pop("__PROVIDER_ARGS__")
-
-    parall_level = task_args.pop("parallelization_level", None)
+    parall_level = task.parallelization_level
     if metadata and parall_level:
         parall_item_gen = (par_item for par_item in metadata[parall_level])
         dependencies = [
@@ -247,7 +257,7 @@ def _atomic_task_factory(
                 task_args=task_args,
                 component=item,
                 inputs=[],
-                executors=executors,
+                executors=[task_executor],
             )
             for item in parall_item_gen
         ]
@@ -264,7 +274,7 @@ def _atomic_task_factory(
             metadata=metadata,
             task_args=task_args,
             inputs=depends_on,
-            executors=executors,
+            executors=[task_executor],
         )
         return res
 
@@ -298,10 +308,7 @@ def _process_workflow(
 
     workflow_name = task.name
 
-    parsl_config(
-        workflow_name=workflow_name,
-        provider_args=task.default_args.get("__PROVIDER_ARGS__", {}),
-    )
+    valid_executors = parsl_config(workflow_name=workflow_name)
 
     apps: List[PythonApp] = []
 
@@ -311,6 +318,7 @@ def _process_workflow(
             input_paths=this_input,
             output_path=this_output,
             metadata=apps[i - 1] if i > 0 else this_metadata,
+            valid_executors=valid_executors,
         )
         apps.append(this_task_app)
         this_input = [this_output]

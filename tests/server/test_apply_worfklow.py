@@ -31,7 +31,9 @@ def nontrivial_workflow():
                             subtask=Task(
                                 name="dummy0",
                                 module="fractal.tasks.dummy:dummy",
-                                default_args=dict(message="dummy0"),
+                                default_args=dict(
+                                    message="dummy0", executor="cpu"
+                                ),
                             ),
                         ),
                         Subtask(
@@ -39,7 +41,9 @@ def nontrivial_workflow():
                             subtask=Task(
                                 name="dummy1",
                                 module="fractal.tasks.dummy:dummy",
-                                default_args=dict(message="dummy1"),
+                                default_args=dict(
+                                    message="dummy1", executor="cpu"
+                                ),
                             ),
                         ),
                     ],
@@ -49,7 +53,7 @@ def nontrivial_workflow():
                 subtask=Task(
                     name="dummy2",
                     module="fractal.tasks.dummy:dummy",
-                    default_args=dict(message="dummy2"),
+                    default_args=dict(message="dummy2", executor="cpu"),
                 )
             ),
         ],
@@ -66,7 +70,7 @@ dummy_task = Task(
     name="dummy",
     resource_type="core task",
     module="fractal.tasks.dummy:dummy",
-    default_args={"message": DUMMY_MESSAGE},
+    default_args={"message": DUMMY_MESSAGE, "executor": "cpu"},
 )
 dummy_subtask = Subtask(
     subtask=dummy_task, args={"message": DUMMY_SUBTASK_MESSAGE}
@@ -175,6 +179,34 @@ def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
     assert data[0]["message"] == "dummy0"
     assert data[1]["message"] == "dummy1"
     assert data[2]["message"] == "dummy2"
+
+
+def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
+    """
+    GIVEN a trivial workflow, with an invalid executor
+    WHEN the workflow is processed
+    THEN ValueError
+    """
+
+    from fractal.server.app.runner import _process_workflow
+
+    dummy_task = Task(
+        name="dummy",
+        resource_type="core task",
+        module="fake_module.dummy:dummy",
+        default_args={"executor": "WRONG EXECUTOR"},
+    )
+
+    app = _process_workflow(
+        task=dummy_task,
+        input_paths=[tmp_path / "0.json"],
+        output_path=tmp_path / "0.json",
+        metadata={},
+    )
+    debug(app)
+
+    with pytest.raises(ValueError):
+        app.result()
 
 
 async def test_apply_workflow(

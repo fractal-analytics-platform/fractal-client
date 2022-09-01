@@ -32,10 +32,8 @@ class PreprocessedTask(BaseModel):
     module: str
     args: Dict[str, Any]
     save_intermediate_result: bool = False
-
-    @property
-    def _arguments(self):
-        return self.args
+    executor: Optional[str] = None
+    parallelization_level: Optional[str] = None
 
     @property
     def callable(self):
@@ -44,6 +42,10 @@ class PreprocessedTask(BaseModel):
     @property
     def import_path(self):
         return self.module.partition(":")[0]
+
+    @property
+    def _arguments(self):
+        return self.args
 
 
 class Subtask(SubtaskBase, table=True):  # type: ignore
@@ -78,16 +80,25 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
     @property
     def _arguments(self):
         """
-        Override default arguments and strip executor specific arugments
+        Override default arguments and strip specific arguments (executor and
+        parallelization_level)
         """
         out = self.subtask.default_args.copy()
         out.update(self.args)
         popget(out, "executor")
+        popget(out, "parallelization_level")
         return out
 
     @property
     def executor(self) -> Optional[str]:
         return self.args.get("executor") or self.subtask.executor
+
+    @property
+    def parallelization_level(self) -> Optional[str]:
+        return (
+            self.args.get("parallelization_level")
+            or self.subtask.parallelization_level
+        )
 
     @property
     def import_path(self):
@@ -103,6 +114,8 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
                 name=self.subtask.name,
                 module=self.subtask.module,
                 args=self._arguments,
+                executor=self.executor,
+                parallelization_level=self.parallelization_level,
             )
         else:
             return [st.preprocess() for st in self.subtask.subtask_list]
@@ -132,7 +145,9 @@ class Task(TaskBase, table=True):  # type: ignore
                 PreprocessedTask(
                     name=self.name,
                     module=self.module,
-                    args=self.default_args,
+                    args=self._arguments,
+                    executor=self.executor,
+                    parallelization_level=self.parallelization_level,
                 )
             ]
 
@@ -142,12 +157,20 @@ class Task(TaskBase, table=True):  # type: ignore
             raise ValueError("Cannot call _arguments on a non-atomic task")
         out = self.default_args.copy()
         popget(out, "executor")
+        popget(out, "parallelization_level")
         return out
 
     @property
     def executor(self) -> Optional[str]:
         try:
             return self.default_args["executor"]
+        except KeyError:
+            return None
+
+    @property
+    def parallelization_level(self) -> Optional[str]:
+        try:
+            return self.default_args["parallelization_level"]
         except KeyError:
             return None
 
