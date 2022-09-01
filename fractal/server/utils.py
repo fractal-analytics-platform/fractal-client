@@ -10,7 +10,8 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
+from collections.abc import MutableMapping
+from typing import Any
 from warnings import warn as _warn
 
 from .config import DeploymentType
@@ -28,3 +29,13 @@ def warn(message):
         _warn(message, RuntimeWarning)
     else:
         raise RuntimeError(message)
+
+
+def popget(d: MutableMapping, key: str, default: Any = None) -> Any:
+    """
+    Pop and return mapping item if possible or return default
+    """
+    try:
+        return d.pop(key)
+    except KeyError:
+        return default
