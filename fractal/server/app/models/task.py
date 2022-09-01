@@ -11,11 +11,15 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
+from ...utils import popget
 from fractal.common.models import SubtaskBase
 from fractal.common.models import TaskBase
 
 
 def flatten(xx):
+    """
+    Flatten an arbitrarily nested sequence of sequences
+    """
     for x in xx:
         if isinstance(x, PreprocessedTask):
             yield x
@@ -73,9 +77,17 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
 
     @property
     def _arguments(self):
+        """
+        Override default arguments and strip executor specific arugments
+        """
         out = self.subtask.default_args.copy()
         out.update(self.args)
+        popget(out, "executor")
         return out
+
+    @property
+    def executor(self) -> Optional[str]:
+        return self.args.get("executor") or self.subtask.executor
 
     @property
     def import_path(self):
@@ -128,7 +140,16 @@ class Task(TaskBase, table=True):  # type: ignore
     def _arguments(self):
         if not self._is_atomic:
             raise ValueError("Cannot call _arguments on a non-atomic task")
-        return self.default_args
+        out = self.default_args.copy()
+        popget(out, "executor")
+        return out
+
+    @property
+    def executor(self) -> Optional[str]:
+        try:
+            return self.default_args["executor"]
+        except KeyError:
+            return None
 
     @property
     def module(self):

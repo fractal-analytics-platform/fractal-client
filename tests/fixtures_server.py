@@ -28,14 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    _event_loop = asyncio.new_event_loop()
-    yield _event_loop
-
-
-@pytest.fixture(scope="session")
-def patch_settings(testdata_path):
+def override_enironment(testdata_path):
     from os import environ
 
     environ["JWT_SECRET_KEY"] = "secret_key"
@@ -50,6 +43,17 @@ def patch_settings(testdata_path):
     from fractal.server.config import settings
 
     return settings
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    _event_loop = asyncio.new_event_loop()
+    yield _event_loop
+
+
+@pytest.fixture(autouse=True, scope="session")
+def patch_settings(testdata_path):
+    return override_enironment(testdata_path)
 
 
 @pytest.fixture(scope="session")
