@@ -40,8 +40,7 @@ alembic = "^1.8.0"
 uvicorn = "^0.18.2"
 SQLAlchemy-Utils = "^0.38.3"
 fractal-tasks-core = {git="https://github.com/fractal-analytics-platform/fractal-tasks-core.git"}
-parsl = {extras = ["monitoring"], git="https://github.com/fractal-analytics-platform/parsl.git", branch="1.2.1-unofficial"}
-
+parsl = "^1.2.0"
 
 [tool.poetry.group.client.dependencies]
 rich = "^12.5.1"
