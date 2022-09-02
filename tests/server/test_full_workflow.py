@@ -14,7 +14,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-import dask.array as da
 from devtools import debug
 
 
@@ -175,6 +174,10 @@ async def test_project_creation(
         debug(output_path)
         zarrurl = output_path + "/" + component + "0"
         debug(zarrurl)
-        data_czyx = da.from_zarr(zarrurl)
-        assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
-        assert data_czyx[0, 0, 0, 0].compute() == 0
+        try:
+            import dask.array as da
+            data_czyx = da.from_zarr(zarrurl)
+            assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+            assert data_czyx[0, 0, 0, 0].compute() == 0
+        except ImportError:
+            pass

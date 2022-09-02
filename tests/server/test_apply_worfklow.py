@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-import dask.array as da
 import pytest
 from devtools import debug
 from sqlmodel import select
@@ -426,6 +425,11 @@ async def test_yokogawa(
         / "0"
     ).as_posix()
     debug(zarrurl)
-    data_czyx = da.from_zarr(zarrurl)
-    assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
-    assert data_czyx[0, 0, 0, 0].compute() == 0
+
+    try:
+        import dask.array as da
+        data_czyx = da.from_zarr(zarrurl)
+        assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+        assert data_czyx[0, 0, 0, 0].compute() == 0
+    except ImportError:
+        pass
