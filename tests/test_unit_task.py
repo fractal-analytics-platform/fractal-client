@@ -2,9 +2,9 @@ import asyncio
 
 from devtools import debug
 
-from fractal.server.app.models import Subtask
-from fractal.server.app.models import SubtaskRead
-from fractal.server.app.models import TaskRead
+from fractal_server.app.models import Subtask
+from fractal_server.app.models import SubtaskRead
+from fractal_server.app.models import TaskRead
 
 
 async def test_add_subtask(db, task_factory):

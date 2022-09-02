@@ -40,7 +40,7 @@ def override_enironment(testdata_path):
     # c.f., https://stackoverflow.com/a/38089822/283972
     environ["SQLITE_PATH"] = "file:cachedb?mode=memory&cache=shared"
 
-    from fractal.server.config import settings
+    from fractal_server.config import settings
 
     return settings
 
@@ -58,14 +58,14 @@ def patch_settings(testdata_path):
 
 @pytest.fixture(scope="session")
 async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
-    from fractal.server.app.db import engine
+    from fractal_server.app.db import engine
 
     yield engine
 
 
 @pytest.fixture(scope="session")
 def db_sync_engine(patch_settings):
-    from fractal.server.app.db import engine_sync
+    from fractal_server.app.db import engine_sync
 
     yield engine_sync
 
@@ -74,7 +74,7 @@ def db_sync_engine(patch_settings):
 async def db_session_maker(
     db_engine, app
 ) -> AsyncGenerator[AsyncSession, None]:
-    import fractal.server.app.models  # noqa F401 make sure models are imported
+    import fractal_server.app.models  # noqa F401 make sure models are imported
     from sqlmodel import SQLModel
 
     async with db_engine.begin() as conn:
@@ -87,7 +87,7 @@ async def db_session_maker(
             async with async_session_maker() as session:
                 yield session
 
-        from fractal.server.app.db import get_db
+        from fractal_server.app.db import get_db
 
         app.dependency_overrides[get_db] = _get_db
 
@@ -98,7 +98,7 @@ async def db_session_maker(
 
 @pytest.fixture
 def db_sync_session_maker(db_sync_engine, app):
-    from fractal.server.app.db import get_sync_db
+    from fractal_server.app.db import get_sync_db
     from sqlmodel import Session
 
     def _get_sync_db():
@@ -133,14 +133,14 @@ async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
 
 @pytest.fixture
 async def register_routers(app):
-    from fractal.server import collect_routers
+    from fractal_server import collect_routers
 
     collect_routers(app)
 
 
 @pytest.fixture
 async def collect_tasks(db):
-    from fractal.server.app.api.v1.task import collect_tasks_headless
+    from fractal_server.app.api.v1.task import collect_tasks_headless
 
     await collect_tasks_headless()
 
@@ -157,8 +157,8 @@ async def client(
 
 @pytest.fixture
 async def MockCurrentUser(app, db):
-    from fractal.server.app.security import current_active_user
-    from fractal.server.app.security import User
+    from fractal_server.app.security import current_active_user
+    from fractal_server.app.security import User
 
     @dataclass
     class _MockCurrentUser:
@@ -217,7 +217,7 @@ async def project_factory(db):
     """
     Factory that adds a project to the database
     """
-    from fractal.server.app.models import Project
+    from fractal_server.app.models import Project
 
     async def __project_factory(user, **kwargs):
         defaults = dict(
@@ -238,7 +238,7 @@ async def project_factory(db):
 
 @pytest.fixture
 async def dataset_factory(db):
-    from fractal.server.app.models import Project, Dataset
+    from fractal_server.app.models import Project, Dataset
 
     async def __dataset_factory(project: Project, **kwargs):
         defaults = dict(name="test dataset")
@@ -254,7 +254,7 @@ async def dataset_factory(db):
 
 @pytest.fixture
 async def resource_factory(db, testdata_path):
-    from fractal.server.app.models import Dataset, Resource
+    from fractal_server.app.models import Dataset, Resource
 
     async def __resource_factory(dataset: Dataset, **kwargs):
         defaults = dict(
@@ -275,7 +275,7 @@ async def task_factory(db: AsyncSession):
     """
     Insert task in db
     """
-    from fractal.server.app.models import Task
+    from fractal_server.app.models import Task
 
     async def __task_factory(db: AsyncSession = db, index: int = 0, **kwargs):
         defaults = dict(

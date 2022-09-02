@@ -8,7 +8,7 @@ async def test_db_connection(db):
     assert db.get_bind()
 
     from sqlmodel import select
-    from fractal.server.app.models.security import UserOAuth
+    from fractal_server.app.models.security import UserOAuth
 
     stm = select(UserOAuth)
     res = await db.execute(stm)
@@ -25,7 +25,7 @@ async def test_sync_db(db_sync, db):
     assert db_sync.get_bind()
 
     from sqlmodel import select
-    from fractal.server.app.models.task import Task
+    from fractal_server.app.models.task import Task
 
     db.add(
         Task(

@@ -2,9 +2,9 @@ from devtools import debug
 from fractal_tasks_core import __FRACTAL_MANIFEST__
 from sqlmodel import select
 
-from fractal.server.app.models import Task
-from fractal.server.app.models import TaskCreate
-from fractal.server.tasks import collect_tasks
+from fractal_server.app.models import Task
+from fractal_server.app.models import TaskCreate
+from fractal_server.tasks import collect_tasks
 
 N_CORE_TASKS = len(__FRACTAL_MANIFEST__)
 

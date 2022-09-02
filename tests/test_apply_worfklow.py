@@ -5,10 +5,10 @@ import pytest
 from devtools import debug
 from sqlmodel import select
 
-from fractal.server.app.models import Dataset
-from fractal.server.app.models import Subtask
-from fractal.server.app.models import Task
-from fractal.server.app.models import TaskRead
+from fractal_server.app.models import Dataset
+from fractal_server.app.models import Subtask
+from fractal_server.app.models import Task
+from fractal_server.app.models import TaskRead
 
 
 LEN_NONTRIVIAL_WORKFLOW = 3
@@ -102,7 +102,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
         * the output is as expected
     """
 
-    from fractal.server.app.runner import _atomic_task_factory
+    from fractal_server.app.runner import _atomic_task_factory
 
     input_path_str = "/input/path"
     output_path = tmp_path
@@ -158,7 +158,7 @@ def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
         * the output is the one expected from the workflow
     """
 
-    from fractal.server.app.runner import _process_workflow
+    from fractal_server.app.runner import _process_workflow
 
     app = _process_workflow(
         task=nontrivial_workflow,
@@ -187,7 +187,7 @@ def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
     THEN ValueError
     """
 
-    from fractal.server.app.runner import _process_workflow
+    from fractal_server.app.runner import _process_workflow
 
     dummy_task = Task(
         name="dummy",
@@ -231,7 +231,7 @@ async def test_apply_workflow(
         * the output is correctly written in the output resource
     """
 
-    from fractal.server.app.runner import submit_workflow
+    from fractal_server.app.runner import submit_workflow
 
     # CREATE RESOURCES
     async with MockCurrentUser(persist=True) as user:
@@ -298,7 +298,7 @@ async def test_create_zarr(
         * the ZARR structure is correctly created
     """
 
-    from fractal.server.app.runner import submit_workflow
+    from fractal_server.app.runner import submit_workflow
 
     # CREATE RESOURCES
     async with MockCurrentUser(persist=True) as user:
@@ -366,7 +366,7 @@ async def test_yokogawa(
         * the ZARR structure is correctly created
     """
 
-    from fractal.server.app.runner import submit_workflow
+    from fractal_server.app.runner import submit_workflow
 
     # CREATE RESOURCES
     async with MockCurrentUser(persist=True) as user:
