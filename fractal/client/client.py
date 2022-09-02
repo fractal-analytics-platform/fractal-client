@@ -20,7 +20,6 @@ from typing import Optional
 
 import asyncclick as click
 import httpx
-from devtools import debug  # FIXME remove noqa
 from rich import print_json
 from rich.console import Console
 from rich.table import Table
@@ -29,6 +28,7 @@ from ._auth import AuthToken
 from .config import settings
 from fractal.common.models import ResourceRead
 from fractal.common.models import SubtaskCreate
+import logging
 
 console = Console()
 
@@ -74,7 +74,7 @@ async def login():
     async with httpx.AsyncClient() as client:
         auth = AuthToken(client=client)
         await auth()
-        debug(await auth.header())
+        logging.debug(await auth.header())
 
 
 # PROJECT GROUP
@@ -121,7 +121,7 @@ async def project_new(name: str, path: str, dataset: str) -> None:
             json=project.dict(),
             headers=await auth.header(),
         )
-        debug(res.status_code)
+        logging.debug(res.status_code)
         if res.status_code != 201:
             raise Exception(
                 "ERROR (hint: maybe the project already exists?)", res
@@ -232,8 +232,8 @@ async def add_dataset(
         )
         data = res.json()
         project_list = [ProjectRead(**item) for item in data]
-        debug(project_list)
-        debug(project_id)
+        logging.debug(project_list)
+        logging.debug(project_id)
         try:
             project = [p for p in project_list if p.id == project_id][0]
         except IndexError as e:
@@ -641,7 +641,7 @@ async def add_subtask(
             args = json.load(json_file)
 
     # Create subtask
-    debug(subtask_id, args)
+    logging.debug(subtask_id, args)
     subtask = SubtaskCreate(subtask_id=subtask_id, args=args)
 
     async with httpx.AsyncClient() as client:
@@ -766,4 +766,4 @@ async def apply_workflow(
             headers=await auth.header(),
         )
 
-        debug(res.json())
+        logging.debug(res.json())
