@@ -25,6 +25,10 @@ pytest-mock = "^3.8.1"
 pre-commit = "^2.19.0"
 coverage = "^6.4.2"
 memory-profiler = "^0.60.0"
+dask = ">=2022.6,<2022.8"
+cellpose = "2"
+pandas = "^1.2.0"
+anndata = "^0.8.0"
 
 
 [tool.poetry.group.server.dependencies]
@@ -38,15 +42,6 @@ uvicorn = "^0.18.2"
 SQLAlchemy-Utils = "^0.38.3"
 fractal-tasks-core = {git="https://github.com/fractal-analytics-platform/fractal-tasks-core.git"}
 parsl = {extras = ["monitoring"], git="https://github.com/fractal-analytics-platform/parsl.git", branch="1.2.1-unofficial"}
-
-[tool.poetry.group.runner.dependencies]
-dask = ">=2022.6,<2022.8"
-scikit-image = "^0.19.3"
-cellpose = "2"
-pandas = "^1.2.0"
-imagecodecs = "^2022.2.22"
-graphviz = "^0.20"
-anndata = "^0.8.0"
 
 
 [tool.poetry.group.client.dependencies]
