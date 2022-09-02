@@ -1310,17 +1310,6 @@ python-versions = ">=3.5"
 traitlets = "*"
 
 [[package]]
-name = "memory-profiler"
-version = "0.60.0"
-description = "A module for monitoring memory usage of a python program"
-category = "dev"
-optional = false
-python-versions = ">=3.4"
-
-[package.dependencies]
-psutil = "*"
-
-[[package]]
 name = "multidict"
 version = "6.0.2"
 description = "multidict implementation"
@@ -2966,7 +2955,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "be06096cf0bf94c7e3744b0a71af4c931e533613b70e2fb6e9983fdb52275ae8"
+content-hash = "103dde341dc5986a554966e4eb04b83dae25f8b667dee4a8a50b4435548b5e36"
 
 [metadata.files]
 aiobotocore = []
@@ -3069,7 +3058,6 @@ makefun = []
 mako = []
 markupsafe = []
 matplotlib-inline = []
-memory-profiler = []
 multidict = []
 napari = []
 napari-console = []
