@@ -36,6 +36,7 @@ fastapi-users-db-sqlmodel = "^0.2.0"
 alembic = "^1.8.0"
 uvicorn = "^0.18.2"
 SQLAlchemy-Utils = "^0.38.3"
+fractal-tasks-core = {git="git@github.com:fractal-analytics-platform/fractal-tasks-core.git"}
 
 [tool.poetry.group.runner.dependencies]
 parsl = {extras = ["monitoring"], git="https://github.com/fractal-analytics-platform/parsl.git", branch="1.2.1-unofficial"}
