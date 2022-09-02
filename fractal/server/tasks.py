@@ -1,5 +1,5 @@
 def collect_tasks():
-    from fractal.tasks import __FRACTAL_MANIFEST__
+    from fractal_tasks_core import __FRACTAL_MANIFEST__
 
     return (
         task_manifest
