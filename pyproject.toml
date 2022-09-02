@@ -47,7 +47,7 @@ push = true
 "pyproject.toml" = [
     'version = "{version}"',
 ]
-"fractal/server/config.py" = [
+"fractal/client/__init__.py" = [
     '__VERSION__ = "{version}"'
 ]
 "README.md" = [
