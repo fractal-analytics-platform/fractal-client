@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fractal"
+name = "fractal-client"
 version = "0.1.0"
 description = "Client and common components of the Fractal analytics platform"
 authors = [
@@ -8,6 +8,11 @@ authors = [
     "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
 ]
 readme = "README.md"
+packages = [
+    {include="fractal"}
+]
+homepage = "https://github.com/fractal-analytics-platform/fractal"
+license = "BSD-3-Clause"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -22,6 +27,7 @@ sqlmodel = "^0.0.8"
 [tool.poetry.group.dev.dependencies]
 devtools = "^0.9.0"
 pytest = "^7.1.2"
+bumpver = "^2022.1118"
 
 [build-system]
 requires = ["poetry-core"]
@@ -42,7 +48,7 @@ push = true
 "pyproject.toml" = [
     'version = "{version}"',
 ]
-"fractal/server/config.py" = [
+"fractal/client/__init__.py" = [
     '__VERSION__ = "{version}"'
 ]
 "README.md" = [
@@ -51,4 +57,4 @@ push = true
 ]
 
 [tool.poetry.scripts]
-client = "scripts.client:run"
+fractal = "fractal.__main__:run"
