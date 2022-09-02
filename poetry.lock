@@ -728,11 +728,27 @@ optional = false
 python-versions = "^3.8"
 develop = false
 
+[package.dependencies]
+anndata = "^0.8.0"
+cellpose = "2"
+dask = ">=2022.6,<2022.8"
+defusedxml = "^0.7.1"
+graphviz = "^0.20"
+imagecodecs = "^2022.2.22"
+napari-skimage-regionprops = "^0.5.3"
+napari-workflows = "^0.2.3"
+ome-zarr = "^0.5.1"
+pandas = "^1.2.0"
+PyQt5 = "^5.15.7"
+PyQt5-Qt5 = "^5.15.2"
+PyQt5-sip = "^12.11.0"
+scikit-image = "^0.19.3"
+
 [package.source]
 type = "git"
-url = "git@github.com:fractal-analytics-platform/fractal-tasks-core.git"
+url = "https://github.com/fractal-analytics-platform/fractal-tasks-core.git"
 reference = "HEAD"
-resolved_reference = "b2c06f0a1e2ffcd3032bd810f50665e22fc5c625"
+resolved_reference = "46a66edad9da48c3431dde899a4081f839dac3d8"
 
 [[package]]
 name = "freetype-py"
@@ -2950,7 +2966,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6a88b49015334e6004c586a27965df68d903c8ac08c2e0244ef846d493bdc2a9"
+content-hash = "1dc497ec71a884bb3e6c76c414a638af4108932c88a0d8272cf4b48ba8d5b221"
 
 [metadata.files]
 aiobotocore = []
