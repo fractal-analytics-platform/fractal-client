@@ -26,6 +26,7 @@ from rich.table import Table
 
 from ._auth import AuthToken
 from .config import settings
+from .config import __VERSION__
 from fractal.common.models import ResourceRead
 from fractal.common.models import SubtaskCreate
 import logging
@@ -67,6 +68,11 @@ async def _extract_project_and_dataset(project_name: str, dataset_name: str):
 @click.group()
 async def cli():
     pass
+
+
+@cli.command(name="version")
+def version():
+    click.echo(__VERSION__)
 
 
 @cli.command(name="login")
