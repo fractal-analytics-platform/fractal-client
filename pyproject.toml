@@ -1,13 +1,16 @@
 [tool.poetry]
 name = "fractal-server"
 version = "0.1.0"
-description = ""
+description = "Server component of the Fractal analytics platform"
 authors = [
     "Jacopo Nespolo <jacopo.nespolo@exact-lab.it>",
     "Marco Franzon <marco.franzon@exact-lab.it>",
     "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
 ]
 readme = "README.md"
+homepage = "https://github.com/fractal-analytics-platform/fractal-server"
+license = "BSD-3-Clause"
+
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -21,7 +24,7 @@ fastapi-users-db-sqlmodel = "^0.2.0"
 alembic = "^1.8.0"
 uvicorn = "^0.18.2"
 SQLAlchemy-Utils = "^0.38.3"
-fractal-tasks-core = {git="https://github.com/fractal-analytics-platform/fractal-tasks-core.git"}
+fractal-tasks-core = "^0.1.0"
 parsl = "^1.2.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -70,4 +73,3 @@ push = true
 
 [tool.poetry.scripts]
 server = "scripts.testserver:run_testserver"
-client = "scripts.client:run"
