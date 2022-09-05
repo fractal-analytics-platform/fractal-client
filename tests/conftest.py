@@ -7,6 +7,9 @@ from devtools import debug
 from httpx import AsyncClient
 
 
+DEFAULT_TEST_EMAIL = "test@exact-lab.it"
+
+
 @pytest.fixture
 async def cli():
     yield CliRunner()
@@ -24,9 +27,16 @@ async def testserver(tmp_path):
     environ["DATA_DIR_ROOT"] = tmp_path.as_posix()
 
     environ["DB_ENGINE"] = "sqlite"
-    # Shared in memory database,
-    # c.f., https://stackoverflow.com/a/38089822/283972
-    environ["SQLITE_PATH"] = "file:cachedb?mode=memory&cache=shared"
+
+    tmp_db_path = tmp_path / "test.db"
+    environ["SQLITE_PATH"] = tmp_db_path.as_posix()
+
+    # INIT DB
+    from fractal_server.app.db import engine_sync
+    from sqlmodel import SQLModel
+    import fractal_server.app.models
+
+    SQLModel.metadata.create_all(engine_sync)
 
     # We are explicitly calling start_application() to bypass the task
     # collection routine
@@ -52,9 +62,17 @@ async def client():
 
 @pytest.fixture
 async def user_factory(client, testserver):
-    res = await client.post(
-        f"{testserver}/auth/register",
-        json=dict(email="me@exact-lab.it", password="password")
-    )
-    debug(res)
-    assert res.status_code == 201
+    async def __register_user(email: str, password: str):
+        res = await client.post(
+            f"{testserver}/auth/register",
+            json=dict(email=email, password=password)
+        )
+        debug(res)
+        assert res.status_code == 201
+        return res.json()
+    return __register_user
+
+
+@pytest.fixture
+async def register_user(user_factory):
+    return await user_factory(email=DEFAULT_TEST_EMAIL, password="password")
