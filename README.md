@@ -13,8 +13,14 @@ repository](https://github.com/fractal-analytics-platform/fractal).
 
 ## Installation
 
-You may `pip install fractal-server`. This will install the project and its
-dependencies.
+You may
+`pip install fractal-server`
+
+This will install the project and its dependencies. If you wish to also install
+Fractal core tasks, use
+```
+pip install fractal-server[core-tasks]
+```
 
 ### Environment and database
 
