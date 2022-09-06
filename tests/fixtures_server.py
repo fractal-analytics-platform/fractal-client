@@ -28,7 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 
-def override_enironment(testdata_path):
+def override_environment(testdata_path):
     from os import environ
 
     environ["JWT_SECRET_KEY"] = "secret_key"
@@ -53,7 +53,7 @@ def event_loop():
 
 @pytest.fixture(autouse=True, scope="session")
 def patch_settings(testdata_path):
-    return override_enironment(testdata_path)
+    return override_environment(testdata_path)
 
 
 @pytest.fixture(scope="session")
