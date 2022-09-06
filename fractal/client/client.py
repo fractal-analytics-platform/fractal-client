@@ -13,6 +13,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import json
+import logging
 from typing import Any
 from typing import Dict
 from typing import List
@@ -25,10 +26,10 @@ from rich.console import Console
 from rich.table import Table
 
 from ._auth import AuthToken
+from .config import __VERSION__
 from .config import settings
 from fractal.common.models import ResourceRead
 from fractal.common.models import SubtaskCreate
-import logging
 
 console = Console()
 
@@ -65,8 +66,20 @@ async def _extract_project_and_dataset(project_name: str, dataset_name: str):
 
 
 @click.group()
-async def cli():
-    pass
+# TODO:
+# add
+# -u --user
+# -p --password
+# -v --verbose
+@click.pass_context
+async def cli(ctx):
+    ctx.obj["client"] = httpx.AsyncClient()
+    ctx.obj["auth"] = AuthToken(ctx.obj["client"])
+
+
+@cli.command(name="version")
+def version():
+    click.echo(__VERSION__)
 
 
 @cli.command(name="login")

@@ -1,16 +1,23 @@
-from pathlib import Path
+from os import environ
 
 import pytest
+from asyncclick.testing import CliRunner
+from httpx import AsyncClient
 
 
-@pytest.fixture(scope="session")
-async def testdata_path() -> Path:
-    TEST_DIR = Path(__file__).parent
-    return TEST_DIR / "data/"
+environ["FRACTAL_USER"] = "testuser"
+environ["FRACTAL_PASSWORD"] = "password"
 
 
-from .fixtures_server import *  # noqa F403
-from .fixtures_server import override_enironment  # noqa E402
+@pytest.fixture
+async def cli():
+    yield CliRunner()
 
 
-override_enironment(Path(__file__).parent / "data/")
+@pytest.fixture
+async def client():
+    async with AsyncClient() as client:
+        yield client
+
+
+from .fixtures_testserver import *  # noqa: 401
