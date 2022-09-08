@@ -16,7 +16,7 @@ WORKFLOW_NAME="My worfklow"
 # Create project
 fractal project new $PROJECT_NAME $TMPDIR
 
-INPUT_PATH=../images/10.5281_zenodo.7059515
+INPUT_PATH=../../images/10.5281_zenodo.7059515
 
 # Update dataset info
 fractal dataset modify-dataset $PROJECT_NAME "default" --new_dataset_name $DATASET_IN_NAME --type image --read_only true
