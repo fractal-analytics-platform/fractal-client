@@ -13,15 +13,9 @@ import parsl
 from parsl.addresses import address_by_hostname
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
-from parsl.channels import LocalChannel
 from parsl.config import Config
 from parsl.dataflow.futures import AppFuture
-from parsl.executors import HighThroughputExecutor
-from parsl.launchers import SingleNodeLauncher
-from parsl.launchers import SrunLauncher
 from parsl.monitoring.monitoring import MonitoringHub
-from parsl.providers import LocalProvider
-from parsl.providers import SlurmProvider
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...config import settings
@@ -31,71 +25,46 @@ from ..models.task import PreprocessedTask
 from ..models.task import Subtask
 from ..models.task import Task
 from .runner_utils import async_wrap
+from .runner_utils import load_parsl_executors_config
 
 
-def parsl_config(workflow_name="workflow_name"):
+def parsl_config(
+    *,
+    workflow_name: str = "Workflow",
+    config: str = None,
+    enable_monitoring: bool = True,
+):
+    """
+    config points to a pre-defined set of executors, e.g. "local" or
+    "pelkmanslab"
+    """
 
-    # FIXME move hardcoded list somewhere else
+    # Set config variable
+    if config is None:
+        if settings.USE_SLURM:
+            config = "pelkmanslab"
+        else:
+            config = "local"
 
-    if settings.USE_SLURM:
-        provider_args = dict(
-            partition=settings.SLURM_PARTITION_CPU,
-            launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
-            nodes_per_block=1,
-            init_blocks=1,
-            min_blocks=1,
-            max_blocks=4,
-            walltime="10:00:00",
+    # Load (new instances of) pre-defined executors, and extract their labels
+    executors = load_parsl_executors_config(config=config)
+    valid_executor_labels = [executor.label for executor in executors]
+
+    # Define monitoring hub and finalize configuration
+    if enable_monitoring:
+        monitoring = MonitoringHub(
+            hub_address=address_by_hostname(),
+            workflow_name=workflow_name,
         )
-        prov_slurm_cpu = SlurmProvider(**provider_args)
-
-        htex_slurm_cpu = HighThroughputExecutor(
-            label="cpu",
-            provider=prov_slurm_cpu,
-            address=address_by_hostname(),
-            cpu_affinity="block",
-        )
-        htex_slurm_cpu_2 = HighThroughputExecutor(
-            label="cpu-2",
-            provider=prov_slurm_cpu,
-            address=address_by_hostname(),
-            cpu_affinity="block",
-        )
-
-        executors = [htex_slurm_cpu, htex_slurm_cpu_2]
     else:
-        provider_args = dict(
-            launcher=SingleNodeLauncher(debug=False),
-            channel=LocalChannel(),
-            init_blocks=1,
-            min_blocks=1,
-            max_blocks=4,
-        )
-        prov_local = LocalProvider(**provider_args)
-        htex_local = HighThroughputExecutor(
-            label="cpu",
-            provider=prov_local,
-            address=address_by_hostname(),
-        )
-        htex_local_2 = HighThroughputExecutor(
-            label="cpu-2",
-            provider=prov_local,
-            address=address_by_hostname(),
-        )
-        executors = [htex_local, htex_local_2]
-
-    monitoring = MonitoringHub(
-        hub_address=address_by_hostname(),
-        workflow_name=workflow_name,
-    )
-
+        monitoring = None
     config = Config(executors=executors, monitoring=monitoring)
     parsl.clear()
     parsl.load(config)
 
-    valid_executors = [executor.label for executor in executors]
-    return valid_executors
+    print(valid_executor_labels)
+
+    return valid_executor_labels
 
 
 def _task_fun(
@@ -225,7 +194,7 @@ def _atomic_task_factory(
     output_path: Path,
     metadata: Optional[Union[Future, Dict[str, Any]]] = None,
     depends_on: Optional[List[AppFuture]] = None,
-    valid_executors: List[str] = None,
+    valid_executor_labels: List[str] = None,
 ) -> AppFuture:
     """
     Single task processing
@@ -240,9 +209,10 @@ def _atomic_task_factory(
     task_executor = task.executor
     if task_executor is None:
         task_executor = settings.PARSL_DEFAULT_EXECUTOR
-    if task_executor not in valid_executors:
+    if task_executor not in valid_executor_labels:
         raise ValueError(
-            f"Executor label {task_executor} is not in " f"{valid_executors=}"
+            f"Executor label {task_executor} is not in "
+            f"{valid_executor_labels=}"
         )
 
     parall_level = task.parallelization_level
@@ -308,7 +278,7 @@ def _process_workflow(
 
     workflow_name = task.name
 
-    valid_executors = parsl_config(workflow_name=workflow_name)
+    valid_executor_labels = parsl_config(workflow_name=workflow_name)
 
     apps: List[PythonApp] = []
 
@@ -318,7 +288,7 @@ def _process_workflow(
             input_paths=this_input,
             output_path=this_output,
             metadata=apps[i - 1] if i > 0 else this_metadata,
-            valid_executors=valid_executors,
+            valid_executor_labels=valid_executor_labels,
         )
         apps.append(this_task_app)
         this_input = [this_output]
