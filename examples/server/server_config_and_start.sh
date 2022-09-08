@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Create an empty db
+rm fractal_server/migrations/versions/*.py -v
 rm -r data
 mkdir data
 alembic revision --autogenerate
