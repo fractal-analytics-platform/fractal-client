@@ -39,7 +39,7 @@ async def get_user_manager(
 
 
 bearer_transport = BearerTransport(tokenUrl="/auth/token/login")
-cookie_transport = CookieTransport()
+cookie_transport = CookieTransport(cookie_samesite="none")
 
 
 def get_jwt_strategy() -> JWTStrategy:
