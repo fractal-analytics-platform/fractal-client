@@ -34,35 +34,41 @@ from fractal.common.models import SubtaskCreate
 console = Console()
 
 
-async def _extract_project_and_dataset(project_name: str, dataset_name: str):
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/",
-            headers=await auth.header(),
-        )
-        projects = res.json()
-        # Find project
-        try:
-            project = [p for p in projects if p["name"] == project_name][0]
-            project_id = project["id"]
-        except IndexError as e:
-            raise IndexError(f"Project {project_name} not found", str(e))
-        # Get dataset list
-        dataset_list = [
-            project["dataset_list"]
-            for project in projects
-            if project["id"] == project_id
-        ][0]
-        # Find dataset
-        try:
-            dataset = [
-                ds for ds in dataset_list if ds["name"] == dataset_name
-            ][0]
-        except IndexError as e:
-            raise IndexError(f"Dataset {dataset_name} not found", str(e))
+async def _extract_project_and_dataset(
+    client, auth, project_name: str, dataset_name: str
+):
+
+    res = await client.get(
+        f"{settings.BASE_URL}/project/",
+        headers=await auth.header(),
+    )
+    projects = res.json()
+    # Find project
+    try:
+        project = [p for p in projects if p["name"] == project_name][0]
+        project_id = project["id"]
+    except IndexError as e:
+        raise IndexError(f"Project {project_name} not found", str(e))
+    # Get dataset list
+    dataset_list = [
+        project["dataset_list"]
+        for project in projects
+        if project["id"] == project_id
+    ][0]
+    # Find dataset
+    try:
+        dataset = [ds for ds in dataset_list if ds["name"] == dataset_name][0]
+    except IndexError as e:
+        raise IndexError(f"Dataset {dataset_name} not found", str(e))
+
+    await client.aclose()
 
     return project, dataset
+
+
+#####
+# CLI GROUP
+#####
 
 
 @click.group()
@@ -73,24 +79,27 @@ async def _extract_project_and_dataset(project_name: str, dataset_name: str):
 # -v --verbose
 @click.pass_context
 async def cli(ctx):
+    ctx.obj = {}
     ctx.obj["client"] = httpx.AsyncClient()
     ctx.obj["auth"] = AuthToken(ctx.obj["client"])
 
 
 @cli.command(name="version")
-def version():
+async def version():
     click.echo(__VERSION__)
 
 
 @cli.command(name="login")
-async def login():
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        await auth()
-        logging.debug(await auth.header())
+@click.pass_context
+async def login(ctx):
+    await ctx.obj["auth"]()
+    logging.debug(await ctx.obj["auth"].header())
+    await ctx.obj["client"].aclose()
 
 
+####
 # PROJECT GROUP
+####
 
 
 @cli.group()
@@ -107,15 +116,14 @@ async def project():
 )
 @click.option(
     "--dataset",
-    required=True,
     nargs=1,
-    default="default",
     help=(
         "name of first dataset. By default, the dataset `default` is "
         "created and added to the project"
     ),
 )
-async def project_new(name: str, path: str, dataset: str) -> None:
+@click.pass_context
+async def project_new(ctx, name: str, path: str, dataset: str) -> None:
     """
     Create new project, together with its first dataset
 
@@ -126,60 +134,60 @@ async def project_new(name: str, path: str, dataset: str) -> None:
     """
     from fractal.common.models import ProjectBase
 
-    project = ProjectBase(name=name, project_dir=path)
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.post(
-            f"{settings.BASE_URL}/project/",
-            json=project.dict(),
-            headers=await auth.header(),
-        )
-        logging.debug(res.status_code)
-        if res.status_code != 201:
-            raise Exception(
-                "ERROR (hint: maybe the project already exists?)", res
-            )
-        print_json(data=res.json())
+    project = ProjectBase(
+        name=name, project_dir=path, default_dataset_name=dataset
+    )
+
+    res = await ctx.obj["client"].post(
+        f"{settings.BASE_URL}/project/",
+        json=project.dict(),
+        headers=await ctx.obj["auth"].header(),
+    )
+    logging.debug(res.status_code)
+    if res.status_code != 201:
+        raise Exception("ERROR (hint: maybe the project already exists?)", res)
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
 @project.command(name="list")
-async def project_list():
+@click.pass_context
+async def project_list(ctx):
     from fractal.common.models import ProjectRead
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/",
-            headers=await auth.header(),
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/project/",
+        headers=await ctx.obj["auth"].header(),
+    )
+    data = res.json()
+    project_list = [ProjectRead(**item) for item in data]
+
+    table = Table(title="Project List")
+    table.add_column("Id", style="cyan", no_wrap=True)
+    table.add_column("Name", style="magenta")
+    table.add_column("Proj. Dir.", justify="right", style="green")
+    table.add_column("Dataset list", style="white")
+    table.add_column("Read only", justify="center")
+
+    for p in project_list:
+        # Map p.read_only (True/False) to read_only_icon (✅/❌)
+        if p.read_only:
+            read_only_icon = "✅"
+        else:
+            read_only_icon = "❌"
+
+        p_dataset_list = str([dataset.name for dataset in p.dataset_list])
+
+        table.add_row(
+            str(p.id),
+            p.name,
+            p.project_dir,
+            str(p_dataset_list),
+            read_only_icon,
         )
-        data = res.json()
-        project_list = [ProjectRead(**item) for item in data]
 
-        table = Table(title="Project List")
-        table.add_column("Id", style="cyan", no_wrap=True)
-        table.add_column("Name", style="magenta")
-        table.add_column("Proj. Dir.", justify="right", style="green")
-        table.add_column("Dataset list", style="white")
-        table.add_column("Read only", justify="center")
-
-        for p in project_list:
-            # Map p.read_only (True/False) to read_only_icon (✅/❌)
-            if p.read_only:
-                read_only_icon = "✅"
-            else:
-                read_only_icon = "❌"
-
-            p_dataset_list = str([dataset.name for dataset in p.dataset_list])
-
-            table.add_row(
-                str(p.id),
-                p.name,
-                p.project_dir,
-                str(p_dataset_list),
-                read_only_icon,
-            )
-
-        console.print(table)
+    console.print(table)
+    await ctx.obj["client"].aclose()
 
 
 @project.command(name="add-dataset")
@@ -202,7 +210,9 @@ async def project_list():
     default="zarr",
     help=("The type of objects into the dataset"),
 )
+@click.pass_context
 async def add_dataset(
+    ctx,
     project_name: str,
     dataset_name: str,
     meta: Dict[str, Any],
@@ -220,59 +230,56 @@ async def add_dataset(
             meta_json = json.load(json_file)
 
     # Find project_id
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/",
-            headers=await auth.header(),
-        )
-        projects = res.json()
-        # Find project
-        try:
-            project = [p for p in projects if p["name"] == project_name][0]
-            project_id = project["id"]
-        except IndexError as e:
-            raise IndexError(f"Project {project_name} not found", str(e))
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/project/",
+        headers=await ctx.obj["auth"].header(),
+    )
+    projects = res.json()
+    # Find project
+    try:
+        project = [p for p in projects if p["name"] == project_name][0]
+        project_id = project["id"]
+    except IndexError as e:
+        raise IndexError(f"Project {project_name} not found", str(e))
 
     # Check that there is no other dataset with the same name
     from fractal.common.models import ProjectRead
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/",
-            headers=await auth.header(),
-        )
-        data = res.json()
-        project_list = [ProjectRead(**item) for item in data]
-        logging.debug(project_list)
-        logging.debug(project_id)
-        try:
-            project = [p for p in project_list if p.id == project_id][0]
-        except IndexError as e:
-            raise IndexError("No project found with this project_id", str(e))
-        list_dataset_names = [dataset.name for dataset in project.dataset_list]
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/project/",
+        headers=await ctx.obj["auth"].header(),
+    )
+    data = res.json()
+    project_list = [ProjectRead(**item) for item in data]
+    logging.debug(project_list)
+    logging.debug(project_id)
+    try:
+        project = [p for p in project_list if p.id == project_id][0]
+    except IndexError as e:
+        raise IndexError("No project found with this project_id", str(e))
+    list_dataset_names = [dataset.name for dataset in project.dataset_list]
 
-        if dataset_name in list_dataset_names:
-            raise Exception(
-                f"Dataset name {dataset_name} already in use, "
-                "pick another one"
-            )
+    if dataset_name in list_dataset_names:
+        raise Exception(
+            f"Dataset name {dataset_name} already in use, " "pick another one"
+        )
 
     dataset = DatasetCreate(
         name=dataset_name, project_id=project_id, type=type, meta=meta_json
     )
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.post(
-            f"{settings.BASE_URL}/project/{project_id}/",
-            json=dataset.dict(),
-            headers=await auth.header(),
-        )
-        print_json(data=res.json())
+
+    res = await ctx.obj["client"].post(
+        f"{settings.BASE_URL}/project/{project_id}/",
+        json=dataset.dict(),
+        headers=await ctx.obj["auth"].header(),
+    )
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
+####
 # DATASET GROUP
+####
 
 
 @cli.group()
@@ -283,13 +290,14 @@ async def dataset():
 @dataset.command(name="show")
 @click.argument("project_name", required=True, type=str, nargs=1)
 @click.argument("dataset_name", required=True, type=str, nargs=1)
-async def dataset_show(project_name: str, dataset_name: str) -> None:
+@click.pass_context
+async def dataset_show(ctx, project_name: str, dataset_name: str) -> None:
     """
     Show details of an existing dataset
     """
 
     project, dataset = await _extract_project_and_dataset(
-        project_name, dataset_name
+        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
     )
 
     table = Table(title="Dataset")
@@ -320,8 +328,9 @@ async def dataset_show(project_name: str, dataset_name: str) -> None:
 @click.argument("dataset_name", required=True, type=str, nargs=1)
 @click.argument("path", required=True, type=str, nargs=1)
 @click.option("--glob_pattern", required=True, type=str, default="", nargs=1)
+@click.pass_context
 async def add_resource(
-    project_name: str, dataset_name: str, path: str, glob_pattern: str
+    ctx, project_name: str, dataset_name: str, path: str, glob_pattern: str
 ):
 
     """
@@ -338,21 +347,22 @@ async def add_resource(
     project_id = project["id"]
     dataset_id = dataset["id"]
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.post(
-            f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-            json=resource.dict(),
-            headers=await auth.header(),
-        )
+    res = await ctx.obj["client"].post(
+        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+        json=resource.dict(),
+        headers=await ctx.obj["auth"].header(),
+    )
 
-        print_json(data=res.json())
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
 @dataset.command(name="show-resources")
 @click.argument("project_name", required=True, type=str, nargs=1)
 @click.argument("dataset_name", required=True, type=str, nargs=1)
+@click.pass_context
 async def get_resource(
+    ctx,
     project_name: str,
     dataset_name: str,
 ):
@@ -363,25 +373,24 @@ async def get_resource(
     project_id = project["id"]
     dataset_id = dataset["id"]
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-            headers=await auth.header(),
-        )
-        data = res.json()
-        resource_list = [ResourceRead(**item) for item in data]
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+        headers=await ctx.obj["auth"].header(),
+    )
+    data = res.json()
+    resource_list = [ResourceRead(**item) for item in data]
 
-        table = Table(title="Resource List")
-        table.add_column("Id", style="cyan", no_wrap=True)
-        table.add_column("Path", justify="right", style="green")
-        table.add_column("Dataset Id", style="white")
-        table.add_column("Glob Pattern", style="red")
-        for r in resource_list:
+    table = Table(title="Resource List")
+    table.add_column("Id", style="cyan", no_wrap=True)
+    table.add_column("Path", justify="right", style="green")
+    table.add_column("Dataset Id", style="white")
+    table.add_column("Glob Pattern", style="red")
+    for r in resource_list:
 
-            table.add_row(str(r.id), r.path, str(r.dataset_id), r.glob_pattern)
+        table.add_row(str(r.id), r.path, str(r.dataset_id), r.glob_pattern)
 
-        console.print(table)
+    console.print(table)
+    await ctx.obj["client"].aclose()
 
 
 @dataset.command(name="modify-dataset")
@@ -405,7 +414,9 @@ async def get_resource(
     nargs=1,
     help=("Writing permissions"),
 )
+@click.pass_context
 async def modify_dataset(
+    ctx,
     project_name: str,
     dataset_name: str,
     new_dataset_name: str = None,
@@ -436,18 +447,19 @@ async def modify_dataset(
     project_id = project["id"]
     dataset_id = dataset["id"]
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.patch(
-            f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-            json=updates_not_none,
-            headers=await auth.header(),
-        )
+    res = await ctx.obj["client"].patch(
+        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+        json=updates_not_none,
+        headers=await ctx.obj["auth"].header(),
+    )
 
-        print_json(data=res.json())
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
+####
 # TASK GROUP
+####
 
 
 @cli.group()
@@ -456,16 +468,16 @@ async def task():
 
 
 @task.command(name="list")
-async def get_task():
+@click.pass_context
+async def get_task(ctx):
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/task/",
-            headers=await auth.header(),
-        )
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/task/",
+        headers=await ctx.obj["auth"].header(),
+    )
 
-        print_json(data=res.json())
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
 @task.command(name="new")
@@ -500,7 +512,9 @@ async def get_task():
     nargs=1,
     help=("subtask list of the current task"),
 )
+@click.pass_context
 async def new_task(
+    ctx,
     name: str,
     resource_type: str,
     input_type: str,
@@ -513,18 +527,16 @@ async def new_task(
     # Check that there is no other dataset with the same name
     from fractal.common.models import TaskRead
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/task/",
-            headers=await auth.header(),
-        )
-        data = res.json()
-        task_list = [TaskRead(**item) for item in data]
-        existing_task_names = [t.name for t in task_list]
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/task/",
+        headers=await ctx["auth"].header(),
+    )
+    data = res.json()
+    task_list = [TaskRead(**item) for item in data]
+    existing_task_names = [t.name for t in task_list]
 
-        if name in existing_task_names:
-            raise Exception(f"Task name {name} already in use.")
+    if name in existing_task_names:
+        raise Exception(f"Task name {name} already in use.")
 
     from fractal.common.models import TaskCreate
 
@@ -544,15 +556,14 @@ async def new_task(
         subtask_list=subtask_list,
     )
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.post(
-            f"{settings.BASE_URL}/task/",
-            json=task.dict(),
-            headers=await auth.header(),
-        )
+    res = await ctx.obj["client"].post(
+        f"{settings.BASE_URL}/task/",
+        json=task.dict(),
+        headers=await ctx.obj["auth"].header(),
+    )
 
-        print_json(data=res.json())
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
 @task.command(name="modify-task")
@@ -566,7 +577,9 @@ async def new_task(
     "--default_args",
     nargs=1,
 )
+@click.pass_context
 async def modify_task(
+    ctx,
     task_name: str,
     new_task_name: str = None,
     default_args: str = None,
@@ -581,14 +594,13 @@ async def modify_task(
     from fractal.common.models import TaskRead
 
     # Extract task list
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/task/",
-            headers=await auth.header(),
-        )
-        data = res.json()
-        task_list = [TaskRead(**item) for item in data]
+
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/task/",
+        headers=await ctx.obj["auth"].header(),
+    )
+    data = res.json()
+    task_list = [TaskRead(**item) for item in data]
 
     if new_task_name is not None:
         # Check that there is no other dataset with the same name
@@ -611,40 +623,36 @@ async def modify_task(
     except IndexError as e:
         raise IndexError(f"Task {task_name} not found", str(e))
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.patch(
-            f"{settings.BASE_URL}/task/{task_id}/",
-            json=updates_not_none,
-            headers=await auth.header(),
-        )
+    res = await ctx.obj["client"].patch(
+        f"{settings.BASE_URL}/task/{task_id}/",
+        json=updates_not_none,
+        headers=await ctx.obj["auth"].header(),
+    )
 
-        print_json(data=res.json())
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
 @task.command(name="add-subtask")
 @click.argument("parent_task_name", type=str, required=True, nargs=1)
 @click.argument("subtask_name", type=str, required=True, nargs=1)
 @click.option("--args_json", type=str, nargs=1)
+@click.pass_context
 async def add_subtask(
-    parent_task_name: str, subtask_name: str, args_json: str = None
+    ctx, parent_task_name: str, subtask_name: str, args_json: str = None
 ):
 
     # Extract subtask_id
     from fractal.common.models import TaskRead
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/task/",
-            headers=await auth.header(),
-        )
-        data = res.json()
-        task_list = [TaskRead(**item) for item in data]
-        parent_task_id = [
-            t.id for t in task_list if t.name == parent_task_name
-        ][0]
-        subtask_id = [t.id for t in task_list if t.name == subtask_name][0]
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/task/",
+        headers=await ctx.obj["auth"].header(),
+    )
+    data = res.json()
+    task_list = [TaskRead(**item) for item in data]
+    parent_task_id = [t.id for t in task_list if t.name == parent_task_name][0]
+    subtask_id = [t.id for t in task_list if t.name == subtask_name][0]
 
     # Read args
     if args_json is None:
@@ -657,15 +665,14 @@ async def add_subtask(
     logging.debug(subtask_id, args)
     subtask = SubtaskCreate(subtask_id=subtask_id, args=args)
 
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.post(
-            f"{settings.BASE_URL}/task/{parent_task_id}/subtask/",
-            json=subtask.dict(),
-            headers=await auth.header(),
-        )
+    res = await ctx.obj["client"].post(
+        f"{settings.BASE_URL}/task/{parent_task_id}/subtask/",
+        json=subtask.dict(),
+        headers=await ctx.obj["auth"].header(),
+    )
 
-        print_json(data=res.json())
+    print_json(data=res.json())
+    await ctx.obj["client"].aclose()
 
 
 # APPLY GROUP
@@ -696,7 +703,9 @@ def workflow():
     default=False,
     nargs=1,
 )
+@click.pass_context
 async def apply_workflow(
+    ctx,
     project_name: str,
     input_dataset_name: str,
     output_dataset_name: str,
@@ -707,76 +716,69 @@ async def apply_workflow(
     from fractal.common.models import TaskRead
 
     # Extract IDs for project and two datasets
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/project/",
-            headers=await auth.header(),
-        )
-        projects = res.json()
-        # Find project
-        try:
-            project = [p for p in projects if p["name"] == project_name][0]
-            project_id = project["id"]
-        except IndexError as e:
-            raise IndexError(f"Project {project_name} not found", str(e))
-        # Get dataset list
-        dataset_list = [
-            project["dataset_list"]
-            for project in projects
-            if project["id"] == project_id
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/project/",
+        headers=await ctx.obj["auth"].header(),
+    )
+    projects = res.json()
+    # Find project
+    try:
+        project = [p for p in projects if p["name"] == project_name][0]
+        project_id = project["id"]
+    except IndexError as e:
+        raise IndexError(f"Project {project_name} not found", str(e))
+    # Get dataset list
+    dataset_list = [
+        project["dataset_list"]
+        for project in projects
+        if project["id"] == project_id
+    ][0]
+    # Find I/O dataset
+    try:
+        input_dataset = [
+            ds for ds in dataset_list if ds["name"] == input_dataset_name
         ][0]
-        # Find I/O dataset
-        try:
-            input_dataset = [
-                ds for ds in dataset_list if ds["name"] == input_dataset_name
-            ][0]
-            input_dataset_id = input_dataset["id"]
-        except IndexError as e:
-            raise IndexError(f"Dataset {input_dataset_name} not found", str(e))
-        try:
-            output_dataset = [
-                ds for ds in dataset_list if ds["name"] == output_dataset_name
-            ][0]
-            output_dataset_id = output_dataset["id"]
-        except IndexError as e:
-            raise IndexError(
-                f"Dataset {output_dataset_name} not found", str(e)
-            )
+        input_dataset_id = input_dataset["id"]
+    except IndexError as e:
+        raise IndexError(f"Dataset {input_dataset_name} not found", str(e))
+    try:
+        output_dataset = [
+            ds for ds in dataset_list if ds["name"] == output_dataset_name
+        ][0]
+        output_dataset_id = output_dataset["id"]
+    except IndexError as e:
+        raise IndexError(f"Dataset {output_dataset_name} not found", str(e))
     # Extract ID for task
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
-        res = await client.get(
-            f"{settings.BASE_URL}/task/",
-            headers=await auth.header(),
-        )
-        data = res.json()
-        task_list = [TaskRead(**item) for item in data]
-        # Find task id
-        try:
-            workflow = [t for t in task_list if t.name == workflow_name][0]
-            workflow_id = workflow.id
-        except IndexError as e:
-            raise IndexError(f"Task {workflow_name} not found", str(e))
+    res = await ctx.obj["client"].get(
+        f"{settings.BASE_URL}/task/",
+        headers=await ctx.obj["auth"].header(),
+    )
+    data = res.json()
+    task_list = [TaskRead(**item) for item in data]
+    # Find task id
+    try:
+        workflow = [t for t in task_list if t.name == workflow_name][0]
+        workflow_id = workflow.id
+    except IndexError as e:
+        raise IndexError(f"Task {workflow_name} not found", str(e))
 
     # Apply workflow
-    async with httpx.AsyncClient() as client:
-        auth = AuthToken(client=client)
 
-        from fractal.common.models import ApplyWorkflow
+    from fractal.common.models import ApplyWorkflow
 
-        workflow = ApplyWorkflow(
-            project_id=project_id,
-            input_dataset_id=input_dataset_id,
-            output_dataset_id=output_dataset_id,
-            workflow_id=workflow_id,
-            overwrite_input=overwrite_input,
-        )
+    workflow = ApplyWorkflow(
+        project_id=project_id,
+        input_dataset_id=input_dataset_id,
+        output_dataset_id=output_dataset_id,
+        workflow_id=workflow_id,
+        overwrite_input=overwrite_input,
+    )
 
-        res = await client.post(
-            f"{settings.BASE_URL}/project/apply/",
-            json=workflow.dict(),
-            headers=await auth.header(),
-        )
+    res = await ctx.obj["client"].post(
+        f"{settings.BASE_URL}/project/apply/",
+        json=workflow.dict(),
+        headers=await ctx.obj["auth"].header(),
+    )
 
-        logging.debug(res.json())
+    logging.debug(res.json())
+    await ctx.obj["client"].aclose()
