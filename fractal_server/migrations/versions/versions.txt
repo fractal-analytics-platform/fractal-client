@@ -1,0 +1,2 @@
+This is file serves the only purpose of allowing to commit this empty folder.
+It can be safely removed once we have a stable migration revision.

@@ -32,8 +32,13 @@ You will need to define some environment variables in order to use
 variables you need to initialise the database by invoking
 
 ```
-alembic upgrade
+alembic upgrade head
 ```
+
+NOTE: as `fractal-server` is still in pre-alpha the database schema is not yet
+committed to the repository. As such you'll be required to first create a
+schema revision with `alembic revision --autogenerate -m "[your commit
+message]"`.
 
 ## Contributing
 
