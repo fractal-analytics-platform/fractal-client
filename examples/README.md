@@ -2,10 +2,11 @@
 
 This example uses both the client (from this repo, callable from a terminal as `fractal`) and the server (from the `fractal-server` repo, callable from the terminal as `server` - but possibly renamed later). They should both be installed in the current environment. If they are not (i.e. if one of these two commands returns a `command not found` error in the terminal), you should install the missing package(s).
 
-To download the example dataset from Zenodo, you can use (from this folder):
+To download the example dataset from Zenodo, you can use
 ```bash
 ./fetch_test_data_from_zenodo.sh
 ```
+from one of the relevant folders (e.g. `01_cardio_tiny_dataset`).
 Note that this currently requires the `zenodo-get` package. At the moment this is an optional dependency, so just use `pip install zenodo-get` if you don't have it available.
 TODO: this will be fixed later, either by adding it as a mandatory (dev) dependency, or by bypassing this external package.
 
@@ -27,7 +28,7 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ```
 
-## From the `client` folder (in a new terminal)
+## From the `01_cardio_tiny_dataset/` folder (in a new terminal)
 
 **WARNING**: The current scripts always delete the output folder, before starting. Make sure you change this behavior when running long examples.
 
