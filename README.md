@@ -272,6 +272,8 @@ pull requests.
 Before release checklist:
 
 - [ ] The `main` branch is checked out
+- [ ] You reviewed dependencies and dev dependencies and the lock file is up to
+      date with `pyproject.toml`.
 - [ ] The current `HEAD` of the main branch passes all the tests
 - [ ] Use
 ```
