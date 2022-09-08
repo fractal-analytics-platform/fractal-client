@@ -6,3 +6,6 @@ __pycache__
 dist/*
 .mypy_cache/*
 .python-version
+file:cachedb
+monitoring.db
+runinfo
