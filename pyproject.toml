@@ -72,4 +72,4 @@ push = true
 ]
 
 [tool.poetry.scripts]
-server = "scripts.testserver:run_testserver"
+fractal-server = "scripts.testserver:run_testserver"
