@@ -11,6 +11,7 @@ from typing import Union
 
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
+from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +21,7 @@ from ..models.project import Project
 from ..models.task import PreprocessedTask
 from ..models.task import Subtask
 from ..models.task import Task
+from .runner_utils import add_prefix
 from .runner_utils import async_wrap
 from .runner_utils import load_parsl_config
 
@@ -61,6 +63,7 @@ def _task_app(
 ) -> AppFuture:
 
     app = PythonApp(_task_fun, executors=executors)
+    # TODO: can we reassign app.__name__, for clarity in monitoring?
     return app(
         task=task,
         input_paths=input_paths,
@@ -151,7 +154,7 @@ def _atomic_task_factory(
     output_path: Path,
     metadata: Optional[Union[Future, Dict[str, Any]]] = None,
     depends_on: Optional[List[AppFuture]] = None,
-    valid_executor_labels: List[str] = None,
+    workflow_id: int = None,
 ) -> AppFuture:
     """
     Single task processing
@@ -166,6 +169,12 @@ def _atomic_task_factory(
     task_executor = task.executor
     if task_executor is None:
         task_executor = settings.PARSL_DEFAULT_EXECUTOR
+    task_executor = add_prefix(
+        workflow_id=workflow_id, executor_label=task_executor
+    )
+
+    # Verify match between task_executor and available executors
+    valid_executor_labels = DataFlowKernelLoader.dfk().executors.keys()
     if task_executor not in valid_executor_labels:
         raise ValueError(
             f"Executor label {task_executor} is not in "
@@ -233,9 +242,8 @@ def _process_workflow(
     this_output = output_path
     this_metadata = deepcopy(metadata)
 
-    workflow_name = task.name
-
-    valid_executor_labels = load_parsl_config(workflow_name=workflow_name)
+    workflow_id = task.id
+    load_parsl_config(workflow_id=workflow_id)
 
     apps: List[PythonApp] = []
 
@@ -245,7 +253,7 @@ def _process_workflow(
             input_paths=this_input,
             output_path=this_output,
             metadata=apps[i - 1] if i > 0 else this_metadata,
-            valid_executor_labels=valid_executor_labels,
+            workflow_id=workflow_id,
         )
         apps.append(this_task_app)
         this_input = [this_output]

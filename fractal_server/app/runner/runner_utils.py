@@ -22,6 +22,7 @@ import parsl
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
+from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
@@ -30,6 +31,12 @@ from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
 from ...config import settings
+
+
+# FIXME: this should use ID
+def add_prefix(*, workflow_id: int, executor_label: str):
+    # workflow_slug = workflow_name.lower().replace(" ", "_")
+    return f"{workflow_id}___{executor_label}"
 
 
 def async_wrap(func: Callable) -> Callable:
@@ -55,7 +62,7 @@ def async_wrap(func: Callable) -> Callable:
 
 def load_parsl_config(
     *,
-    workflow_name: str = "Workflow",
+    workflow_id: int,
     enable_monitoring: bool = True,
 ):
 
@@ -80,12 +87,12 @@ def load_parsl_config(
 
         # Define two identical (apart from the label) executors
         htex = HighThroughputExecutor(
-            label="cpu",
+            label=add_prefix(workflow_id=workflow_id, executor_label="cpu"),
             provider=prov,
             address=address_by_hostname(),
         )
         htex_2 = HighThroughputExecutor(
-            label="cpu-2",
+            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-2"),
             provider=prov,
             address=address_by_hostname(),
         )
@@ -109,13 +116,13 @@ def load_parsl_config(
 
         # Define two identical (apart from the label) executors
         htex_slurm_cpu = HighThroughputExecutor(
-            label="cpu",
+            label=add_prefix(workflow_id=workflow_id, executor_label="cpu"),
             provider=prov_slurm_cpu,
             address=address_by_hostname(),
             cpu_affinity="block",
         )
         htex_slurm_cpu_2 = HighThroughputExecutor(
-            label="cpu-2",
+            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-2"),
             provider=prov_slurm_cpu,
             address=address_by_hostname(),
             cpu_affinity="block",
@@ -124,20 +131,48 @@ def load_parsl_config(
         executors = [htex_slurm_cpu, htex_slurm_cpu_2]
 
     # Extract the executor labels
-    valid_executor_labels = [executor.label for executor in executors]
+    new_executor_labels = [executor.label for executor in executors]
 
     # Define monitoring hub and finalize configuration
     if enable_monitoring:
         monitoring = MonitoringHub(
             hub_address=address_by_hostname(),
-            workflow_name=workflow_name,
+            workflow_name="fractal",
         )
     else:
         monitoring = None
-    config = Config(
-        executors=executors, monitoring=monitoring, max_idletime=20.0
-    )
-    parsl.clear()
-    parsl.load(config)
 
-    return valid_executor_labels
+    # FIXME remove devtools
+    from devtools import debug
+
+    try:
+        dfk = DataFlowKernelLoader.dfk()
+        old_executor_labels = [
+            executor_label for executor_label in dfk.executors.keys()
+        ]
+        debug(
+            f"DFK {dfk} exists, with {len(dfk.executors)} executors: "
+            f"{old_executor_labels}"
+        )
+        debug(f"Adding {len(executors)} new executors: {new_executor_labels}")
+        dfk.add_executors(executors)
+
+    # FIXME:  better exception handling
+    except RuntimeError:
+        config = Config(
+            executors=executors, monitoring=monitoring, max_idletime=20.0
+        )
+        debug(
+            "DFK probably missing, "
+            "proceed with parsl.clear and parsl.config.Config"
+        )
+        parsl.clear()
+        parsl.load(config)
+    dfk = DataFlowKernelLoader.dfk()
+    executor_labels = [
+        executor_label for executor_label in dfk.executors.keys()
+    ]
+    debug(
+        f"DFK {dfk} now has {len(executor_labels)} executors: "
+        f"{executor_labels}"
+    )
