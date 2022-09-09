@@ -19,6 +19,7 @@ from functools import wraps
 from typing import Callable
 
 import parsl
+from devtools import debug
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
@@ -32,10 +33,10 @@ from parsl.providers import SlurmProvider
 
 from ...config import settings
 
+# FIXME remove devtools
 
-# FIXME: this should use ID
+
 def add_prefix(*, workflow_id: int, executor_label: str):
-    # workflow_slug = workflow_name.lower().replace(" ", "_")
     return f"{workflow_id}___{executor_label}"
 
 
@@ -142,9 +143,6 @@ def load_parsl_config(
     else:
         monitoring = None
 
-    # FIXME remove devtools
-    from devtools import debug
-
     try:
         dfk = DataFlowKernelLoader.dfk()
         old_executor_labels = [
@@ -176,3 +174,14 @@ def load_parsl_config(
         f"DFK {dfk} now has {len(executor_labels)} executors: "
         f"{executor_labels}"
     )
+
+
+def shutdown_executors(*, workflow_id: str):
+    # Remove executors from parsl DFK
+    # FIXME decorate with loggers, as in:
+    # https://github.com/Parsl/parsl/blob/master/parsl/dataflow/dflow.py#L1106
+    dfk = DataFlowKernelLoader.dfk()
+    for label, executor in dfk.executors.items():
+        if label.startswith(f"{workflow_id}___"):
+            executor.shutdown()
+            debug(f"SHUTTING DOWN {label}")
