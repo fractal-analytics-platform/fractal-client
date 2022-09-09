@@ -49,6 +49,13 @@ def get_jwt_strategy() -> JWTStrategy:
     )
 
 
+def get_jwt_cookie_strategy() -> JWTStrategy:
+    return JWTStrategy(
+        secret=settings.JWT_SECRET_KEY,
+        lifetime_seconds=settings.COOKIE_EXPIRE_SECONDS,
+    )
+
+
 token_backend = AuthenticationBackend(
     name="bearer-jwt",
     transport=bearer_transport,
@@ -57,7 +64,7 @@ token_backend = AuthenticationBackend(
 cookie_backend = AuthenticationBackend(
     name="cookie-jwt",
     transport=cookie_transport,
-    get_strategy=get_jwt_strategy,
+    get_strategy=get_jwt_cookie_strategy,
 )
 
 
