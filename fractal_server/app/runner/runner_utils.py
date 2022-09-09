@@ -18,11 +18,14 @@ from functools import partial
 from functools import wraps
 from typing import Callable
 
+import parsl
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
+from parsl.config import Config
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
+from parsl.monitoring.monitoring import MonitoringHub
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
@@ -50,11 +53,19 @@ def async_wrap(func: Callable) -> Callable:
     return run
 
 
-def load_parsl_executors_config(*, config: str):
+def load_parsl_config(
+    *,
+    workflow_name: str = "Workflow",
+    enable_monitoring: bool = True,
+):
 
-    allowed_configs = ["local", "pelkmanslab"]
+    config = settings.PARSL_CONFIG
+
+    allowed_configs = ["local", "pelkmanslab", "custom"]
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
+    if config == "custom":
+        raise NotImplementedError
 
     if config == "local":
 
@@ -112,4 +123,19 @@ def load_parsl_executors_config(*, config: str):
 
         executors = [htex_slurm_cpu, htex_slurm_cpu_2]
 
-    return executors
+    # Extract the executor labels
+    valid_executor_labels = [executor.label for executor in executors]
+
+    # Define monitoring hub and finalize configuration
+    if enable_monitoring:
+        monitoring = MonitoringHub(
+            hub_address=address_by_hostname(),
+            workflow_name=workflow_name,
+        )
+    else:
+        monitoring = None
+    config = Config(executors=executors, monitoring=monitoring)
+    parsl.clear()
+    parsl.load(config)
+
+    return valid_executor_labels

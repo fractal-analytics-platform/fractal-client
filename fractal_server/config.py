@@ -114,11 +114,10 @@ class Settings(BaseSettings):
     # FRACTAL SPECIFIC
     ###########################################################################
     DATA_DIR_ROOT: str = fail_getenv("DATA_DIR_ROOT")
-    USE_SLURM: bool = bool(int(getenv("USE_SLURM", "0")))
+    PARSL_CONFIG: str = getenv("PARSL_CONFIG", "local")
     PARSL_DEFAULT_EXECUTOR: str = getenv("PARSL_DEFAULT_EXECUTOR", "cpu")
-    if USE_SLURM:
-        SLURM_PARTITION_CPU: str = fail_getenv("SLURM_PARTITION_CPU")
-        # FIXME add gpu partition
+    if PARSL_CONFIG == "custom":
+        PARSL_CONFIG_CUSTOM_FILE: str = fail_getenv("PARSL_CONFIG_CUSTOM_FILE")
 
     @root_validator(pre=True)
     def collect_oauth_clients(cls, values):

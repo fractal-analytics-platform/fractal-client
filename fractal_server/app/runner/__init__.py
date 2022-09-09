@@ -9,13 +9,9 @@ from typing import Literal
 from typing import Optional
 from typing import Union
 
-import parsl
-from parsl.addresses import address_by_hostname
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
-from parsl.config import Config
 from parsl.dataflow.futures import AppFuture
-from parsl.monitoring.monitoring import MonitoringHub
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...config import settings
@@ -25,46 +21,7 @@ from ..models.task import PreprocessedTask
 from ..models.task import Subtask
 from ..models.task import Task
 from .runner_utils import async_wrap
-from .runner_utils import load_parsl_executors_config
-
-
-def parsl_config(
-    *,
-    workflow_name: str = "Workflow",
-    config: str = None,
-    enable_monitoring: bool = True,
-):
-    """
-    config points to a pre-defined set of executors, e.g. "local" or
-    "pelkmanslab"
-    """
-
-    # Set config variable
-    if config is None:
-        if settings.USE_SLURM:
-            config = "pelkmanslab"
-        else:
-            config = "local"
-
-    # Load (new instances of) pre-defined executors, and extract their labels
-    executors = load_parsl_executors_config(config=config)
-    valid_executor_labels = [executor.label for executor in executors]
-
-    # Define monitoring hub and finalize configuration
-    if enable_monitoring:
-        monitoring = MonitoringHub(
-            hub_address=address_by_hostname(),
-            workflow_name=workflow_name,
-        )
-    else:
-        monitoring = None
-    config = Config(executors=executors, monitoring=monitoring)
-    parsl.clear()
-    parsl.load(config)
-
-    print(valid_executor_labels)
-
-    return valid_executor_labels
+from .runner_utils import load_parsl_config
 
 
 def _task_fun(
@@ -278,7 +235,7 @@ def _process_workflow(
 
     workflow_name = task.name
 
-    valid_executor_labels = parsl_config(workflow_name=workflow_name)
+    valid_executor_labels = load_parsl_config(workflow_name=workflow_name)
 
     apps: List[PythonApp] = []
 
