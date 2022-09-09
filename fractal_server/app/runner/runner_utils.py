@@ -16,10 +16,12 @@ Zurich.
 import asyncio
 from functools import partial
 from functools import wraps
+from logging import FileHandler
+from logging import Formatter
+from logging import getLogger
 from typing import Callable
 
 import parsl
-from devtools import debug
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
@@ -33,7 +35,17 @@ from parsl.providers import SlurmProvider
 
 from ...config import settings
 
-# FIXME remove devtools
+
+# FORMAT = '%(asctime)s %(message)s'
+# basicConfig(format=FORMAT)
+
+formatter = Formatter("%(asctime)s; %(levelname)s; %(message)s")
+
+logger = getLogger(__name__)
+handler = FileHandler("parsl_executors.log", mode="a")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel("INFO")
 
 
 def add_prefix(*, workflow_id: int, executor_label: str):
@@ -148,19 +160,25 @@ def load_parsl_config(
         old_executor_labels = [
             executor_label for executor_label in dfk.executors.keys()
         ]
-        debug(
+        logger.info(
             f"DFK {dfk} exists, with {len(dfk.executors)} executors: "
             f"{old_executor_labels}"
         )
-        debug(f"Adding {len(executors)} new executors: {new_executor_labels}")
+        logger.info(
+            f"Adding {len(executors)} new executors: {new_executor_labels}"
+        )
+
+        # FIXME: what if an executor was already there?
+        # (re-submitting same workflow?)
+
         dfk.add_executors(executors)
 
-    # FIXME:  better exception handling
+    # FIXME: better exception handling
     except RuntimeError:
         config = Config(
             executors=executors, monitoring=monitoring, max_idletime=20.0
         )
-        debug(
+        logger.info(
             "DFK probably missing, "
             "proceed with parsl.clear and parsl.config.Config"
         )
@@ -170,7 +188,7 @@ def load_parsl_config(
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
     ]
-    debug(
+    logger.info(
         f"DFK {dfk} now has {len(executor_labels)} executors: "
         f"{executor_labels}"
     )
@@ -178,10 +196,17 @@ def load_parsl_config(
 
 def shutdown_executors(*, workflow_id: str):
     # Remove executors from parsl DFK
-    # FIXME decorate with loggers, as in:
+    # FIXME decorate with monitoring logs, as in:
     # https://github.com/Parsl/parsl/blob/master/parsl/dataflow/dflow.py#L1106
     dfk = DataFlowKernelLoader.dfk()
     for label, executor in dfk.executors.items():
         if label.startswith(f"{workflow_id}___"):
             executor.shutdown()
-            debug(f"SHUTTING DOWN {label}")
+            logger.info(f"SHUTTING DOWN {label}")
+    executor_labels = [
+        executor_label for executor_label in dfk.executors.keys()
+    ]
+    logger.info(
+        f"DFK {dfk} now has {len(executor_labels)} executors: "
+        f"{executor_labels}"
+    )
