@@ -104,7 +104,9 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
     from fractal_server.app.runner import _atomic_task_factory
     from fractal_server.app.runner.runner_utils import load_parsl_config
 
-    valid_executor_labels = load_parsl_config(enable_monitoring=False)
+    workflow_id = 0
+
+    load_parsl_config(enable_monitoring=False, workflow_id=workflow_id)
 
     input_path_str = "/input/path"
     output_path = tmp_path
@@ -115,7 +117,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
         input_paths=[Path(input_path_str)],
         output_path=output_path,
         metadata=metadata,
-        valid_executor_labels=valid_executor_labels,
+        workflow_id=workflow_id,
     )
 
     debug(parsl_app)
