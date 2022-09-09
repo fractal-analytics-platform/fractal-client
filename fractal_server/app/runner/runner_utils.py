@@ -74,7 +74,7 @@ def load_parsl_config(
             launcher=SingleNodeLauncher(debug=False),
             channel=LocalChannel(),
             init_blocks=1,
-            min_blocks=1,
+            min_blocks=0,
             max_blocks=4,
         )
 
@@ -101,7 +101,7 @@ def load_parsl_config(
             channel=LocalChannel(),
             nodes_per_block=1,
             init_blocks=1,
-            min_blocks=1,
+            min_blocks=0,
             max_blocks=4,
             walltime="10:00:00",
         )
@@ -134,7 +134,9 @@ def load_parsl_config(
         )
     else:
         monitoring = None
-    config = Config(executors=executors, monitoring=monitoring)
+    config = Config(
+        executors=executors, monitoring=monitoring, max_idletime=20.0
+    )
     parsl.clear()
     parsl.load(config)
 
