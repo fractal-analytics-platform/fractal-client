@@ -66,10 +66,6 @@ push = true
 "fractal_server/config.py" = [
     '__VERSION__ = "{version}"'
 ]
-"README.md" = [
-    "{version}",
-    "{pep440_version}",
-]
 
 [tool.poetry.scripts]
 fractal-server = "scripts.testserver:run_testserver"
