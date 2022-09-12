@@ -262,7 +262,39 @@ fractal workflow apply [project_name] [workflow_name] [dataset_name] [resource_i
 
 ```
 
-# Server database initialisation / migration
+## Development
 
-Use `alembic revision --autogenerate -m "<commit message>"` to generate a new
-schema revision, `alembic upgrade head` to appy it.
+Development takes place on Github. You are welcome to submit an issue and open
+pull requests.
+
+### Releasing
+
+Before release checklist:
+
+- [ ] The `main` branch is checked out
+- [ ] You reviewed dependencies and dev dependencies and the lock file is up to
+      date with `pyproject.toml`.
+- [ ] The current `HEAD` of the main branch passes all the tests
+- [ ] Use
+```
+poetry run bumpver update --dry --[patch|minor] --tag-commit --commit
+```
+to test updating the version bump
+- [ ] If the previous step looks good, use
+```
+poetry run bumpver update --[patch|minor] --tag-commit --commit
+```
+to actually bump the version and commit the changes locally.
+- [ ] Test the build with
+```
+poetry build
+```
+- [ ] If the previous step was successful, push the version bump and tags:
+```
+git push && git push --tags
+```
+- [ ] Finally, publish the updated package to pypi with
+```
+poetry publish --dry-run
+```
+removing the `--dry-run` when you made sure that everything looks good.
