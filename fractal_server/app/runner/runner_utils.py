@@ -80,6 +80,7 @@ def load_parsl_config(
 ):
 
     config = settings.PARSL_CONFIG
+    logger.info(f"settings.PARSL_CONFIG: {config}")
 
     allowed_configs = ["local", "pelkmanslab", "custom"]
     if config not in allowed_configs:
@@ -116,7 +117,7 @@ def load_parsl_config(
 
         # Define a single provider
         provider_args = dict(
-            partition=settings.SLURM_PARTITION_CPU,
+            partition="main",
             launcher=SrunLauncher(debug=False),
             channel=LocalChannel(),
             nodes_per_block=1,
