@@ -227,3 +227,25 @@ def shutdown_executors(*, workflow_id: str):
         f"DFK {dfk} now has {len(executor_labels)} executors: "
         f"{executor_labels}"
     )
+
+
+def get_unique_executor(*, workflow_id: int, task_executor: str = None):
+
+    # Handle missing value
+    if task_executor is None:
+        task_executor = settings.PARSL_DEFAULT_EXECUTOR
+
+    # Redefine task_executor, by prepending workflow_id
+    new_task_executor = add_prefix(
+        workflow_id=workflow_id, executor_label=task_executor
+    )
+
+    # Verify match between new_task_executor and available executors
+    valid_executor_labels = DataFlowKernelLoader.dfk().executors.keys()
+    if new_task_executor not in valid_executor_labels:
+        raise ValueError(
+            f"Executor label {new_task_executor} is not in "
+            f"{valid_executor_labels=}"
+        )
+
+    return new_task_executor

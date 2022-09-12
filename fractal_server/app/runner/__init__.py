@@ -11,18 +11,16 @@ from typing import Union
 
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
-from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...config import settings
 from ..models.project import Dataset
 from ..models.project import Project
 from ..models.task import PreprocessedTask
 from ..models.task import Subtask
 from ..models.task import Task
-from .runner_utils import add_prefix
 from .runner_utils import async_wrap
+from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
 
 # from .runner_utils import shutdown_executors
@@ -168,20 +166,9 @@ def _atomic_task_factory(
         depends_on = []
 
     task_args = task._arguments
-    task_executor = task.executor
-    if task_executor is None:
-        task_executor = settings.PARSL_DEFAULT_EXECUTOR
-    task_executor = add_prefix(
-        workflow_id=workflow_id, executor_label=task_executor
+    task_executor = get_unique_executor(
+        workflow_id=workflow_id, task_executor=task.executor
     )
-
-    # Verify match between task_executor and available executors
-    valid_executor_labels = DataFlowKernelLoader.dfk().executors.keys()
-    if task_executor not in valid_executor_labels:
-        raise ValueError(
-            f"Executor label {task_executor} is not in "
-            f"{valid_executor_labels=}"
-        )
 
     parall_level = task.parallelization_level
     if metadata and parall_level:
