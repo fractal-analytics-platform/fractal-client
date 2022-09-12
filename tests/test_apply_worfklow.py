@@ -80,7 +80,6 @@ dummy_subtask_parallel = Subtask(
 )
 
 
-@pytest.mark.xfail(reason="parsl config is missing")
 @pytest.mark.parametrize(
     ("task", "message", "nfiles"),
     [
@@ -103,6 +102,11 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
     """
 
     from fractal_server.app.runner import _atomic_task_factory
+    from fractal_server.app.runner.runner_utils import load_parsl_config
+
+    workflow_id = 0
+
+    load_parsl_config(enable_monitoring=False, workflow_id=workflow_id)
 
     input_path_str = "/input/path"
     output_path = tmp_path
@@ -113,6 +117,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
         input_paths=[Path(input_path_str)],
         output_path=output_path,
         metadata=metadata,
+        workflow_id=workflow_id,
     )
 
     debug(parsl_app)
@@ -428,6 +433,7 @@ async def test_yokogawa(
 
     try:
         import dask.array as da
+
         data_czyx = da.from_zarr(zarrurl)
         assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
         assert data_czyx[0, 0, 0, 0].compute() == 0
