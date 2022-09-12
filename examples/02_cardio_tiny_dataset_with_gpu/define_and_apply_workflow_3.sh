@@ -39,7 +39,7 @@ fractal task add-subtask "$WORKFLOW_NAME" "Create OME-ZARR structure" --args_jso
 echo "{\"parallelization_level\" : \"well\", \"rows\":1, \"cols\": 2, \"executor\": \"cpu\"}" > ${TMPDIR}/args_yoko.json
 fractal task add-subtask "$WORKFLOW_NAME" "Yokogawa to Zarr" --args_json ${TMPDIR}/args_yoko.json
 
-echo "{\"parallelization_level\" : \"well\", \"labeling_level\": 4, \"executor\": \"gpu\"}" > ${TMPDIR}/args_labeling.json
+echo "{\"parallelization_level\" : \"well\", \"labeling_level\": 1, \"executor\": \"gpu\"}" > ${TMPDIR}/args_labeling.json
 fractal task add-subtask "$WORKFLOW_NAME" "Per-FOV image labeling" --args_json ${TMPDIR}/args_labeling.json
 
 fractal task add-subtask "$WORKFLOW_NAME" "Replicate Zarr structure"
