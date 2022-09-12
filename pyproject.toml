@@ -39,7 +39,6 @@ pytest-mock = "^3.8.1"
 pre-commit = "^2.19.0"
 coverage = "^6.4.2"
 dask = ">=2022.6,<2022.8"
-cellpose = "2"
 pandas = "^1.2.0"
 anndata = "^0.8.0"
 
