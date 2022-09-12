@@ -36,9 +36,6 @@ from parsl.providers import SlurmProvider
 from ...config import settings
 
 
-# FORMAT = '%(asctime)s %(message)s'
-# basicConfig(format=FORMAT)
-
 formatter = Formatter("%(asctime)s; %(levelname)s; %(message)s")
 
 logger = getLogger(__name__)
