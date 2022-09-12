@@ -24,7 +24,8 @@ from ..models.task import Task
 from .runner_utils import add_prefix
 from .runner_utils import async_wrap
 from .runner_utils import load_parsl_config
-from .runner_utils import shutdown_executors
+
+# from .runner_utils import shutdown_executors
 
 
 def _task_fun(
@@ -380,7 +381,8 @@ async def submit_workflow(
         app_future=final_metadata
     )
 
-    shutdown_executors(workflow_id=workflow.id)
+    # FIXME
+    # shutdown_executors(workflow_id=workflow.id)
 
     db.add(output_dataset)
 
