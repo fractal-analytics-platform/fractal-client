@@ -1,17 +1,17 @@
 # Register user (this step will change in the future)
-http POST localhost:8000/auth/register email=test@me.com password=test
+#http POST localhost:8000/auth/register email=test@me.com password=test
 
 # Define/initialize empty folder for project-related info
 # (and also for the output dataset -- see below)
-TMPDIR=`pwd`/tmp-proj
+TMPDIR=`pwd`/tmp-proj-3
 rm -r $TMPDIR
 mkdir $TMPDIR
 
 # Set useful variables
-PROJECT_NAME="myproj"
-DATASET_IN_NAME="input-ds"
-DATASET_OUT_NAME="output-ds"
-WORKFLOW_NAME="My worfklow"
+PROJECT_NAME="myproj-3"
+DATASET_IN_NAME="input-ds-2"
+DATASET_OUT_NAME="output-ds-3"
+WORKFLOW_NAME="My worfklow 3"
 
 # Create project
 fractal project new $PROJECT_NAME $TMPDIR
@@ -33,13 +33,13 @@ fractal dataset add-resource $PROJECT_NAME $DATASET_OUT_NAME ${TMPDIR}/$DATASET_
 fractal task new "$WORKFLOW_NAME" workflow image zarr
 
 # Add subtasks (with args, if needed)
-echo "{\"num_levels\": 4, \"coarsening_xy\": 2}" > ${TMPDIR}/args_create.json
+echo "{\"num_levels\": 5, \"coarsening_xy\": 2}" > ${TMPDIR}/args_create.json
 fractal task add-subtask "$WORKFLOW_NAME" "Create OME-ZARR structure" --args_json ${TMPDIR}/args_create.json
 
 echo "{\"parallelization_level\" : \"well\", \"rows\":1, \"cols\": 2, \"executor\": \"cpu\"}" > ${TMPDIR}/args_yoko.json
 fractal task add-subtask "$WORKFLOW_NAME" "Yokogawa to Zarr" --args_json ${TMPDIR}/args_yoko.json
 
-echo "{\"parallelization_level\" : \"well\", \"labeling_level\": 3}" > ${TMPDIR}/args_labeling.json
+echo "{\"parallelization_level\" : \"well\", \"labeling_level\": 4}" > ${TMPDIR}/args_labeling.json
 fractal task add-subtask "$WORKFLOW_NAME" "Per-FOV image labeling" --args_json ${TMPDIR}/args_labeling.json
 
 fractal task add-subtask "$WORKFLOW_NAME" "Replicate Zarr structure"
