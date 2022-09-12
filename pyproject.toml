@@ -40,7 +40,7 @@ asyncio_mode = "auto"
 
 [tool.bumpver]
 current_version = "0.1.0"
-version_pattern = "MAJOR.MINOR.PATCH"
+version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
 tag = true
@@ -50,12 +50,8 @@ push = true
 "pyproject.toml" = [
     'version = "{version}"',
 ]
-"fractal/client/__init__.py" = [
+"fractal/client/config.py" = [
     '__VERSION__ = "{version}"'
-]
-"README.md" = [
-    "{version}",
-    "{pep440_version}",
 ]
 
 [tool.poetry.scripts]
