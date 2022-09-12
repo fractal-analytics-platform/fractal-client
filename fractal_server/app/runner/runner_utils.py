@@ -112,7 +112,7 @@ def load_parsl_config(
     elif config == "pelkmanslab":
         pass
 
-        # Define a single provider
+        # Define a cpu provider
         provider_args = dict(
             partition="main",
             launcher=SrunLauncher(debug=False),
@@ -125,7 +125,20 @@ def load_parsl_config(
         )
         prov_slurm_cpu = SlurmProvider(**provider_args)
 
-        # Define two identical (apart from the label) executors
+        # Define a gpu provider
+        provider_args = dict(
+            partition="gpu",
+            launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
+            nodes_per_block=1,
+            init_blocks=1,
+            min_blocks=0,
+            max_blocks=1,
+            walltime="10:00:00",
+        )
+        prov_slurm_gpu = SlurmProvider(**provider_args)
+
+        # Define executors
         htex_slurm_cpu = HighThroughputExecutor(
             label=add_prefix(workflow_id=workflow_id, executor_label="cpu"),
             provider=prov_slurm_cpu,
@@ -138,8 +151,14 @@ def load_parsl_config(
             address=address_by_hostname(),
             cpu_affinity="block",
         )
+        htex_slurm_gpu = HighThroughputExecutor(
+            label=add_prefix(workflow_id=workflow_id, executor_label="gpu"),
+            provider=prov_slurm_gpu,
+            address=address_by_hostname(),
+            cpu_affinity="block",
+        )
 
-        executors = [htex_slurm_cpu, htex_slurm_cpu_2]
+        executors = [htex_slurm_cpu, htex_slurm_cpu_2, htex_slurm_gpu]
 
     # Extract the executor labels
     new_executor_labels = [executor.label for executor in executors]
