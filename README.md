@@ -277,7 +277,7 @@ Before release checklist:
 - [ ] The current `HEAD` of the main branch passes all the tests
 - [ ] Use
 ```
-poetry run bumpver update --dry-run --[patch|minor] --tag-commit --commit
+poetry run bumpver update --dry --[patch|minor] --tag-commit --commit
 ```
 to test updating the version bump
 - [ ] If the previous step looks good, use
