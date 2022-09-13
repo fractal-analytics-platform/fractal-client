@@ -34,17 +34,12 @@ Instructions:
 2. From the `fractal-server` folder, run
 ```
 poetry add --editable ../fractal-tasks-core
-```
-and
-```
 poetry add --editable ../fractal
 ```
 (see e.g. [here](https://github.com/python-poetry/poetry/discussions/1135) for more info about the `--editable` option)
-
 If you now inspect the `pyproject.toml` file, you will notice lines like
 ```
 fractal-client = {path="../fractal", develop=true}
-...
 fractal-tasks-core = {path = "../fractal-tasks-core", develop=true}
 ```
 3. Still from the `fractal-server` folder, run
