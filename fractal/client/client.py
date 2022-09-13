@@ -529,7 +529,7 @@ async def new_task(
 
     res = await ctx.obj["client"].get(
         f"{settings.BASE_URL}/task/",
-        headers=await ctx["auth"].header(),
+        headers=await ctx.obj["auth"].header(),
     )
     data = res.json()
     task_list = [TaskRead(**item) for item in data]
