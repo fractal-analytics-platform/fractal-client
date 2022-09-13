@@ -342,7 +342,7 @@ async def add_resource(
     resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
 
     project, dataset = await _extract_project_and_dataset(
-        project_name, dataset_name
+        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
     )
     project_id = project["id"]
     dataset_id = dataset["id"]
@@ -368,7 +368,7 @@ async def get_resource(
 ):
 
     project, dataset = await _extract_project_and_dataset(
-        project_name, dataset_name
+        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
     )
     project_id = project["id"]
     dataset_id = dataset["id"]
@@ -442,7 +442,7 @@ async def modify_dataset(
     }
 
     project, dataset = await _extract_project_and_dataset(
-        project_name, dataset_name
+        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
     )
     project_id = project["id"]
     dataset_id = dataset["id"]
