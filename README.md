@@ -23,7 +23,12 @@ Fractal is currently split into three repositories, corresponding to the client,
 
 WARNING: As the three packages evolve, the following instructions may need to be updated!
 
-### Development install (all from local folders)
+
+### Development install
+
+This can be done from either local or github sources. For the relevant poetry documentation, see https://python-poetry.org/docs/cli/#add.
+
+#### From local folders
 
 This approach requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`).
 For simplicity, let us assume that the three repositories are in the same folder, and that we already issued `git checkout main` for the three of them (where `main` can be replaced by any relevant branch).
@@ -55,11 +60,35 @@ poetry add --editable ../fractal-server/ --group dev
 poetry install
 ```
 
+#### From github
 
-### Development install (all from github branches)
+Similar to the previous one, but letting the modules point to their github version.
 
-Similar to the previous one, but `path` points to a github repo and you can also specify the branch
-Full instructions will be added later.
+Instructions:
+
+1. Install `poetry` version `1.2.0b2` (e.g. `pip install poetry==1.2.0b2`). Note that we will switch to `1.2.0` (or patches) as soon as it becomes more stable (e.g. after this fix is released: https://github.com/python-poetry/poetry-core/pull/466), and hopefully we will then stick with it.
+2. From the `fractal-server` folder, run
+```
+poetry add git+https://github.com/fractal-analytics-platform/fractal-tasks-core.git#main
+poetry add git+https://github.com/fractal-analytics-platform/fractal.git#main
+```
+(you can replace `main` with any other branch)
+If you now inspect the `pyproject.toml` file, you will notice lines like
+```
+fractal-tasks-core = {git = "https://github.com/fractal-analytics-platform/fractal-tasks-core.git", rev = "main"}
+```
+3. Still from the `fractal-server` folder, run
+```
+poetry install
+```
+4. From the `fractal` folder, run
+```
+poetry add git+https://github.com/fractal-analytics-platform/fractal-server.git#main --group dev
+```
+5. Still from the `fractal` folder, run
+```
+poetry install
+```
 
 ### Fully pypi
 
