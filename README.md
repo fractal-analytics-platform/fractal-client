@@ -1,6 +1,6 @@
 # Fractal
 
-[![PyPI version](https://badge.fury.io/py/fractal.svg)](https://badge.fury.io/py/fractal)
+[![PyPI version](https://badge.fury.io/py/fractal-client.svg)](https://badge.fury.io/py/fractal-client)
 
 Fractal is a framework to process high content screening data at scale and prepares it for interactive visualization.
 
