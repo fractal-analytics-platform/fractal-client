@@ -21,14 +21,20 @@ The core development is done under contract by [@mfranzon](https://github.com/mf
 
 Fractal is currently split into three repositories, corresponding to the client, server and tasks. There exist several ways of installing these three components, depending on whether you want to use local/github/pypi versions of the packages. Independently on this choice, it is convenient to run all the following commands from a fresh virtual environment (a standard python venv, or a conda one).
 
+WARNING: As the three packages evolve, the following instructions may need to be updated!
+
 #### Development install (all from local folders)
 
-First, install `poetry` version `1.2.0b2` (e.g. `pip install poetry==1.2.0b2`).
+This approach requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`).
+For simplicity, let us assume that the three repositories are in the same folder, and that we already issued `git checkout main` for the three of them (where `main` can be replaced by any relevant branch).
+
+Instructions:
+
+1. Install `poetry` version `1.2.0b2` (e.g. `pip install poetry==1.2.0b2`).
+
 Note that we will switch to `1.2.0` (or patches) as soon as it becomes more stable (e.g. after this fix is released: https://github.com/python-poetry/poetry-core/pull/466), and hopefully we will then stick with it.
 
-This requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`).
-Let us assume that the three repositories are in the same folder. Then
-1. From the `fractal-server` folder, run
+2. From the `fractal-server` folder, run
 ```
 poetry add --editable ../fractal-tasks-core
 ```
@@ -44,15 +50,15 @@ fractal-client = {path="../fractal", develop=true}
 ...
 fractal-tasks-core = {path = "../fractal-tasks-core", develop=true}
 ```
-2. Still from the `fractal-server` folder, run
+3. Still from the `fractal-server` folder, run
 ```
 poetry install
 ```
-3. From the `fractal` folder, run
+4. From the `fractal` folder, run
 ```
 poetry add --editable ../fractal-server/ --group dev
 ```
-4. From the `fractal` folder, run
+5. From the `fractal` folder, run
 ```
 poetry install
 ```
