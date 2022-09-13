@@ -50,7 +50,7 @@ poetry install
 ```
 poetry add --editable ../fractal-server/ --group dev
 ```
-5. From the `fractal` folder, run
+5. Still from the `fractal` folder, run
 ```
 poetry install
 ```
