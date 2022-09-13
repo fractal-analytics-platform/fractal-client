@@ -30,10 +30,7 @@ For simplicity, let us assume that the three repositories are in the same folder
 
 Instructions:
 
-1. Install `poetry` version `1.2.0b2` (e.g. `pip install poetry==1.2.0b2`).
-
-Note that we will switch to `1.2.0` (or patches) as soon as it becomes more stable (e.g. after this fix is released: https://github.com/python-poetry/poetry-core/pull/466), and hopefully we will then stick with it.
-
+1. Install `poetry` version `1.2.0b2` (e.g. `pip install poetry==1.2.0b2`). Note that we will switch to `1.2.0` (or patches) as soon as it becomes more stable (e.g. after this fix is released: https://github.com/python-poetry/poetry-core/pull/466), and hopefully we will then stick with it.
 2. From the `fractal-server` folder, run
 ```
 poetry add --editable ../fractal-tasks-core
