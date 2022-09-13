@@ -42,7 +42,7 @@ Instructions:
 poetry add --editable ../fractal-tasks-core
 poetry add --editable ../fractal
 ```
-(see e.g. [here](https://github.com/python-poetry/poetry/discussions/1135) for more info about the `--editable` option)
+(see e.g. [here](https://github.com/python-poetry/poetry/discussions/1135) for more info about the `--editable` option).
 If you now inspect the `pyproject.toml` file, you will notice lines like
 ```
 fractal-client = {path="../fractal", develop=true}
@@ -74,6 +74,7 @@ poetry add git+https://github.com/fractal-analytics-platform/fractal-tasks-core.
 poetry add git+https://github.com/fractal-analytics-platform/fractal.git#main
 ```
 (you can replace `main` with any other branch)
+(see [here](https://github.com/python-poetry/poetry/issues/6390) for the meaning of `--editable` when used with git paths).
 If you now inspect the `pyproject.toml` file, you will notice lines like
 ```
 fractal-tasks-core = {git = "https://github.com/fractal-analytics-platform/fractal-tasks-core.git", rev = "main"}
