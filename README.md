@@ -42,7 +42,7 @@ pip install git+https://github.com/fractal-analytics-platform/fractal-tasks-core
 Notes
 * You can specify either branches (e.g. `dev`) or tags (e.g. `0.1.2`);
 * Ordering matters, by now. Since fractal-server depends both on fractal-tasks-core and fractal-client, installing it after other packages could override their install;
-* By now we need the `--force-reinstall` flag, to make sure that `pip` does not skip the package just because some "satisfactory" version of it (e.g. one with the same version number) is already installed.
+* By now, the `--force-reinstall` flag is a workaround to make sure that `pip` does not skip the package just because some "satisfactory" version of it (e.g. one with the same version number) is already installed. Probably we can remove it, or replace with `-e` or `-U`. To be checked.
 
 Other useful commands:
 ```
