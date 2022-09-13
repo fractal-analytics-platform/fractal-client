@@ -21,169 +21,56 @@ The core development is done under contract by [@mfranzon](https://github.com/mf
 
 ### Requirements and configuration
 
-- Install poetry, if you don't already have it. Here the official [guide](https://python-poetry.org/docs/)
 
-- Move into the the folder
-```
-cd mwe_fractal/
-```
-- In your working (virtual) environment install all the dependencies with
+There exist several ways of installing the different components of `fractal` (client, server and tasks), depending on whether you want to use local/github/pypi versions of the packages.
 
-```
-poetry install
-```
-(takes few minutes)
-- Install `graphviz`. This can be done via `conda install -c anaconda graphviz`, for instance, or via `sudo apt-get install graphviz` (or equivalent commands on other systems).
+####
 
-- Define some global configuration parameters in `fractal/fractal_config.py`. The essential ones are `partition` (the name of the SLURM partition on your cluster) and `worker_init` (which typically includes the activation of a virtual environment). An example is:
+First, install `poetry` version `1.2.0b2` (e.g. `pip install poetry==1.2.0b2`).
+NOTE that we will switch to `1.2.0` (or patches) as soon as it becomes more stable (e.g. after this fix is released: https://github.com/python-poetry/poetry-core/pull/466), and hopefully we will then stick with it.
+
+This requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`).
+Let us assume that the three repositories are in the same folder.
+
+In `fractal-server/pyproject.toml`, there should be the line
 ```
-# Parameters of parsl.executors.HighThroughputExecutor
-max_workers = 32
-# Parameters of parsl.providers.SlurmProvider
-# Note that worker_init is a command which is included at the beginning of
-# each SLURM submission scripts
-nodes_per_block = 1
-cores_per_node = 16
-mem_per_node_GB = 64
-partition = "main"
-worker_init = "source /opt/easybuild/software/Anaconda3/2019.07/"
-worker_init += "etc/profile.d/conda.sh\n"
-worker_init += "conda activate fractal"
+[tool.poetry.dependencies]
+...
+fractal-client = {path="../fractal", develop=true}
+...
+fractal-tasks-core = {path = "../fractal-tasks-core", develop=true}
+...
 ```
 
-## `fractal_cmd.py` playbook
-
-On the previous terminal window, create the first project.
-
-Move into the fractal folder.
-
-First of all have a look on all the possible
-commands:
+In `fractal/pyproject.toml`, there should be the lines
+```
+[tool.poetry.group.dev.dependencies]
+...
+fractal-server = {path = "../fractal-server", develop=true}
+...
 
 ```
-python fractal_cmd.py
+
+After these changes, we need to install both packages.
+From the `fractal-server` folder, we issue `poetry install` (or `poetry lock --no-update` first, if `poetry install` raises a warning calling for this command).
+Then we do the same (`poetry install`) from the `fractal` folder.
+
+
+#### Fully pypi
+
+Assuming that `pip` is available on your system, you can do:
 ```
-
-Typing ```--help``` after each command like:
-
+pip install fractal-server fractal-client fractal-tasks-core
 ```
-python fractal_cmd.py project --help
-```
-you will see the arguments you had to pass.
-
-### Let's create new project:
-
-```
-python fractal_cmd.py project new mwe-test path_output dstest
-```
-   - In which mwe-test is the name on the project
-   - Then the path in which I want to put all the config files of my project (in this case I create a subfolder in the current folder, called ```path_output```)
-   - Last one is the name of the first dataset of the project (assuming that each project has least one dataset)
-
-- Now you should see two files:
-   - One called fractal.json in the fractal/ directory
-   - The second one, into the project folder you have choose called ```<project_name>.json```, in our case ```mwe-test.json```
-
-```fractal.json``` stores all the general information like:
- - projects names, their path and the datasets name associated, then for each project the user that have created it
- - tasks, in this way tasks could be visible by everyone
- - users and groups
-
-```mwe-test.json``` stores the specific information regarding current project:
- - datasets, their name, resources associated and the type
- - workflow (at this step workflow are project-specific)
-
-With
-
-```
-python fractal_cmd.py project list
-```
-now you can see your projects.
-
-### Datasets
-Add resources to the dataset we have already created.
-
-```
-python fractal_cmd.py dataset add-resources mwe-test dstest absolute/path/of/resource
-```
-
-arguments are:
- - mwe-test, name of project
- - dstest, name of dataset
- - path to the folder in which are the files. For example the path to the folder in which there are tif images.
-
- Then you can update the type of the dataset, for example set it as ```tif``` or ```png```
-
-```
-python fractal_cmd.py dataset update-type mwe-test dstest tif
-```
-
-Now you can see the dataset object using list command passing as argument the project name:
-
-```
-python fractal_cmd.py dataset list mwe-test
-```
-
-### Tasks
-
-***At the moment the task name and the unix executable which contains the logic of the tasks should have same name***
-
-The tasks executable are in ```tasks/``` folder
-
-Add a task; tasks are into the tasks folder. To add one or more just copy the filename without extension, example:
-
-```
-python fractal_cmd.py task add yokogawa_to_zarr zarr zarr well
-```
-The last three arguments are the input/output type and the parallelization level. Each task should act at the level of a `plate` or `well`, while `none` means that the task is not parallelized over any of its arguments.
-
-For the moment the "depends_on" argument is not used.
-
-```
-python fractal_cmd.py task list
-```
-Now you should see the new task.
-
-### Workflow
-Let's create a workflow :
-
-```
-python fractal_cmd.py workflow new mwe-test wftest create_zarr_structure
-```
-
- - project name
- - workflow name
- - tasks to add, in this case just one
+and you will get the most recent PyPI release of these packages.
 
 
-*** Note: at the moment, all workflows must start with the `create_zarr_structure` task. ***
+#### TO CHECK
+
+What about `graphviz`? Is it necessary to install it on a side (with `sudo apt-get install graphviz` or equivalent commands on other systems)?
 
 
-### Workflow execution
-
-First, we need to specify a set of workflow-dependent parameters, which by now should be stored in a dedicated JSON file. An example of this file (for a workflow that performs yokogawa-to-zarr conversion and maximum intensity projection) reads
-```
-{
-"workflow_name": "uzh_1_well_2x2_sites",
-"dims": [2, 2],
-"coarsening_factor_xy": 3,
-"coarsening_factor_z": 1,
-"num_levels": 5
-}
-```
-
-After saving these parameters in `wf_params.json`, we execute the workflow through
-
-```
-python fractal_cmd.py workflow apply mwe-test wftest dstest dstest resource_in path_output wf_params.json
-```
-
-***PAY ATTENTION: `resource_in` should be a folder that is already inserted as resource in the input dataset, otherwise fractal_cmd will raise an error. Instead, the path_out folder will be created, if it does not exist.***
-
-This command will use [parsl](https://parsl.readthedocs.io/en/stable/index.html) to run the tasks on a SLURM cluster. When the `fractal_cmd.py` script is complete, you will see a `runinfo` folder, in the current directory, with subfolder for each run (`000`, `001`, `002`..). This subfolder includes all logs from parsl, whose structure will be described in detail at a later stage.
-
-
-### Setting up a local SLURM cluster
+### OLD: Setting up a local SLURM cluster
 
 *** WARNING: This part has not been tested with the new parsl version of fractal! ***
 
@@ -206,7 +93,7 @@ To deploy it just use docker-compose :
 docker-compose -f docker-slurm.yaml up -d
 ```
 
-### Podman setup
+#### Podman setup
 As docker case, it requires Podman and podman-compose installed. Here the two references:
 
 Podman : [Guide](https://podman.io/getting-started/installation)
@@ -219,7 +106,6 @@ To deploy the .yaml file just use podman-compose :
 podman-compose -f docker-slurm.yaml up -d
 ```
 
-
 ## Misc
 
 To easily load all channels of the 2D example in Napari you can just run this piece of code in a cell of a Jupyter notebook or run it as an executable.
@@ -231,35 +117,6 @@ import zarr
 x = zarr.open('path/to/201703012-NUPfollowup.zarr')
 viewer = napari.Viewer()
 [viewer.add_image(zarr.open(f'path/to/201703012-NUPfollowup.zarr/C22/{n}', 'r'), name=f'{n}', blending="additive") for n in x.C22]
-```
-
-## Commands cli
-
-```
-fractal project new [project_name] [path] [dataset_name] - creates new project in path and create the first dataset object
-
-fractal project list - lists registered projects
-
-fractal dataset list [project_name] - lists datasets in project
-
-fractal dataset new [project_name] [dataset_name] [resources] [dataset_type] - create a new dataset, add resources and the dataset type
-
-fractal dataset add-resources [project_name] [dataset_name] [resources] - add resources to an existing dataset
-
-fractal dataset update-type [project_name] [dataset_name] [dataset_type] - update type of dataset
-
-fractal task list - list all the existing task
-
-fractal task add [task_name] [input_type] [output_type] [parallelization_level] - create a new task
-
-fractal workflow new [project_name] [workflow_name] [tasks] - create a new workflow to the project
-
-fractal workflow list [project_name] - list all the workflow to that project
-
-fractal workflow add-task [project_name] [workflow_name] [tasks_names] - add new tasks to the workflow
-
-fractal workflow apply [project_name] [workflow_name] [dataset_name] [resource_in] [resource_out] [wf_parameters_json_file] - run workflow using the parameters into the .json
-
 ```
 
 ## Development
