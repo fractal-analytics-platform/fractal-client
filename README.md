@@ -11,19 +11,19 @@ Fractal is currently an **early alpha build**. We currently support only Yokogaw
 
 Shortened movie of browsing an OME-Zarr file generated with Fractal in napari, using the [napari-ome-zarr plugin](https://github.com/ome/napari-ome-zarr). Actual loading times vary and can be a bit slower than in this GIF.
 
-### Contributors
+## Contributors
 Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi). The project was originally led by [@dvischi](https://github.com/dvischi).
 The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
 
 -----------------------------
 
-### How to install
+## How to install
 
 Fractal is currently split into three repositories, corresponding to the client, server and tasks. There exist several ways of installing these three components, depending on whether you want to use local/github/pypi versions of the packages. Independently on this choice, it is convenient to run all the following commands from a fresh virtual environment (a standard python venv, or a conda one).
 
 WARNING: As the three packages evolve, the following instructions may need to be updated!
 
-#### Development install (all from local folders)
+### Development install (all from local folders)
 
 This approach requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`).
 For simplicity, let us assume that the three repositories are in the same folder, and that we already issued `git checkout main` for the three of them (where `main` can be replaced by any relevant branch).
@@ -64,12 +64,12 @@ poetry install
 ```
 
 
-#### Development install (all from github branches)
+### Development install (all from github branches)
 
 Similar to the previous one, but `path` points to a github repo and you can also specify the branch
 Full instructions will be added later.
 
-#### Fully pypi
+### Fully pypi
 
 Assuming that `pip` is available on your system, you can do:
 ```
@@ -78,18 +78,18 @@ pip install fractal-server fractal-client fractal-tasks-core
 and you will get the most recent PyPI release of these packages.
 
 
-#### TO CHECK
+### TO CHECK
 
 What about `graphviz`? Is it necessary to install it on a side (with `sudo apt-get install graphviz` or equivalent commands on other systems)?
 
 
-### OLD: Setting up a local SLURM cluster
+## OLD: Setting up a local SLURM cluster
 
 *** WARNING: This part has not been tested with the new parsl version of fractal! ***
 
 To test slurm integration it is possible to run Fractal on a slurm node or to test it locally, creating a small slurm cluster using Docker/Podman
 
-#### Docker setup
+### Docker setup
 
 To create your testbed with a slurm cluster you have to install Docker :
 [Guide](https://docs.docker.com/get-docker/)
@@ -106,7 +106,7 @@ To deploy it just use docker-compose :
 docker-compose -f docker-slurm.yaml up -d
 ```
 
-#### Podman setup
+### Podman setup
 As docker case, it requires Podman and podman-compose installed. Here the two references:
 
 Podman : [Guide](https://podman.io/getting-started/installation)
