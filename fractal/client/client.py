@@ -319,6 +319,7 @@ async def dataset_show(ctx, project_name: str, dataset_name: str) -> None:
     )
 
     console.print(table)
+    await ctx.obj["client"].aclose()
 
 
 @dataset.command(name="add-resource")
