@@ -61,8 +61,6 @@ async def _extract_project_and_dataset(
     except IndexError as e:
         raise IndexError(f"Dataset {dataset_name} not found", str(e))
 
-    await client.aclose()
-
     return project, dataset
 
 
