@@ -144,7 +144,8 @@ podman-compose -f docker-slurm.yaml up -d
 
 ## Misc
 
-To easily load all channels of the 2D example in Napari you can just run this piece of code in a cell of a Jupyter notebook or run it as an executable.
+
+1. To easily load all channels of the 2D example in Napari you can just run this piece of code in a cell of a Jupyter notebook or run it as an executable.
 
 ```
 import napari
@@ -154,6 +155,8 @@ x = zarr.open('path/to/201703012-NUPfollowup.zarr')
 viewer = napari.Viewer()
 [viewer.add_image(zarr.open(f'path/to/201703012-NUPfollowup.zarr/C22/{n}', 'r'), name=f'{n}', blending="additive") for n in x.C22]
 ```
+
+2. To clear the cache of poetry, see https://python-poetry.org/docs/master/cli/#cache-clear.
 
 ## Development
 
