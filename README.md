@@ -1,4 +1,7 @@
 # Fractal
+
+[![PyPI version](https://badge.fury.io/py/fractal-server.svg)](https://badge.fury.io/py/fractal-server)
+
 Fractal is a framework to process high content screening data at scale and prepares it for interactive visualization.
 
 Fractal provides distributed workflows that convert TBs of image data into OME-Zarr files. The platform then processes the 3D image data by applying tasks like illumination correction and maximum intensity projection. The pyramidal OME-Zarr files enable interactive visualization in the napari viewer.
