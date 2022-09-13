@@ -15,46 +15,53 @@ Shortened movie of browsing an OME-Zarr file generated with Fractal in napari, u
 Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi). The project was originally led by [@dvischi](https://github.com/dvischi).
 The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
 
-*Installation instructions below have not been fully updated yet*
-
 -----------------------------
 
-### Requirements and configuration
+### How to install
 
+Fractal is currently split into three repositories, corresponding to the client, server and tasks. There exist several ways of installing these three components, depending on whether you want to use local/github/pypi versions of the packages. Independently on this choice, it is convenient to run all the following commands from a fresh virtual environment (a standard python venv, or a conda one).
 
-There exist several ways of installing the different components of `fractal` (client, server and tasks), depending on whether you want to use local/github/pypi versions of the packages.
-
-####
+#### Development install (all from local folders)
 
 First, install `poetry` version `1.2.0b2` (e.g. `pip install poetry==1.2.0b2`).
-NOTE that we will switch to `1.2.0` (or patches) as soon as it becomes more stable (e.g. after this fix is released: https://github.com/python-poetry/poetry-core/pull/466), and hopefully we will then stick with it.
+Note that we will switch to `1.2.0` (or patches) as soon as it becomes more stable (e.g. after this fix is released: https://github.com/python-poetry/poetry-core/pull/466), and hopefully we will then stick with it.
 
 This requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`).
-Let us assume that the three repositories are in the same folder.
-
-In `fractal-server/pyproject.toml`, there should be the line
+Let us assume that the three repositories are in the same folder. Then
+1. From the `fractal-server` folder, run
 ```
-[tool.poetry.dependencies]
-...
+poetry add --editable ../fractal-tasks-core
+```
+and
+```
+poetry add --editable ../fractal
+```
+(see e.g. [here](https://github.com/python-poetry/poetry/discussions/1135) for more info about the `--editable` option)
+
+If you now inspect the `pyproject.toml` file, you will notice lines like
+```
 fractal-client = {path="../fractal", develop=true}
 ...
 fractal-tasks-core = {path = "../fractal-tasks-core", develop=true}
-...
+```
+2. Still from the `fractal-server` folder, run
+```
+poetry install
+```
+3. From the `fractal` folder, run
+```
+poetry add --editable ../fractal-server/ --group dev
+```
+4. From the `fractal` folder, run
+```
+poetry install
 ```
 
-In `fractal/pyproject.toml`, there should be the lines
-```
-[tool.poetry.group.dev.dependencies]
-...
-fractal-server = {path = "../fractal-server", develop=true}
-...
 
-```
+#### Development install (all from github branches)
 
-After these changes, we need to install both packages.
-From the `fractal-server` folder, we issue `poetry install` (or `poetry lock --no-update` first, if `poetry install` raises a warning calling for this command).
-Then we do the same (`poetry install`) from the `fractal` folder.
-
+Similar to the previous one, but `path` points to a github repo and you can also specify the branch
+Full instructions will be added later.
 
 #### Fully pypi
 
