@@ -61,8 +61,6 @@ async def _extract_project_and_dataset(
     except IndexError as e:
         raise IndexError(f"Dataset {dataset_name} not found", str(e))
 
-    await client.aclose()
-
     return project, dataset
 
 
@@ -321,6 +319,7 @@ async def dataset_show(ctx, project_name: str, dataset_name: str) -> None:
     )
 
     console.print(table)
+    await ctx.obj["client"].aclose()
 
 
 @dataset.command(name="add-resource")
@@ -342,7 +341,7 @@ async def add_resource(
     resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
 
     project, dataset = await _extract_project_and_dataset(
-        project_name, dataset_name
+        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
     )
     project_id = project["id"]
     dataset_id = dataset["id"]
@@ -368,7 +367,7 @@ async def get_resource(
 ):
 
     project, dataset = await _extract_project_and_dataset(
-        project_name, dataset_name
+        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
     )
     project_id = project["id"]
     dataset_id = dataset["id"]
@@ -442,7 +441,7 @@ async def modify_dataset(
     }
 
     project, dataset = await _extract_project_and_dataset(
-        project_name, dataset_name
+        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
     )
     project_id = project["id"]
     dataset_id = dataset["id"]
@@ -529,7 +528,7 @@ async def new_task(
 
     res = await ctx.obj["client"].get(
         f"{settings.BASE_URL}/task/",
-        headers=await ctx["auth"].header(),
+        headers=await ctx.obj["auth"].header(),
     )
     data = res.json()
     task_list = [TaskRead(**item) for item in data]
