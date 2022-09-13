@@ -45,7 +45,7 @@ class OAuthClient(BaseModel):
     REVOKE_TOKEN_ENDPOINT: Optional[str]
 
 
-__VERSION__ = "0.1.1"
+__VERSION__ = "0.1.2"
 
 
 class DeploymentType(str, Enum):
