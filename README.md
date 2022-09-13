@@ -18,8 +18,6 @@ Shortened movie of browsing an OME-Zarr file generated with Fractal in napari, u
 Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi). The project was originally led by [@dvischi](https://github.com/dvischi).
 The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
 
------------------------------
-
 ## How to install (with pip)
 
 Fractal is currently split into three repositories, corresponding to the client, server and tasks. There exist several ways of installing these three components, depending on whether you want to use local/github/pypi versions of the packages. Independently on this choice, it is convenient to run all the following commands from a fresh virtual environment (a standard python venv, or a conda one).
@@ -38,13 +36,19 @@ pip install fractal-server==0.1.2
 To have a bit more flexibility, and try out different branches, one can always pip-install from github repositories, e.g.
 ```
 pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@0.1.2
-pip install git+https://github.com/fractal-analytics-platform/fractal.git@dev
-pip install git+https://github.com/fractal-analytics-platform/fractal-tasks-core.git@dev
+pip install git+https://github.com/fractal-analytics-platform/fractal.git@dev --force-reinstall
+pip install git+https://github.com/fractal-analytics-platform/fractal-tasks-core.git@dev --force-reinstall
 ```
-Note that we can specify either branches (e.g. `dev`) or tags (e.g. `0.1.2`).
-Also note that the ordering matters, by now. Since fractal-server depends both on fractal-tasks-core and fractal-client, installing it after other packages could override their install.
+Notes
+* You can specify either branches (e.g. `dev`) or tags (e.g. `0.1.2`);
+* Ordering matters, by now. Since fractal-server depends both on fractal-tasks-core and fractal-client, installing it after other packages could override their install;
+* By now we need the `--force-reinstall` flag, to make sure that `pip` does not skip the package just because some "satisfactory" version of it (e.g. one with the same version number) is already installed.
 
-A useful command then is `pip show fractal-server fractal-client fractal-tasks-core`.
+Other useful commands:
+```
+pip show fractal-server fractal-client fractal-tasks-core
+pip uninstall fractal-server fractal-client fractal-tasks-core
+```
 
 
 ## How to install (with poetry)
