@@ -20,14 +20,34 @@ The core development is done under contract by [@mfranzon](https://github.com/mf
 
 -----------------------------
 
-## How to install
+## How to install (with pip)
 
 Fractal is currently split into three repositories, corresponding to the client, server and tasks. There exist several ways of installing these three components, depending on whether you want to use local/github/pypi versions of the packages. Independently on this choice, it is convenient to run all the following commands from a fresh virtual environment (a standard python venv, or a conda one).
 
 WARNING: As the three packages evolve, the following instructions may need to be updated!
 
+The simplest way to install the three packages is to pip-install their PyPI versions:
+```
+pip install fractal-client fractal-server fractal-tasks-core
+```
+possibly also with some specific versions, e.g.
+```
+pip install fractal-server==0.1.2
+```
 
-### Development install
+To have a bit more flexibility, and try out different branches, one can always pip-install from github repositories, e.g.
+```
+pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@0.1.2
+pip install git+https://github.com/fractal-analytics-platform/fractal.git@dev
+pip install git+https://github.com/fractal-analytics-platform/fractal-tasks-core.git@dev
+```
+Note that we can specify either branches (e.g. `dev`) or tags (e.g. `0.1.2`).
+Also note that the ordering matters, by now. Since fractal-server depends both on fractal-tasks-core and fractal-client, installing it after other packages could override their install.
+
+A useful command then is `pip show fractal-server fractal-client fractal-tasks-core`.
+
+
+## How to install (with poetry)
 
 This approach requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`). For the relevant poetry documentation, see https://python-poetry.org/docs/cli/#add.
 
@@ -94,15 +114,6 @@ poetry add git+https://github.com/fractal-analytics-platform/fractal-server.git#
 ```
 poetry install
 ```
-
-### Fully pypi
-
-Assuming that `pip` is available on your system, you can do:
-```
-pip install fractal-server fractal-client fractal-tasks-core
-```
-and you will get the most recent PyPI release of these packages.
-
 
 ### TO CHECK
 
