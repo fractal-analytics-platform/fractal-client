@@ -9,3 +9,5 @@ dist/*
 file:cachedb
 monitoring.db
 runinfo
+.*.py.swp
+parsl_executors.log
