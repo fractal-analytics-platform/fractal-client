@@ -26,11 +26,12 @@ WARNING: As the three packages evolve, the following instructions may need to be
 
 ### Development install
 
-This can be done from either local or github sources. For the relevant poetry documentation, see https://python-poetry.org/docs/cli/#add.
+This approach requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`). For the relevant poetry documentation, see https://python-poetry.org/docs/cli/#add.
+
+This can be done from either local or github sources.
 
 #### From local folders
 
-This approach requires some small changes to the `pyproject.toml` file of two client/server repositories (`fractal` and `fractal-server`).
 For simplicity, let us assume that the three repositories are in the same folder, and that we already issued `git checkout main` for the three of them (where `main` can be replaced by any relevant branch).
 
 Instructions:
