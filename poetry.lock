@@ -429,6 +429,9 @@ category = "dev"
 optional = false
 python-versions = ">=3.7"
 
+[package.dependencies]
+tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\""}
+
 [package.extras]
 toml = ["tomli"]
 
@@ -2845,7 +2848,7 @@ tasks-core = ["fractal-tasks-core"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "5dfdb11d3969eafd4ecc9384e83ff56f068566cba192e14c361372ea1a99a1ec"
+content-hash = "3a6fbca0c87433eb9fbff6b9e3fefd2995daa38e8a085b1573e37353c66ddd36"
 
 [metadata.files]
 aiobotocore = []

@@ -41,7 +41,7 @@ bumpver = "^2022.1116"
 Pillow = "^9.1.1"
 pytest-mock = "^3.8.1"
 pre-commit = "^2.19.0"
-coverage = "^6.4.2"
+coverage = {extras = ["toml"], version = "^6.4.4"}
 dask = ">=2022.6,<2022.8"
 pandas = "^1.2.0"
 anndata = "^0.8.0"
@@ -72,3 +72,6 @@ push = true
 
 [tool.poetry.scripts]
 fractal-server = "fractal_server.__main__:run"
+
+[tool.coverage.run]
+omit = ["tests/*"]
