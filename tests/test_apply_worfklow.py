@@ -327,6 +327,26 @@ async def test_create_zarr(
     res = await db.execute(stm)
     create_ome_zarr_task = res.scalar()
 
+    # FIXME: we should modify the task args, adding
+    # channel_parameters={"A01_C01": {}}
+    # The code below is just to keep in mind something similar
+    """
+    updates_to_args = {"channel_parameters": {"A01_C01": {}}}
+    db_task = await db.get(Task, task_id)
+    for key, value in task_update.dict(exclude_unset=True).items():
+        if key == "name":
+            setattr(db_task, key, value)
+        elif key == "default_args":
+            current_default_args = deepcopy(db_task._arguments)
+            current_default_args.update(value)
+            setattr(db_task, key, current_default_args)
+        else:
+            raise Exception("patch_task endpoint cannot set {key=}")
+
+    await db.commit()
+    await db.refresh(db_task)
+    """
+
     await wf.add_subtask(db, subtask=create_ome_zarr_task)
     debug(TaskRead.from_orm(wf))
 
