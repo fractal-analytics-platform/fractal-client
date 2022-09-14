@@ -405,9 +405,7 @@ async def test_yokogawa(
     res = await db.execute(stm)
     yokogawa = res.scalar()
     await wf.add_subtask(
-        db,
-        subtask=yokogawa,
-        args=dict(parallelization_level="well", rows=2, cols=1),
+        db, subtask=yokogawa, args=dict(parallelization_level="well")
     )
     debug(TaskRead.from_orm(wf))
 
@@ -435,7 +433,7 @@ async def test_yokogawa(
         import dask.array as da
 
         data_czyx = da.from_zarr(zarrurl)
-        assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+        assert data_czyx.shape == (1, 2, 2160, 2 * 2560)
         assert data_czyx[0, 0, 0, 0].compute() == 0
     except ImportError:
         pass

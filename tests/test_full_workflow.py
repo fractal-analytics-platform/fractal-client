@@ -135,7 +135,7 @@ async def test_project_creation(
             f"{PREFIX}/task/{workflow_id}/subtask/",
             json=dict(
                 subtask_id=task_id_yokogawa,
-                args=dict(parallelization_level="well", rows=2, cols=1),
+                args=dict(parallelization_level="well"),
             ),
         )
         assert res.status_code == 201
@@ -176,6 +176,7 @@ async def test_project_creation(
         debug(zarrurl)
         try:
             import dask.array as da
+
             data_czyx = da.from_zarr(zarrurl)
             assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
             assert data_czyx[0, 0, 0, 0].compute() == 0
