@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -327,25 +328,13 @@ async def test_create_zarr(
     res = await db.execute(stm)
     create_ome_zarr_task = res.scalar()
 
-    # FIXME: we should modify the task args, adding
-    # channel_parameters={"A01_C01": {}}
-    # The code below is just to keep in mind something similar
-    """
-    updates_to_args = {"channel_parameters": {"A01_C01": {}}}
-    db_task = await db.get(Task, task_id)
-    for key, value in task_update.dict(exclude_unset=True).items():
-        if key == "name":
-            setattr(db_task, key, value)
-        elif key == "default_args":
-            current_default_args = deepcopy(db_task._arguments)
-            current_default_args.update(value)
-            setattr(db_task, key, current_default_args)
-        else:
-            raise Exception("patch_task endpoint cannot set {key=}")
-
+    # Modify the task default args
+    db_task = await db.get(Task, create_ome_zarr_task.id)
+    current_default_args = deepcopy(db_task._arguments)
+    current_default_args.update(dict(channel_parameters={"A01_C01": {}}))
+    setattr(db_task, "default_args", current_default_args)
     await db.commit()
     await db.refresh(db_task)
-    """
 
     await wf.add_subtask(db, subtask=create_ome_zarr_task)
     debug(TaskRead.from_orm(wf))
@@ -365,7 +354,7 @@ async def test_create_zarr(
     debug(out_ds)
     assert out_ds.meta
     # FIXME
-    # The assertion above needs be spcified to the metadata of the task
+    # The assertion above needs be specified to the metadata of the task
 
 
 async def test_yokogawa(
@@ -414,6 +403,14 @@ async def test_yokogawa(
     stm = select(Task).where(Task.name == "Create OME-ZARR structure")
     res = await db.execute(stm)
     create_ome_zarr_task = res.scalar()
+
+    # Modify the task default args
+    db_task = await db.get(Task, create_ome_zarr_task.id)
+    current_default_args = deepcopy(db_task._arguments)
+    current_default_args.update(dict(channel_parameters={"A01_C01": {}}))
+    setattr(db_task, "default_args", current_default_args)
+    await db.commit()
+    await db.refresh(db_task)
 
     await wf.add_subtask(
         db,

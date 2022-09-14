@@ -128,7 +128,10 @@ async def test_project_creation(
         # add subtasks
         res = await client.post(
             f"{PREFIX}/task/{workflow_id}/subtask/",
-            json=dict(subtask_id=task_id_create_zarr),
+            json=dict(
+                subtask_id=task_id_create_zarr,
+                args=dict(channel_parameters={"A01_C01": {}}),
+            ),
         )
         assert res.status_code == 201
         res = await client.post(
@@ -178,7 +181,7 @@ async def test_project_creation(
             import dask.array as da
 
             data_czyx = da.from_zarr(zarrurl)
-            assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+            assert data_czyx.shape == (1, 2, 2160, 2 * 2560)
             assert data_czyx[0, 0, 0, 0].compute() == 0
         except ImportError:
             pass
