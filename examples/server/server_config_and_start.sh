@@ -16,3 +16,7 @@ echo -e "DEPLOYMENT_TYPE=testing\nJWT_SECRET_KEY=secret\nDATA_DIR_ROOT=/tmp/\nSQ
 
 # Start the server
 fractal-server
+
+# In case the port is already taken, use
+# python start_server_on_another_port.py 8001
+# NOTE: you should also update the client scripts, replacing 8000 with 8001 (or similar)
