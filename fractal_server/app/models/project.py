@@ -4,6 +4,9 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from fractal.common.models import DatasetBase
+from fractal.common.models import ProjectBase
+from fractal.common.models import ResourceBase
 from pydantic import UUID4
 from sqlalchemy import Column
 from sqlalchemy.types import JSON
@@ -11,9 +14,6 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 
 from .security import UserOAuth
-from fractal.common.models import DatasetBase
-from fractal.common.models import ProjectBase
-from fractal.common.models import ResourceBase
 
 
 class Dataset(DatasetBase, table=True):  # type: ignore
@@ -40,7 +40,10 @@ class Project(ProjectBase, table=True):  # type: ignore
     user: Optional[UserOAuth] = Relationship()
 
     dataset_list: List[Dataset] = Relationship(
-        sa_relationship_kwargs={"lazy": "selectin"}
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "cascade": "all, delete-orphan",
+        }
     )
 
 

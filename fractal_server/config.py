@@ -72,6 +72,11 @@ class Settings(BaseSettings):
     JWT_EXPIRE_SECONDS: int = int(getenv("JWT_EXPIRE_SECONDS", default=180))
     JWT_SECRET_KEY: str = fail_getenv("JWT_SECRET_KEY")
 
+    # COOKIE TOKEN
+    COOKIE_EXPIRE_SECONDS: int = int(
+        getenv("COOKIE_EXPIRE_SECONDS", default=86400)
+    )
+
     ###########################################################################
     # DATABASE
     ###########################################################################
