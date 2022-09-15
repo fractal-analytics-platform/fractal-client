@@ -25,6 +25,7 @@ alembic = "^1.8.0"
 uvicorn = "^0.18.2"
 SQLAlchemy-Utils = "^0.38.3"
 parsl = "^1.3.0dev0"
+
 fractal-tasks-core = { version = "^0.1.3", optional = true }
 
 [tool.poetry.extras]
