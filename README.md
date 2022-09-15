@@ -1,6 +1,6 @@
 # Fractal
 
-![PyPI version](https://img.shields.io/pypi/v/fractal-client?color=green)
+![PyPI version](https://img.shields.io/pypi/v/fractal-client?color=gree)
 
 Fractal is a framework to process high content screening data at scale and prepares it for interactive visualization.
 
