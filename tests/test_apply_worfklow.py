@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -327,6 +328,14 @@ async def test_create_zarr(
     res = await db.execute(stm)
     create_ome_zarr_task = res.scalar()
 
+    # Modify the task default args
+    db_task = await db.get(Task, create_ome_zarr_task.id)
+    current_default_args = deepcopy(db_task._arguments)
+    current_default_args.update(dict(channel_parameters={"A01_C01": {}}))
+    setattr(db_task, "default_args", current_default_args)
+    await db.commit()
+    await db.refresh(db_task)
+
     await wf.add_subtask(db, subtask=create_ome_zarr_task)
     debug(TaskRead.from_orm(wf))
 
@@ -345,7 +354,7 @@ async def test_create_zarr(
     debug(out_ds)
     assert out_ds.meta
     # FIXME
-    # The assertion above needs be spcified to the metadata of the task
+    # The assertion above needs be specified to the metadata of the task
 
 
 async def test_yokogawa(
@@ -395,6 +404,14 @@ async def test_yokogawa(
     res = await db.execute(stm)
     create_ome_zarr_task = res.scalar()
 
+    # Modify the task default args
+    db_task = await db.get(Task, create_ome_zarr_task.id)
+    current_default_args = deepcopy(db_task._arguments)
+    current_default_args.update(dict(channel_parameters={"A01_C01": {}}))
+    setattr(db_task, "default_args", current_default_args)
+    await db.commit()
+    await db.refresh(db_task)
+
     await wf.add_subtask(
         db,
         subtask=create_ome_zarr_task,
@@ -405,9 +422,7 @@ async def test_yokogawa(
     res = await db.execute(stm)
     yokogawa = res.scalar()
     await wf.add_subtask(
-        db,
-        subtask=yokogawa,
-        args=dict(parallelization_level="well", rows=2, cols=1),
+        db, subtask=yokogawa, args=dict(parallelization_level="well")
     )
     debug(TaskRead.from_orm(wf))
 
@@ -435,7 +450,7 @@ async def test_yokogawa(
         import dask.array as da
 
         data_czyx = da.from_zarr(zarrurl)
-        assert data_czyx.shape == (1, 2, 2160 * 2, 2560)
+        assert data_czyx.shape == (1, 2, 2160, 2 * 2560)
         assert data_czyx[0, 0, 0, 0].compute() == 0
     except ImportError:
         pass
