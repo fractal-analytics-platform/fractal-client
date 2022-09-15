@@ -62,6 +62,27 @@ async def get_project(
     return project
 
 
+@router.delete("/{project_id}", status_code=204)
+async def delete_project(
+    project_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
+        )
+    if project.user_owner_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed on project",
+        )
+    await db.delete(project)
+    await db.commit()
+    return
+
+
 @router.post("/", response_model=ProjectRead, status_code=201)
 async def create_project(
     project: ProjectCreate,
@@ -209,6 +230,37 @@ async def get_resource(
     res = await db.execute(stm)
     resource_list = res.scalars().all()
     return resource_list
+
+
+@router.delete("/{project_id}/{dataset_id}/{resource_id}", status_code=204)
+async def delete_resource(
+    project_id: int,
+    dataset_id: int,
+    resource_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
+        )
+    if project.user_owner_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed on project",
+        )
+    resource = await db.get(Resource, resource_id)
+    if not resource or resource.dataset_id not in (
+        ds.id for ds in project.dataset_list
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Resource does not exist or does not belong to project",
+        )
+    await db.delete(resource)
+    await db.commit()
+    return
 
 
 @router.post(

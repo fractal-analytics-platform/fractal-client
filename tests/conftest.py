@@ -10,7 +10,7 @@ async def testdata_path() -> Path:
 
 
 from .fixtures_server import *  # noqa F403
-from .fixtures_server import override_enironment  # noqa E402
+from .fixtures_server import override_environment  # noqa E402
 
 
-override_enironment(Path(__file__).parent / "data/")
+override_environment(Path(__file__).parent / "data/")

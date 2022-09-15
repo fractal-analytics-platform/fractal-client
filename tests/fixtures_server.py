@@ -28,7 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 
-def override_enironment(testdata_path):
+def override_environment(testdata_path):
     from os import environ
 
     environ["JWT_SECRET_KEY"] = "secret_key"
@@ -53,7 +53,7 @@ def event_loop():
 
 @pytest.fixture(autouse=True, scope="session")
 def patch_settings(testdata_path):
-    return override_enironment(testdata_path)
+    return override_environment(testdata_path)
 
 
 @pytest.fixture(scope="session")
@@ -257,12 +257,15 @@ async def resource_factory(db, testdata_path):
     from fractal_server.app.models import Dataset, Resource
 
     async def __resource_factory(dataset: Dataset, **kwargs):
+        """
+        Add a new resorce to dataset
+        """
         defaults = dict(
             path=(testdata_path / "png").as_posix(), glob_pattern="*.png"
         )
         defaults.update(kwargs)
-        dataset.resource_list.append(Resource(**defaults))
-        db.add(dataset)
+        resource = Resource(dataset_id=dataset.id, **defaults)
+        db.add(resource)
         await db.commit()
         await db.refresh(dataset)
         return dataset.resource_list[-1]

@@ -128,3 +128,33 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
         assert res.status_code == 200
         for k, v in payload.items():
             assert patched_dataset[k] == payload[k]
+
+
+async def test_delete_project(client, MockCurrentUser):
+
+    async with MockCurrentUser(persist=True):
+        res = await client.get(f"{PREFIX}/")
+        data = res.json()
+        assert len(data) == 0
+
+        # CREATE A PRJ
+        res = await client.post(
+            f"{PREFIX}/", json=dict(name="name", project_dir="project dir")
+        )
+        p = res.json()
+
+        res = await client.get(f"{PREFIX}/")
+        data = res.json()
+        debug(data)
+
+        assert res.status_code == 200
+        assert len(data) == 1
+
+        # DELETE PRJ
+        res = await client.delete(f"{PREFIX}/{p['id']}")
+        assert res.status_code == 204
+
+        # GET LIST again and check that it is empty
+        res = await client.get(f"{PREFIX}/")
+        data = res.json()
+        assert len(data) == 0

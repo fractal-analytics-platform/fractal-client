@@ -39,13 +39,20 @@ async def get_user_manager(
 
 
 bearer_transport = BearerTransport(tokenUrl="/auth/token/login")
-cookie_transport = CookieTransport()
+cookie_transport = CookieTransport(cookie_samesite="none")
 
 
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(
         secret=settings.JWT_SECRET_KEY,
         lifetime_seconds=settings.JWT_EXPIRE_SECONDS,
+    )
+
+
+def get_jwt_cookie_strategy() -> JWTStrategy:
+    return JWTStrategy(
+        secret=settings.JWT_SECRET_KEY,
+        lifetime_seconds=settings.COOKIE_EXPIRE_SECONDS,
     )
 
 
@@ -57,7 +64,7 @@ token_backend = AuthenticationBackend(
 cookie_backend = AuthenticationBackend(
     name="cookie-jwt",
     transport=cookie_transport,
-    get_strategy=get_jwt_strategy,
+    get_strategy=get_jwt_cookie_strategy,
 )
 
 

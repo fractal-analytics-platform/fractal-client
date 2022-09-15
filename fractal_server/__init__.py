@@ -11,6 +11,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def collect_routers(app: FastAPI) -> None:
@@ -32,5 +33,19 @@ async def __on_startup():
 def start_application() -> FastAPI:
     app = FastAPI()
     collect_routers(app)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=[
+            "set-cookie",
+            "Set-Cookie",
+            "Content-Type",
+            "Access-Control-Allow-Headers",
+            "X-Requested-With",
+        ],
+        allow_credentials=True,
+    )
 
     return app
