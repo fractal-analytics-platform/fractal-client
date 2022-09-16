@@ -99,6 +99,22 @@ project_add_dataset_parser.add_argument(
 
 # DATASET GROUP
 dataset_parser = subparsers_main.add_parser("dataset", help="dataset commands")
+dataset_subparsers = dataset_parser.add_subparsers(
+    title="Valid subcommands:", dest="subcmd", required=True
+)
+dataset_add_resource_parser = dataset_subparsers.add_parser(
+    "add-resource", help="Add resource to existing dataset"
+)
+dataset_add_resource_parser.add_argument(
+    "project_id", type=int, help="Project id"
+)
+dataset_add_resource_parser.add_argument(
+    "dataset_id", type=int, help="Dataset id"
+)
+dataset_add_resource_parser.add_argument("path", help="Path to resource")
+dataset_add_resource_parser.add_argument(
+    "-g", "--glob-pattern", help="Glob pattern"
+)
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser("task", help="task commands")
