@@ -44,7 +44,7 @@ parser_main.add_argument(
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 
 # REGISTER GROUP
-project_parser = subparsers_main.add_parser(
+register_parser = subparsers_main.add_parser(
     "register", help="Register with the Fractal server"
 )
 
@@ -98,13 +98,13 @@ project_add_dataset_parser.add_argument(
 
 
 # DATASET GROUP
-project_parser = subparsers_main.add_parser("dataset", help="dataset commands")
+dataset_parser = subparsers_main.add_parser("dataset", help="dataset commands")
 
 # TASK GROUP
-project_parser = subparsers_main.add_parser("task", help="task commands")
+task_parser = subparsers_main.add_parser("task", help="task commands")
 
 # VERSION GROUP
-project_parser = subparsers_main.add_parser(
+version_parser = subparsers_main.add_parser(
     "version", help="Print verison and exit"
 )
 

@@ -8,6 +8,10 @@ from ._project import project_create
 from ._project import project_list
 
 
+class NoCommandError(ValueError):
+    pass
+
+
 async def project(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
@@ -23,6 +27,10 @@ async def project(
             metadata_filename=kwargs.pop("metadata"),
             **kwargs,
         )
+    else:
+        from ..parser import project_parser
+
+        project_parser.print_help()
 
 
 async def register():
