@@ -14,16 +14,21 @@ Zurich.
 """
 import asyncio
 import logging
+from sys import argv
+from typing import List
+
+from httpx import AsyncClient
 
 from . import cmd
 from .authclient import AuthClient
 from .parser import parser_main
 
+
 logging.basicConfig(level=logging.DEBUG)
 
 
-async def main():
-    args = parser_main.parse_args()
+async def main(cli_args: List[str] = argv):
+    args = parser_main.parse_args(cli_args[1:])
     logging.debug(args)
 
     if args.cmd:
@@ -33,10 +38,18 @@ async def main():
         parser_main.print_help()
         exit(1)
 
-    async with AuthClient() as client:
-        await handler(client, **vars(args))
-    exit(0)
+    if args.cmd == "version":
+        async with AsyncClient() as client:
+            interface = await handler(client, **vars(args))
+    else:
+        async with AuthClient() as client:
+            interface = await handler(client, **vars(args))
+
+    return interface
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    interface = asyncio.run(main())
+    interface.show()
+
+    exit(interface.retcode)
