@@ -19,4 +19,12 @@ async def test_edit_dataset(clear_db, testserver, register_user, invoke):
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
 
-    res = await invoke(f"dataset edit {project_id} {dataset_id}")
+    res = await invoke(
+        f"dataset edit {project_id} {dataset_id} --type newtype"
+    )
+    res.show()
+    assert res.data["type"] == "newtype"
+    assert res.retcode == 0
+
+    # TODO more extensively test partial updates and test that arguments not
+    # provided are indeed not updated
