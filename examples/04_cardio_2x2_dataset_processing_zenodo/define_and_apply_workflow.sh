@@ -50,7 +50,7 @@ echo "{\"parallelization_level\" : \"well\", \"labeling_level\": 1, \"labeling_c
 fractal task add-subtask "$WORKFLOW_NAME" "Whole-well image labeling" --args_json ${TMPDIR}/args_whole_well_labeling.json
 
 # TODO: Couldn't make relative path to regionprops_from_existing_labels_feature.yaml work, currently it's the absolute path
-echo "{\"parallelization_level\" : \"well\", \"level\": 0, \"table_name\": \"nuclei\", \"executor\": \"cpu\", \"workflow_file\": \"/data/homes/jluethi/fractal_3repo/fractal/examples/03_cardio_dataset_one_2x2_well_3_channels_10_Z/regionprops_from_existing_labels_feature.yaml\"}" > ${TMPDIR}/args_measurement.json
+echo "{\"parallelization_level\" : \"well\", \"level\": 0, \"table_name\": \"nuclei\", \"executor\": \"cpu\", \"workflow_file\": \"$TMPDIR/../regionprops_from_existing_labels_feature.yaml\"}" > ${TMPDIR}/args_measurement.json
 fractal task add-subtask "$WORKFLOW_NAME" "Measurement" --args_json ${TMPDIR}/args_measurement.json
 
 # Apply workflow
