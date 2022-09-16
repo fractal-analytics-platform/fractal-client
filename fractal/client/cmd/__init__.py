@@ -1,20 +1,26 @@
 from ..authclient import AuthClient
 from ..config import __VERSION__
 from ..config import settings
+from ._project import project_add_dataset
 from ._project import project_create
+from ._project import project_list
 
 
 async def project(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ):
     if subcmd == "new":
-        data = await project_create(client, **kwargs)
-    # project_list()
-
-    if batch:
-        print(data["id"])
-    else:
-        print(data)
+        await project_create(client, batch=batch, **kwargs)
+    elif subcmd == "list":
+        await project_list(client, **kwargs)
+    elif subcmd == "add-dataset":
+        await project_add_dataset(
+            client,
+            kwargs.pop("project_id"),
+            kwargs.pop("dataset_name"),
+            metadata_filename=kwargs.pop("metadata"),
+            **kwargs,
+        )
 
 
 async def register():

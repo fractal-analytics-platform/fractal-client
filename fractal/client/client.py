@@ -30,7 +30,6 @@ from ..common.models import SubtaskCreate
 from ._auth import AuthToken
 from .config import __VERSION__
 from .config import settings
-from .response import check_response
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -108,105 +107,105 @@ async def project():
     pass
 
 
-@project.command(name="new")
-@click.argument("name", required=True, nargs=1)
-@click.argument(
-    "path",
-    required=True,
-    nargs=1,
-)
-@click.option(
-    "--dataset",
-    nargs=1,
-    help=(
-        "name of first dataset. By default, the dataset `default` is "
-        "created and added to the project"
-    ),
-)
-@click.option(
-    "--id-only/--full-output",
-    default=False,
-    help="Only output the id of the object created (useful for scripting).",
-)
-@click.pass_context
-async def project_new(
-    ctx, name: str, path: str, dataset: str, id_only: bool
-) -> None:
-    """
-    Create new project, together with its first dataset
-
-    NAME (str): project name
-
-    PATH (str): project path, i.e., the path where all the artifacts will be
-    saved.
-    """
-    from ..common.models import ProjectCreate
-    from devtools import debug
-
-    debug("SONO QUI", ctx)
-
-    project = ProjectCreate(
-        name=name, project_dir=path, default_dataset_name=dataset
-    )
-    debug("SONO QUI 1")
-
-    res = await ctx.obj["client"].post(
-        f"{settings.BASE_URL}/project/",
-        json=project.dict(),
-        headers=await ctx.obj["auth"].header(),
-    )
-    debug("SONO QUI 2", res)
-    data = check_response(res, expected_status_code=201)
-
-    debug("SONO QUI 3")
-    debug("DATA", str(data))
-
-    if id_only:
-        print(data["id"])
-    else:
-        print_json(data=data)
-
-    await ctx.obj["client"].aclose()
-
-
-@project.command(name="list")
-@click.pass_context
-async def project_list(ctx):
-    from fractal.common.models import ProjectRead
-
-    res = await ctx.obj["client"].get(
-        f"{settings.BASE_URL}/project/",
-        headers=await ctx.obj["auth"].header(),
-    )
-    data = res.json()
-    project_list = [ProjectRead(**item) for item in data]
-
-    table = Table(title="Project List")
-    table.add_column("Id", style="cyan", no_wrap=True)
-    table.add_column("Name", style="magenta")
-    table.add_column("Proj. Dir.", justify="right", style="green")
-    table.add_column("Dataset list", style="white")
-    table.add_column("Read only", justify="center")
-
-    for p in project_list:
-        # Map p.read_only (True/False) to read_only_icon (✅/❌)
-        if p.read_only:
-            read_only_icon = "✅"
-        else:
-            read_only_icon = "❌"
-
-        p_dataset_list = str([dataset.name for dataset in p.dataset_list])
-
-        table.add_row(
-            str(p.id),
-            p.name,
-            p.project_dir,
-            str(p_dataset_list),
-            read_only_icon,
-        )
-
-    console.print(table)
-    await ctx.obj["client"].aclose()
+# @project.command(name="new")
+# @click.argument("name", required=True, nargs=1)
+# @click.argument(
+#     "path",
+#     required=True,
+#     nargs=1,
+# )
+# @click.option(
+#     "--dataset",
+#     nargs=1,
+#     help=(
+#         "name of first dataset. By default, the dataset `default` is "
+#         "created and added to the project"
+#     ),
+# )
+# @click.option(
+#     "--id-only/--full-output",
+#     default=False,
+#     help="Only output the id of the object created (useful for scripting).",
+# )
+# @click.pass_context
+# async def project_new(
+#     ctx, name: str, path: str, dataset: str, id_only: bool
+# ) -> None:
+#     """
+#     Create new project, together with its first dataset
+#
+#     NAME (str): project name
+#
+#     PATH (str): project path, i.e., the path where all the artifacts will be
+#     saved.
+#     """
+#     from ..common.models import ProjectCreate
+#     from devtools import debug
+#
+#     debug("SONO QUI", ctx)
+#
+#     project = ProjectCreate(
+#         name=name, project_dir=path, default_dataset_name=dataset
+#     )
+#     debug("SONO QUI 1")
+#
+#     res = await ctx.obj["client"].post(
+#         f"{settings.BASE_URL}/project/",
+#         json=project.dict(),
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     debug("SONO QUI 2", res)
+#     data = check_response(res, expected_status_code=201)
+#
+#     debug("SONO QUI 3")
+#     debug("DATA", str(data))
+#
+#     if id_only:
+#         print(data["id"])
+#     else:
+#         print_json(data=data)
+#
+#     await ctx.obj["client"].aclose()
+#
+#
+# @project.command(name="list")
+# @click.pass_context
+# async def project_list(ctx):
+#     from fractal.common.models import ProjectRead
+#
+#     res = await ctx.obj["client"].get(
+#         f"{settings.BASE_URL}/project/",
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     data = res.json()
+#     project_list = [ProjectRead(**item) for item in data]
+#
+#     table = Table(title="Project List")
+#     table.add_column("Id", style="cyan", no_wrap=True)
+#     table.add_column("Name", style="magenta")
+#     table.add_column("Proj. Dir.", justify="right", style="green")
+#     table.add_column("Dataset list", style="white")
+#     table.add_column("Read only", justify="center")
+#
+#     for p in project_list:
+#         # Map p.read_only (True/False) to read_only_icon (✅/❌)
+#         if p.read_only:
+#             read_only_icon = "✅"
+#         else:
+#             read_only_icon = "❌"
+#
+#         p_dataset_list = str([dataset.name for dataset in p.dataset_list])
+#
+#         table.add_row(
+#             str(p.id),
+#             p.name,
+#             p.project_dir,
+#             str(p_dataset_list),
+#             read_only_icon,
+#         )
+#
+#     console.print(table)
+#     await ctx.obj["client"].aclose()
 
 
 @project.command(name="add-dataset")

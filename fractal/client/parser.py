@@ -54,7 +54,6 @@ project_subparsers = project_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd"
 )
 
-# PROJECT NEW
 project_new_parser = project_subparsers.add_parser(
     "new", help="Create new project"
 )
@@ -75,9 +74,28 @@ project_new_parser.add_argument(
     ),
 )
 
-project_delete_parser = project_subparsers.add_parser(
-    "delete", help="Create new project"
+project_list_parser = project_subparsers.add_parser(
+    "list", help="List projects"
 )
+
+project_delete_parser = project_subparsers.add_parser(
+    "delete", help="Delete project"
+)
+
+project_add_dataset_parser = project_subparsers.add_parser(
+    "add-dataset", help="Add dataset to project"
+)
+project_add_dataset_parser.add_argument(
+    "project_id", type=int, help="Id of project to add the new dataset to"
+)
+project_add_dataset_parser.add_argument(
+    "dataset_name", help="Name of new dataset"
+)
+project_add_dataset_parser.add_argument(
+    "--metadata",
+    help="Path to file containing dataset metadata in JSON format.",
+)
+
 
 # DATASET GROUP
 project_parser = subparsers_main.add_parser("dataset", help="dataset commands")
