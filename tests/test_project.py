@@ -19,4 +19,19 @@ async def test_project_create_batch(
     debug(res)
     debug(res.output)
     assert res.output == "1"
+
+
+async def test_project_list(
+    clear_db, testserver, register_user, clisplit, invoke
+):
+    res = await invoke("project list")
+    debug(res)
+    res.show()
+
+    await invoke("--batch project new prj0 prj_path0")
+    await invoke("--batch project new prj1 prj_path1")
+
+    res = await invoke("project list")
+    debug(res)
+    res.show()
     assert False

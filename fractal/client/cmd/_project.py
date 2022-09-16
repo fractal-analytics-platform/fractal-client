@@ -3,7 +3,6 @@ import logging
 from typing import Optional
 
 from rich import print_json
-from rich.console import Console
 from rich.table import Table
 
 from ...common.models import DatasetCreate
@@ -14,6 +13,7 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
+from ..interface import RichConsoleInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
 
@@ -41,7 +41,7 @@ async def project_create(
         return RichJsonInterface(retcode=0, data=project.dict())
 
 
-async def project_list(client: AuthClient, **kwargs) -> None:
+async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
     res = await client.get(
         f"{settings.BASE_URL}/project/",
     )
@@ -72,8 +72,7 @@ async def project_list(client: AuthClient, **kwargs) -> None:
             read_only_icon,
         )
 
-    console = Console()
-    console.print(table)
+    return RichConsoleInterface(retcode=0, objects=table)
 
 
 async def project_add_dataset(

@@ -16,17 +16,19 @@ async def project(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "new":
-        return await project_create(client, batch=batch, **kwargs)
+        iface = await project_create(client, batch=batch, **kwargs)
     elif subcmd == "list":
-        return await project_list(client, **kwargs)
+        iface = await project_list(client, **kwargs)
     elif subcmd == "add-dataset":
-        return await project_add_dataset(
+        iface = await project_add_dataset(
             client,
             kwargs.pop("project_id"),
             kwargs.pop("dataset_name"),
             metadata_filename=kwargs.pop("metadata"),
             **kwargs,
         )
+
+    return iface
 
 
 async def register():

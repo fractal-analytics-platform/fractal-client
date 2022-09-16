@@ -27,7 +27,7 @@ from .parser import parser_main
 logging.basicConfig(level=logging.DEBUG)
 
 
-async def main(cli_args: List[str] = argv):
+async def handle(cli_args: List[str] = argv):
     args = parser_main.parse_args(cli_args[1:])
     logging.debug(args)
 
@@ -48,8 +48,11 @@ async def main(cli_args: List[str] = argv):
     return interface
 
 
-if __name__ == "__main__":
-    interface = asyncio.run(main())
+async def main():
+    interface = await handle()
     interface.show()
-
     exit(interface.retcode)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
