@@ -80,11 +80,6 @@ async def user_factory(client, testserver):
             f"{testserver}/auth/register",
             json=dict(email=email, password=password),
         )
-        from devtools import debug
-
-        debug(res)
-        debug(res.json())
-
         assert res.status_code == 201
         return res.json()
 

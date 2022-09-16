@@ -1,6 +1,7 @@
 from ..authclient import AuthClient
 from ..config import __VERSION__
 from ..config import settings
+from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ._project import project_add_dataset
 from ._project import project_create
@@ -9,13 +10,13 @@ from ._project import project_list
 
 async def project(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
-):
+) -> BaseInterface:
     if subcmd == "new":
-        await project_create(client, batch=batch, **kwargs)
+        return await project_create(client, batch=batch, **kwargs)
     elif subcmd == "list":
-        await project_list(client, **kwargs)
+        return await project_list(client, **kwargs)
     elif subcmd == "add-dataset":
-        await project_add_dataset(
+        return await project_add_dataset(
             client,
             kwargs.pop("project_id"),
             kwargs.pop("dataset_name"),

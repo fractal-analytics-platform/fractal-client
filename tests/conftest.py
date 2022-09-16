@@ -34,4 +34,14 @@ def clisplit():
     return __clisplit
 
 
+@pytest.fixture
+async def invoke(clisplit):
+    from fractal.client.newclient import main
+
+    async def __invoke(args: str):
+        return await main(clisplit(args))
+
+    return __invoke
+
+
 from .fixtures_testserver import *  # noqa: 401

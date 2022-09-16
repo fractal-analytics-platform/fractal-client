@@ -12,6 +12,9 @@ from ...common.models import ProjectCreate
 from ...common.models import ProjectRead
 from ..authclient import AuthClient
 from ..config import settings
+from ..interface import BaseInterface
+from ..interface import PrintInterface
+from ..interface import RichJsonInterface
 from ..response import check_response
 
 
@@ -22,7 +25,7 @@ async def project_create(
     dataset: Optional[str] = None,
     batch: bool = False,
     **kwargs,
-) -> None:
+) -> BaseInterface:
     project = ProjectCreate(
         name=name, project_dir=path, default_dataset_name=dataset
     )
@@ -33,9 +36,9 @@ async def project_create(
     )
     project = check_response(res, expected_status_code=201, coerce=ProjectRead)
     if batch:
-        print(project.id)
+        return PrintInterface(retcode=0, output=str(project.id))
     else:
-        print(project)
+        return RichJsonInterface(retcode=0, data=project.dict())
 
 
 async def project_list(client: AuthClient, **kwargs) -> None:

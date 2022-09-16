@@ -4,14 +4,13 @@ import httpx
 from devtools import debug
 
 from fractal.client.config import __VERSION__
-from fractal.client.newclient import main
 
 
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
-async def test_version(clisplit, testserver):
-    iface = await main(clisplit("version"))
+async def test_version(invoke, testserver):
+    iface = await invoke("version")
     debug(iface.output)
     assert f"version: {__VERSION__}" in iface.output
     assert iface.retcode == 0
