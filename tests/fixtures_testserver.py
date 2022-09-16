@@ -5,7 +5,37 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-async def testserver(tmp_path):
+def temp_data_dir(tmp_path_factory):
+    yield tmp_path_factory.mktemp("data")
+
+
+@pytest.fixture(scope="session")
+def temp_db_path(tmp_path_factory):
+    db_dir = tmp_path_factory.mktemp("db")
+    yield db_dir / "test.db"
+
+
+@pytest.fixture(scope="function")
+def clear_db():
+    """
+    Clear the db without dropping the schema
+
+    ref: https://stackoverflow.com/a/5003705/283972
+    """
+    import contextlib
+    from fractal_server.app.db import engine_sync
+    from sqlmodel import SQLModel
+
+    meta = SQLModel.metadata
+    with contextlib.closing(engine_sync.connect()) as conn:
+        trans = conn.begin()
+        for table in reversed(meta.sorted_tables):
+            conn.execute(table.delete())
+        trans.commit()
+
+
+@pytest.fixture(scope="session")
+async def testserver(temp_data_dir, temp_db_path):
     # cf. https://stackoverflow.com/a/57816608/283972
     import uvicorn
     from fractal_server import start_application
@@ -13,11 +43,11 @@ async def testserver(tmp_path):
 
     environ["JWT_SECRET_KEY"] = "secret_key"
     environ["DEPLOYMENT_TYPE"] = "development"
-    environ["DATA_DIR_ROOT"] = tmp_path.as_posix()
+    environ["DATA_DIR_ROOT"] = temp_data_dir.as_posix()
 
     environ["DB_ENGINE"] = "sqlite"
 
-    tmp_db_path = tmp_path / "test.db"
+    tmp_db_path = temp_db_path
     environ["SQLITE_PATH"] = tmp_db_path.as_posix()
 
     # INIT DB
@@ -50,6 +80,11 @@ async def user_factory(client, testserver):
             f"{testserver}/auth/register",
             json=dict(email=email, password=password),
         )
+        from devtools import debug
+
+        debug(res)
+        debug(res.json())
+
         assert res.status_code == 201
         return res.json()
 
