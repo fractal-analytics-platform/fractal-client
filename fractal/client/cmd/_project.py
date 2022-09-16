@@ -2,7 +2,6 @@ import json
 import logging
 from typing import Optional
 
-from rich import print_json
 from rich.table import Table
 
 from ...common.models import DatasetCreate
@@ -82,7 +81,7 @@ async def project_add_dataset(
     metadata_filename: Optional[str] = None,
     type: Optional[str] = None,
     **kwargs,
-):
+) -> RichJsonInterface:
 
     if metadata_filename is None:
         meta = {}
@@ -100,4 +99,4 @@ async def project_add_dataset(
     new_dataset = check_response(
         res, expected_status_code=201, coerce=DatasetRead
     )
-    print_json(data=new_dataset.dict())
+    return RichJsonInterface(retcode=0, data=new_dataset.dict())

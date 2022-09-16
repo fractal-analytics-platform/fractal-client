@@ -39,3 +39,18 @@ async def test_project_list(
     debug(vars(res.objects))
     res.show()
     assert len(res.objects.rows) == 2
+
+
+async def test_add_dataset(
+    clear_db, testserver, register_user, clisplit, invoke
+):
+    DATASET_NAME = "new_ds_name"
+
+    res = await invoke("--batch project new prj0 prj_path0")
+    assert res.retcode == 0
+
+    project_id = int(res.output)
+    res = await invoke(f"project add-dataset {project_id} {DATASET_NAME}")
+    assert res.retcode == 0
+    res.show()
+    assert res.data["name"] == DATASET_NAME
