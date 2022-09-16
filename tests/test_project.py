@@ -26,6 +26,9 @@ async def test_project_list(
 ):
     res = await invoke("project list")
     debug(res)
+    debug(vars(res.objects))
+    assert len(res.objects.rows) == 0
+
     res.show()
 
     await invoke("--batch project new prj0 prj_path0")
@@ -33,5 +36,6 @@ async def test_project_list(
 
     res = await invoke("project list")
     debug(res)
+    debug(vars(res.objects))
     res.show()
-    assert False
+    assert len(res.objects.rows) == 2
