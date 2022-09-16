@@ -64,3 +64,22 @@ class AuthToken:
         if self.expired:
             await self._get_fresh_token()
         return self.token
+
+
+class AuthClient:
+    def __init__(self):
+        self.auth = None
+        self.client = None
+
+    async def __aenter__(self):
+        self.client = AsyncClient()
+        self.auth = AuthToken(client=self.client)
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.client.aclose()
+
+    async def get(self, *args, **kwargs):
+        return await self.client.get(
+            headers=await self.auth.header(), *args, **kwargs
+        )

@@ -4,10 +4,7 @@ from os import environ
 import pytest
 
 
-DEFAULT_TEST_EMAIL = "test@exact-lab.it"
-
-
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def testserver(tmp_path):
     # cf. https://stackoverflow.com/a/57816608/283972
     import uvicorn
@@ -42,11 +39,11 @@ async def testserver(tmp_path):
 
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
-    yield "http://localhost:10080"
+    yield environ["FRACTAL_SERVER"]
     proc.kill()
 
 
-@pytest.fixture
+@pytest.fixture()
 async def user_factory(client, testserver):
     async def __register_user(email: str, password: str):
         res = await client.post(
@@ -61,4 +58,6 @@ async def user_factory(client, testserver):
 
 @pytest.fixture
 async def register_user(user_factory):
-    return await user_factory(email=DEFAULT_TEST_EMAIL, password="password")
+    return await user_factory(
+        email=environ["FRACTAL_USER"], password=environ["FRACTAL_PASSWORD"]
+    )

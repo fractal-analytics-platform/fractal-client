@@ -5,8 +5,10 @@ from asyncclick.testing import CliRunner
 from httpx import AsyncClient
 
 
-environ["FRACTAL_USER"] = "testuser"
+environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
 environ["FRACTAL_PASSWORD"] = "password"
+environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
+environ["DB_ECHO"] = "0"
 
 
 @pytest.fixture

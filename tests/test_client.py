@@ -1,7 +1,12 @@
-from fractal.client.client import version
-from devtools import debug
+from os import environ
+
 import httpx
-from .conftest import DEFAULT_TEST_EMAIL
+from devtools import debug
+
+from fractal.client.client import version
+
+
+DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
 async def test_version(cli):

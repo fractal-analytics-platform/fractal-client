@@ -30,6 +30,8 @@ pytest = "^7.1.2"
 bumpver = "^2022.1118"
 pytest-asyncio = "^0.19.0"
 fractal-server = "^0.1.2"
+# fractal-server = {path = "../fractal-server", develop = true}
+coverage = "^6.4.4"
 
 [build-system]
 requires = ["poetry-core"]
@@ -56,3 +58,5 @@ push = true
 
 [tool.poetry.scripts]
 fractal = "fractal.__main__:run"
+fractal_old = "fractal.old:run"
+fractal_new = "fractal.new:run"

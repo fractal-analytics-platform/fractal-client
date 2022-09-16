@@ -25,12 +25,15 @@ from rich import print_json
 from rich.console import Console
 from rich.table import Table
 
+from ..common.models import ResourceRead
+from ..common.models import SubtaskCreate
 from ._auth import AuthToken
 from .config import __VERSION__
 from .config import settings
-from fractal.common.models import ResourceRead
-from fractal.common.models import SubtaskCreate
+from .response import check_response
 
+
+logging.basicConfig(level=logging.DEBUG)
 console = Console()
 
 
@@ -120,8 +123,15 @@ async def project():
         "created and added to the project"
     ),
 )
+@click.option(
+    "--id-only/--full-output",
+    default=False,
+    help="Only output the id of the object created (useful for scripting).",
+)
 @click.pass_context
-async def project_new(ctx, name: str, path: str, dataset: str) -> None:
+async def project_new(
+    ctx, name: str, path: str, dataset: str, id_only: bool
+) -> None:
     """
     Create new project, together with its first dataset
 
@@ -130,21 +140,32 @@ async def project_new(ctx, name: str, path: str, dataset: str) -> None:
     PATH (str): project path, i.e., the path where all the artifacts will be
     saved.
     """
-    from fractal.common.models import ProjectBase
+    from ..common.models import ProjectCreate
+    from devtools import debug
 
-    project = ProjectBase(
+    debug("SONO QUI", ctx)
+
+    project = ProjectCreate(
         name=name, project_dir=path, default_dataset_name=dataset
     )
+    debug("SONO QUI 1")
 
     res = await ctx.obj["client"].post(
         f"{settings.BASE_URL}/project/",
         json=project.dict(),
         headers=await ctx.obj["auth"].header(),
     )
-    logging.debug(res.status_code)
-    if res.status_code != 201:
-        raise Exception("ERROR (hint: maybe the project already exists?)", res)
-    print_json(data=res.json())
+    debug("SONO QUI 2", res)
+    data = check_response(res, expected_status_code=201)
+
+    debug("SONO QUI 3")
+    debug("DATA", str(data))
+
+    if id_only:
+        print(data["id"])
+    else:
+        print_json(data=data)
+
     await ctx.obj["client"].aclose()
 
 
