@@ -31,6 +31,15 @@ parser_main.add_argument(
     default=0,
     help="Use one or more time to increase verbosity level",
 )
+parser_main.add_argument(
+    "--batch",
+    default=False,
+    action="store_true",
+    help=(
+        "Return output suitable for scripting, e.g., "
+        "only the id of items created instead of the full object."
+    ),
+)
 
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 

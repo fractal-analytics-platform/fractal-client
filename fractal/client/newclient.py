@@ -13,14 +13,18 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import asyncio
+import logging
 
 from . import cmd
 from .authclient import AuthClient
 from .parser import parser_main
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 async def main():
     args = parser_main.parse_args()
+    logging.debug(args)
 
     if args.cmd:
         handler = getattr(cmd, args.cmd)
@@ -31,6 +35,7 @@ async def main():
 
     async with AuthClient() as client:
         await handler(client, **vars(args))
+    exit(0)
 
 
 if __name__ == "__main__":

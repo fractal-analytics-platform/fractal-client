@@ -2,15 +2,19 @@ from ..authclient import AuthClient
 from ..config import __VERSION__
 from ..config import settings
 from ._project import project_create
-from ._project import project_list
 
 
-async def project(**kwargs):
-    print("project command")
-    print(kwargs)
-    project_list()
-    project_create()
-    raise NotImplementedError
+async def project(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+):
+    if subcmd == "new":
+        data = await project_create(client, **kwargs)
+    # project_list()
+
+    if batch:
+        print(data["id"])
+    else:
+        print(data)
 
 
 async def register():

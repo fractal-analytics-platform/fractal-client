@@ -83,3 +83,8 @@ class AuthClient:
         return await self.client.get(
             headers=await self.auth.header(), *args, **kwargs
         )
+
+    async def post(self, *args, **kwargs):
+        return await self.client.post(
+            headers=await self.auth.header(), *args, **kwargs
+        )
