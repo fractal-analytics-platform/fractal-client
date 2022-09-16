@@ -54,6 +54,7 @@ project_subparsers = project_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
 )
 
+# project new
 project_new_parser = project_subparsers.add_parser(
     "new", help="Create new project"
 )
@@ -74,14 +75,26 @@ project_new_parser.add_argument(
     ),
 )
 
+# project list
 project_list_parser = project_subparsers.add_parser(
     "list", help="List projects"
 )
 
+# project show
+project_show_parser = project_subparsers.add_parser(
+    "show", help="Show details of a single project"
+)
+project_show_parser.add_argument(
+    "project_id", type=int, help="Id of project to show"
+)
+
+
+# project delete
 project_delete_parser = project_subparsers.add_parser(
     "delete", help="Delete project"
 )
 
+# project add-dataset
 project_add_dataset_parser = project_subparsers.add_parser(
     "add-dataset", help="Add dataset to project"
 )
@@ -117,7 +130,7 @@ dataset_add_resource_parser.add_argument(
 )
 
 dataset_edit_parser = dataset_subparsers.add_parser(
-    "edit", help="Edit dataset"
+    "edit", help="Edit dataset", argument_default=ap.SUPPRESS
 )
 dataset_edit_parser.add_argument("project_id", type=int, help="Project id")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset id")
@@ -128,8 +141,24 @@ dataset_edit_parser.add_argument(
 )
 dataset_edit_parser.add_argument(
     "--metadata",
-    help="Path to file containing dataset metadata in JSON format.",
+    help=(
+        "Path to file containing dataset metadata in JSON format. "
+        "(Set to `none` to clear)"
+    ),
 )
+dataset_edit_parser.add_argument(
+    "--read-only",
+    dest="read_only",
+    help="Set read-only flag of dataset",
+    action="store_true",
+)
+dataset_edit_parser.add_argument(
+    "--read-write",
+    dest="read_only",
+    help="Set read-only flag of dataset (0 for False, 1 for True)",
+    action="store_false",
+)
+dataset_edit_parser.add_argument("-t", "--type", help="Dataset type")
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser("task", help="task commands")

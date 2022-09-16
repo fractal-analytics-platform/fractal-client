@@ -9,6 +9,7 @@ from ._dataset import dataset_show
 from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_list
+from ._project import project_show
 
 
 class NoCommandError(ValueError):
@@ -21,7 +22,7 @@ async def project(
     if subcmd == "new":
         iface = await project_create(client, batch=batch, **kwargs)
     elif subcmd == "show":
-        raise NotImplementedError
+        iface = await project_show(client, **kwargs)
     elif subcmd == "list":
         iface = await project_list(client, **kwargs)
     elif subcmd == "add-dataset":
@@ -51,7 +52,19 @@ async def dataset(
             **kwargs,
         )
     elif subcmd == "edit":
-        iface = await dataset_edit(client, **kwargs)
+        from devtools import debug
+
+        debug(kwargs)
+        project_id = int(kwargs.pop("project_id"))
+        dataset_id = int(kwargs.pop("dataset_id"))
+
+        dataset_update_dict = kwargs
+        iface = await dataset_edit(
+            client,
+            project_id=project_id,
+            dataset_id=dataset_id,
+            dataset_update_dict=dataset_update_dict,
+        )
     return iface
 
 

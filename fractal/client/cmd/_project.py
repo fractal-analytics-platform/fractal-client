@@ -74,6 +74,16 @@ async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
     return RichConsoleInterface(retcode=0, objects=table)
 
 
+async def project_show(
+    client: AuthClient, project_id: int, **kwargs
+) -> RichJsonInterface:
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}",
+    )
+    project = check_response(res, expected_status_code=200)
+    return RichJsonInterface(retcode=0, data=project)
+
+
 async def project_add_dataset(
     client: AuthClient,
     project_id: int,
