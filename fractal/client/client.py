@@ -340,38 +340,38 @@ async def dataset_show(ctx, project_name: str, dataset_name: str) -> None:
     await ctx.obj["client"].aclose()
 
 
-@dataset.command(name="add-resource")
-@click.argument("project_name", required=True, type=str, nargs=1)
-@click.argument("dataset_name", required=True, type=str, nargs=1)
-@click.argument("path", required=True, type=str, nargs=1)
-@click.option("--glob_pattern", required=True, type=str, default="", nargs=1)
-@click.pass_context
-async def add_resource(
-    ctx, project_name: str, dataset_name: str, path: str, glob_pattern: str
-):
-
-    """
-    Add a new resource to an exisisting dataset
-    """
-
-    from fractal.common.models import ResourceCreate
-
-    resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
-
-    project, dataset = await _extract_project_and_dataset(
-        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
-    )
-    project_id = project["id"]
-    dataset_id = dataset["id"]
-
-    res = await ctx.obj["client"].post(
-        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-        json=resource.dict(),
-        headers=await ctx.obj["auth"].header(),
-    )
-
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
+# @dataset.command(name="add-resource")
+# @click.argument("project_name", required=True, type=str, nargs=1)
+# @click.argument("dataset_name", required=True, type=str, nargs=1)
+# @click.argument("path", required=True, type=str, nargs=1)
+# @click.option("--glob_pattern", required=True, type=str, default="", nargs=1)
+# @click.pass_context
+# async def add_resource(
+#     ctx, project_name: str, dataset_name: str, path: str, glob_pattern: str
+# ):
+#
+#     """
+#     Add a new resource to an exisisting dataset
+#     """
+#
+#     from fractal.common.models import ResourceCreate
+#
+#     resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
+#
+#     project, dataset = await _extract_project_and_dataset(
+#         ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
+#     )
+#     project_id = project["id"]
+#     dataset_id = dataset["id"]
+#
+#     res = await ctx.obj["client"].post(
+#         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+#         json=resource.dict(),
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#
+#     print_json(data=res.json())
+#     await ctx.obj["client"].aclose()
 
 
 @dataset.command(name="show-resources")

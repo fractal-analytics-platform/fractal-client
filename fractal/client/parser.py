@@ -116,6 +116,21 @@ dataset_add_resource_parser.add_argument(
     "-g", "--glob-pattern", help="Glob pattern"
 )
 
+dataset_edit_parser = dataset_subparsers.add_parser(
+    "edit", help="Edit dataset"
+)
+dataset_edit_parser.add_argument("project_id", type=int, help="Project id")
+dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset id")
+dataset_edit_parser.add_argument("--name", help="New name of dataset")
+dataset_edit_parser.add_argument("--path", help="New path of dataset")
+dataset_edit_parser.add_argument(
+    "-g", "--glob-pattern", help="New glob pattern"
+)
+dataset_edit_parser.add_argument(
+    "--metadata",
+    help="Path to file containing dataset metadata in JSON format.",
+)
+
 # TASK GROUP
 task_parser = subparsers_main.add_parser("task", help="task commands")
 
