@@ -51,7 +51,7 @@ register_parser = subparsers_main.add_parser(
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser("project", help="project commands")
 project_subparsers = project_parser.add_subparsers(
-    title="Valid subcommands:", dest="subcmd"
+    title="Valid subcommands:", dest="subcmd", required=True
 )
 
 project_new_parser = project_subparsers.add_parser(

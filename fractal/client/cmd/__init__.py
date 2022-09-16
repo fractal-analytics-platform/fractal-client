@@ -27,10 +27,6 @@ async def project(
             metadata_filename=kwargs.pop("metadata"),
             **kwargs,
         )
-    else:
-        from ..parser import project_parser
-
-        project_parser.print_help()
 
 
 async def register():
