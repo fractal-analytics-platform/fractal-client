@@ -11,7 +11,8 @@ Fractal provides distributed workflows that convert TBs of image data into OME-Z
 This is the main Fractal repository that contains the **Fractal client** and some examples. The **Fractal core tasks** to parse images and process OME-Zarr files can be found [here](https://github.com/fractal-analytics-platform/fractal-tasks-core). The **Fractal server** can be found [here](https://github.com/fractal-analytics-platform/fractal-server).
 
 Example input data for Fractal can be found here: [10.5281/zenodo.7057076](https://doi.org/10.5281/zenodo.7057076)  
-Example output data from Fractal in the OME-Zarr format can be found here: [10.5281/zenodo.7081622](https://doi.org/10.5281/zenodo.7081622)
+Example output data from Fractal in the OME-Zarr format can be found here: [10.5281/zenodo.7081622](https://doi.org/10.5281/zenodo.7081622)  
+Example workflows can be found in the `examples` folder, together with additional instructions for how to set up the server & client, download the test data and run workflows through Fractal.
 
 Fractal is currently in an early alpha version. We have the core processing functionality working for Yokogawa CV7000 image data and a workflow for processing OME-Zarr images up to feature measurements. But we're still adding core functionality and will introduce breaking changes. You can follow along our planned milestones on the [architecture side](https://github.com/fractal-analytics-platform/fractal/milestones) & the [tasks side](https://github.com/fractal-analytics-platform/fractal-tasks-core). Open an issue to get in touch, raise bugs or ask questions. 
 
