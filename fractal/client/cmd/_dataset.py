@@ -76,6 +76,8 @@ async def dataset_show(
         f"{settings.BASE_URL}/dataset/{project_id}/{dataset_id}"
     )
     from devtools import debug
+    from rich.console import Group
+
 
     debug(res.json())
     dataset = check_response(res, expected_status_code=200, coerce=DatasetRead)
@@ -97,4 +99,8 @@ async def dataset_show(
             json.dumps(dataset.meta, indent=2),
             "✅" if dataset.read_only else "❌",
         )
-        return RichConsoleInterface(retcode=0, data=table)
+        table_res = Table(title="Resources")
+        table_res.add_column("Resource List", justify="center", style="yellow")
+        table_res.add_row(*dataset.resource_list)
+        group = Group(table, table_res)
+        return RichConsoleInterface(retcode=0, data=group)
