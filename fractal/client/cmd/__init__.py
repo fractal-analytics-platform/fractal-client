@@ -69,8 +69,21 @@ async def register():
     raise NotImplementedError
 
 
-async def task():
-    raise NotImplementedError
+async def task(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> BaseInterface:
+    iface = None
+    if subcmd == "list":
+        pass
+    elif subcmd == "new":
+        pass
+    elif subcmd == "edit":
+        pass
+    elif subcmd == "add-subtask":
+        pass
+    elif subcmd == "apply":
+        pass
+    return iface
 
 
 async def version(client: AuthClient, **kwargs) -> PrintInterface:

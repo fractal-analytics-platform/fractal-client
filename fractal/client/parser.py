@@ -180,6 +180,28 @@ dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset id")
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser("task", help="task commands")
+task_subparsers = task_parser.add_subparsers(
+    title="Valid subcommands:", dest="subcmd", required=True
+)
+
+# task list
+task_list_parser = task_subparsers.add_parser("list", help="List tasks")
+
+# task new
+task_new_parser = task_subparsers.add_parser("new", help="List tasks")
+
+# task edit
+task_edit_parser = task_subparsers.add_parser("edit", help="Edit task")
+
+# task add-subtask
+task_add_subtask_parser = task_subparsers.add_parser(
+    "add_subtask", help="Edit task"
+)
+
+# task apply
+task_apply_parser = task_subparsers.add_parser(
+    "apply", help="Apply task to a dataset"
+)
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
