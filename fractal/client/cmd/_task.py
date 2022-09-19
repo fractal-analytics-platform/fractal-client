@@ -7,6 +7,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from fractal.common.models import ApplyWorkflow
 from fractal.common.models import SubtaskCreate
 from fractal.common.models import TaskCreate
 from fractal.common.models import TaskRead
@@ -115,5 +116,28 @@ async def task_add_subtask(
     return RichJsonInterface(retcode=0, data=new_subtask.dict())
 
 
-async def task_apply():
-    pass
+async def task_apply(
+    client: AuthClient,
+    *,
+    project_id: int,
+    input_dataset_id: int,
+    output_dataset_id: int,
+    workflow_id: int,
+    overwrite_input: bool,
+    **kwargs,
+) -> RichJsonInterface:
+
+    workflow = ApplyWorkflow(
+        project_id=project_id,
+        input_dataset_id=input_dataset_id,
+        output_dataset_id=output_dataset_id,
+        workflow_id=workflow_id,
+        overwrite_input=overwrite_input,
+    )
+
+    res = await client.post(
+        f"{settings.BASE_URL}/project/apply/",
+        json=workflow.dict(),
+    )
+    wf_submitted = check_response(res, expected_status_code=202)
+    return RichJsonInterface(retcode=0, data=wf_submitted)

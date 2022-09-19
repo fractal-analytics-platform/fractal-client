@@ -247,6 +247,22 @@ task_add_subtask_parser.add_argument(
 task_apply_parser = task_subparsers.add_parser(
     "apply", help="Apply task to a dataset"
 )
+task_apply_parser.add_argument(
+    "project_id", help="ID of project on which to apply task"
+)
+task_apply_parser.add_argument("input_dataset_id", help="ID of input dataset")
+task_apply_parser.add_argument(
+    "output_dataset_id", help="ID of output dataset"
+)
+task_apply_parser.add_argument(
+    "workflow_id", help="ID of taks/workflow to apply"
+)
+task_apply_parser.add_argument(
+    "--overwrite_input",
+    action="store_true",
+    default=False,
+    help="Overwrite the input dataset",
+)
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
