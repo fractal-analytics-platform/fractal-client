@@ -26,7 +26,7 @@ def fail_getenv(key):
 load_dotenv(".fractal.env")
 
 
-__VERSION__ = "0.1.2"
+__VERSION__ = "0.2.0"
 
 
 class Settings(BaseSettings):
