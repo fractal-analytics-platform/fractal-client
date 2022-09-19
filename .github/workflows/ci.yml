@@ -24,7 +24,7 @@ jobs:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.2.0
+          version: 1.2.1
           virtualenvs-create: true
           virtualenvs-in-project: false
           installer-parallel: true
@@ -37,8 +37,7 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install -E tasks-core --no-interaction
+        run: poetry install --with dev -E tasks-core --no-interaction
 
       - name: Test with pytest
         run: poetry run pytest
