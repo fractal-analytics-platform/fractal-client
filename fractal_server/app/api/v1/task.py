@@ -102,7 +102,7 @@ async def create_task(
     return db_task
 
 
-@router.patch("/{task_id}/", response_model=TaskRead)
+@router.patch("/{task_id}", response_model=TaskRead)
 async def patch_task(
     task_id: int,
     task_update: TaskUpdate,
