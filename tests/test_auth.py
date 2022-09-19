@@ -1,7 +1,7 @@
 import pytest
 
-from fractal.client._auth import AuthenticationError
-from fractal.client._auth import AuthToken
+from fractal.client.authclient import AuthenticationError
+from fractal.client.authclient import AuthToken
 
 
 async def test_auth_fail(testserver, client):

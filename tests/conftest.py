@@ -36,7 +36,7 @@ def clisplit():
 
 @pytest.fixture
 async def invoke(clisplit):
-    from fractal.client.newclient import handle
+    from fractal.client.client import handle
 
     async def __invoke(args: str):
         return await handle(clisplit(args))
