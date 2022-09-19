@@ -23,6 +23,8 @@ from pydantic import BaseSettings
 from pydantic import Field
 from pydantic import root_validator
 
+import fractal_server
+
 
 def fail_getenv(key):
     value = getenv(key, None)
@@ -45,9 +47,6 @@ class OAuthClient(BaseModel):
     REVOKE_TOKEN_ENDPOINT: Optional[str]
 
 
-__VERSION__ = "0.1.2"
-
-
 class DeploymentType(str, Enum):
     PRODUCTION = "production"
     STAGING = "staging"
@@ -57,7 +56,7 @@ class DeploymentType(str, Enum):
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Fractal Server"
-    PROJECT_VERSION: str = __VERSION__
+    PROJECT_VERSION: str = fractal_server.__VERSION__
     DEPLOYMENT_TYPE: DeploymentType = DeploymentType(
         fail_getenv("DEPLOYMENT_TYPE")
     )
