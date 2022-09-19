@@ -484,17 +484,17 @@ async def task():
     pass
 
 
-@task.command(name="list")
-@click.pass_context
-async def get_task(ctx):
-
-    res = await ctx.obj["client"].get(
-        f"{settings.BASE_URL}/task/",
-        headers=await ctx.obj["auth"].header(),
-    )
-
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
+# @task.command(name="list")
+# @click.pass_context
+# async def get_task(ctx):
+#
+#     res = await ctx.obj["client"].get(
+#         f"{settings.BASE_URL}/task/",
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#
+#     print_json(data=res.json())
+#     await ctx.obj["client"].aclose()
 
 
 @task.command(name="new")

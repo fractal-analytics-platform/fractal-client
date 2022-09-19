@@ -180,6 +180,42 @@ dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset id")
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser("task", help="task commands")
+task_subparsers = task_parser.add_subparsers(
+    title="Valid subcommands:", dest="subcmd", required=True
+)
+
+# task list
+task_list_parser = task_subparsers.add_parser("list", help="List tasks")
+
+# task new
+task_new_parser = task_subparsers.add_parser("new", help="List tasks")
+task_new_parser.add_argument("name", help="Task name (must be unique)")
+task_new_parser.add_argument(
+    "resource_type", choices=["task", "workflow"], help="Resource type"
+)
+task_new_parser.add_argument("input_type", help="Dataset input type")
+task_new_parser.add_argument("output_type", help="Dataset output type")
+task_new_parser.add_argument(
+    "module", help="Module path, e.g., `module.submodule:task_function`"
+)
+task_new_parser.add_argument(
+    "--default_args", help="Default arguments, as a JSON-encoded string"
+)
+task_new_parser.add_argument("--subtask-list", help="Subtask list")
+
+
+# task edit
+task_edit_parser = task_subparsers.add_parser("edit", help="Edit task")
+
+# task add-subtask
+task_add_subtask_parser = task_subparsers.add_parser(
+    "add_subtask", help="Edit task"
+)
+
+# task apply
+task_apply_parser = task_subparsers.add_parser(
+    "apply", help="Apply task to a dataset"
+)
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(

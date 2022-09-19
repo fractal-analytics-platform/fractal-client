@@ -10,6 +10,8 @@ from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_list
 from ._project import project_show
+from ._task import task_list
+from ._task import task_new
 
 
 class NoCommandError(ValueError):
@@ -69,8 +71,22 @@ async def register():
     raise NotImplementedError
 
 
-async def task():
-    raise NotImplementedError
+async def task(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> BaseInterface:
+    iface = None
+    if subcmd == "list":
+        iface = await task_list(client, **kwargs)
+    elif subcmd == "new":
+        iface = await task_new(client, **kwargs)
+        pass
+    elif subcmd == "edit":
+        pass
+    elif subcmd == "add-subtask":
+        pass
+    elif subcmd == "apply":
+        pass
+    return iface
 
 
 async def version(client: AuthClient, **kwargs) -> PrintInterface:

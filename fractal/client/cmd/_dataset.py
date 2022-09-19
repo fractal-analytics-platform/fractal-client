@@ -1,19 +1,20 @@
 import json
-from rich.table import Table
 from typing import Any
 from typing import Dict
 from typing import Optional
+
+from rich.table import Table
 
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
+from ..interface import RichConsoleInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
 from fractal.common.models import DatasetRead
 from fractal.common.models import DatasetUpdate
 from fractal.common.models import ResourceCreate
-from ..interface import RichConsoleInterface
 from fractal.common.models import ResourceRead
 
 
@@ -69,20 +70,15 @@ async def dataset_edit(
 
 
 async def dataset_show(
-    client: AuthClient,
-    *,
-    project_id: int,
-    dataset_id: int,
-    **kwargs
+    client: AuthClient, *, project_id: int, dataset_id: int, **kwargs
 ) -> BaseInterface:
     res = await client.get(
         f"{settings.BASE_URL}/dataset/{project_id}/{dataset_id}"
     )
     from devtools import debug
+
     debug(res.json())
-    dataset = check_response(
-        res, expected_status_code=200, coerce=DatasetRead
-    )
+    dataset = check_response(res, expected_status_code=200, coerce=DatasetRead)
 
     if kwargs.get("json", False):
         return RichJsonInterface(retcode=0, data=dataset.dict())

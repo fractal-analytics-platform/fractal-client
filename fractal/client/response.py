@@ -3,11 +3,7 @@ from json.decoder import JSONDecodeError
 from sys import exit
 
 
-def identity(**kwargs):
-    return kwargs
-
-
-def check_response(res, expected_status_code=200, coerce=identity):
+def check_response(res, expected_status_code=200, coerce=False):
     """
     Check the validity of the http response from fractal server
 
@@ -33,4 +29,7 @@ def check_response(res, expected_status_code=200, coerce=identity):
         logging.error("Terminating.\n")
         exit(1)
 
-    return coerce(**data)
+    if coerce:
+        return coerce(**data)
+    else:
+        return data
