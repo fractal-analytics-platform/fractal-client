@@ -2,14 +2,10 @@
 
 [![PyPI version](https://badge.fury.io/py/fractal-server.svg)](https://badge.fury.io/py/fractal-server)
 
-Fractal is a framework to process high content screening data at scale and prepares it for interactive visualization.
+Fractal is a framework to process high content imaging data at scale and prepare it for interactive visualization.
 
-This is the server component of the fractal analytics platform, a framework to
-process high content screening data at scale and prepares it for interactive
-visualization.
-
-If you are interested in the client component, please refer to the [relevant
-repository](https://github.com/fractal-analytics-platform/fractal).
+This is the server component of the fractal analytics platform. If you are interested in the client component, please refer to the [main
+repository](https://github.com/fractal-analytics-platform/fractal). If you are interested in the fractal tasks, please refer to [the tasks repository](https://github.com/fractal-analytics-platform/fractal-tasks-core).
 
 ## Installation
 
@@ -84,7 +80,6 @@ Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute
 for Biomedical Research and in the Pelkmans Lab at the University of Zurich
 (both in Switzerland). The project lead is with
 [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi).
-The project was originally led by [@dvischi](https://github.com/dvischi).
 The core development is done under contract by
 [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa)
 & [@jacopo-exact](https://github.com/jacopo-exact) from [eXact lab
