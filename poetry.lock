@@ -2849,7 +2849,7 @@ tasks-core = ["fractal-tasks-core"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "7821a66da308d15f112851e38b87ddab6566c2e31943810387fad664f998ac58"
+content-hash = "9ea5427c3f72e75afb89bfe669aa551bacb9fc91f60a594527b94490588d3a8f"
 
 [metadata.files]
 aiobotocore = [
