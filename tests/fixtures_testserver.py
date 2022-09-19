@@ -4,11 +4,38 @@ from os import environ
 import pytest
 
 
-DEFAULT_TEST_EMAIL = "test@exact-lab.it"
+@pytest.fixture(scope="session")
+def temp_data_dir(tmp_path_factory):
+    yield tmp_path_factory.mktemp("data")
 
 
-@pytest.fixture
-async def testserver(tmp_path):
+@pytest.fixture(scope="session")
+def temp_db_path(tmp_path_factory):
+    db_dir = tmp_path_factory.mktemp("db")
+    yield db_dir / "test.db"
+
+
+@pytest.fixture(scope="function")
+def clear_db():
+    """
+    Clear the db without dropping the schema
+
+    ref: https://stackoverflow.com/a/5003705/283972
+    """
+    import contextlib
+    from fractal_server.app.db import engine_sync
+    from sqlmodel import SQLModel
+
+    meta = SQLModel.metadata
+    with contextlib.closing(engine_sync.connect()) as conn:
+        trans = conn.begin()
+        for table in reversed(meta.sorted_tables):
+            conn.execute(table.delete())
+        trans.commit()
+
+
+@pytest.fixture(scope="session")
+async def testserver(temp_data_dir, temp_db_path):
     # cf. https://stackoverflow.com/a/57816608/283972
     import uvicorn
     from fractal_server import start_application
@@ -16,11 +43,11 @@ async def testserver(tmp_path):
 
     environ["JWT_SECRET_KEY"] = "secret_key"
     environ["DEPLOYMENT_TYPE"] = "development"
-    environ["DATA_DIR_ROOT"] = tmp_path.as_posix()
+    environ["DATA_DIR_ROOT"] = temp_data_dir.as_posix()
 
     environ["DB_ENGINE"] = "sqlite"
 
-    tmp_db_path = tmp_path / "test.db"
+    tmp_db_path = temp_db_path
     environ["SQLITE_PATH"] = tmp_db_path.as_posix()
 
     # INIT DB
@@ -42,11 +69,11 @@ async def testserver(tmp_path):
 
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
-    yield "http://localhost:10080"
+    yield environ["FRACTAL_SERVER"]
     proc.kill()
 
 
-@pytest.fixture
+@pytest.fixture()
 async def user_factory(client, testserver):
     async def __register_user(email: str, password: str):
         res = await client.post(
@@ -61,4 +88,6 @@ async def user_factory(client, testserver):
 
 @pytest.fixture
 async def register_user(user_factory):
-    return await user_factory(email=DEFAULT_TEST_EMAIL, password="password")
+    return await user_factory(
+        email=environ["FRACTAL_USER"], password=environ["FRACTAL_PASSWORD"]
+    )

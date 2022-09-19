@@ -7,6 +7,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 from pydantic import root_validator
+from pydantic import validator
 from sqlmodel import Field
 from sqlmodel import SQLModel
 
@@ -46,6 +47,12 @@ class ProjectCreate(ProjectBase):
             slug = values["name"]
             values["slug"] = slugify(slug)
         return values
+
+    @validator("default_dataset_name")
+    def not_null(cls, value):
+        if not value:
+            value = "default"
+        return value
 
 
 class ProjectRead(ProjectBase):

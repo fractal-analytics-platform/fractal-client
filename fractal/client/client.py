@@ -14,7 +14,6 @@ Zurich.
 """
 import json
 import logging
-from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -25,12 +24,14 @@ from rich import print_json
 from rich.console import Console
 from rich.table import Table
 
+from ..common.models import ResourceRead
+from ..common.models import SubtaskCreate
 from ._auth import AuthToken
 from .config import __VERSION__
 from .config import settings
-from fractal.common.models import ResourceRead
-from fractal.common.models import SubtaskCreate
 
+
+logging.basicConfig(level=logging.DEBUG)
 console = Console()
 
 
@@ -99,181 +100,198 @@ async def login(ctx):
 # PROJECT GROUP
 ####
 
-
-@cli.group()
-async def project():
-    pass
-
-
-@project.command(name="new")
-@click.argument("name", required=True, nargs=1)
-@click.argument(
-    "path",
-    required=True,
-    nargs=1,
-)
-@click.option(
-    "--dataset",
-    nargs=1,
-    help=(
-        "name of first dataset. By default, the dataset `default` is "
-        "created and added to the project"
-    ),
-)
-@click.pass_context
-async def project_new(ctx, name: str, path: str, dataset: str) -> None:
-    """
-    Create new project, together with its first dataset
-
-    NAME (str): project name
-
-    PATH (str): project path, i.e., the path where all the artifacts will be
-    saved.
-    """
-    from fractal.common.models import ProjectBase
-
-    project = ProjectBase(
-        name=name, project_dir=path, default_dataset_name=dataset
-    )
-
-    res = await ctx.obj["client"].post(
-        f"{settings.BASE_URL}/project/",
-        json=project.dict(),
-        headers=await ctx.obj["auth"].header(),
-    )
-    logging.debug(res.status_code)
-    if res.status_code != 201:
-        raise Exception("ERROR (hint: maybe the project already exists?)", res)
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
+# @cli.group()
+# async def project():
+#     pass
 
 
-@project.command(name="list")
-@click.pass_context
-async def project_list(ctx):
-    from fractal.common.models import ProjectRead
+# @project.command(name="new")
+# @click.argument("name", required=True, nargs=1)
+# @click.argument(
+#     "path",
+#     required=True,
+#     nargs=1,
+# )
+# @click.option(
+#     "--dataset",
+#     nargs=1,
+#     help=(
+#         "name of first dataset. By default, the dataset `default` is "
+#         "created and added to the project"
+#     ),
+# )
+# @click.option(
+#     "--id-only/--full-output",
+#     default=False,
+#     help="Only output the id of the object created (useful for scripting).",
+# )
+# @click.pass_context
+# async def project_new(
+#     ctx, name: str, path: str, dataset: str, id_only: bool
+# ) -> None:
+#     """
+#     Create new project, together with its first dataset
+#
+#     NAME (str): project name
+#
+#     PATH (str): project path, i.e., the path where all the artifacts will be
+#     saved.
+#     """
+#     from ..common.models import ProjectCreate
+#     from devtools import debug
+#
+#     debug("SONO QUI", ctx)
+#
+#     project = ProjectCreate(
+#         name=name, project_dir=path, default_dataset_name=dataset
+#     )
+#     debug("SONO QUI 1")
+#
+#     res = await ctx.obj["client"].post(
+#         f"{settings.BASE_URL}/project/",
+#         json=project.dict(),
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     debug("SONO QUI 2", res)
+#     data = check_response(res, expected_status_code=201)
+#
+#     debug("SONO QUI 3")
+#     debug("DATA", str(data))
+#
+#     if id_only:
+#         print(data["id"])
+#     else:
+#         print_json(data=data)
+#
+#     await ctx.obj["client"].aclose()
+#
+#
+# @project.command(name="list")
+# @click.pass_context
+# async def project_list(ctx):
+#     from fractal.common.models import ProjectRead
+#
+#     res = await ctx.obj["client"].get(
+#         f"{settings.BASE_URL}/project/",
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     data = res.json()
+#     project_list = [ProjectRead(**item) for item in data]
+#
+#     table = Table(title="Project List")
+#     table.add_column("Id", style="cyan", no_wrap=True)
+#     table.add_column("Name", style="magenta")
+#     table.add_column("Proj. Dir.", justify="right", style="green")
+#     table.add_column("Dataset list", style="white")
+#     table.add_column("Read only", justify="center")
+#
+#     for p in project_list:
+#         # Map p.read_only (True/False) to read_only_icon (✅/❌)
+#         if p.read_only:
+#             read_only_icon = "✅"
+#         else:
+#             read_only_icon = "❌"
+#
+#         p_dataset_list = str([dataset.name for dataset in p.dataset_list])
+#
+#         table.add_row(
+#             str(p.id),
+#             p.name,
+#             p.project_dir,
+#             str(p_dataset_list),
+#             read_only_icon,
+#         )
+#
+#     console.print(table)
+#     await ctx.obj["client"].aclose()
 
-    res = await ctx.obj["client"].get(
-        f"{settings.BASE_URL}/project/",
-        headers=await ctx.obj["auth"].header(),
-    )
-    data = res.json()
-    project_list = [ProjectRead(**item) for item in data]
 
-    table = Table(title="Project List")
-    table.add_column("Id", style="cyan", no_wrap=True)
-    table.add_column("Name", style="magenta")
-    table.add_column("Proj. Dir.", justify="right", style="green")
-    table.add_column("Dataset list", style="white")
-    table.add_column("Read only", justify="center")
-
-    for p in project_list:
-        # Map p.read_only (True/False) to read_only_icon (✅/❌)
-        if p.read_only:
-            read_only_icon = "✅"
-        else:
-            read_only_icon = "❌"
-
-        p_dataset_list = str([dataset.name for dataset in p.dataset_list])
-
-        table.add_row(
-            str(p.id),
-            p.name,
-            p.project_dir,
-            str(p_dataset_list),
-            read_only_icon,
-        )
-
-    console.print(table)
-    await ctx.obj["client"].aclose()
-
-
-@project.command(name="add-dataset")
-@click.argument("project_name", required=True, nargs=1, type=str)
-@click.argument(
-    "dataset_name",
-    type=str,
-    required=True,
-    nargs=1,
-)
-@click.option(
-    "--meta",
-    nargs=1,
-    default=None,
-    help="JSON file with meta",
-)
-@click.option(
-    "--type",
-    nargs=1,
-    default="zarr",
-    help=("The type of objects into the dataset"),
-)
-@click.pass_context
-async def add_dataset(
-    ctx,
-    project_name: str,
-    dataset_name: str,
-    meta: Dict[str, Any],
-    type: Optional[str],
-) -> None:
-    """
-    Add an existing dataset to an existing project
-    """
-    from fractal.common.models import DatasetCreate
-
-    if meta is None:
-        meta_json = {}
-    else:
-        with open(meta, "r", encoding="utf-8") as json_file:
-            meta_json = json.load(json_file)
-
-    # Find project_id
-    res = await ctx.obj["client"].get(
-        f"{settings.BASE_URL}/project/",
-        headers=await ctx.obj["auth"].header(),
-    )
-    projects = res.json()
-    # Find project
-    try:
-        project = [p for p in projects if p["name"] == project_name][0]
-        project_id = project["id"]
-    except IndexError as e:
-        raise IndexError(f"Project {project_name} not found", str(e))
-
-    # Check that there is no other dataset with the same name
-    from fractal.common.models import ProjectRead
-
-    res = await ctx.obj["client"].get(
-        f"{settings.BASE_URL}/project/",
-        headers=await ctx.obj["auth"].header(),
-    )
-    data = res.json()
-    project_list = [ProjectRead(**item) for item in data]
-    logging.debug(project_list)
-    logging.debug(project_id)
-    try:
-        project = [p for p in project_list if p.id == project_id][0]
-    except IndexError as e:
-        raise IndexError("No project found with this project_id", str(e))
-    list_dataset_names = [dataset.name for dataset in project.dataset_list]
-
-    if dataset_name in list_dataset_names:
-        raise Exception(
-            f"Dataset name {dataset_name} already in use, " "pick another one"
-        )
-
-    dataset = DatasetCreate(
-        name=dataset_name, project_id=project_id, type=type, meta=meta_json
-    )
-
-    res = await ctx.obj["client"].post(
-        f"{settings.BASE_URL}/project/{project_id}/",
-        json=dataset.dict(),
-        headers=await ctx.obj["auth"].header(),
-    )
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
-
+# @project.command(name="add-dataset")
+# @click.argument("project_name", required=True, nargs=1, type=str)
+# @click.argument(
+#     "dataset_name",
+#     type=str,
+#     required=True,
+#     nargs=1,
+# )
+# @click.option(
+#     "--meta",
+#     nargs=1,
+#     default=None,
+#     help="JSON file with meta",
+# )
+# @click.option(
+#     "--type",
+#     nargs=1,
+#     default="zarr",
+#     help=("The type of objects into the dataset"),
+# )
+# @click.pass_context
+# async def add_dataset(
+#     ctx,
+#     project_name: str,
+#     dataset_name: str,
+#     meta: Dict[str, Any],
+#     type: Optional[str],
+# ) -> None:
+#     """
+#     Add an existing dataset to an existing project
+#     """
+#     from fractal.common.models import DatasetCreate
+#
+#     if meta is None:
+#         meta_json = {}
+#     else:
+#         with open(meta, "r", encoding="utf-8") as json_file:
+#             meta_json = json.load(json_file)
+#
+#     # Find project_id
+#     res = await ctx.obj["client"].get(
+#         f"{settings.BASE_URL}/project/",
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     projects = res.json()
+#     # Find project
+#     try:
+#         project = [p for p in projects if p["name"] == project_name][0]
+#         project_id = project["id"]
+#     except IndexError as e:
+#         raise IndexError(f"Project {project_name} not found", str(e))
+#
+#     # Check that there is no other dataset with the same name
+#     from fractal.common.models import ProjectRead
+#
+#     res = await ctx.obj["client"].get(
+#         f"{settings.BASE_URL}/project/",
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     data = res.json()
+#     project_list = [ProjectRead(**item) for item in data]
+#     logging.debug(project_list)
+#     logging.debug(project_id)
+#     try:
+#         project = [p for p in project_list if p.id == project_id][0]
+#     except IndexError as e:
+#         raise IndexError("No project found with this project_id", str(e))
+#     list_dataset_names = [dataset.name for dataset in project.dataset_list]
+#
+#     if dataset_name in list_dataset_names:
+#         raise Exception(
+#             f"Dataset name {dataset_name} already in use, " "pick another one"
+#         )
+#
+#     dataset = DatasetCreate(
+#         name=dataset_name, project_id=project_id, type=type, meta=meta_json
+#     )
+#
+#     res = await ctx.obj["client"].post(
+#         f"{settings.BASE_URL}/project/{project_id}/",
+#         json=dataset.dict(),
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     print_json(data=res.json())
+#     await ctx.obj["client"].aclose()
+#
 
 ####
 # DATASET GROUP
@@ -322,38 +340,38 @@ async def dataset_show(ctx, project_name: str, dataset_name: str) -> None:
     await ctx.obj["client"].aclose()
 
 
-@dataset.command(name="add-resource")
-@click.argument("project_name", required=True, type=str, nargs=1)
-@click.argument("dataset_name", required=True, type=str, nargs=1)
-@click.argument("path", required=True, type=str, nargs=1)
-@click.option("--glob_pattern", required=True, type=str, default="", nargs=1)
-@click.pass_context
-async def add_resource(
-    ctx, project_name: str, dataset_name: str, path: str, glob_pattern: str
-):
-
-    """
-    Add a new resource to an exisisting dataset
-    """
-
-    from fractal.common.models import ResourceCreate
-
-    resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
-
-    project, dataset = await _extract_project_and_dataset(
-        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
-    )
-    project_id = project["id"]
-    dataset_id = dataset["id"]
-
-    res = await ctx.obj["client"].post(
-        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-        json=resource.dict(),
-        headers=await ctx.obj["auth"].header(),
-    )
-
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
+# @dataset.command(name="add-resource")
+# @click.argument("project_name", required=True, type=str, nargs=1)
+# @click.argument("dataset_name", required=True, type=str, nargs=1)
+# @click.argument("path", required=True, type=str, nargs=1)
+# @click.option("--glob_pattern", required=True, type=str, default="", nargs=1)
+# @click.pass_context
+# async def add_resource(
+#     ctx, project_name: str, dataset_name: str, path: str, glob_pattern: str
+# ):
+#
+#     """
+#     Add a new resource to an exisisting dataset
+#     """
+#
+#     from fractal.common.models import ResourceCreate
+#
+#     resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
+#
+#     project, dataset = await _extract_project_and_dataset(
+#         ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
+#     )
+#     project_id = project["id"]
+#     dataset_id = dataset["id"]
+#
+#     res = await ctx.obj["client"].post(
+#         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+#         json=resource.dict(),
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#
+#     print_json(data=res.json())
+#     await ctx.obj["client"].aclose()
 
 
 @dataset.command(name="show-resources")
@@ -392,69 +410,69 @@ async def get_resource(
     await ctx.obj["client"].aclose()
 
 
-@dataset.command(name="modify-dataset")
-@click.argument("project_name", required=True, type=str, nargs=1)
-@click.argument("dataset_name", required=True, type=str, nargs=1)
-@click.option(
-    "--new_dataset_name",
-    nargs=1,
-)
-@click.option(
-    "--meta",
-    nargs=1,
-)
-@click.option(
-    "--type",
-    nargs=1,
-    help=("The type of objects into the dataset"),
-)
-@click.option(
-    "--read_only",
-    nargs=1,
-    help=("Writing permissions"),
-)
-@click.pass_context
-async def modify_dataset(
-    ctx,
-    project_name: str,
-    dataset_name: str,
-    new_dataset_name: str = None,
-    meta: str = None,
-    type: str = None,
-    read_only: bool = None,
-):
-
-    if meta is None:
-        mt = None
-    else:
-        with open(meta, "r", encoding="utf-8") as m:
-            mt = json.load(m)
-
-    updates = dict(
-        name=new_dataset_name,
-        meta=mt,
-        type=type,
-        read_only=read_only,
-    )
-    updates_not_none = {
-        key: value for key, value in updates.items() if value is not None
-    }
-
-    project, dataset = await _extract_project_and_dataset(
-        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
-    )
-    project_id = project["id"]
-    dataset_id = dataset["id"]
-
-    res = await ctx.obj["client"].patch(
-        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-        json=updates_not_none,
-        headers=await ctx.obj["auth"].header(),
-    )
-
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
-
+# @dataset.command(name="modify-dataset")
+# @click.argument("project_name", required=True, type=str, nargs=1)
+# @click.argument("dataset_name", required=True, type=str, nargs=1)
+# @click.option(
+#     "--new_dataset_name",
+#     nargs=1,
+# )
+# @click.option(
+#     "--meta",
+#     nargs=1,
+# )
+# @click.option(
+#     "--type",
+#     nargs=1,
+#     help=("The type of objects into the dataset"),
+# )
+# @click.option(
+#     "--read_only",
+#     nargs=1,
+#     help=("Writing permissions"),
+# )
+# @click.pass_context
+# async def modify_dataset(
+#     ctx,
+#     project_name: str,
+#     dataset_name: str,
+#     new_dataset_name: str = None,
+#     meta: str = None,
+#     type: str = None,
+#     read_only: bool = None,
+# ):
+#
+#     if meta is None:
+#         mt = None
+#     else:
+#         with open(meta, "r", encoding="utf-8") as m:
+#             mt = json.load(m)
+#
+#     updates = dict(
+#         name=new_dataset_name,
+#         meta=mt,
+#         type=type,
+#         read_only=read_only,
+#     )
+#     updates_not_none = {
+#         key: value for key, value in updates.items() if value is not None
+#     }
+#
+#     project, dataset = await _extract_project_and_dataset(
+#         ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
+#     )
+#     project_id = project["id"]
+#     dataset_id = dataset["id"]
+#
+#     res = await ctx.obj["client"].patch(
+#         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+#         json=updates_not_none,
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#
+#     print_json(data=res.json())
+#     await ctx.obj["client"].aclose()
+#
 
 ####
 # TASK GROUP
