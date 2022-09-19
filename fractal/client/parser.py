@@ -189,6 +189,20 @@ task_list_parser = task_subparsers.add_parser("list", help="List tasks")
 
 # task new
 task_new_parser = task_subparsers.add_parser("new", help="List tasks")
+task_new_parser.add_argument("name", help="Task name (must be unique)")
+task_new_parser.add_argument(
+    "resource_type", choices=["task", "workflow"], help="Resource type"
+)
+task_new_parser.add_argument("input_type", help="Dataset input type")
+task_new_parser.add_argument("output_type", help="Dataset output type")
+task_new_parser.add_argument(
+    "module", help="Module path, e.g., `module.submodule:task_function`"
+)
+task_new_parser.add_argument(
+    "--default_args", help="Default arguments, as a JSON-encoded string"
+)
+task_new_parser.add_argument("--subtask-list", help="Subtask list")
+
 
 # task edit
 task_edit_parser = task_subparsers.add_parser("edit", help="Edit task")

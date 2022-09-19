@@ -10,6 +10,8 @@ from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_list
 from ._project import project_show
+from ._task import task_list
+from ._task import task_new
 
 
 class NoCommandError(ValueError):
@@ -74,8 +76,9 @@ async def task(
 ) -> BaseInterface:
     iface = None
     if subcmd == "list":
-        pass
+        iface = await task_list(client, **kwargs)
     elif subcmd == "new":
+        iface = await task_new(client, **kwargs)
         pass
     elif subcmd == "edit":
         pass
