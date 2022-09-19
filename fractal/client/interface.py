@@ -6,8 +6,9 @@ from rich.console import Console
 
 
 class BaseInterface:
-    def __init__(self, retcode: int):
+    def __init__(self, retcode: int, data=None):
         self.retcode = retcode
+        self.data = data
 
     def show(self, *args, **kwargs):
         raise NotImplementedError("Implement in subclasses")
@@ -21,12 +22,11 @@ class PrintInterface(BaseInterface):
     Basic interface that simply prints a string to screen
     """
 
-    def __init__(self, retcode: int, output: str):
-        super().__init__(retcode)
-        self.output = output
+    def __init__(self, retcode: int, data: Any):
+        super().__init__(retcode, data)
 
     def show(self, *args, **kwargs):
-        print(self.output)
+        print(str(self.data))
 
 
 class RichJsonInterface(BaseInterface):
@@ -35,18 +35,16 @@ class RichJsonInterface(BaseInterface):
     """
 
     def __init__(self, retcode: int, data: Dict[str, Any]):
-        super().__init__(retcode)
-        self.data = data
+        super().__init__(retcode, data)
 
     def show(self, *args, **kwargs):
         print_json(data=self.data)
 
 
 class RichConsoleInterface(BaseInterface):
-    def __init__(self, retcode: int, objects: Any):
-        super().__init__(retcode)
-        self.objects = objects
+    def __init__(self, retcode: int, data: Any):
+        super().__init__(retcode, data)
 
     def show(self, *args, **kwargs):
         console = Console()
-        console.print(self.objects)
+        console.print(self.data)

@@ -35,7 +35,7 @@ async def project_create(
     )
     project = check_response(res, expected_status_code=201, coerce=ProjectRead)
     if batch:
-        return PrintInterface(retcode=0, output=str(project.id))
+        return PrintInterface(retcode=0, data=project.id)
     else:
         return RichJsonInterface(retcode=0, data=project.dict())
 
@@ -71,7 +71,7 @@ async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
             read_only_icon,
         )
 
-    return RichConsoleInterface(retcode=0, objects=table)
+    return RichConsoleInterface(retcode=0, data=table)
 
 
 async def project_show(

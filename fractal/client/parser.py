@@ -40,6 +40,13 @@ parser_main.add_argument(
         "only the id of items created instead of the full object."
     ),
 )
+parser_main.add_argument(
+    "-j",
+    "--json",
+    default=False,
+    action="store_true",
+    help="Output raw json",
+)
 
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 

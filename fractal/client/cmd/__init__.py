@@ -52,9 +52,6 @@ async def dataset(
             **kwargs,
         )
     elif subcmd == "edit":
-        from devtools import debug
-
-        debug(kwargs)
         project_id = int(kwargs.pop("project_id"))
         dataset_id = int(kwargs.pop("dataset_id"))
 
@@ -82,7 +79,7 @@ async def version(client: AuthClient, **kwargs) -> PrintInterface:
 
     return PrintInterface(
         retcode=0,
-        output=(
+        data=(
             f"Fractal client\n\tversion: {__VERSION__}\n"
             "Fractal server:"
             f"\turl: {settings.FRACTAL_SERVER}"

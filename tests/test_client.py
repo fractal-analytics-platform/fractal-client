@@ -11,8 +11,8 @@ DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 async def test_version(invoke, testserver):
     iface = await invoke("version")
-    debug(iface.output)
-    assert f"version: {__VERSION__}" in iface.output
+    debug(iface.data)
+    assert f"version: {__VERSION__}" in iface.data
     assert iface.retcode == 0
 
 
