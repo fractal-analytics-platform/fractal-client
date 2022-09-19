@@ -1,4 +1,5 @@
 import json
+from rich.table import Table
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -12,16 +13,8 @@ from ..response import check_response
 from fractal.common.models import DatasetRead
 from fractal.common.models import DatasetUpdate
 from fractal.common.models import ResourceCreate
+from ..interface import RichConsoleInterface
 from fractal.common.models import ResourceRead
-
-
-async def dataset_show(
-    client: AuthClient,
-    project_id: int,
-    dataset_id: int,
-    **kwargs,
-) -> BaseInterface:
-    raise NotImplementedError
 
 
 async def dataset_add_resource(
@@ -73,3 +66,39 @@ async def dataset_edit(
         res, expected_status_code=200, coerce=DatasetRead
     )
     return RichJsonInterface(retcode=0, data=new_dataset.dict())
+
+
+async def dataset_show(
+    client: AuthClient,
+    *,
+    project_id: int,
+    dataset_id: int,
+    **kwargs
+) -> BaseInterface:
+    res = await client.get(
+        f"{settings.BASE_URL}/dataset/{project_id}/{dataset_id}"
+    )
+    from devtools import debug
+    debug(res.json())
+    dataset = check_response(
+        res, expected_status_code=200, coerce=DatasetRead
+    )
+
+    if kwargs.get("json", False):
+        return RichJsonInterface(retcode=0, data=dataset.dict())
+    else:
+        table = Table(title="Dataset")
+        table.add_column("Id", style="cyan", no_wrap=True)
+        table.add_column("Name", justify="right", style="green")
+        table.add_column("Type", style="white")
+        table.add_column("Meta", justify="center")
+        table.add_column("Read only", justify="center")
+
+        table.add_row(
+            str(dataset.id),
+            dataset.name,
+            dataset.type,
+            json.dumps(dataset.meta, indent=2),
+            "✅" if dataset.read_only else "❌",
+        )
+        return RichConsoleInterface(retcode=0, data=table)

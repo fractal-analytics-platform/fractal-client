@@ -122,6 +122,8 @@ dataset_parser = subparsers_main.add_parser("dataset", help="dataset commands")
 dataset_subparsers = dataset_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
 )
+
+# dataset add-resource
 dataset_add_resource_parser = dataset_subparsers.add_parser(
     "add-resource", help="Add resource to existing dataset"
 )
@@ -136,6 +138,7 @@ dataset_add_resource_parser.add_argument(
     "-g", "--glob-pattern", help="Glob pattern"
 )
 
+# dataset edit
 dataset_edit_parser = dataset_subparsers.add_parser(
     "edit", help="Edit dataset", argument_default=ap.SUPPRESS
 )
@@ -166,6 +169,14 @@ dataset_edit_parser.add_argument(
     action="store_false",
 )
 dataset_edit_parser.add_argument("-t", "--type", help="Dataset type")
+
+# dataset show
+dataset_show_parser = dataset_subparsers.add_parser(
+    "show", help="Show dataset", argument_default=ap.SUPPRESS
+)
+dataset_show_parser.add_argument("project_id", type=int, help="Project id")
+dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset id")
+
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser("task", help="task commands")

@@ -410,69 +410,69 @@ async def get_resource(
     await ctx.obj["client"].aclose()
 
 
-@dataset.command(name="modify-dataset")
-@click.argument("project_name", required=True, type=str, nargs=1)
-@click.argument("dataset_name", required=True, type=str, nargs=1)
-@click.option(
-    "--new_dataset_name",
-    nargs=1,
-)
-@click.option(
-    "--meta",
-    nargs=1,
-)
-@click.option(
-    "--type",
-    nargs=1,
-    help=("The type of objects into the dataset"),
-)
-@click.option(
-    "--read_only",
-    nargs=1,
-    help=("Writing permissions"),
-)
-@click.pass_context
-async def modify_dataset(
-    ctx,
-    project_name: str,
-    dataset_name: str,
-    new_dataset_name: str = None,
-    meta: str = None,
-    type: str = None,
-    read_only: bool = None,
-):
-
-    if meta is None:
-        mt = None
-    else:
-        with open(meta, "r", encoding="utf-8") as m:
-            mt = json.load(m)
-
-    updates = dict(
-        name=new_dataset_name,
-        meta=mt,
-        type=type,
-        read_only=read_only,
-    )
-    updates_not_none = {
-        key: value for key, value in updates.items() if value is not None
-    }
-
-    project, dataset = await _extract_project_and_dataset(
-        ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
-    )
-    project_id = project["id"]
-    dataset_id = dataset["id"]
-
-    res = await ctx.obj["client"].patch(
-        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-        json=updates_not_none,
-        headers=await ctx.obj["auth"].header(),
-    )
-
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
-
+# @dataset.command(name="modify-dataset")
+# @click.argument("project_name", required=True, type=str, nargs=1)
+# @click.argument("dataset_name", required=True, type=str, nargs=1)
+# @click.option(
+#     "--new_dataset_name",
+#     nargs=1,
+# )
+# @click.option(
+#     "--meta",
+#     nargs=1,
+# )
+# @click.option(
+#     "--type",
+#     nargs=1,
+#     help=("The type of objects into the dataset"),
+# )
+# @click.option(
+#     "--read_only",
+#     nargs=1,
+#     help=("Writing permissions"),
+# )
+# @click.pass_context
+# async def modify_dataset(
+#     ctx,
+#     project_name: str,
+#     dataset_name: str,
+#     new_dataset_name: str = None,
+#     meta: str = None,
+#     type: str = None,
+#     read_only: bool = None,
+# ):
+#
+#     if meta is None:
+#         mt = None
+#     else:
+#         with open(meta, "r", encoding="utf-8") as m:
+#             mt = json.load(m)
+#
+#     updates = dict(
+#         name=new_dataset_name,
+#         meta=mt,
+#         type=type,
+#         read_only=read_only,
+#     )
+#     updates_not_none = {
+#         key: value for key, value in updates.items() if value is not None
+#     }
+#
+#     project, dataset = await _extract_project_and_dataset(
+#         ctx.obj["client"], ctx.obj["auth"], project_name, dataset_name
+#     )
+#     project_id = project["id"]
+#     dataset_id = dataset["id"]
+#
+#     res = await ctx.obj["client"].patch(
+#         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
+#         json=updates_not_none,
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#
+#     print_json(data=res.json())
+#     await ctx.obj["client"].aclose()
+#
 
 ####
 # TASK GROUP
