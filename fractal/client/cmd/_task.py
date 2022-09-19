@@ -3,10 +3,13 @@ from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
+from ..interface import BaseInterface
+from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
 from fractal.common.models import TaskCreate
 from fractal.common.models import TaskRead
+from fractal.common.models import TaskUpdate
 
 
 async def task_list(
@@ -61,8 +64,22 @@ async def task_new(
     return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
-async def task_edit():
-    pass
+async def task_edit(
+    client: AuthClient,
+    *,
+    task_id: int,
+    **task_update_dict,
+) -> BaseInterface:
+    task_update = TaskUpdate(**task_update_dict)
+    payload = task_update.dict(exclude_unset=True)
+    if not payload:
+        return PrintInterface(retcode=1, data="Nothing to update")
+
+    res = await client.patch(
+        f"{settings.BASE_URL}/task/{task_id}/", json=payload
+    )
+    new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
+    return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
 async def task_add_subtask():

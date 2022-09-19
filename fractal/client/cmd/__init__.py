@@ -10,6 +10,9 @@ from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_list
 from ._project import project_show
+from ._task import task_add_subtask
+from ._task import task_apply
+from ._task import task_edit
 from ._task import task_list
 from ._task import task_new
 
@@ -74,18 +77,16 @@ async def register():
 async def task(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
-    iface = None
     if subcmd == "list":
         iface = await task_list(client, **kwargs)
     elif subcmd == "new":
         iface = await task_new(client, **kwargs)
-        pass
     elif subcmd == "edit":
-        pass
+        iface = await task_edit(client, **kwargs)
     elif subcmd == "add-subtask":
-        pass
+        iface = await task_add_subtask(client, **kwargs)
     elif subcmd == "apply":
-        pass
+        iface = await task_apply(client, **kwargs)
     return iface
 
 

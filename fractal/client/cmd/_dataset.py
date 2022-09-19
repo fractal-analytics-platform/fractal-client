@@ -78,7 +78,6 @@ async def dataset_show(
     from devtools import debug
     from rich.console import Group
 
-
     debug(res.json())
     dataset = check_response(res, expected_status_code=200, coerce=DatasetRead)
 
