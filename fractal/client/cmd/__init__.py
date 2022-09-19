@@ -1,8 +1,12 @@
+from httpx import AsyncClient
+
 from ..authclient import AuthClient
 from ..config import __VERSION__
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
+from ..interface import RichJsonInterface
+from ..response import check_response
 from ._dataset import dataset_add_resource
 from ._dataset import dataset_edit
 from ._dataset import dataset_show
@@ -70,8 +74,21 @@ async def dataset(
     return iface
 
 
-async def register():
-    raise NotImplementedError
+async def register(client: AsyncClient, email: str, **kwargs) -> BaseInterface:
+    from getpass import getpass
+
+    password = getpass()
+    confirm_password = getpass("Confirm password: ")
+    if password == confirm_password:
+        res = await client.post(
+            f"{settings.FRACTAL_SERVER}/auth/register",
+            json=dict(email=email, password=password),
+        )
+        data = check_response(res, expected_status_code=201)
+        iface = RichJsonInterface(retcode=0, data=data)
+    else:
+        iface = PrintInterface(retcode=1, data="Passwords do not match.")
+    return iface
 
 
 async def task(
@@ -90,7 +107,7 @@ async def task(
     return iface
 
 
-async def version(client: AuthClient, **kwargs) -> PrintInterface:
+async def version(client: AsyncClient, **kwargs) -> PrintInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
     data = res.json()
 

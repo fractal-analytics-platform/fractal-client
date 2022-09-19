@@ -42,7 +42,7 @@ async def handle(cli_args: List[str] = argv):
         exit(1)
 
     try:
-        if args.cmd == "version":
+        if args.cmd in ["version", "register"]:
             async with AsyncClient() as client:
                 interface = await handler(client, **vars(args))
         else:

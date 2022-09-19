@@ -54,6 +54,7 @@ subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 register_parser = subparsers_main.add_parser(
     "register", help="Register with the Fractal server"
 )
+register_parser.add_argument("email", help="Email to be used as username")
 
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser("project", help="project commands")
