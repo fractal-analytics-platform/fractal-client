@@ -78,7 +78,7 @@ async def task_edit(
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        f"{settings.BASE_URL}/task/{task_id}/", json=payload
+        f"{settings.BASE_URL}/task/{task_id}", json=payload
     )
     new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
     return RichJsonInterface(retcode=0, data=new_task.dict())
