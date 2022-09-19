@@ -10,6 +10,7 @@ from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_list
 from ._project import project_show
+from ._task import task_apply
 from ._task import task_list
 from ._task import task_new
 
@@ -85,7 +86,7 @@ async def task(
     elif subcmd == "add-subtask":
         pass
     elif subcmd == "apply":
-        pass
+        iface = await task_apply(client, **kwargs)
     return iface
 
 

@@ -216,6 +216,21 @@ task_add_subtask_parser = task_subparsers.add_parser(
 task_apply_parser = task_subparsers.add_parser(
     "apply", help="Apply task to a dataset"
 )
+task_apply_parser.add_argument(
+    "project_name", help="Project name (must be unique)"
+)
+task_apply_parser.add_argument(
+    "input_dataset_name", help="Input dataset name (must be unique)"
+)
+task_apply_parser.add_argument(
+    "output_dataset_name", help="Output dataset name (must be unique)"
+)
+task_apply_parser.add_argument(
+    "workflow_name", help="Workflow name (must be unique)"
+)
+task_apply_parser.add_argument(
+    "--overwrite_input", action="store_true", help="Rewrite the initial zarr"
+)
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
