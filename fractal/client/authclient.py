@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import jwt
@@ -12,8 +13,10 @@ class AuthenticationError(ValueError):
 
 
 class AuthToken:
-    def __init__(self, client: AsyncClient):
+    def __init__(self, client: AsyncClient, username: str, password: str):
         self.client = client
+        self.username = username
+        self.password = password
 
         try:
             with open(settings.SESSION_CACHE_PATH, "r") as f:
@@ -23,8 +26,8 @@ class AuthToken:
 
     async def _get_fresh_token(self):
         data = dict(
-            username=settings.FRACTAL_USER,
-            password=settings.FRACTAL_PASSWORD,
+            username=self.username,
+            password=self.password,
         )
         res = await self.client.post(
             f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
@@ -67,13 +70,24 @@ class AuthToken:
 
 
 class AuthClient:
-    def __init__(self):
+    def __init__(
+        self,
+        username: str,
+        password: str,
+    ):
         self.auth = None
         self.client = None
+        self.username = username
+        self.password = password
+        logging.debug(f"AuthClient {self.username} {self.password}")
 
     async def __aenter__(self):
         self.client = AsyncClient()
-        self.auth = AuthToken(client=self.client)
+        self.auth = AuthToken(
+            client=self.client,
+            username=self.username,
+            password=self.password,
+        )
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):

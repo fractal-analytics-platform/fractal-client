@@ -21,6 +21,9 @@ from httpx import AsyncClient
 
 from . import cmd
 from .authclient import AuthClient
+from .authclient import AuthenticationError
+from .config import settings
+from .interface import PrintInterface
 from .parser import parser_main
 
 
@@ -38,12 +41,18 @@ async def handle(cli_args: List[str] = argv):
         parser_main.print_help()
         exit(1)
 
-    if args.cmd == "version":
-        async with AsyncClient() as client:
-            interface = await handler(client, **vars(args))
-    else:
-        async with AuthClient() as client:
-            interface = await handler(client, **vars(args))
+    try:
+        if args.cmd == "version":
+            async with AsyncClient() as client:
+                interface = await handler(client, **vars(args))
+        else:
+            async with AuthClient(
+                username=args.user or settings.FRACTAL_USER,
+                password=args.password or settings.FRACTAL_PASSWORD,
+            ) as client:
+                interface = await handler(client, **vars(args))
+    except AuthenticationError as e:
+        return PrintInterface(retcode=1, data=e.args[0])
 
     return interface
 
