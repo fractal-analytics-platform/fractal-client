@@ -205,12 +205,43 @@ task_new_parser.add_argument("--subtask-list", help="Subtask list")
 
 
 # task edit
-task_edit_parser = task_subparsers.add_parser("edit", help="Edit task")
+task_edit_parser = task_subparsers.add_parser(
+    "edit", help="Edit task", argument_default=ap.SUPPRESS
+)
+task_edit_parser.add_argument("task_id", help="ID of task to edit")
+task_edit_parser.add_argument("--name", help="New task name")
+task_edit_parser.add_argument(
+    "--resource-type",
+    choices=["task", "workflow"],
+    help="New resource type",
+)
+task_edit_parser.add_argument(
+    "--input-type",
+    help="New input type",
+)
+task_edit_parser.add_argument(
+    "--output-type",
+    help="New resource type",
+)
+task_edit_parser.add_argument(
+    "--default-args", help="Filename containing JSON encoded default arguments"
+)
 
 # task add-subtask
 task_add_subtask_parser = task_subparsers.add_parser(
-    "add_subtask", help="Edit task"
+    "add-subtask", help="Edit task", argument_default=ap.SUPPRESS
 )
+task_add_subtask_parser.add_argument(
+    "parent_task_id", help="ID of task to which the subtask will be added"
+)
+task_add_subtask_parser.add_argument(
+    "subtask_id", help="ID of task to add as a subtask"
+)
+task_add_subtask_parser.add_argument(
+    "--args-file",
+    help="Path to file containing JSON serialised task arguments",
+)
+
 
 # task apply
 task_apply_parser = task_subparsers.add_parser(

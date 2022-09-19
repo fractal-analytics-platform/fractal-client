@@ -57,7 +57,7 @@ async def dataset_edit(
     dataset_update = DatasetUpdate(**dataset_update_dict)
     payload = dataset_update.dict(exclude_unset=True)
     if not payload:
-        return PrintInterface(retcode=1, output="Nothing to update")
+        return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
@@ -77,7 +77,6 @@ async def dataset_show(
     )
     from devtools import debug
     from rich.console import Group
-
 
     debug(res.json())
     dataset = check_response(res, expected_status_code=200, coerce=DatasetRead)

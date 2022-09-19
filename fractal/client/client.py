@@ -497,90 +497,90 @@ async def task():
 #     await ctx.obj["client"].aclose()
 
 
-@task.command(name="new")
-@click.argument("name", required=True, nargs=1, type=str)
-@click.argument(
-    "resource_type",
-    required=True,
-    nargs=1,
-)
-@click.argument(
-    "input_type",
-    required=True,
-    nargs=1,
-)
-@click.argument(
-    "output_type",
-    required=True,
-    nargs=1,
-)
-@click.option(
-    "--module",
-    nargs=1,
-    help=("default args"),
-)
-@click.option(
-    "--default_args",
-    nargs=1,
-    help=("default args"),
-)
-@click.option(
-    "--subtask_list",
-    nargs=1,
-    help=("subtask list of the current task"),
-)
-@click.pass_context
-async def new_task(
-    ctx,
-    name: str,
-    resource_type: str,
-    input_type: str,
-    output_type: str,
-    default_args: Dict = None,
-    module: str = "",
-    subtask_list: List = None,
-):
-
-    # Check that there is no other dataset with the same name
-    from fractal.common.models import TaskRead
-
-    res = await ctx.obj["client"].get(
-        f"{settings.BASE_URL}/task/",
-        headers=await ctx.obj["auth"].header(),
-    )
-    data = res.json()
-    task_list = [TaskRead(**item) for item in data]
-    existing_task_names = [t.name for t in task_list]
-
-    if name in existing_task_names:
-        raise Exception(f"Task name {name} already in use.")
-
-    from fractal.common.models import TaskCreate
-
-    if not default_args:
-        default_args = {}
-    if not subtask_list:
-        subtask_list = []
-
-    resource_type = resource_type.replace("_", " ")
-    task = TaskCreate(
-        name=name,
-        resource_type=resource_type,
-        input_type=input_type,
-        output_type=output_type,
-        default_args=default_args,
-        module=module,
-        subtask_list=subtask_list,
-    )
-
-    res = await ctx.obj["client"].post(
-        f"{settings.BASE_URL}/task/",
-        json=task.dict(),
-        headers=await ctx.obj["auth"].header(),
-    )
-
-    print_json(data=res.json())
-    await ctx.obj["client"].aclose()
+# @task.command(name="new")
+# @click.argument("name", required=True, nargs=1, type=str)
+# @click.argument(
+#     "resource_type",
+#     required=True,
+#     nargs=1,
+# )
+# @click.argument(
+#     "input_type",
+#     required=True,
+#     nargs=1,
+# )
+# @click.argument(
+#     "output_type",
+#     required=True,
+#     nargs=1,
+# )
+# @click.option(
+#     "--module",
+#     nargs=1,
+#     help=("default args"),
+# )
+# @click.option(
+#     "--default_args",
+#     nargs=1,
+#     help=("default args"),
+# )
+# @click.option(
+#     "--subtask_list",
+#     nargs=1,
+#     help=("subtask list of the current task"),
+# )
+# @click.pass_context
+# async def new_task(
+#     ctx,
+#     name: str,
+#     resource_type: str,
+#     input_type: str,
+#     output_type: str,
+#     default_args: Dict = None,
+#     module: str = "",
+#     subtask_list: List = None,
+# ):
+#
+#     # Check that there is no other dataset with the same name
+#     from fractal.common.models import TaskRead
+#
+#     res = await ctx.obj["client"].get(
+#         f"{settings.BASE_URL}/task/",
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#     data = res.json()
+#     task_list = [TaskRead(**item) for item in data]
+#     existing_task_names = [t.name for t in task_list]
+#
+#     if name in existing_task_names:
+#         raise Exception(f"Task name {name} already in use.")
+#
+#     from fractal.common.models import TaskCreate
+#
+#     if not default_args:
+#         default_args = {}
+#     if not subtask_list:
+#         subtask_list = []
+#
+#     resource_type = resource_type.replace("_", " ")
+#     task = TaskCreate(
+#         name=name,
+#         resource_type=resource_type,
+#         input_type=input_type,
+#         output_type=output_type,
+#         default_args=default_args,
+#         module=module,
+#         subtask_list=subtask_list,
+#     )
+#
+#     res = await ctx.obj["client"].post(
+#         f"{settings.BASE_URL}/task/",
+#         json=task.dict(),
+#         headers=await ctx.obj["auth"].header(),
+#     )
+#
+#     print_json(data=res.json())
+#     await ctx.obj["client"].aclose()
 
 
 @task.command(name="modify-task")
