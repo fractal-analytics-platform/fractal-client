@@ -5,6 +5,7 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import RichJsonInterface
 from ..response import check_response
+from fractal.common.models import ApplyWorkflow
 from fractal.common.models import TaskCreate
 from fractal.common.models import TaskRead
 
@@ -72,57 +73,13 @@ async def task_add_subtask():
 async def task_apply(
     client: AuthClient,
     *,
-    project_name: str,
-    input_dataset_name: str,
-    output_dataset_name: str,
-    workflow_name: str,
+    project_id: int,
+    input_dataset_id: int,
+    output_dataset_id: int,
+    workflow_id: int,
     overwrite_input: bool,
     **kwargs,
 ) -> RichJsonInterface:
-
-    res = await client.get(f"{settings.BASE_URL}/project/")
-    projects = res.json()
-    # Find project
-    try:
-        project = [p for p in projects if p["name"] == project_name][0]
-        project_id = project["id"]
-    except IndexError as e:
-        raise IndexError(f"Project {project_name} not found", str(e))
-    # Get dataset list
-    dataset_list = [
-        project["dataset_list"]
-        for project in projects
-        if project["id"] == project_id
-    ][0]
-    # Find I/O dataset
-    try:
-        input_dataset = [
-            ds for ds in dataset_list if ds["name"] == input_dataset_name
-        ][0]
-        input_dataset_id = input_dataset["id"]
-    except IndexError as e:
-        raise IndexError(f"Dataset {input_dataset_name} not found", str(e))
-    try:
-        output_dataset = [
-            ds for ds in dataset_list if ds["name"] == output_dataset_name
-        ][0]
-        output_dataset_id = output_dataset["id"]
-    except IndexError as e:
-        raise IndexError(f"Dataset {output_dataset_name} not found", str(e))
-    # Extract ID for task
-    res = await client.get(f"{settings.BASE_URL}/task/")
-    data = res.json()
-    task_list = [TaskRead(**item) for item in data]
-    # Find task id
-    try:
-        workflow = [t for t in task_list if t.name == workflow_name][0]
-        workflow_id = workflow.id
-    except IndexError as e:
-        raise IndexError(f"Task {workflow_name} not found", str(e))
-
-    # Apply workflow
-
-    from fractal.common.models import ApplyWorkflow
 
     workflow = ApplyWorkflow(
         project_id=project_id,
@@ -136,5 +93,5 @@ async def task_apply(
         f"{settings.BASE_URL}/project/apply/",
         json=workflow.dict(),
     )
-    wf_submitted = check_response(res, expected_status_code=200)
+    wf_submitted = check_response(res, expected_status_code=202)
     return RichJsonInterface(retcode=0, data=wf_submitted)
