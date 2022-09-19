@@ -1,3 +1,6 @@
+import pytest
+
+
 async def test_task_new(clear_db, testserver, register_user, invoke):
     res = await invoke("task new mytask task image zarr mypackage.subpkg:foo")
     res.show()
@@ -15,17 +18,11 @@ async def test_task_list(clear_db, testserver, register_user, invoke):
     assert len(res.data) == 2
 
 
+@pytest.mark.xfail
 async def test_task_apply(clear_db, testserver, register_user, invoke):
-    from devtools import debug
-
-    PROJECT_NAME = "project_name"
-    PROJECT_PATH = "project_path"
-    res = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
-    project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
-    res = await invoke(f"dataset edit {project_id} {dataset_id} --type image")
-    res = await invoke("task new mytask task image zarr mypackage.subpkg:foo")
-    res = await invoke("task list")
-    res.show()
-    res = await invoke("task apply project_name default default mytask ")
-    debug(res)
+    # TODO:
+    # Create project
+    # add input resource
+    # check that fractal_tasks_core is present (should be optional)
+    # try to apply the dummy or another taks
+    assert False
