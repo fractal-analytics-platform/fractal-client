@@ -3,7 +3,7 @@ from os import environ
 import httpx
 from devtools import debug
 
-from fractal.client.config import __VERSION__
+from fractal import __VERSION__
 
 
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
