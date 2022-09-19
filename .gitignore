@@ -2,6 +2,7 @@
 __pycache__
 *.cpython-*.pyc
 *.env
+.coverage
 
 dist/*
 .mypy_cache/*
