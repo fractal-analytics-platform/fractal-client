@@ -28,3 +28,13 @@ async def test_edit_dataset(clear_db, testserver, register_user, invoke):
 
     # TODO more extensively test partial updates and test that arguments not
     # provided are indeed not updated
+
+
+async def test_show_dataset(clear_db, testserver, register_user, invoke):
+    res = await invoke("project new prj0 prj_path0")
+    project_id = res.data["id"]
+    dataset_id = res.data["dataset_list"][0]["id"]
+
+    res = await invoke(f"dataset show {project_id} {dataset_id}")
+    res.show()
+    assert res.retcode == 0
