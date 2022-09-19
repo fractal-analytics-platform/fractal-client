@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from fastapi import APIRouter
@@ -5,6 +6,7 @@ from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from ...db import AsyncSession
@@ -110,9 +112,18 @@ async def create_project(
     db_project.dataset_list.append(Dataset(name=project.default_dataset_name))
 
     db_project.user_owner_id = user.id
-    db.add(db_project)
-    await db.commit()
-    await db.refresh(db_project)
+    try:
+        db.add(db_project)
+        await db.commit()
+        await db.refresh(db_project)
+    except IntegrityError as e:
+        await db.rollback()
+        logging.error(str(e))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+
     return db_project
 
 
