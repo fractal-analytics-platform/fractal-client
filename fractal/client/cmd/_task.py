@@ -28,11 +28,12 @@ async def task_list(
 async def task_new(
     client: AuthClient,
     *,
+    batch: bool = False,
     name: str,
     resource_type: str,
     input_type: str,
     output_type: str,
-    module: str,
+    module: Optional[str] = None,
     default_args: Optional[str] = None,
     subtask_list: Optional[str] = None,
     **kwargs,
@@ -63,7 +64,10 @@ async def task_new(
         json=task.dict(),
     )
     new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
-    return RichJsonInterface(retcode=0, data=new_task.dict())
+    if batch:
+        return PrintInterface(retcode=0, data=new_task.id)
+    else:
+        return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
 async def task_edit(
@@ -87,6 +91,7 @@ async def task_edit(
 async def task_add_subtask(
     client: AuthClient,
     *,
+    batch: bool = False,
     parent_task_id: int,
     subtask_id: int,
     args_file: Optional[str] = None,
@@ -95,7 +100,8 @@ async def task_add_subtask(
 ):
 
     if args_file:
-        args = json.loads(args_file)
+        with open(args_file, "r") as fin:
+            args = json.load(fin)
     else:
         args = {}
 
@@ -113,7 +119,10 @@ async def task_add_subtask(
     new_subtask = check_response(
         res, expected_status_code=201, coerce=TaskRead
     )
-    return RichJsonInterface(retcode=0, data=new_subtask.dict())
+    if batch:
+        return PrintInterface(retcode=0, data=new_subtask.id)
+    else:
+        return RichJsonInterface(retcode=0, data=new_subtask.dict())
 
 
 async def task_apply(

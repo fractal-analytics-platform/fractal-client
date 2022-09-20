@@ -37,6 +37,7 @@ async def project(
     elif subcmd == "add-dataset":
         iface = await project_add_dataset(
             client,
+            batch=batch,
             project_id=kwargs.pop("project_id"),
             dataset_name=kwargs.pop("dataset_name"),
             metadata_filename=kwargs.pop("metadata"),
@@ -54,6 +55,7 @@ async def dataset(
     elif subcmd == "add-resource":
         iface = await dataset_add_resource(
             client,
+            batch=batch,
             project_id=kwargs.pop("project_id"),
             dataset_id=kwargs.pop("dataset_id"),
             path=kwargs.pop("path"),
@@ -97,11 +99,11 @@ async def task(
     if subcmd == "list":
         iface = await task_list(client, **kwargs)
     elif subcmd == "new":
-        iface = await task_new(client, **kwargs)
+        iface = await task_new(client, batch=batch, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
     elif subcmd == "add-subtask":
-        iface = await task_add_subtask(client, **kwargs)
+        iface = await task_add_subtask(client, batch=batch, **kwargs)
     elif subcmd == "apply":
         iface = await task_apply(client, **kwargs)
     return iface
