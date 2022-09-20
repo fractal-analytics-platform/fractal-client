@@ -1,6 +1,6 @@
 # Fractal Server
 
-[![PyPI version](https://badge.fury.io/py/fractal-server.svg)](https://badge.fury.io/py/fractal-server)
+[![PyPI version](https://img.shields.io/pypi/v/fractal-server?color=gree)](https://pypi.org/project/fractal-server/)
 
 Fractal is a framework to process high content imaging data at scale and prepare it for interactive visualization.
 
