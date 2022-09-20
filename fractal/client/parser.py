@@ -194,7 +194,8 @@ task_new_parser.add_argument(
 task_new_parser.add_argument("input_type", help="Dataset input type")
 task_new_parser.add_argument("output_type", help="Dataset output type")
 task_new_parser.add_argument(
-    "module", help="Module path, e.g., `module.submodule:task_function`"
+    "--module",
+    help="Module path, e.g., `module.submodule:task_function`",
 )
 task_new_parser.add_argument(
     "--default_args", help="Default arguments, as a JSON-encoded string"
