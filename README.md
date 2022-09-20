@@ -25,8 +25,6 @@ OME-Zarr files can be interactively visualizated in napari. Here is an example u
 Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi).
 The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
 
-*Installation instructions below will be updated soon to the new architecture*
-
 ## Installation
 
 Simply
