@@ -21,6 +21,7 @@ from fractal.common.models import ResourceRead
 async def dataset_add_resource(
     client: AuthClient,
     *,
+    batch: bool = False,
     project_id: int,
     dataset_id: int,
     path: str,
@@ -36,7 +37,10 @@ async def dataset_add_resource(
     new_resource = check_response(
         res, expected_status_code=201, coerce=ResourceRead
     )
-    return RichJsonInterface(retcode=0, data=new_resource.dict())
+    if batch:
+        return PrintInterface(retcode=0, data=new_resource.dict())
+    else:
+        return RichJsonInterface(retcode=0, data=new_resource.dict())
 
 
 async def dataset_edit(

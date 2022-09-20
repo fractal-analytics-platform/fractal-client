@@ -91,6 +91,7 @@ async def task_edit(
 async def task_add_subtask(
     client: AuthClient,
     *,
+    batch: bool = False,
     parent_task_id: int,
     subtask_id: int,
     args_file: Optional[str] = None,
@@ -117,7 +118,10 @@ async def task_add_subtask(
     new_subtask = check_response(
         res, expected_status_code=201, coerce=TaskRead
     )
-    return RichJsonInterface(retcode=0, data=new_subtask.dict())
+    if batch:
+        return PrintInterface(retcode=0, data=new_subtask.dict())
+    else:
+        return RichJsonInterface(retcode=0, data=new_subtask.dict())
 
 
 async def task_apply(
