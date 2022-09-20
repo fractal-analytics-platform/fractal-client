@@ -37,6 +37,7 @@ async def project(
     elif subcmd == "add-dataset":
         iface = await project_add_dataset(
             client,
+            batch=batch,
             project_id=kwargs.pop("project_id"),
             dataset_name=kwargs.pop("dataset_name"),
             metadata_filename=kwargs.pop("metadata"),
