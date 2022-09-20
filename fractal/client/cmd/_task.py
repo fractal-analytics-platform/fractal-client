@@ -100,7 +100,8 @@ async def task_add_subtask(
 ):
 
     if args_file:
-        args = json.loads(args_file)
+        with open(args_file, "r") as fin:
+            args = json.load(fin)
     else:
         args = {}
 
