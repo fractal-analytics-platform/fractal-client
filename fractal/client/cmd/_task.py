@@ -27,6 +27,7 @@ async def task_list(
 
 async def task_new(
     client: AuthClient,
+    batch: bool = False,
     *,
     name: str,
     resource_type: str,
@@ -63,7 +64,10 @@ async def task_new(
         json=task.dict(),
     )
     new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
-    return RichJsonInterface(retcode=0, data=new_task.dict())
+    if batch:
+        return PrintInterface(retcode=0, data=new_task.dict())
+    else:
+        return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
 async def task_edit(

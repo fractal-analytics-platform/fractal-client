@@ -98,7 +98,7 @@ async def task(
     if subcmd == "list":
         iface = await task_list(client, **kwargs)
     elif subcmd == "new":
-        iface = await task_new(client, **kwargs)
+        iface = await task_new(client, batch=batch, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
     elif subcmd == "add-subtask":
