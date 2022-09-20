@@ -1,22 +1,22 @@
 # Register user (this step will change in the future)
 http POST localhost:8000/auth/register email=test@me.com password=test
 
+
 # Set useful variables
-PRJ_NAME="myproj-gpu"
+PRJ_NAME="myproj-1w-2x2-3c-10z"
 DS_IN_NAME="input-ds"
 DS_OUT_NAME="output-ds"
-WF_NAME="My workflow gpu"
-
+WF_NAME="WF 1w-2x2-3c-10z"
 
 # Define/initialize empty folder for temporary files
 TMPDIR=`pwd`/$PRJ_NAME
 rm -r $TMPDIR
 mkdir $TMPDIR
+INPUT_PATH=../images/10.5281_zenodo.7057076
+OUTPUT_PATH=${TMPDIR}/output
+
 TMPJSON=${TMPDIR}/tmp.json
 TMPTASKS=${TMPDIR}/core_tasks.json
-
-INPUT_PATH=../images/10.5281_zenodo.7059515
-OUTPUT_PATH=${TMPDIR}/output
 
 CMD="fractal"
 CMD_JSON="poetry run python aux_extract_from_simple_json.py $TMPJSON"

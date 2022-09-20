@@ -7,15 +7,15 @@ DS_IN_NAME="input-ds-1"
 DS_OUT_NAME="output-ds-1"
 WF_NAME="My workflow 1"
 
-INPUT_PATH=../images/10.5281_zenodo.7059515
-OUTPUT_PATH=${TMPDIR}/output
-
 # Define/initialize empty folder for temporary files
 TMPDIR=`pwd`/$PRJ_NAME
 rm -r $TMPDIR
 mkdir $TMPDIR
 TMPJSON=${TMPDIR}/tmp.json
 TMPTASKS=${TMPDIR}/core_tasks.json
+
+INPUT_PATH=../images/10.5281_zenodo.7059515
+OUTPUT_PATH=${TMPDIR}/output
 
 CMD="fractal"
 CMD_JSON="poetry run python aux_extract_from_simple_json.py $TMPJSON"
