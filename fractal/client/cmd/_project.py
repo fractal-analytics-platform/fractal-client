@@ -90,6 +90,7 @@ async def project_add_dataset(
     dataset_name: str,
     metadata_filename: Optional[str] = None,
     type: Optional[str] = None,
+    batch: bool = False,
     **kwargs,
 ) -> RichJsonInterface:
 
@@ -109,4 +110,7 @@ async def project_add_dataset(
     new_dataset = check_response(
         res, expected_status_code=201, coerce=DatasetRead
     )
-    return RichJsonInterface(retcode=0, data=new_dataset.dict())
+    if batch:
+        return PrintInterface(retcode=0, data=new_dataset.id)
+    else:
+        return RichJsonInterface(retcode=0, data=new_dataset.dict())
