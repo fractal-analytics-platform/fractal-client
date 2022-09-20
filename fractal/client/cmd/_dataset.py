@@ -38,7 +38,7 @@ async def dataset_add_resource(
         res, expected_status_code=201, coerce=ResourceRead
     )
     if batch:
-        return PrintInterface(retcode=0, data=new_resource.dict())
+        return PrintInterface(retcode=0, data=new_resource.id)
     else:
         return RichJsonInterface(retcode=0, data=new_resource.dict())
 

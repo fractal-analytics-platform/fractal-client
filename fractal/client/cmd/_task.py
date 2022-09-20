@@ -27,13 +27,13 @@ async def task_list(
 
 async def task_new(
     client: AuthClient,
-    batch: bool = False,
     *,
+    batch: bool = False,
     name: str,
     resource_type: str,
     input_type: str,
     output_type: str,
-    module: str,
+    module: Optional[str] = None,
     default_args: Optional[str] = None,
     subtask_list: Optional[str] = None,
     **kwargs,
@@ -65,7 +65,7 @@ async def task_new(
     )
     new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
     if batch:
-        return PrintInterface(retcode=0, data=new_task.dict())
+        return PrintInterface(retcode=0, data=new_task.id)
     else:
         return RichJsonInterface(retcode=0, data=new_task.dict())
 
@@ -119,7 +119,7 @@ async def task_add_subtask(
         res, expected_status_code=201, coerce=TaskRead
     )
     if batch:
-        return PrintInterface(retcode=0, data=new_subtask.dict())
+        return PrintInterface(retcode=0, data=new_subtask.id)
     else:
         return RichJsonInterface(retcode=0, data=new_subtask.dict())
 
