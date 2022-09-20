@@ -15,6 +15,8 @@ from os import getenv
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
+from .. import __VERSION__
+
 
 def fail_getenv(key):
     value = getenv(key, None)
@@ -24,9 +26,6 @@ def fail_getenv(key):
 
 
 load_dotenv(".fractal.env")
-
-
-__VERSION__ = "0.1.2"
 
 
 class Settings(BaseSettings):
