@@ -2,7 +2,9 @@ import pytest
 
 
 async def test_task_new(clear_db, testserver, register_user, invoke):
-    res = await invoke("task new mytask task image zarr mypackage.subpkg:foo")
+    res = await invoke(
+        "task new mytask task image zarr --module mypackage.subpkg:foo"
+    )
     res.show()
     assert res.retcode == 0
     assert res.data["name"] == "mytask"
@@ -10,8 +12,12 @@ async def test_task_new(clear_db, testserver, register_user, invoke):
 
 
 async def test_task_list(clear_db, testserver, register_user, invoke):
-    res = await invoke("task new mytask0 task image zarr mypackage.subpkg:foo")
-    res = await invoke("task new mytask1 task image zarr mypackage.subpkg:foo")
+    res = await invoke(
+        "task new mytask0 task image zarr --module mypackage.subpkg:foo"
+    )
+    res = await invoke(
+        "task new mytask1 task image zarr --module mypackage.subpkg:foo"
+    )
     res = await invoke("task list")
     res.show()
     assert res.retcode == 0
@@ -29,7 +35,9 @@ async def test_task_apply(clear_db, testserver, register_user, invoke):
 
 
 async def test_edit_task(clear_db, testserver, register_user, invoke):
-    res = await invoke("task new mytask0 task image zarr mypackage.subpkg:foo")
+    res = await invoke(
+        "task new mytask0 task image zarr --module mypackage.subpkg:foo"
+    )
     task_id = res.data["id"]
 
     res = await invoke(f"task edit {task_id} --name 'new task name'")
@@ -39,9 +47,13 @@ async def test_edit_task(clear_db, testserver, register_user, invoke):
 
 
 async def test_add_subtask(clear_db, testserver, register_user, invoke):
-    res = await invoke("task new parent task image zarr mypackage.subpkg:foo")
+    res = await invoke(
+        "task new parent task image zarr --module mypackage.subpkg:foo"
+    )
     parent_task_id = res.data["id"]
-    res = await invoke("task new child task image zarr mypackage.subpkg:foo")
+    res = await invoke(
+        "task new child task image zarr --module mypackage.subpkg:foo"
+    )
     child_task_id = res.data["id"]
 
     res = await invoke(f"task add-subtask {parent_task_id} {child_task_id}")
