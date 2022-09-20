@@ -148,9 +148,6 @@ dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset id")
 dataset_edit_parser.add_argument("--name", help="New name of dataset")
 dataset_edit_parser.add_argument("--path", help="New path of dataset")
 dataset_edit_parser.add_argument(
-    "-g", "--glob-pattern", help="New glob pattern"
-)
-dataset_edit_parser.add_argument(
     "--metadata",
     help=(
         "Path to file containing dataset metadata in JSON format. "
