@@ -1,47 +1,33 @@
 # Fractal Client
 
+[![PyPI version](https://img.shields.io/pypi/v/fractal-client?color=gree)](https://pypi.org/project/fractal-client/)
+
 The client component of Fractal Analytics Framework.
 
-[![PyPI
-version](https://img.shields.io/pypi/v/fractal-client?color=gree)](https://pypi.org/project/fractal-client/)
+Fractal is a framework to process high content imaging data at scale and prepare it for interactive visualization.
 
-Fractal is a framework to process high content screening data at scale and
-prepares it for interactive visualization.
+Fractal provides distributed workflows that convert TBs of image data into OME-Zarr files. The platform then processes the 3D image data by applying tasks like illumination correction, maximum intensity projection, 3D segmentation using [cellpose](https://cellpose.readthedocs.io/en/latest/) and measurements using [napari workflows](https://github.com/haesleinhuepf/napari-workflows). The pyramidal OME-Zarr files enable interactive visualization in the napari viewer.
 
-Fractal provides distributed workflows that convert TBs of image data into
-OME-Zarr files. The platform then processes the 3D image data by applying tasks
-like illumination correction and maximum intensity projection. The pyramidal
-OME-Zarr files enable interactive visualization in the napari viewer. We are
-building towards integrating object segmentation (nuclei, cells, organoids) and
-feature measurements into Fractal.
-
-Fractal is currently an **early alpha build**. We currently support only
-Yokogawa CV7000 image data as an input. Also, we're in the process of
-refactoring the workflow management into a client-server architecture. Thus,
-proceed with it at your own risk, there will still be significant breaking
-changes. While we don't have any releases or stable versions and thus don't
-provide user support, we welcome questions and discussions. Open an issue to
-get in touch.
+![Fractal_Overview](https://user-images.githubusercontent.com/18033446/190978261-2e7b57e9-72c7-443e-9202-15d233f8416d.jpg)
 
 
-![Fractal_multiwell_plate](https://user-images.githubusercontent.com/18033446/177169496-09784413-6ba9-4041-80e2-c70a70e0a5d9.gif)
+This is the main Fractal repository that contains the **Fractal client** and some examples. The **Fractal core tasks** to parse images and process OME-Zarr files can be found [here](https://github.com/fractal-analytics-platform/fractal-tasks-core). The **Fractal server** can be found [here](https://github.com/fractal-analytics-platform/fractal-server).
 
-Shortened movie of browsing an OME-Zarr file generated with Fractal in napari,
-using the [napari-ome-zarr plugin](https://github.com/ome/napari-ome-zarr).
-Actual loading times vary and can be a bit slower than in this GIF.
+Example input data for Fractal can be found here: [10.5281/zenodo.7057076](https://doi.org/10.5281/zenodo.7057076)
+Example output data from Fractal in the OME-Zarr format can be found here: [10.5281/zenodo.7081622](https://doi.org/10.5281/zenodo.7081622)
+Example workflows can be found in the `examples` folder, together with additional instructions for how to set up the server & client, download the test data and run workflows through Fractal.
+
+Fractal is currently in an early alpha version. We have the core processing functionality working for Yokogawa CV7000 image data and a workflow for processing OME-Zarr images up to feature measurements. But we're still adding core functionality and will introduce breaking changes. You can follow along our planned milestones on the [architecture side](https://github.com/fractal-analytics-platform/fractal/milestones) & the [tasks side](https://github.com/fractal-analytics-platform/fractal-tasks-core). Open an issue to get in touch, raise bugs or ask questions.
+
+OME-Zarr files can be interactively visualizated in napari. Here is an example using the newly-proposed async loading in [NAP4](https://github.com/napari/napari/pull/4905) and the [napari-ome-zarr plugin](https://github.com/ome/napari-ome-zarr):
+
+![napari_plate_overview](https://user-images.githubusercontent.com/18033446/190983839-afb9743f-530c-4b00-bde7-23ad62404ee8.gif)
 
 ### Contributors
+Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi).
+The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
 
-Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute
-for Biomedical Research and in the Pelkmans Lab at the University of Zurich
-(both in Switzerland). The project lead is with
-[@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi).
-The project was originally led by [@dvischi](https://github.com/dvischi). The
-core development is done under contract by
-[@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa)
-& [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l.
-<exact-lab.it>.
-
+*Installation instructions below will be updated soon to the new architecture*
 
 ## Installation
 
@@ -49,7 +35,7 @@ Simply
 
 ``` pip install fractal-client ```
 
-Subsequently, you may simply invoke it as `fractal`. Note that you must provide
+Subsequently, you may invoke it as `fractal`. Note that you must provide
 the following environment variables:
 
 * `FRACTAL_SERVER`: fully qualified URL to the Fractal server installation
