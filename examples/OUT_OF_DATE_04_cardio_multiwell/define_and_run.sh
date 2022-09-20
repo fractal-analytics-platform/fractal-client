@@ -58,4 +58,3 @@ fractal task add-subtask "$WORKFLOW_NAME" "Measurement" --args_json ${TMPDIR}/ar
 
 # Apply workflow
 fractal workflow apply $PROJECT_NAME $DATASET_IN_NAME "$WORKFLOW_NAME" --output_dataset_name $DATASET_OUT_NAME
-
