@@ -1,5 +1,6 @@
 # Register user (this step will change in the future)
 curl -d '{"email":"test@me.com", "password":"test"}' -H "Content-Type: application/json" -X POST localhost:8000/auth/register
+echo
 
 # Set useful variables
 PRJ_NAME="myproj-10w-5x5"
@@ -13,7 +14,8 @@ rm -r $TMPDIR
 mkdir $TMPDIR
 
 INPUT_PATH=/data/active/fractal/3D/PelkmansLab/CardiacMultiplexing/Cycle1_5x5_10wells_constantZ
-OUTPUT_PATH=/data/active/fractal/tests/20220920_10well_5x5
+OUTPUT_PATH=/data/active/fractal/tests/20220922_10well_5x5
+rm -rv $OUTPUT_PATH
 
 TMPJSON=${TMPDIR}/tmp.json
 TMPTASKS=${TMPDIR}/core_tasks.json
@@ -52,15 +54,15 @@ $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_create.json
 SUBTASK_ID=`$CMD_CORE_TASKS "Yokogawa to Zarr"`
 $CMD task add-subtask $WF_ID $SUBTASK_ID
 
-SUBTASK_ID=`$CMD_CORE_TASKS "Per-FOV image labeling"`
-echo "{\"labeling_level\": 1, \"executor\": \"gpu\"}" > ${TMPDIR}/args_labeling.json
-$CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_labeling.json
+#SUBTASK_ID=`$CMD_CORE_TASKS "Per-FOV image labeling"`
+#echo "{\"labeling_level\": 1, \"executor\": \"gpu\"}" > ${TMPDIR}/args_labeling.json
+#$CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_labeling.json
 
-SUBTASK_ID=`$CMD_CORE_TASKS "Replicate Zarr structure"`
-$CMD task add-subtask $WF_ID $SUBTASK_ID
+#SUBTASK_ID=`$CMD_CORE_TASKS "Replicate Zarr structure"`
+#$CMD task add-subtask $WF_ID $SUBTASK_ID
 
-SUBTASK_ID=`$CMD_CORE_TASKS "Maximum Intensity Projection"`
-$CMD task add-subtask $WF_ID $SUBTASK_ID
+#SUBTASK_ID=`$CMD_CORE_TASKS "Maximum Intensity Projection"`
+#$CMD task add-subtask $WF_ID $SUBTASK_ID
 
 # Apply workflow
 $CMD task apply $PRJ_ID $DS_IN_ID $DS_OUT_ID $WF_ID

@@ -1,6 +1,3 @@
-# Register user (this step will change in the future)
-#http POST localhost:8000/auth/register email=test@me.com password=test
-
 # Set useful variables
 PRJ_NAME="myproj-3"
 DS_IN_NAME="input-ds-3"

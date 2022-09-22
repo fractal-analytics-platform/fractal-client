@@ -12,3 +12,4 @@ monitoring.db
 runinfo
 .*.py.swp
 parsl_executors.log
+fractal.log

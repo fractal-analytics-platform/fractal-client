@@ -1,5 +1,5 @@
 # Register user (this step will change in the future)
-http POST localhost:8000/auth/register email=test@me.com password=test
+curl -d '{"email":"test@me.com", "password":"test"}' -H "Content-Type: application/json" -X POST localhost:8000/auth/register
 
 # Set useful variables
 PRJ_NAME="myproj-1"
