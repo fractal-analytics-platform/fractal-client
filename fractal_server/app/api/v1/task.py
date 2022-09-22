@@ -7,6 +7,7 @@ from typing import List
 
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import HTTPException
 from fastapi import status
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
@@ -96,9 +97,16 @@ async def create_task(
     db: AsyncSession = Depends(get_db),
 ):
     db_task = Task.from_orm(task)
-    db.add(db_task)
-    await db.commit()
-    await db.refresh(db_task)
+    try:
+        db.add(db_task)
+        await db.commit()
+        await db.refresh(db_task)
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
     return db_task
 
 
