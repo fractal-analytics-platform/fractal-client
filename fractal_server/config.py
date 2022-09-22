@@ -119,7 +119,7 @@ class Settings(BaseSettings):
     ###########################################################################
     DATA_DIR_ROOT: str = fail_getenv("DATA_DIR_ROOT")
     PARSL_CONFIG: str = getenv("PARSL_CONFIG", "local")
-    PARSL_DEFAULT_EXECUTOR: str = getenv("PARSL_DEFAULT_EXECUTOR", "cpu")
+    PARSL_DEFAULT_EXECUTOR: str = getenv("PARSL_DEFAULT_EXECUTOR", "cpu-low")
 
     @root_validator(pre=True)
     def collect_oauth_clients(cls, values):
