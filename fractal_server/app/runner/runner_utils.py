@@ -14,11 +14,10 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import asyncio
+import logging
 from functools import partial
 from functools import wraps
 from typing import Callable
-
-import logging
 
 import parsl
 from parsl.addresses import address_by_hostname
@@ -81,28 +80,29 @@ def load_parsl_config(
         raise NotImplementedError
 
     if config == "local":
-
         # Define a single provider
-        prov = LocalProvider(
+        prov_local = LocalProvider(
             launcher=SingleNodeLauncher(debug=False),
             channel=LocalChannel(),
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
         )
-
-        # Define two identical (apart from the label) executors
-        htex = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-low"),
-            provider=prov,
-            address=address_by_hostname(),
-        )
-        htex_2 = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-2"),
-            provider=prov,
-            address=address_by_hostname(),
-        )
-        executors = [htex, htex_2]
+        # Define executors
+        providers = [prov_local] * 4
+        labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
+        executors = []
+        for provider, label in zip(providers, labels):
+            executors.append(
+                HighThroughputExecutor(
+                    label=add_prefix(
+                        workflow_id=workflow_id, executor_label=label
+                    ),
+                    provider=provider,
+                    address=address_by_hostname(),
+                    cpu_affinity="block",
+                )
+            )
 
     elif config == "pelkmanslab":
 
@@ -154,14 +154,18 @@ def load_parsl_config(
         providers = [prov_cpu_low, prov_cpu_mid, prov_cpu_high, prov_gpu]
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         # FIXME
-        list_mem_per_worker = [7, 15, 63, 63] # FIXME
+        list_mem_per_worker = [7, 15, 63, 63]  # FIXME
         executors = []
         for provider, label in zip(providers, labels):
             executors.append(
                 HighThroughputExecutor(
-                    label=add_prefix(workflow_id=workflow_id, executor_label=label),
+                    label=add_prefix(
+                        workflow_id=workflow_id, executor_label=label
+                    ),
                     provider=provider,
-                    mem_per_worker=list_mem_per_worker[labels.index(label)],   # FIXME
+                    mem_per_worker=list_mem_per_worker[
+                        labels.index(label)
+                    ],  # FIXME
                     max_workers=100,
                     address=address_by_hostname(),
                     cpu_affinity="block",
@@ -188,7 +192,9 @@ def load_parsl_config(
 
         # Define executors
         htex_slurm_cpu = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-low"),
+            label=add_prefix(
+                workflow_id=workflow_id, executor_label="cpu-low"
+            ),
             provider=prov_slurm_cpu,
             address=address_by_hostname(),
             cpu_affinity="block",
@@ -253,7 +259,11 @@ def load_parsl_config(
     )
 
 
-def shutdown_executors(*, workflow_id: str):
+def shutdown_executors(*, workflow_id: str, logger: logging.Logger = None):
+
+    if logger is None:
+        logger = logging.getLogger("logs")
+
     # Remove executors from parsl DFK
     # FIXME decorate with monitoring logs, as in:
     # https://github.com/Parsl/parsl/blob/master/parsl/dataflow/dflow.py#L1106
