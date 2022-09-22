@@ -16,10 +16,9 @@ Zurich.
 import asyncio
 from functools import partial
 from functools import wraps
-from logging import FileHandler
-from logging import Formatter
-from logging import getLogger
 from typing import Callable
+
+import logging
 
 import parsl
 from parsl.addresses import address_by_hostname
@@ -34,15 +33,6 @@ from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
 from ...config import settings
-
-
-formatter = Formatter("%(asctime)s; %(levelname)s; %(message)s")
-
-logger = getLogger(__name__)
-handler = FileHandler("parsl_executors.log", mode="a")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel("INFO")
 
 
 def add_prefix(*, workflow_id: int, executor_label: str):
@@ -74,12 +64,17 @@ def load_parsl_config(
     *,
     workflow_id: int,
     enable_monitoring: bool = True,
+    logger: logging.Logger = None,
 ):
 
-    config = settings.PARSL_CONFIG
-    logger.info(f"settings.PARSL_CONFIG: {config}")
+    if logger is None:
+        logger = logging.getLogger("logs")
+
+    logger.info(f"{settings.PARSL_CONFIG=}")
+    logger.info(f"{settings.PARSL_DEFAULT_EXECUTOR=}")
 
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
+    config = settings.PARSL_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
     if config == "custom":
@@ -98,7 +93,7 @@ def load_parsl_config(
 
         # Define two identical (apart from the label) executors
         htex = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu"),
+            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-low"),
             provider=prov,
             address=address_by_hostname(),
         )
@@ -111,21 +106,40 @@ def load_parsl_config(
 
     elif config == "pelkmanslab":
 
-        # Define a cpu provider
-        provider_args = dict(
+        # Define providers
+        common_args = dict(
             partition="main",
-            launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
             nodes_per_block=1,
             init_blocks=1,
             min_blocks=0,
-            max_blocks=4,
-            walltime="10:00:00",
+            max_blocks=100,
+            parallelism=1,
+            exclusive=False,
+            walltime="20:00:00",
         )
-        prov_slurm_cpu = SlurmProvider(**provider_args)
-
+        prov_cpu_low = SlurmProvider(
+            launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
+            cores_per_node=1,
+            mem_per_node=7,
+            **common_args,
+        )
+        prov_cpu_mid = SlurmProvider(
+            launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
+            cores_per_node=4,
+            mem_per_node=15,
+            **common_args,
+        )
+        prov_cpu_high = SlurmProvider(
+            launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
+            cores_per_node=16,
+            mem_per_node=63,
+            **common_args,
+        )
         # Define a gpu provider
-        provider_args = dict(
+        prov_gpu = SlurmProvider(
             partition="gpu",
             launcher=SrunLauncher(debug=False),
             channel=LocalChannel(),
@@ -135,29 +149,24 @@ def load_parsl_config(
             max_blocks=1,
             walltime="10:00:00",
         )
-        prov_slurm_gpu = SlurmProvider(**provider_args)
 
         # Define executors
-        htex_slurm_cpu = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu"),
-            provider=prov_slurm_cpu,
-            address=address_by_hostname(),
-            cpu_affinity="block",
-        )
-        htex_slurm_cpu_2 = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-2"),
-            provider=prov_slurm_cpu,
-            address=address_by_hostname(),
-            cpu_affinity="block",
-        )
-        htex_slurm_gpu = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="gpu"),
-            provider=prov_slurm_gpu,
-            address=address_by_hostname(),
-            cpu_affinity="block",
-        )
-
-        executors = [htex_slurm_cpu, htex_slurm_cpu_2, htex_slurm_gpu]
+        providers = [prov_cpu_low, prov_cpu_mid, prov_cpu_high, prov_gpu]
+        labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
+        # FIXME
+        list_mem_per_worker = [7, 15, 63, 63] # FIXME
+        executors = []
+        for provider, label in zip(providers, labels):
+            executors.append(
+                HighThroughputExecutor(
+                    label=add_prefix(workflow_id=workflow_id, executor_label=label),
+                    provider=provider,
+                    mem_per_worker=list_mem_per_worker[labels.index(label)],   # FIXME
+                    max_workers=100,
+                    address=address_by_hostname(),
+                    cpu_affinity="block",
+                )
+            )
 
     elif config == "fmi":
 
@@ -179,7 +188,7 @@ def load_parsl_config(
 
         # Define executors
         htex_slurm_cpu = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu"),
+            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-low"),
             provider=prov_slurm_cpu,
             address=address_by_hostname(),
             cpu_affinity="block",

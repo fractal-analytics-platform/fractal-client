@@ -24,3 +24,4 @@ nohup.out
 
 file:cachedb*
 parsl_executors.log
+fractal.log
