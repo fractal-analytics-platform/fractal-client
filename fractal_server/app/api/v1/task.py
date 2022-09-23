@@ -96,17 +96,20 @@ async def create_task(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    db_task = Task.from_orm(task)
-    try:
-        db.add(db_task)
-        await db.commit()
-        await db.refresh(db_task)
-    except IntegrityError as e:
-        await db.rollback()
+
+    # Check that there is no task with the same user and name
+    stm = select(Task).where(Task.name == task.name)
+    res = await db.execute(stm)
+    if res.scalars().all():
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(e),
+            detail=f"Task name ({task.name}) already in use",
         )
+
+    db_task = Task.from_orm(task)
+    db.add(db_task)
+    await db.commit()
+    await db.refresh(db_task)
     return db_task
 
 
