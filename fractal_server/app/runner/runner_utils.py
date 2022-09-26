@@ -146,7 +146,8 @@ def load_parsl_config(
             nodes_per_block=1,
             init_blocks=1,
             min_blocks=0,
-            max_blocks=1,
+            max_blocks=2,
+            mem_per_node=61,
             walltime="10:00:00",
         )
 
@@ -154,7 +155,7 @@ def load_parsl_config(
         providers = [prov_cpu_low, prov_cpu_mid, prov_cpu_high, prov_gpu]
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         # FIXME
-        list_mem_per_worker = [7, 15, 63, 63]  # FIXME
+        list_mem_per_worker = [7, 15, 63, 61]  # FIXME
         executors = []
         for provider, label in zip(providers, labels):
             executors.append(
