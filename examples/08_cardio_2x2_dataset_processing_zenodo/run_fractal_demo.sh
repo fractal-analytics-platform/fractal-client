@@ -55,7 +55,7 @@ SUBTASK_ID=`$CMD_CORE_TASKS "Yokogawa to Zarr"`
 fractal task add-subtask $WF_ID $SUBTASK_ID
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Illumination correction"`
-# Paths of illumination correction images need to be accessible on the server. 
+# Paths of illumination correction images need to be accessible on the server.
 # This works if one runs the client from the same machine as the server. Otherwise, change `root_path_corr`
 echo "{\"overwrite\": true, \"executor\": \"cpu-mid\", \"dict_corr\": {\"root_path_corr\": \"$TMPDIR/../illum_corr_images/\", \"A01_C01\": \"20220621_UZH_manual_illumcorr_40x_A01_C01.png\", \"A01_C02\": \"20220621_UZH_manual_illumcorr_40x_A01_C02.png\", \"A02_C03\": \"20220621_UZH_manual_illumcorr_40x_A02_C03.png\"}}" > ${TMPDIR}/args_illum.json
 fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_illum.json
@@ -73,8 +73,9 @@ echo "{\"labeling_level\": 2, \"executor\": \"cpu-mid\", \"ROI_table_name\": \"w
 fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_labeling.json
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Measurement"`
-echo "{\"level\": 0, \"measurement_table_name\": \"nuclei\", \"executor\": \"cpu-mid\", \"ROI_table_name\": \"well_ROI_table\",\"workflow_file\": \"/data/homes/jluethi/fractal_3repo/fractal/examples/05_10x10_test_constant_z/regionprops_from_existing_labels_feature.yaml\"}" > ${TMPDIR}/args_measurement.json
+echo "{\"level\": 0, \"measurement_table_name\": \"nuclei\", \"executor\": \"cpu-mid\", \"ROI_table_name\": \"well_ROI_table\",\"workflow_file\": \"$TMPDIR/../regionprops_from_existing_labels_feature.yaml\"}" > ${TMPDIR}/args_measurement.json
 fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_measurement.json
 
 # Apply workflow
 fractal task apply $PRJ_ID $DS_IN_ID $DS_OUT_ID $WF_ID
+
