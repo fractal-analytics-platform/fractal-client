@@ -48,14 +48,16 @@ echo "WF_ID: $WF_ID"
 # Add subtasks
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Create OME-ZARR structure"`
-echo "{\"num_levels\": 5, \"coarsening_xy\": 2, \"channel_parameters\": {\"A01_C01\": {\"label\": \"DAPI\",\"colormap\": \"00FFFF\",\"start\": 110,\"end\": 800 }, \"A01_C02\": {\"label\": \"nanog\",\"colormap\": \"FF00FF\",\"start\": 110,\"end\": 290 }, \"A02_C03\": {\"label\": \"Lamin B1\",\"colormap\": \"FFFF00\",\"start\": 110,\"end\": 1600 }}}" > ${TMPDIR}/args_create.json
+echo "{\"num_levels\": 5, \"coarsening_xy\": 2, \"channel_parameters\": {\"A01_C01\": {\"label\": \"DAPI\",\"colormap\": \"00FFFF\",\"start\": 50,\"end\": 700 }, \"A01_C02\": {\"label\": \"nanog\",\"colormap\": \"FF00FF\",\"start\": 20,\"end\": 200 }, \"A02_C03\": {\"label\": \"Lamin B1\",\"colormap\": \"FFFF00\",\"start\": 50,\"end\": 1500 }}}" > ${TMPDIR}/args_create.json
 fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_create.json
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Yokogawa to Zarr"`
 fractal task add-subtask $WF_ID $SUBTASK_ID
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Illumination correction"`
-echo "{\"overwrite\": true, \"executor\": \"cpu-mid\", \"dict_corr\": {\"root_path_corr\": \"/data/active/fractal/3D/PelkmansLab/IlluminationCorrection_Matrices_UZH/\", \"A01_C01\": \"20220621_UZH_manual_illumcorr_40x_A01_C01.tif\", \"A01_C02\": \"20220621_UZH_manual_illumcorr_40x_A01_C02.tif\", \"A02_C03\": \"20220621_UZH_manual_illumcorr_40x_A02_C03.tif\"}}" > ${TMPDIR}/args_illum.json
+# Paths of illumination correction images need to be accessible on the server. 
+# This works if one runs the client from the same machine as the server. Otherwise, change `root_path_corr`
+echo "{\"overwrite\": true, \"executor\": \"cpu-mid\", \"dict_corr\": {\"root_path_corr\": \"$TMPDIR/../illum_corr_images/\", \"A01_C01\": \"20220621_UZH_manual_illumcorr_40x_A01_C01.png\", \"A01_C02\": \"20220621_UZH_manual_illumcorr_40x_A01_C02.png\", \"A02_C03\": \"20220621_UZH_manual_illumcorr_40x_A02_C03.png\"}}" > ${TMPDIR}/args_illum.json
 fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_illum.json
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Replicate Zarr structure"`
