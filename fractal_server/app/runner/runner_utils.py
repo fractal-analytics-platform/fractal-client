@@ -135,7 +135,7 @@ def load_parsl_config(
             launcher=SrunLauncher(debug=False),
             channel=LocalChannel(),
             cores_per_node=16,
-            mem_per_node=63,
+            mem_per_node=61,
             **common_args,
         )
         # Define a gpu provider
@@ -155,7 +155,7 @@ def load_parsl_config(
         providers = [prov_cpu_low, prov_cpu_mid, prov_cpu_high, prov_gpu]
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         # FIXME
-        list_mem_per_worker = [7, 15, 63, 61]  # FIXME
+        list_mem_per_worker = [7, 15, 61, 61]  # FIXME
         executors = []
         for provider, label in zip(providers, labels):
             executors.append(
