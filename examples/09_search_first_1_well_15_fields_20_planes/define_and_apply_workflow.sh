@@ -48,7 +48,7 @@ echo "WF_ID: $WF_ID"
 # Add subtasks
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Create OME-ZARR structure"`
-echo "{\"num_levels\": 5, \"coarsening_xy\": 2, \"channel_parameters\": {\"A01_C01\": {\"label\": \"C01\",\"colormap\": \"00FFFF\",\"start\": 110,\"end\": 800 }, \"A02_C02\": {\"label\": \"Channel 2\",\"colormap\": \"FF00FF\",\"start\": 110,\"end\": 1600}, \"A03_C03\": {\"label\": \"Channel 3\",\"colormap\": \"FFFF00\",\"start\": 110,\"end\": 1600 }, \"A04_C04\": {\"label\": \"Channel 4\",\"colormap\": \"FFFF00\",\"start\": 110,\"end\": 1600 }}}" > ${TMPDIR}/args_create.json
+echo "{\"num_levels\": 5, \"coarsening_xy\": 2, \"channel_parameters\": {\"A01_C01\": {\"label\": \"Channel 1\",\"colormap\": \"00FFFF\",\"start\": 110,\"end\": 2000 }, \"A02_C02\": {\"label\": \"Channel 2\",\"colormap\": \"FF00FF\",\"start\": 110,\"end\": 500}, \"A03_C03\": {\"label\": \"Channel 3\",\"colormap\": \"00FF00\",\"start\": 110,\"end\": 1600 }, \"A04_C04\": {\"label\": \"Channel 4\",\"colormap\": \"FFFF00\",\"start\": 110,\"end\": 1600 }}}" > ${TMPDIR}/args_create.json
 $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_create.json
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Yokogawa to Zarr"`
@@ -67,7 +67,7 @@ echo "{\"executor\": \"cpu-mid\"}" > ${TMPDIR}/args_mip.json
 $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_mip.json
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Per-FOV image labeling"`
-echo "{\"labeling_level\": 3, \"executor\": \"cpu-mid\", \"ROI_table_name\": \"well_ROI_table\", \"diameter_level0\": 500.0, \"cellprob_threshold\": -3.0}" > ${TMPDIR}/args_labeling.json
+echo "{\"labeling_level\": 3, \"executor\": \"cpu-mid\", \"ROI_table_name\": \"well_ROI_table\", \"diameter_level0\": 1200.0, \"cellprob_threshold\": -1.0, \"flow_threshold\":  0.6}" > ${TMPDIR}/args_labeling.json
 $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_labeling.json
 
 SUBTASK_ID=`$CMD_CORE_TASKS "Measurement"`
