@@ -186,6 +186,7 @@ async def test_full_workflow(
 
 
 async def test_full_workflow_repeated_tasks(
+    app,
     client,
     MockCurrentUser,
     collect_tasks,
