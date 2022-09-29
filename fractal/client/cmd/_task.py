@@ -17,19 +17,37 @@ from fractal.common.models import TaskRead
 from fractal.common.models import TaskUpdate
 
 
-def get_cached_task_by_name(name: str, client: AuthClient) -> int:
+async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
+    # Set paths
     cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
-    with open(f"{cache_dir}/tasks", "r") as f:
+    cache_file = f"{cache_dir}/tasks"
+
+    # If cache is missing, create it
+    cache_up_to_date = False
+    if not os.path.isfile(cache_file):
+        await refresh_task_cache(client)
+        cache_up_to_date = True
+
+    # Read cache
+    with open(cache_file, "r") as f:
         task_cache = json.load(f)
 
+    # Look for name in cache
+    # Case 1: name exists in cache
     if name in task_cache.keys():
         return task_cache[name]
+    # Case 2: name is missing, and cache was just updated
+    elif cache_up_to_date:
+        raise KeyError(f"Task {name} not in {cache_file}\n")
+    # Case 3: name is missing but cache may be out of date
     else:
-        refresh_task_cache(client)
+        await refresh_task_cache(client)
+        with open(cache_file, "r") as f:
+            task_cache = json.load(f)
         try:
             return task_cache[name]
         except KeyError as e:
-            raise KeyError(f"Task {name} not in {cache_dir}/tasks\n", str(e))
+            raise KeyError(f"Task {name} not in {cache_file}\n", str(e))
 
 
 async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
@@ -113,7 +131,7 @@ async def task_edit(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    task_id = get_cached_task_by_name(name=task_name, client=client)
+    task_id = await get_cached_task_by_name(name=task_name, client=client)
 
     res = await client.patch(
         f"{settings.BASE_URL}/task/{task_id}", json=payload
@@ -139,10 +157,12 @@ async def task_add_subtask(
     else:
         args = {}
 
-    parent_task_id = get_cached_task_by_name(
+    parent_task_id = await get_cached_task_by_name(
         name=parent_task_name, client=client
     )
-    subtask_id = get_cached_task_by_name(name=subtask_name, client=client)
+    subtask_id = await get_cached_task_by_name(
+        name=subtask_name, client=client
+    )
 
     subtask_create = SubtaskCreate(
         parent_task_id=parent_task_id,
@@ -175,7 +195,9 @@ async def task_apply(
     **kwargs,
 ) -> RichJsonInterface:
 
-    workflow_id = get_cached_task_by_name(name=workflow_name, client=client)
+    workflow_id = await get_cached_task_by_name(
+        name=workflow_name, client=client
+    )
 
     workflow = ApplyWorkflow(
         project_id=project_id,
