@@ -40,10 +40,13 @@ class AuthToken:
             )
         raw_token = res.json()
         self.token = raw_token["access_token"]
-        cache_dir = f"{settings.FRACTAL_CACHE_PATH}"
+
+        # Create cache folder, if needed
+        cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir)
-        with open(Path(cache_dir).expanduser(), "w") as f:
+
+        with open(f"{cache_dir}/session", "w") as f:
             f.write(self.token)
 
     @property
