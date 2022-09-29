@@ -12,8 +12,10 @@ from typing import Literal
 from typing import Optional
 from typing import Union
 
+from devtools import debug
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
+from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,8 +28,6 @@ from ..models.task import Task
 from .runner_utils import async_wrap
 from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
-
-# from .runner_utils import shutdown_executors
 
 
 formatter = Formatter("%(asctime)s; %(levelname)s; %(message)s")
@@ -63,7 +63,7 @@ def _task_fun(
     return metadata
 
 
-def _task_app(
+def _task_app_future(
     *,
     task: Task,
     input_paths: List[Path],
@@ -72,9 +72,12 @@ def _task_app(
     task_args: Optional[Dict[str, Any]],
     inputs,
     executors: Union[List[str], Literal["all"]] = "all",
+    data_flow_kernel=None,
 ) -> AppFuture:
 
-    app = PythonApp(_task_fun, executors=executors)
+    app = PythonApp(
+        _task_fun, executors=executors, data_flow_kernel=data_flow_kernel
+    )
     # TODO: can we reassign app.__name__, for clarity in monitoring?
     return app(
         task=task,
@@ -84,80 +87,6 @@ def _task_app(
         task_args=task_args,
         inputs=inputs,
     )
-
-
-"""
-def _task_parallel_fun(
-    *,
-    task: Task,
-    component: str,
-    input_paths: List[Path],
-    output_path: Path,
-    metadata: Optional[Dict[str, Any]],
-    task_args: Optional[Dict[str, Any]],
-    inputs,
-):
-
-    task_module = importlib.import_module(task.import_path)
-    _callable = getattr(task_module, task.callable)
-    _callable(
-        input_paths=input_paths,
-        output_path=output_path,
-        metadata=metadata,
-        component=component,
-        **task_args,
-    )
-    return task.name, component
-
-
-def _task_parallel_app(
-    *,
-    task: Task,
-    component: str,
-    input_paths: List[Path],
-    output_path: Path,
-    metadata: Optional[Dict[str, Any]],
-    task_args: Optional[Dict[str, Any]],
-    inputs,
-    executors: Union[List[str], Literal["all"]] = "all",
-) -> AppFuture:
-
-    app = PythonApp(_task_parallel_fun, executors=executors)
-    return app(
-        task=task,
-        component=component,
-        input_paths=input_paths,
-        output_path=output_path,
-        metadata=metadata,
-        task_args=task_args,
-        inputs=inputs,
-    )
-
-
-def _collect_results_fun(
-    *,
-    metadata: Dict[str, Any],
-    inputs: List[AppFuture],
-):
-    task_name = inputs[0][0]
-    component_list = [_in[1] for _in in inputs]
-    history = f"{task_name}: {component_list}"
-    try:
-        metadata["history"].append(history)
-    except KeyError:
-        metadata["history"] = [history]
-    return metadata
-
-
-def _collect_results_app(
-    *,
-    metadata: Dict[str, Any],
-    inputs: List[AppFuture],
-    executors: Union[List[str], Literal["all"]] = "all",
-) -> AppFuture:
-    app = PythonApp(_collect_results_fun, executors=executors)
-    return app(metadata=metadata, inputs=inputs)
-"""
 
 
 #####################
@@ -195,23 +124,28 @@ def dummy_collect(metadata, task_name=None, component_list=None, inputs=None):
     return metadata
 
 
-@join_app
-def _many_parallel_apps(
+def _parallel_task_fun(
     *,
     task: Task,
+    parall_level: str,
     input_paths: List[Path],
     output_path: Path,
     metadata: AppFuture,
     task_args: Optional[Dict[str, Any]],
-):
+    executors: Union[List[str], Literal["all"]] = "all",
+    data_flow_kernel=None,
+) -> AppFuture:
 
     # Define a single app
-    dummy_task_app = PythonApp(dummy_fun)
+    debug("_parallel_task_fun")
+    debug(data_flow_kernel)
+    dummy_task_app = PythonApp(
+        dummy_fun, executors=executors, data_flow_kernel=data_flow_kernel
+    )
 
     # Define a list of futures
     # NOTE: This must happen within a join_app, because metadata has not yet
     # been computed
-    parall_level = "well"
     app_futures = []
     for item in metadata[parall_level]:
         app_future = dummy_task_app(
@@ -226,7 +160,7 @@ def _many_parallel_apps(
         app_futures.append(app_future)
 
     # Define an app that takes all the other as input
-    collection_app = PythonApp(dummy_collect)
+    collection_app = PythonApp(dummy_collect, executors="all")
     # Define the corresponding future
     collection_app_future = collection_app(
         metadata,
@@ -238,7 +172,36 @@ def _many_parallel_apps(
     return collection_app_future
 
 
-@join_app
+def old__parallel_task_app_future(
+    *,
+    task: Task,
+    parall_level: str,
+    input_paths: List[Path],
+    output_path: Path,
+    metadata: AppFuture,
+    task_args: Optional[Dict[str, Any]],
+    executors: Union[List[str], Literal["all"]] = "all",
+    data_flow_kernel=None,
+) -> AppFuture:
+
+    app = PythonApp(
+        _parallel_task_fun,
+        executors=executors,
+        join=True,
+        data_flow_kernel=data_flow_kernel,
+    )
+    return app(
+        task=task,
+        parall_level=parall_level,
+        input_paths=input_paths,
+        output_path=output_path,
+        metadata=metadata,
+        task_args=task_args,
+        executors=executors,
+        data_flow_kernel=data_flow_kernel,
+    )
+
+
 def _atomic_task_factory(
     *,
     task: Union[Task, Subtask, PreprocessedTask],
@@ -263,19 +226,75 @@ def _atomic_task_factory(
     )
     logger.info(f'Starting "{task.name}" task on "{task_executor}" executor.')
 
+    data_flow_kernel = DataFlowKernelLoader.dfk()
+
     parall_level = task.parallelization_level
     if metadata and parall_level:
 
-        res = _many_parallel_apps(
+        @join_app(data_flow_kernel=data_flow_kernel)
+        def _parallel_task_app_future(
+            *,
+            task: Task,
+            parall_level: str,
+            input_paths: List[Path],
+            output_path: Path,
+            metadata: AppFuture,
+            task_args: Optional[Dict[str, Any]],
+            executors: Union[List[str], Literal["all"]] = "all",
+            data_flow_kernel=None,
+        ) -> AppFuture:
+
+            # Define a single app
+            debug("_parallel_task_fun")
+            debug(data_flow_kernel)
+            dummy_task_app = PythonApp(
+                dummy_fun,
+                executors=executors,
+                data_flow_kernel=data_flow_kernel,
+            )
+
+            # Define a list of futures
+            # NOTE: This must happen within a join_app, because metadata has
+            # not yet
+            # been computed
+            app_futures = []
+            for item in metadata[parall_level]:
+                app_future = dummy_task_app(
+                    task=task,
+                    component=item,
+                    input_paths=input_paths,
+                    output_path=output_path,
+                    metadata=metadata,
+                    task_args=task_args,
+                )
+
+                app_futures.append(app_future)
+
+            # Define an app that takes all the other as input
+            collection_app = PythonApp(dummy_collect, executors="all")
+            # Define the corresponding future
+            collection_app_future = collection_app(
+                metadata,
+                task_name=task.name,
+                component_list=metadata[parall_level],
+                inputs=app_futures,
+            )
+
+            return collection_app_future
+
+        res = _parallel_task_app_future(
+            parall_level=parall_level,
             task=task,
             input_paths=input_paths,
             output_path=output_path,
-            metadata=deepcopy(metadata),
+            metadata=metadata,
             task_args=task_args,
+            executors=[task_executor],
+            data_flow_kernel=data_flow_kernel,
         )
         return res
     else:
-        res = _task_app(
+        res = _task_app_future(
             task=task,
             input_paths=input_paths,
             output_path=output_path,
@@ -283,6 +302,7 @@ def _atomic_task_factory(
             task_args=task_args,
             inputs=depends_on,
             executors=[task_executor],
+            data_flow_kernel=data_flow_kernel,
         )
         return res
 
