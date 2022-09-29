@@ -12,7 +12,6 @@ from typing import Literal
 from typing import Optional
 from typing import Union
 
-from devtools import debug
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
@@ -89,11 +88,7 @@ def _task_app_future(
     )
 
 
-#####################
-
-
-# FIXME RENAME dummy_fun
-def dummy_fun(
+def _task_component_fun(
     *,
     task: Task,
     component: str,
@@ -115,8 +110,9 @@ def dummy_fun(
     return task.name, component
 
 
-# FIXME RENAME dummy_collect
-def dummy_collect(metadata, task_name=None, component_list=None, inputs=None):
+def _task_parallel_collect(
+    metadata, task_name=None, component_list=None, inputs=None
+):
     history = f"{task_name}: {component_list}"
     try:
         metadata["history"].append(history)
@@ -158,16 +154,17 @@ def _atomic_task_factory(
     if metadata and parall_level:
 
         # Define a single app
-        debug(data_flow_kernel)
-        dummy_task_app = PythonApp(
-            dummy_fun,
+        task_component_app = PythonApp(
+            _task_component_fun,
             executors=[task_executor],
             data_flow_kernel=data_flow_kernel,
         )
 
         # Define an app that takes all the other as input
-        collection_app = PythonApp(
-            dummy_collect, executors="all", data_flow_kernel=data_flow_kernel
+        parallel_collection_app = PythonApp(
+            _task_parallel_collect,
+            executors="all",
+            data_flow_kernel=data_flow_kernel,
         )
 
         @join_app(data_flow_kernel=data_flow_kernel)
@@ -187,7 +184,7 @@ def _atomic_task_factory(
             # not yet been computed
             app_futures = []
             for item in metadata[parall_level]:
-                app_future = dummy_task_app(
+                component_app_future = task_component_app(
                     task=task,
                     component=item,
                     input_paths=input_paths,
@@ -195,18 +192,17 @@ def _atomic_task_factory(
                     metadata=metadata,
                     task_args=task_args,
                 )
-
-                app_futures.append(app_future)
+                app_futures.append(component_app_future)
 
             # Define the corresponding future
-            collection_app_future = collection_app(
+            parallel_collection_app_future = parallel_collection_app(
                 metadata,
                 task_name=task.name,
                 component_list=metadata[parall_level],
                 inputs=app_futures,
             )
 
-            return collection_app_future
+            return parallel_collection_app_future
 
         res = _parallel_task_app_future(
             parall_level=parall_level,
