@@ -59,19 +59,11 @@ def async_wrap(func: Callable) -> Callable:
     return run
 
 
-def load_parsl_config(
+def generate_parsl_config(
     *,
     workflow_id: int,
     enable_monitoring: bool = True,
-    logger: logging.Logger = None,
-):
-
-    if logger is None:
-        logger = logging.getLogger("logs")
-
-    logger.info(f"{settings.PARSL_CONFIG=}")
-    logger.info(f"{settings.PARSL_DEFAULT_EXECUTOR=}")
-
+) -> Config:
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
     config = settings.PARSL_CONFIG
     if config not in allowed_configs:
@@ -221,39 +213,33 @@ def load_parsl_config(
     else:
         monitoring = None
 
-    """
-    try:
-        dfk = DataFlowKernelLoader.dfk()
-        old_executor_labels = [
-            executor_label for executor_label in dfk.executors.keys()
-        ]
-        logger.info(
-            f"DFK {dfk} exists, with {len(dfk.executors)} executors: "
-            f"{old_executor_labels}"
-        )
-        logger.info(
-            f"Adding {len(executors)} new executors: {new_executor_labels}"
-        )
-
-        # FIXME: what if an executor was already there?
-        # (re-submitting same workflow?)
-
-        dfk.add_executors(executors)
-
-    # FIXME: better exception handling
-    except RuntimeError:
-"""
     config = Config(
         executors=executors, monitoring=monitoring, max_idletime=20.0
     )
-    logger.info(
-        "DFK probably missing, "
-        "proceed with parsl.clear and parsl.config.Config"
-    )
-    # parsl.clear()
-    # parsl.load(config)
+    return config
+
+
+def load_parsl_config(
+    *,
+    workflow_id: int,
+    config: Config = None,
+    logger: logging.Logger = None,
+    enable_monitoring: bool = True,
+):
+
+    if logger is None:
+        logger = logging.getLogger("logs")
+
+    logger.info(f"{settings.PARSL_CONFIG=}")
+    logger.info(f"{settings.PARSL_DEFAULT_EXECUTOR=}")
+
+    if not config:
+        config = generate_parsl_config(
+            enable_monitoring=enable_monitoring, workflow_id=workflow_id
+        )
+
     dfk = DataFlowKernel(config=config)
-    # dfk = DataFlowKernelLoader.dfk()
+
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
     ]
