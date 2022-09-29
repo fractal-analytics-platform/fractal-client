@@ -308,7 +308,7 @@ sqlmodel = "*"
 
 [[package]]
 name = "fractal-server"
-version = "0.1.3"
+version = "0.1.4"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -328,7 +328,7 @@ sqlmodel = ">=0.0.8,<0.0.9"
 uvicorn = ">=0.18.2,<0.19.0"
 
 [package.extras]
-tasks-core = ["fractal-tasks-core (>=0.1.4,<0.2.0)"]
+tasks-core = ["fractal-tasks-core (<1.0.0)"]
 
 [[package]]
 name = "globus-sdk"
@@ -1285,8 +1285,8 @@ fastapi-users-db-sqlmodel = [
     {file = "fastapi_users_db_sqlmodel-0.2.0-py3-none-any.whl", hash = "sha256:b4e91fe9afe719040888ad886ea033b8e1f8fcd459b242733e95e33cfa16984c"},
 ]
 fractal-server = [
-    {file = "fractal-server-0.1.3.tar.gz", hash = "sha256:e7ddf52957df074c48555a9ed5e6b44f740cf8e1d2ff019b4837d6096e05e028"},
-    {file = "fractal_server-0.1.3-py3-none-any.whl", hash = "sha256:71f55643b3fe399bec3fe733fdd6e833d4d3dbd4989e85057e2a722e094721e2"},
+    {file = "fractal-server-0.1.4.tar.gz", hash = "sha256:eadbf5e473fa7f3fae5cc385c7ff0dc94dc7bc6dce3fd3ea6fc18440a09cd110"},
+    {file = "fractal_server-0.1.4-py3-none-any.whl", hash = "sha256:a86e7f6be6bff4aac79db9fa7ae3c2b04745f66ed787286fcf8442a0c360f0ce"},
 ]
 globus-sdk = [
     {file = "globus-sdk-3.12.0.tar.gz", hash = "sha256:36cbe4f8190f7d505e6466c7d35a4c2b4bb4d7e65a7f29af6c9ece6148952269"},
