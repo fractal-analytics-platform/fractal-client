@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     FRACTAL_SERVER: str = getenv("FRACTAL_SERVER", "http://localhost:8000")
 
     BASE_URL: str = f"{FRACTAL_SERVER}/api/v1"
-    SESSION_CACHE_PATH: str = "~/.fractal"
+    FRACTAL_CACHE_PATH: str = "~/.cache/fractal"
 
 
 settings = Settings()
