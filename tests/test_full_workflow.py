@@ -214,7 +214,7 @@ async def test_full_workflow_repeated_tasks(
             f"{PREFIX}/project/{project_id}/{input_dataset_id}",
             json={
                 "path": tmp_path.as_posix(),
-                "glob_pattern": "*.none",
+                "glob_pattern": "*.json",
             },
         )
         debug(res.json())
