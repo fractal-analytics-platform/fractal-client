@@ -38,7 +38,7 @@ def override_environment(testdata_path):
     environ["DB_ENGINE"] = "sqlite"
     # Shared in memory database,
     # c.f., https://stackoverflow.com/a/38089822/283972
-    environ["SQLITE_PATH"] = "file:cachedb?mode=memory&cache=shared"
+    environ["SQLITE_PATH"] = "_test.db?mode=memory&cache=shared"
 
     from fractal_server.config import settings
 
