@@ -27,8 +27,7 @@ def task_id_by_name(name: str, task_list: List[Dict[str, Any]]) -> int:
     raise ValueError("No task `{name}`")
 
 
-async def test_project_creation(
-    app,
+async def test_full_workflow(
     client,
     MockCurrentUser,
     testdata_path,
@@ -185,3 +184,63 @@ async def test_project_creation(
             assert data_czyx[0, 0, 0, 0].compute() == 0
         except ImportError:
             pass
+
+
+async def test_full_workflow_repeated_tasks(
+    client,
+    MockCurrentUser,
+    collect_tasks,
+    tmp_path,
+):
+
+    num_subtasks = 2
+
+    async with MockCurrentUser(persist=True):
+
+        # CREATE PROJECT
+        res = await client.post(
+            f"{PREFIX}/project/",
+            json=dict(
+                name="test project",
+                project_dir=tmp_path.as_posix(),
+            ),
+        )
+        assert res.status_code == 201
+        project = res.json()
+        project_id = project["id"]
+
+        # CHECK WHERE WE ARE AT
+        res = await client.get(f"{PREFIX}/project/{project_id}")
+        debug(res.json())
+
+        # CREATE WORKFLOW
+        res = await client.post(
+            f"{PREFIX}/task/",
+            json=dict(
+                name="my workflow",
+                resource_type="workflow",
+                input_type="none",
+                output_type="none",
+            ),
+        )
+        wf = res.json()
+        workflow_id = wf["id"]
+        debug(wf)
+        assert res.status_code == 201
+
+        res = await client.get(f"{PREFIX}/task/")
+        assert res.status_code == 200
+        task_list = res.json()
+
+        task_id_1 = task_id_by_name(name="dummy", task_list=task_list)
+
+        # add subtasks
+        for ind_task in range(num_subtasks):
+            res = await client.post(
+                f"{PREFIX}/task/{workflow_id}/subtask/",
+                json=dict(
+                    subtask_id=task_id_1,
+                    args=dict(channel_parameters={"A01_C01": {}}),
+                ),
+            )
+            assert res.status_code == 201
