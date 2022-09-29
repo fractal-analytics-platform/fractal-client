@@ -227,6 +227,7 @@ def _atomic_task_factory(
     logger.info(f'Starting "{task.name}" task on "{task_executor}" executor.')
 
     data_flow_kernel = DataFlowKernelLoader.dfk()
+    assert data_flow_kernel is not None
 
     parall_level = task.parallelization_level
     if metadata and parall_level:
