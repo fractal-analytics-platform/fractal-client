@@ -52,10 +52,11 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
 
 async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
 
+    # Get task_list
     res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
 
-    # Refresh cache
+    # Refresh cache of (name,id) pairs
     task_cache = {task["name"]: task["id"] for task in task_list}
 
     # Create cache folder, if needed
