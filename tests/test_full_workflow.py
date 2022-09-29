@@ -37,7 +37,6 @@ async def test_full_workflow(
     async with MockCurrentUser(persist=True):
 
         # CREATE PROJECT
-
         res = await client.post(
             f"{PREFIX}/project/",
             json=dict(
@@ -193,7 +192,7 @@ async def test_full_workflow_repeated_tasks(
     tmp_path,
 ):
 
-    num_subtasks = 2
+    num_subtasks = 3
 
     async with MockCurrentUser(persist=True):
 
@@ -209,6 +208,18 @@ async def test_full_workflow_repeated_tasks(
         project = res.json()
         project_id = project["id"]
 
+        # ADD A RESOURCE TO THE INPUT/OUTPUT DATASET
+        input_dataset_id = project["dataset_list"][0]["id"]
+        res = await client.post(
+            f"{PREFIX}/project/{project_id}/{input_dataset_id}",
+            json={
+                "path": tmp_path.as_posix(),
+                "glob_pattern": "*.none",
+            },
+        )
+        debug(res.json())
+        assert res.status_code == 201
+
         # CHECK WHERE WE ARE AT
         res = await client.get(f"{PREFIX}/project/{project_id}")
         debug(res.json())
@@ -219,8 +230,8 @@ async def test_full_workflow_repeated_tasks(
             json=dict(
                 name="my workflow",
                 resource_type="workflow",
-                input_type="none",
-                output_type="none",
+                input_type="Any",
+                output_type="None",
             ),
         )
         wf = res.json()
@@ -228,19 +239,36 @@ async def test_full_workflow_repeated_tasks(
         debug(wf)
         assert res.status_code == 201
 
+        # Extract ID of task "dummy"
         res = await client.get(f"{PREFIX}/task/")
         assert res.status_code == 200
         task_list = res.json()
-
-        task_id_1 = task_id_by_name(name="dummy", task_list=task_list)
+        task_id = task_id_by_name(name="dummy", task_list=task_list)
 
         # add subtasks
         for ind_task in range(num_subtasks):
             res = await client.post(
                 f"{PREFIX}/task/{workflow_id}/subtask/",
                 json=dict(
-                    subtask_id=task_id_1,
-                    args=dict(channel_parameters={"A01_C01": {}}),
+                    subtask_id=task_id,
+                    args=dict(iteration=ind_task),
                 ),
             )
             assert res.status_code == 201
+
+        # EXECUTE WORKFLOW
+
+        payload = dict(
+            project_id=project_id,
+            input_dataset_id=input_dataset_id,
+            output_dataset_id=input_dataset_id,
+            workflow_id=workflow_id,
+            overwrite_input=False,
+        )
+        debug(payload)
+        res = await client.post(
+            f"{PREFIX}/project/apply/",
+            json=payload,
+        )
+        debug(res.json())
+        assert res.status_code == 202
