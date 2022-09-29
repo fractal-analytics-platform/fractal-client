@@ -15,6 +15,7 @@ from typing import Union
 from devtools import debug
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
+from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -92,6 +93,7 @@ def _task_app_future(
 #####################
 
 
+# FIXME RENAME dummy_fun
 def dummy_fun(
     *,
     task: Task,
@@ -114,6 +116,7 @@ def dummy_fun(
     return task.name, component
 
 
+# FIXME RENAME dummy_collect
 def dummy_collect(metadata, task_name=None, component_list=None, inputs=None):
     history = f"{task_name}: {component_list}"
     try:
@@ -124,84 +127,7 @@ def dummy_collect(metadata, task_name=None, component_list=None, inputs=None):
     return metadata
 
 
-def _parallel_task_fun(
-    *,
-    task: Task,
-    parall_level: str,
-    input_paths: List[Path],
-    output_path: Path,
-    metadata: AppFuture,
-    task_args: Optional[Dict[str, Any]],
-    executors: Union[List[str], Literal["all"]] = "all",
-    data_flow_kernel=None,
-) -> AppFuture:
-
-    # Define a single app
-    debug("_parallel_task_fun")
-    debug(data_flow_kernel)
-    dummy_task_app = PythonApp(
-        dummy_fun, executors=executors, data_flow_kernel=data_flow_kernel
-    )
-
-    # Define a list of futures
-    # NOTE: This must happen within a join_app, because metadata has not yet
-    # been computed
-    app_futures = []
-    for item in metadata[parall_level]:
-        app_future = dummy_task_app(
-            task=task,
-            component=item,
-            input_paths=input_paths,
-            output_path=output_path,
-            metadata=metadata,
-            task_args=task_args,
-        )
-
-        app_futures.append(app_future)
-
-    # Define an app that takes all the other as input
-    collection_app = PythonApp(dummy_collect, executors="all")
-    # Define the corresponding future
-    collection_app_future = collection_app(
-        metadata,
-        task_name=task.name,
-        component_list=metadata[parall_level],
-        inputs=app_futures,
-    )
-
-    return collection_app_future
-
-
-def old__parallel_task_app_future(
-    *,
-    task: Task,
-    parall_level: str,
-    input_paths: List[Path],
-    output_path: Path,
-    metadata: AppFuture,
-    task_args: Optional[Dict[str, Any]],
-    executors: Union[List[str], Literal["all"]] = "all",
-    data_flow_kernel=None,
-) -> AppFuture:
-
-    app = PythonApp(
-        _parallel_task_fun,
-        executors=executors,
-        join=True,
-        data_flow_kernel=data_flow_kernel,
-    )
-    return app(
-        task=task,
-        parall_level=parall_level,
-        input_paths=input_paths,
-        output_path=output_path,
-        metadata=metadata,
-        task_args=task_args,
-        executors=executors,
-        data_flow_kernel=data_flow_kernel,
-    )
-
-
+# NOTE: this is a standard function
 def _atomic_task_factory(
     *,
     task: Union[Task, Subtask, PreprocessedTask],
@@ -210,6 +136,7 @@ def _atomic_task_factory(
     metadata: Optional[Union[Future, Dict[str, Any]]] = None,
     depends_on: Optional[List[AppFuture]] = None,
     workflow_id: int = None,
+    data_flow_kernel: DataFlowKernel = None,
 ) -> AppFuture:
     """
     Single task processing
@@ -226,7 +153,9 @@ def _atomic_task_factory(
     )
     logger.info(f'Starting "{task.name}" task on "{task_executor}" executor.')
 
-    data_flow_kernel = DataFlowKernelLoader.dfk()
+    # NOTE this should be replaced by the logic of a specific DFK
+    if data_flow_kernel is None:
+        data_flow_kernel = DataFlowKernelLoader.dfk()
     assert data_flow_kernel is not None
 
     parall_level = task.parallelization_level
@@ -238,6 +167,11 @@ def _atomic_task_factory(
             dummy_fun,
             executors=[task_executor],
             data_flow_kernel=data_flow_kernel,
+        )
+
+        # Define an app that takes all the other as input
+        collection_app = PythonApp(
+            dummy_collect, executors="all", data_flow_kernel=data_flow_kernel
         )
 
         @join_app(data_flow_kernel=data_flow_kernel)
@@ -268,8 +202,6 @@ def _atomic_task_factory(
 
                 app_futures.append(app_future)
 
-            # Define an app that takes all the other as input
-            collection_app = PythonApp(dummy_collect, executors="all")
             # Define the corresponding future
             collection_app_future = collection_app(
                 metadata,
