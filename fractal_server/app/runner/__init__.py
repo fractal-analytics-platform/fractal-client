@@ -1,6 +1,9 @@
 import importlib
 from concurrent.futures import Future
 from copy import deepcopy
+from logging import FileHandler
+from logging import Formatter
+from logging import getLogger
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -14,6 +17,7 @@ from parsl.app.python import PythonApp
 from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ... import __VERSION__
 from ..models.project import Dataset
 from ..models.project import Project
 from ..models.task import PreprocessedTask
@@ -23,13 +27,7 @@ from .runner_utils import async_wrap
 from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
 
-from ... import __VERSION__
-
 # from .runner_utils import shutdown_executors
-
-from logging import FileHandler
-from logging import Formatter
-from logging import getLogger
 
 
 formatter = Formatter("%(asctime)s; %(levelname)s; %(message)s")
@@ -38,7 +36,6 @@ handler = FileHandler("fractal.log", mode="a")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel("INFO")
-
 
 
 def _task_fun(
@@ -89,6 +86,7 @@ def _task_app(
     )
 
 
+"""
 def _task_parallel_fun(
     *,
     task: Task,
@@ -159,6 +157,85 @@ def _collect_results_app(
 ) -> AppFuture:
     app = PythonApp(_collect_results_fun, executors=executors)
     return app(metadata=metadata, inputs=inputs)
+"""
+
+
+#####################
+
+
+def dummy_fun(
+    *,
+    task: Task,
+    component: str,
+    input_paths: List[Path],
+    output_path: Path,
+    metadata: Optional[Dict[str, Any]],
+    task_args: Optional[Dict[str, Any]],
+):
+
+    task_module = importlib.import_module(task.import_path)
+    _callable = getattr(task_module, task.callable)
+    _callable(
+        input_paths=input_paths,
+        output_path=output_path,
+        metadata=metadata,
+        component=component,
+        **task_args,
+    )
+    return task.name, component
+
+
+def dummy_collect(metadata, task_name=None, component_list=None, inputs=None):
+    history = f"{task_name}: {component_list}"
+    try:
+        metadata["history"].append(history)
+    except KeyError:
+        metadata["history"] = [history]
+
+    return metadata
+
+
+@join_app
+def _many_parallel_apps(
+    *,
+    task: Task,
+    input_paths: List[Path],
+    output_path: Path,
+    metadata: AppFuture,
+    task_args: Optional[Dict[str, Any]],
+):
+
+    # Define a single app
+    dummy_task_app = PythonApp(dummy_fun)
+
+    # Define a list of futures
+    # NOTE: This must happen within a join_app, because metadata has not yet
+    # been computed
+    parall_level = "well"
+    app_futures = []
+    for item in metadata[parall_level]:
+        app_future = dummy_task_app(
+            task=task,
+            component=item,
+            input_paths=input_paths,
+            output_path=output_path,
+            metadata=metadata,
+            task_args=task_args,
+        )
+
+        app_futures.append(app_future)
+
+    # Define an app that takes all the other as input
+    collection_app = PythonApp(dummy_collect)
+    # Define the corresponding future
+    collection_app_future = collection_app(
+        metadata,
+        task_name=task.name,
+        component_list=metadata[parall_level],
+        inputs=app_futures,
+    )
+
+    return collection_app_future
 
 
 @join_app
@@ -184,27 +261,17 @@ def _atomic_task_factory(
     task_executor = get_unique_executor(
         workflow_id=workflow_id, task_executor=task.executor
     )
-    logger.info(f"Starting \"{task.name}\" task on \"{task_executor}\" executor.")
+    logger.info(f'Starting "{task.name}" task on "{task_executor}" executor.')
 
     parall_level = task.parallelization_level
     if metadata and parall_level:
-        parall_item_gen = (par_item for par_item in metadata[parall_level])
-        dependencies = [
-            _task_parallel_app(
-                task=task,
-                input_paths=input_paths,
-                output_path=output_path,
-                metadata=metadata,
-                task_args=task_args,
-                component=item,
-                inputs=[],
-                executors=[task_executor],
-            )
-            for item in parall_item_gen
-        ]
-        res = _collect_results_app(
+
+        res = _many_parallel_apps(
+            task=task,
+            input_paths=input_paths,
+            output_path=output_path,
             metadata=deepcopy(metadata),
-            inputs=dependencies,
+            task_args=task_args,
         )
         return res
     else:
@@ -370,7 +437,6 @@ async def submit_workflow(
         exist, a new dataset with that name is created and within it a new
         resource with the same name.
     """
-
 
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
