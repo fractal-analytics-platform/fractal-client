@@ -113,7 +113,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
     output_path = tmp_path
     metadata = {"index": list(range(N_INDICES))}
 
-    parsl_app = _atomic_task_factory(
+    parsl_app_future = _atomic_task_factory(
         task=task,
         input_paths=[Path(input_path_str)],
         output_path=output_path,
@@ -121,8 +121,8 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
         workflow_id=workflow_id,
     )
 
-    debug(parsl_app)
-    metadata = parsl_app.result()
+    debug(parsl_app_future)
+    metadata = parsl_app_future.result()
     debug(metadata)
     assert metadata
 
