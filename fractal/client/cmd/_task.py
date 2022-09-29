@@ -1,4 +1,7 @@
 import json
+import os
+from pathlib import Path
+from typing import List
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -14,14 +17,43 @@ from fractal.common.models import TaskRead
 from fractal.common.models import TaskUpdate
 
 
-async def task_list(
-    client: AuthClient,
-    **kwargs,
-) -> RichJsonInterface:
-    res = await client.get(
-        f"{settings.BASE_URL}/task/",
-    )
+def get_cached_task_by_name(name: str, client: AuthClient) -> int:
+    cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
+    with open(f"{cache_dir}/tasks", "r") as f:
+        task_cache = json.load(f)
+
+    if name in task_cache.keys():
+        return task_cache[name]
+    else:
+        refresh_task_cache(client)
+        try:
+            return task_cache[name]
+        except KeyError as e:
+            raise KeyError(f"Task {name} not in {cache_dir}/tasks\n", str(e))
+
+
+async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
+
+    res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
+
+    # Refresh cache
+    task_cache = {task["name"]: task["id"] for task in task_list}
+
+    # Create cache folder, if needed
+    cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
+    if not os.path.isdir(cache_dir):
+        os.makedirs(cache_dir)
+
+    # Write task cache
+    with open(f"{cache_dir}/tasks", "w") as f:
+        json.dump(task_cache, f)
+
+    return task_list
+
+
+async def task_list(client: AuthClient, **kwargs) -> RichJsonInterface:
+    task_list = await refresh_task_cache(client=client, **kwargs)
     return RichJsonInterface(retcode=0, data=task_list)
 
 
@@ -73,13 +105,15 @@ async def task_new(
 async def task_edit(
     client: AuthClient,
     *,
-    task_id: int,
+    task_name: str,
     **task_update_dict,
 ) -> BaseInterface:
     task_update = TaskUpdate(**task_update_dict)
     payload = task_update.dict(exclude_unset=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
+
+    task_id = get_cached_task_by_name(name=task_name, client=client)
 
     res = await client.patch(
         f"{settings.BASE_URL}/task/{task_id}", json=payload
@@ -92,8 +126,8 @@ async def task_add_subtask(
     client: AuthClient,
     *,
     batch: bool = False,
-    parent_task_id: int,
-    subtask_id: int,
+    parent_task_name: str,
+    subtask_name: str,
     args_file: Optional[str] = None,
     order: Optional[int] = None,
     **kwargs,
@@ -104,6 +138,11 @@ async def task_add_subtask(
             args = json.load(fin)
     else:
         args = {}
+
+    parent_task_id = get_cached_task_by_name(
+        name=parent_task_name, client=client
+    )
+    subtask_id = get_cached_task_by_name(name=subtask_name, client=client)
 
     subtask_create = SubtaskCreate(
         parent_task_id=parent_task_id,
@@ -131,10 +170,12 @@ async def task_apply(
     project_id: int,
     input_dataset_id: int,
     output_dataset_id: int,
-    workflow_id: int,
+    workflow_name: str,
     overwrite_input: bool,
     **kwargs,
 ) -> RichJsonInterface:
+
+    workflow_id = get_cached_task_by_name(name=workflow_name, client=client)
 
     workflow = ApplyWorkflow(
         project_id=project_id,
