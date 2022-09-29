@@ -34,7 +34,9 @@ async def test_task_apply(clear_db, testserver, register_user, invoke):
     assert False
 
 
-async def test_edit_task(clear_db, testserver, register_user, invoke):
+async def test_edit_task(
+    clear_db, testserver, register_user, invoke, clear_task_cache
+):
     res = await invoke(
         "task new mytask0 task image zarr --module mypackage.subpkg:foo"
     )
@@ -46,7 +48,9 @@ async def test_edit_task(clear_db, testserver, register_user, invoke):
     assert res.data["name"] == "new task name"
 
 
-async def test_add_subtask(clear_db, testserver, register_user, invoke):
+async def test_add_subtask(
+    clear_db, testserver, register_user, invoke, clear_task_cache
+):
     res = await invoke(
         "task new parent task image zarr --module mypackage.subpkg:foo"
     )

@@ -1,5 +1,7 @@
+import os
 import shlex
 from os import environ
+from pathlib import Path
 
 import pytest
 from httpx import AsyncClient
@@ -42,6 +44,16 @@ async def invoke(clisplit):
         return await handle(clisplit(args))
 
     return __invoke
+
+
+@pytest.fixture
+def clear_task_cache():
+    from fractal.client.config import settings
+
+    cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
+    cache_file = f"{cache_dir}/tasks"
+    if os.path.isfile(cache_file):
+        os.remove(cache_file)
 
 
 from .fixtures_testserver import *  # noqa: 401
