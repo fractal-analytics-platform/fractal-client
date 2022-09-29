@@ -3,6 +3,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from fractal.common.models import SubtaskBase
+from fractal.common.models import TaskBase
 from pydantic import BaseModel
 from sqlalchemy import Column
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,8 +14,6 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 
 from ...utils import popget
-from fractal.common.models import SubtaskBase
-from fractal.common.models import TaskBase
 
 
 def flatten(xx):
@@ -53,11 +53,14 @@ class Subtask(SubtaskBase, table=True):  # type: ignore
         arbitrary_types_allowed = True
         fields = {"parent": {"exclude": True}}
 
+    id: Optional[int] = Field(default=None, primary_key=True)
     parent_task_id: Optional[int] = Field(
-        default=None, foreign_key="task.id", primary_key=True
+        default=None,
+        foreign_key="task.id",
     )
     subtask_id: Optional[int] = Field(
-        default=None, foreign_key="task.id", primary_key=True
+        default=None,
+        foreign_key="task.id",
     )
     parent: "Task" = Relationship(
         sa_relationship_kwargs=dict(
@@ -213,6 +216,7 @@ class Task(TaskBase, table=True):  # type: ignore
             self.subtask_list.append(st)
         else:
             self.subtask_list.insert(order, st)
+
         db.add_all([self, st])
         if commit_and_refresh:
             await db.commit()
