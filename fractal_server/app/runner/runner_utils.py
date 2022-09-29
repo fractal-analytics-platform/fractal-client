@@ -19,10 +19,10 @@ from functools import partial
 from functools import wraps
 from typing import Callable
 
-import parsl
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
+from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
@@ -210,7 +210,7 @@ def load_parsl_config(
         executors = [htex_slurm_cpu, htex_slurm_cpu_2]
 
     # Extract the executor labels
-    new_executor_labels = [executor.label for executor in executors]
+    # new_executor_labels = [executor.label for executor in executors]
 
     # Define monitoring hub and finalize configuration
     if enable_monitoring:
@@ -221,6 +221,7 @@ def load_parsl_config(
     else:
         monitoring = None
 
+    """
     try:
         dfk = DataFlowKernelLoader.dfk()
         old_executor_labels = [
@@ -241,16 +242,18 @@ def load_parsl_config(
 
     # FIXME: better exception handling
     except RuntimeError:
-        config = Config(
-            executors=executors, monitoring=monitoring, max_idletime=20.0
-        )
-        logger.info(
-            "DFK probably missing, "
-            "proceed with parsl.clear and parsl.config.Config"
-        )
-        parsl.clear()
-        parsl.load(config)
-    dfk = DataFlowKernelLoader.dfk()
+"""
+    config = Config(
+        executors=executors, monitoring=monitoring, max_idletime=20.0
+    )
+    logger.info(
+        "DFK probably missing, "
+        "proceed with parsl.clear and parsl.config.Config"
+    )
+    # parsl.clear()
+    # parsl.load(config)
+    dfk = DataFlowKernel(config=config)
+    # dfk = DataFlowKernelLoader.dfk()
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
     ]
@@ -258,6 +261,8 @@ def load_parsl_config(
         f"DFK {dfk} now has {len(executor_labels)} executors: "
         f"{executor_labels}"
     )
+
+    return dfk
 
 
 def shutdown_executors(*, workflow_id: str, logger: logging.Logger = None):
@@ -282,7 +287,9 @@ def shutdown_executors(*, workflow_id: str, logger: logging.Logger = None):
     )
 
 
-def get_unique_executor(*, workflow_id: int, task_executor: str = None):
+def get_unique_executor(
+    *, workflow_id: int, task_executor: str = None, data_flow_kernel=None
+):
 
     # Handle missing value
     if task_executor is None:
@@ -294,7 +301,7 @@ def get_unique_executor(*, workflow_id: int, task_executor: str = None):
     )
 
     # Verify match between new_task_executor and available executors
-    valid_executor_labels = DataFlowKernelLoader.dfk().executors.keys()
+    valid_executor_labels = data_flow_kernel.executors.keys()
     if new_task_executor not in valid_executor_labels:
         raise ValueError(
             f"Executor label {new_task_executor} is not in "

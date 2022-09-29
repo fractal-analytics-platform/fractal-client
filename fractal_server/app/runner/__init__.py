@@ -16,7 +16,6 @@ from devtools import debug
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
-from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -133,10 +132,10 @@ def _atomic_task_factory(
     task: Union[Task, Subtask, PreprocessedTask],
     input_paths: List[Path],
     output_path: Path,
+    data_flow_kernel: DataFlowKernel,
     metadata: Optional[Union[Future, Dict[str, Any]]] = None,
     depends_on: Optional[List[AppFuture]] = None,
     workflow_id: int = None,
-    data_flow_kernel: DataFlowKernel = None,
 ) -> AppFuture:
     """
     Single task processing
@@ -149,14 +148,11 @@ def _atomic_task_factory(
 
     task_args = task._arguments
     task_executor = get_unique_executor(
-        workflow_id=workflow_id, task_executor=task.executor
+        workflow_id=workflow_id,
+        task_executor=task.executor,
+        data_flow_kernel=data_flow_kernel,
     )
     logger.info(f'Starting "{task.name}" task on "{task_executor}" executor.')
-
-    # NOTE this should be replaced by the logic of a specific DFK
-    if data_flow_kernel is None:
-        data_flow_kernel = DataFlowKernelLoader.dfk()
-    assert data_flow_kernel is not None
 
     parall_level = task.parallelization_level
     if metadata and parall_level:
@@ -264,7 +260,7 @@ def _process_workflow(
     this_metadata = deepcopy(metadata)
 
     workflow_id = task.id
-    load_parsl_config(workflow_id=workflow_id, logger=logger)
+    dfk = load_parsl_config(workflow_id=workflow_id, logger=logger)
 
     apps: List[PythonApp] = []
 
@@ -275,12 +271,13 @@ def _process_workflow(
             output_path=this_output,
             metadata=apps[i - 1] if i > 0 else this_metadata,
             workflow_id=workflow_id,
+            data_flow_kernel=dfk,
         )
         apps.append(this_task_app)
         this_input = [this_output]
 
     # Got to make sure that it is executed serially, task by task
-    return apps[-1]
+    return apps[-1], dfk
 
 
 async def auto_output_dataset(
@@ -396,7 +393,7 @@ async def submit_workflow(
     logger.info(f"{input_paths=}")
     logger.info(f"{output_path=}")
 
-    final_metadata = _process_workflow(
+    final_metadata, dfk = _process_workflow(
         task=workflow,
         input_paths=input_paths,
         output_path=output_path,
@@ -408,6 +405,8 @@ async def submit_workflow(
 
     # FIXME
     # shutdown_executors(workflow_id=workflow.id)
+
+    dfk.cleanup()
 
     db.add(output_dataset)
 
