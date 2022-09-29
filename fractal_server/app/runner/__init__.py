@@ -231,6 +231,14 @@ def _atomic_task_factory(
     parall_level = task.parallelization_level
     if metadata and parall_level:
 
+        # Define a single app
+        debug(data_flow_kernel)
+        dummy_task_app = PythonApp(
+            dummy_fun,
+            executors=[task_executor],
+            data_flow_kernel=data_flow_kernel,
+        )
+
         @join_app(data_flow_kernel=data_flow_kernel)
         def _parallel_task_app_future(
             *,
@@ -241,22 +249,11 @@ def _atomic_task_factory(
             metadata: AppFuture,
             task_args: Optional[Dict[str, Any]],
             executors: Union[List[str], Literal["all"]] = "all",
-            data_flow_kernel=None,
         ) -> AppFuture:
-
-            # Define a single app
-            debug("_parallel_task_fun")
-            debug(data_flow_kernel)
-            dummy_task_app = PythonApp(
-                dummy_fun,
-                executors=executors,
-                data_flow_kernel=data_flow_kernel,
-            )
 
             # Define a list of futures
             # NOTE: This must happen within a join_app, because metadata has
-            # not yet
-            # been computed
+            # not yet been computed
             app_futures = []
             for item in metadata[parall_level]:
                 app_future = dummy_task_app(
@@ -290,7 +287,6 @@ def _atomic_task_factory(
             metadata=metadata,
             task_args=task_args,
             executors=[task_executor],
-            data_flow_kernel=data_flow_kernel,
         )
         return res
     else:
