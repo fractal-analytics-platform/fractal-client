@@ -124,6 +124,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
 
     debug(parsl_app_future)
     metadata = parsl_app_future.result()
+    dfk.cleanup()
     debug(metadata)
     assert metadata
 
