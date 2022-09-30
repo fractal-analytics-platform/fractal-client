@@ -159,11 +159,19 @@ def _atomic_task_factory(
         depends_on = []
 
     task_args = task._arguments
-    task_executor = get_unique_executor(
-        workflow_id=workflow_id,
-        task_executor=task.executor,
-        data_flow_kernel=data_flow_kernel,
-    )
+
+    try:
+        task_executor = get_unique_executor(
+            workflow_id=workflow_id,
+            task_executor=task.executor,
+            data_flow_kernel=data_flow_kernel,
+        )
+    except ValueError as e:
+        # When assigning a task to an unknown executor, make sure to cleanup
+        # DFK before raising an error
+        data_flow_kernel.cleanup()
+        logger.info("END of workflow due to ValueError (unknown executors).")
+        raise ValueError(str(e))
 
     parall_level = task.parallelization_level
     if metadata and parall_level:
@@ -276,26 +284,7 @@ def _process_workflow(
     this_metadata = deepcopy(metadata)
 
     workflow_id = task.id
-    workflow_name = task.name
     dfk = load_parsl_config(workflow_id=workflow_id, logger=logger)
-
-    # Preliminary check that all required executors are in the DFK
-    try:
-        for i, task in enumerate(preprocessed):
-            get_unique_executor(
-                workflow_id=workflow_id,
-                task_executor=task.executor,
-                data_flow_kernel=dfk,
-            )
-    except ValueError as e:
-        # When assigning a task to an unknown executor, make sure to cleanup
-        # DFK before raising an error
-        dfk.cleanup()
-        logger.info(
-            f"END workflow {workflow_name}, due to ValueError "
-            "(unknown executors)."
-        )
-        raise ValueError(str(e))
 
     app_futures: List[PythonApp] = []
     for i, task in enumerate(preprocessed):
