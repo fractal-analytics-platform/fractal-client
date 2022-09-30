@@ -284,7 +284,10 @@ def _process_workflow(
     this_metadata = deepcopy(metadata)
 
     workflow_id = task.id
-    dfk = load_parsl_config(workflow_id=workflow_id, logger=logger)
+    workflow_name = task.name
+    dfk = load_parsl_config(
+        workflow_id=workflow_id, workflow_name=workflow_name, logger=logger
+    )
 
     app_futures: List[PythonApp] = []
     for i, task in enumerate(preprocessed):

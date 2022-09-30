@@ -61,6 +61,7 @@ def async_wrap(func: Callable) -> Callable:
 def generate_parsl_config(
     *,
     workflow_id: int,
+    workflow_name: str,
     enable_monitoring: bool = True,
 ) -> Config:
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
@@ -207,7 +208,7 @@ def generate_parsl_config(
     if enable_monitoring:
         monitoring = MonitoringHub(
             hub_address=address_by_hostname(),
-            workflow_name="fractal",
+            workflow_name=workflow_name,
         )
     else:
         monitoring = None
@@ -221,6 +222,7 @@ def generate_parsl_config(
 def load_parsl_config(
     *,
     workflow_id: int,
+    workflow_name: str = "default workflow name",
     config: Config = None,
     logger: logging.Logger = None,
     enable_monitoring: bool = True,
@@ -234,7 +236,9 @@ def load_parsl_config(
 
     if not config:
         config = generate_parsl_config(
-            enable_monitoring=enable_monitoring, workflow_id=workflow_id
+            enable_monitoring=enable_monitoring,
+            workflow_id=workflow_id,
+            workflow_name=workflow_name,
         )
 
     dfk = DataFlowKernel(config=config)
