@@ -186,8 +186,11 @@ task_subparsers = task_parser.add_subparsers(
 task_list_parser = task_subparsers.add_parser("list", help="List tasks")
 
 # task new
-task_new_parser = task_subparsers.add_parser("new", help="List tasks")
-task_new_parser.add_argument("name", help="Task name (must be unique)")
+task_new_parser = task_subparsers.add_parser("new", help="Create new task")
+task_new_parser.add_argument(
+    "name",
+    help="Task name (must be unique, and not only made of numbers only)",
+)
 task_new_parser.add_argument(
     "resource_type", choices=["task", "workflow"], help="Resource type"
 )
@@ -208,7 +211,7 @@ task_edit_parser = task_subparsers.add_parser(
     "edit", help="Edit task", argument_default=ap.SUPPRESS
 )
 task_edit_parser.add_argument(
-    "task_id_or_name", help="ID or name of task to edit"
+    "task_id_or_name", help="ID or name of task to edit", type=str
 )
 task_edit_parser.add_argument("--name", help="New task name")
 task_edit_parser.add_argument(
@@ -260,8 +263,8 @@ task_apply_parser.add_argument(
     "output_dataset_id", help="ID of output dataset"
 )
 task_apply_parser.add_argument(
-    "workflow_name",
-    help="Name of taks/workflow to apply",
+    "workflow_id_or_name",
+    help="ID or name of taks/workflow to apply",
     type=str,
 )
 task_apply_parser.add_argument(
