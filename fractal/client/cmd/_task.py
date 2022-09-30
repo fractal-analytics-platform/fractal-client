@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from typing import List
 from typing import Optional
-from typing import Union
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -100,6 +99,15 @@ async def task_new(
     else:
         subtask_list_list = json.loads(subtask_list)
 
+    # Check the task name is not made of numbers only. This prevents
+    # ambiguities for functions that take arguments like task_id_or_name, and
+    # then use casting to check wheter task_id_or_name is an ID or a name.
+    if name.isdecimal():
+        raise ValueError(
+            f"Invalid task name {name} (name cannot be made of "
+            "numbers only)"
+        )
+
     resource_type = resource_type.replace("_", " ")
     task = TaskCreate(
         name=name,
@@ -125,7 +133,7 @@ async def task_new(
 async def task_edit(
     client: AuthClient,
     *,
-    task_id_or_name: Union[int, str],
+    task_id_or_name: str,
     **task_update_dict,
 ) -> BaseInterface:
     task_update = TaskUpdate(**task_update_dict)
@@ -133,8 +141,12 @@ async def task_edit(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    # FIXME: get ID or name
-    task_id = await get_cached_task_by_name(name=task_name, client=client)
+    try:
+        task_id = int(task_id_or_name)
+    except ValueError:
+        task_id = await get_cached_task_by_name(
+            name=task_id_or_name, client=client
+        )
 
     res = await client.patch(
         f"{settings.BASE_URL}/task/{task_id}", json=payload
@@ -147,8 +159,8 @@ async def task_add_subtask(
     client: AuthClient,
     *,
     batch: bool = False,
-    parent_task_id_or_name: Union[int, str],
-    subtask_name: str,
+    parent_task_id_or_name: str,
+    subtask_id_or_name: str,
     args_file: Optional[str] = None,
     order: Optional[int] = None,
     **kwargs,
@@ -160,13 +172,19 @@ async def task_add_subtask(
     else:
         args = {}
 
-    # FIXME: get ID or name
-    parent_task_id = await get_cached_task_by_name(
-        name=parent_task_name, client=client
-    )
-    subtask_id = await get_cached_task_by_name(
-        name=subtask_name, client=client
-    )
+    try:
+        parent_task_id = int(parent_task_id_or_name)
+    except ValueError:
+        parent_task_id = await get_cached_task_by_name(
+            name=parent_task_id_or_name, client=client
+        )
+
+    try:
+        subtask_id = int(subtask_id_or_name)
+    except ValueError:
+        subtask_id = await get_cached_task_by_name(
+            name=subtask_id_or_name, client=client
+        )
 
     subtask_create = SubtaskCreate(
         parent_task_id=parent_task_id,
@@ -194,15 +212,17 @@ async def task_apply(
     project_id: int,
     input_dataset_id: int,
     output_dataset_id: int,
-    workflow_id_or_name: Union[int, str],
+    workflow_id_or_name: str,
     overwrite_input: bool,
     **kwargs,
 ) -> RichJsonInterface:
 
-    # FIXME: get ID or name
-    workflow_id = await get_cached_task_by_name(
-        name=workflow_name, client=client
-    )
+    try:
+        workflow_id = int(workflow_id_or_name)
+    except ValueError:
+        workflow_id = await get_cached_task_by_name(
+            name=workflow_id_or_name, client=client
+        )
 
     workflow = ApplyWorkflow(
         project_id=project_id,
