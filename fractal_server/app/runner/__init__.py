@@ -430,7 +430,7 @@ async def submit_workflow(
         app_future=final_metadata
     )
 
-    logger.info(f"END workflow {workflow.name}")
+    logger.info(f'END workflow "{workflow.name}"')
     dfk.cleanup()
 
     db.add(output_dataset)
