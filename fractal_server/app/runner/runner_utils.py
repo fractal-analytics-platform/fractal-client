@@ -23,7 +23,6 @@ from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
 from parsl.dataflow.dflow import DataFlowKernel
-from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
@@ -249,28 +248,6 @@ def load_parsl_config(
     )
 
     return dfk
-
-
-def shutdown_executors(*, workflow_id: str, logger: logging.Logger = None):
-
-    if logger is None:
-        logger = logging.getLogger("logs")
-
-    # Remove executors from parsl DFK
-    # FIXME decorate with monitoring logs, as in:
-    # https://github.com/Parsl/parsl/blob/master/parsl/dataflow/dflow.py#L1106
-    dfk = DataFlowKernelLoader.dfk()
-    for label, executor in dfk.executors.items():
-        if label.startswith(f"{workflow_id}___"):
-            executor.shutdown()
-            logger.info(f"SHUTTING DOWN {label}")
-    executor_labels = [
-        executor_label for executor_label in dfk.executors.keys()
-    ]
-    logger.info(
-        f"DFK {dfk} now has {len(executor_labels)} executors: "
-        f"{executor_labels}"
-    )
 
 
 def get_unique_executor(

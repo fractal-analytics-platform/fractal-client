@@ -399,9 +399,6 @@ async def submit_workflow(
         app_future=final_metadata
     )
 
-    # FIXME
-    # shutdown_executors(workflow_id=workflow.id)
-
     dfk.cleanup()
 
     db.add(output_dataset)
