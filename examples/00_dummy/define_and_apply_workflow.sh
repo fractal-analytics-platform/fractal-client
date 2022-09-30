@@ -6,6 +6,7 @@ PRJ_NAME="myproj-dummy"
 DS_IN_NAME="input-ds-dummy"
 DS_OUT_NAME="output-ds-dummy"
 WF_NAME="My workflow dummy"
+export FRACTAL_CACHE_PATH=`pwd`/".cache"
 
 # Define/initialize empty folder for temporary files
 TMPDIR=`pwd`/$PRJ_NAME
@@ -40,13 +41,7 @@ WF_ID=`$CMD --batch task new "$WF_NAME" workflow image zarr`
 echo "WF_ID: $WF_ID"
 
 # Add subtasks
-echo "{\"message\": \"bottle\", \"index\": 2}" > ${TMPDIR}/args_tmp.json
-$CMD task add-subtask $WF_ID "dummy" --args-file ${TMPDIR}/args_tmp.json
-
-echo "{\"message\": \"bottle\", \"index\": 2, \"executor\": \"gpu\"}" > ${TMPDIR}/args_tmp.json
-$CMD task add-subtask $WF_ID "dummy" --args-file ${TMPDIR}/args_tmp.json
-
-echo "{\"message\": \"bottle\", \"index\": 2}" > ${TMPDIR}/args_tmp.json
+echo "{\"message\": \"bottle\", \"index\": 1}" > ${TMPDIR}/args_tmp.json
 $CMD task add-subtask $WF_ID "dummy" --args-file ${TMPDIR}/args_tmp.json
 
 # Apply workflow
