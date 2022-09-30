@@ -38,8 +38,8 @@ the following environment variables:
 * `FRACTAL_USER`, `FRACTAL_PASSWORD`: email and password used to log-in to the
    Fractal server
 
-By default, `fractal` caches some information in `~/.fractal`. This destination
-can be customized by setting `SESSION_CACHE_PATH`.
+By default, `fractal` caches some information in `~/.cache/fractal`. This destination
+can be customized by setting `FRACTAL_CACHE_PATH`.
 
 For ease of use, you may define an environment file `.fractal.env` in the
 folder from which `fractal` is invoked.

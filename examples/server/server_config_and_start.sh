@@ -8,8 +8,8 @@ alembic revision --autogenerate
 alembic upgrade head
 
 # Remove old stuff
-#rm -r runinfo
-rm fractal.log
+# rm -r runinfo
+# rm fractal.log
 rm cmd_parsl.slurm.*.*.sh
 rm -v parsl_executors.log
 

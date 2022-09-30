@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 
 import jwt
@@ -19,7 +20,7 @@ class AuthToken:
         self.password = password
 
         try:
-            with open(settings.SESSION_CACHE_PATH, "r") as f:
+            with open(f"{settings.FRACTAL_CACHE_PATH}/session", "r") as f:
                 self.token = f.read()
         except FileNotFoundError:
             pass
@@ -39,7 +40,16 @@ class AuthToken:
             )
         raw_token = res.json()
         self.token = raw_token["access_token"]
-        with open(Path(settings.SESSION_CACHE_PATH).expanduser(), "w") as f:
+
+        # Create cache folder, if needed
+        cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        if not os.path.isdir(cache_dir):
+            os.makedirs(cache_dir)
+
+        # Write token in cache_file
+        cache_file = cache_dir / "session"
+        with cache_file.open("w") as f:
             f.write(self.token)
 
     @property
