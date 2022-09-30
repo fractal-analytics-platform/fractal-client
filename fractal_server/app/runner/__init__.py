@@ -7,6 +7,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Any
 from typing import Dict
+from typing import Iterable
 from typing import List
 from typing import Literal
 from typing import Optional
@@ -44,8 +45,18 @@ def _task_fun(
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
+    executors: Union[
+        List[str], Literal["all"]
+    ],  # This is only needed for logging
     inputs,
 ):
+
+    # NOTE: logging takes place here (in the function, not in the app), so that
+    # it is only triggered when the function executes, rather than when the app
+    # is defined. The executors argument is only needed for logging, in this
+    # function.
+    logger.info(f'Starting "{task.name}" task on {executors=}.')
+
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
     metadata_update = _callable(
@@ -85,6 +96,7 @@ def _task_app_future(
         metadata=metadata,
         task_args=task_args,
         inputs=inputs,
+        executors=executors,
     )
 
 
@@ -97,6 +109,8 @@ def _task_component_fun(
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
 ):
+
+    logger.info(f'  Starting "{task.name}" for {component=}.')
 
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
@@ -111,7 +125,10 @@ def _task_component_fun(
 
 
 def _task_parallel_collect(
-    metadata, task_name=None, component_list=None, inputs=None
+    metadata,
+    task_name: str = None,
+    component_list: Iterable[str] = None,
+    inputs=None,
 ):
     history = f"{task_name}: {component_list}"
     try:
@@ -122,7 +139,6 @@ def _task_parallel_collect(
     return metadata
 
 
-# NOTE: this is a standard function
 def _atomic_task_factory(
     *,
     task: Union[Task, Subtask, PreprocessedTask],
@@ -148,7 +164,6 @@ def _atomic_task_factory(
         task_executor=task.executor,
         data_flow_kernel=data_flow_kernel,
     )
-    logger.info(f'Starting "{task.name}" task on "{task_executor}" executor.')
 
     parall_level = task.parallelization_level
     if metadata and parall_level:
@@ -179,9 +194,14 @@ def _atomic_task_factory(
             executors: Union[List[str], Literal["all"]] = "all",
         ) -> AppFuture:
 
-            # Define a list of futures
-            # NOTE: This must happen within a join_app, because metadata has
-            # not yet been computed
+            logger.info(
+                f'Starting {len(metadata[parall_level])} "{task.name}"'
+                f" tasks in parallel, on {executors=}."
+            )
+
+            # Define a list of futures, to be used as inputs (AKA dependencies)
+            # for parallel_collection_app. This must happen within a join_app,
+            # because metadata has not yet been computed.
             app_futures = []
             for item in metadata[parall_level]:
                 component_app_future = task_component_app(
@@ -194,7 +214,7 @@ def _atomic_task_factory(
                 )
                 app_futures.append(component_app_future)
 
-            # Define the corresponding future
+            # Return the future for the app collecting all parallel tasks
             parallel_collection_app_future = parallel_collection_app(
                 metadata,
                 task_name=task.name,
@@ -385,7 +405,7 @@ async def submit_workflow(
 
     logger.info("*" * 80)
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
-    logger.info(f"Start workflow {workflow.name}")
+    logger.info(f"START workflow {workflow.name}")
     logger.info(f"{input_paths=}")
     logger.info(f"{output_path=}")
 
@@ -399,6 +419,7 @@ async def submit_workflow(
         app_future=final_metadata
     )
 
+    logger.info(f"END workflow {workflow.name}")
     dfk.cleanup()
 
     db.add(output_dataset)
