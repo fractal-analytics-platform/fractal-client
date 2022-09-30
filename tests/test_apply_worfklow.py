@@ -189,7 +189,6 @@ def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
     assert data[2]["message"] == "dummy2"
 
 
-@pytest.mark.skip()
 def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
     """
     GIVEN a trivial workflow, with an invalid executor
@@ -200,24 +199,22 @@ def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
     from fractal_server.app.runner import _process_workflow
 
     dummy_task = Task(
+        id=999,
         name="dummy",
         resource_type="core task",
         module="fake_module.dummy:dummy",
         default_args={"executor": "WRONG EXECUTOR"},
     )
 
-    app, dfk = _process_workflow(
-        task=dummy_task,
-        input_paths=[tmp_path / "0.json"],
-        output_path=tmp_path / "0.json",
-        metadata={},
-    )
-    debug(app)
-
     with pytest.raises(ValueError):
-        app.result()
-
-    dfk.cleanup()
+        app, dfk = _process_workflow(
+            task=dummy_task,
+            input_paths=[tmp_path / "0.json"],
+            output_path=tmp_path / "0.json",
+            metadata={},
+        )
+        debug(app)
+        dfk.cleanup()
 
 
 async def test_apply_workflow(
