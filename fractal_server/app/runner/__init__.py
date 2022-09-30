@@ -169,7 +169,7 @@ def _atomic_task_factory(
     except ValueError as e:
         # When assigning a task to an unknown executor, make sure to cleanup
         # DFK before raising an error
-        data_flow_kernel.cleanup()
+        # data_flow_kernel.cleanup()
         logger.info("END of workflow due to ValueError (unknown executors).")
         raise ValueError(str(e))
 

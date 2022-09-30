@@ -19,10 +19,11 @@ from functools import partial
 from functools import wraps
 from typing import Callable
 
+import parsl
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
-from parsl.dataflow.dflow import DataFlowKernel
+from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
@@ -241,7 +242,29 @@ def load_parsl_config(
             workflow_name=workflow_name,
         )
 
-    dfk = DataFlowKernel(config=config)
+    try:
+        dfk = DataFlowKernelLoader.dfk()
+        old_executor_labels = [
+            executor_label for executor_label in dfk.executors.keys()
+        ]
+        logger.info(
+            f"DFK {dfk} exists, with {len(dfk.executors)} executors: "
+            f"{old_executor_labels}"
+        )
+
+        # FIXME: what if an executor was already there?
+        # (re-submitting same workflow?)
+        dfk.add_executors(config.executors)
+
+    # FIXME: better exception handling
+    except RuntimeError:
+        logger.info(
+            "DFK probably missing, "
+            "proceed with parsl.clear and parsl.config.Config"
+        )
+        parsl.clear()
+        DataFlowKernelLoader.load(config)
+        dfk = DataFlowKernelLoader.dfk()
 
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
