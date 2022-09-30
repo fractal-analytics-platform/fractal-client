@@ -107,22 +107,23 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
 
     workflow_id = 0
 
-    load_parsl_config(enable_monitoring=False, workflow_id=workflow_id)
+    dfk = load_parsl_config(enable_monitoring=False, workflow_id=workflow_id)
 
     input_path_str = "/input/path"
     output_path = tmp_path
     metadata = {"index": list(range(N_INDICES))}
 
-    parsl_app = _atomic_task_factory(
+    parsl_app_future = _atomic_task_factory(
         task=task,
         input_paths=[Path(input_path_str)],
         output_path=output_path,
         metadata=metadata,
         workflow_id=workflow_id,
+        data_flow_kernel=dfk,
     )
 
-    debug(parsl_app)
-    metadata = parsl_app.result()
+    debug(parsl_app_future)
+    metadata = parsl_app_future.result()
     debug(metadata)
     assert metadata
 
@@ -166,7 +167,7 @@ def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
 
     from fractal_server.app.runner import _process_workflow
 
-    app = _process_workflow(
+    app, dfk = _process_workflow(
         task=nontrivial_workflow,
         input_paths=[tmp_path / "0.json"],
         output_path=tmp_path / "0.json",
@@ -196,22 +197,21 @@ def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
     from fractal_server.app.runner import _process_workflow
 
     dummy_task = Task(
+        id=999,
         name="dummy",
         resource_type="core task",
         module="fake_module.dummy:dummy",
         default_args={"executor": "WRONG EXECUTOR"},
     )
 
-    app = _process_workflow(
-        task=dummy_task,
-        input_paths=[tmp_path / "0.json"],
-        output_path=tmp_path / "0.json",
-        metadata={},
-    )
-    debug(app)
-
     with pytest.raises(ValueError):
-        app.result()
+        app, dfk = _process_workflow(
+            task=dummy_task,
+            input_paths=[tmp_path / "0.json"],
+            output_path=tmp_path / "0.json",
+            metadata={},
+        )
+        debug(app)
 
 
 async def test_apply_workflow(

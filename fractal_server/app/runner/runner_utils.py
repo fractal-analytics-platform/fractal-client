@@ -59,19 +59,12 @@ def async_wrap(func: Callable) -> Callable:
     return run
 
 
-def load_parsl_config(
+def generate_parsl_config(
     *,
     workflow_id: int,
+    workflow_name: str,
     enable_monitoring: bool = True,
-    logger: logging.Logger = None,
-):
-
-    if logger is None:
-        logger = logging.getLogger("logs")
-
-    logger.info(f"{settings.PARSL_CONFIG=}")
-    logger.info(f"{settings.PARSL_DEFAULT_EXECUTOR=}")
-
+) -> Config:
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
     config = settings.PARSL_CONFIG
     if config not in allowed_configs:
@@ -210,16 +203,44 @@ def load_parsl_config(
         executors = [htex_slurm_cpu, htex_slurm_cpu_2]
 
     # Extract the executor labels
-    new_executor_labels = [executor.label for executor in executors]
+    # new_executor_labels = [executor.label for executor in executors]
 
     # Define monitoring hub and finalize configuration
     if enable_monitoring:
         monitoring = MonitoringHub(
             hub_address=address_by_hostname(),
-            workflow_name="fractal",
+            workflow_name=workflow_name,
         )
     else:
         monitoring = None
+
+    config = Config(
+        executors=executors, monitoring=monitoring, max_idletime=20.0
+    )
+    return config
+
+
+def load_parsl_config(
+    *,
+    workflow_id: int,
+    workflow_name: str = "default workflow name",
+    config: Config = None,
+    logger: logging.Logger = None,
+    enable_monitoring: bool = True,
+):
+
+    if logger is None:
+        logger = logging.getLogger("logs")
+
+    logger.info(f"{settings.PARSL_CONFIG=}")
+    logger.info(f"{settings.PARSL_DEFAULT_EXECUTOR=}")
+
+    if not config:
+        config = generate_parsl_config(
+            enable_monitoring=enable_monitoring,
+            workflow_id=workflow_id,
+            workflow_name=workflow_name,
+        )
 
     try:
         dfk = DataFlowKernelLoader.dfk()
@@ -230,27 +251,21 @@ def load_parsl_config(
             f"DFK {dfk} exists, with {len(dfk.executors)} executors: "
             f"{old_executor_labels}"
         )
-        logger.info(
-            f"Adding {len(executors)} new executors: {new_executor_labels}"
-        )
 
         # FIXME: what if an executor was already there?
         # (re-submitting same workflow?)
-
-        dfk.add_executors(executors)
+        dfk.add_executors(config.executors)
 
     # FIXME: better exception handling
     except RuntimeError:
-        config = Config(
-            executors=executors, monitoring=monitoring, max_idletime=20.0
-        )
         logger.info(
             "DFK probably missing, "
             "proceed with parsl.clear and parsl.config.Config"
         )
         parsl.clear()
-        parsl.load(config)
-    dfk = DataFlowKernelLoader.dfk()
+        DataFlowKernelLoader.load(config)
+        dfk = DataFlowKernelLoader.dfk()
+
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
     ]
@@ -259,30 +274,12 @@ def load_parsl_config(
         f"{executor_labels}"
     )
 
-
-def shutdown_executors(*, workflow_id: str, logger: logging.Logger = None):
-
-    if logger is None:
-        logger = logging.getLogger("logs")
-
-    # Remove executors from parsl DFK
-    # FIXME decorate with monitoring logs, as in:
-    # https://github.com/Parsl/parsl/blob/master/parsl/dataflow/dflow.py#L1106
-    dfk = DataFlowKernelLoader.dfk()
-    for label, executor in dfk.executors.items():
-        if label.startswith(f"{workflow_id}___"):
-            executor.shutdown()
-            logger.info(f"SHUTTING DOWN {label}")
-    executor_labels = [
-        executor_label for executor_label in dfk.executors.keys()
-    ]
-    logger.info(
-        f"DFK {dfk} now has {len(executor_labels)} executors: "
-        f"{executor_labels}"
-    )
+    return dfk
 
 
-def get_unique_executor(*, workflow_id: int, task_executor: str = None):
+def get_unique_executor(
+    *, workflow_id: int, task_executor: str = None, data_flow_kernel=None
+):
 
     # Handle missing value
     if task_executor is None:
@@ -294,7 +291,7 @@ def get_unique_executor(*, workflow_id: int, task_executor: str = None):
     )
 
     # Verify match between new_task_executor and available executors
-    valid_executor_labels = DataFlowKernelLoader.dfk().executors.keys()
+    valid_executor_labels = data_flow_kernel.executors.keys()
     if new_task_executor not in valid_executor_labels:
         raise ValueError(
             f"Executor label {new_task_executor} is not in "

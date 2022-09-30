@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import Response
 from fastapi import status
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
@@ -82,7 +83,7 @@ async def delete_project(
         )
     await db.delete(project)
     await db.commit()
-    return
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/", response_model=ProjectRead, status_code=201)
@@ -271,7 +272,7 @@ async def delete_resource(
         )
     await db.delete(resource)
     await db.commit()
-    return
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post(
