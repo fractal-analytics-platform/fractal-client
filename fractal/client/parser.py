@@ -207,7 +207,9 @@ task_new_parser.add_argument("--subtask-list", help="Subtask list")
 task_edit_parser = task_subparsers.add_parser(
     "edit", help="Edit task", argument_default=ap.SUPPRESS
 )
-task_edit_parser.add_argument("task_name", help="name of task to edit")
+task_edit_parser.add_argument(
+    "task_id_or_name", help="ID or name of task to edit"
+)
 task_edit_parser.add_argument("--name", help="New task name")
 task_edit_parser.add_argument(
     "--resource-type",
@@ -231,13 +233,13 @@ task_add_subtask_parser = task_subparsers.add_parser(
     "add-subtask", help="Edit task", argument_default=ap.SUPPRESS
 )
 task_add_subtask_parser.add_argument(
-    "parent_task_name",
-    help="Name of task to which the subtask will be added",
+    "parent_task_id_or_name",
+    help="ID or name of task to which the subtask will be added",
     type=str,
 )
 task_add_subtask_parser.add_argument(
-    "subtask_name",
-    help="Name of task to add as a subtask",
+    "subtask_id_or_name",
+    help="ID or name of task to add as a subtask",
     type=str,
 )
 task_add_subtask_parser.add_argument(

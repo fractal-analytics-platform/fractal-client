@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import List
 from typing import Optional
+from typing import Union
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -124,7 +125,7 @@ async def task_new(
 async def task_edit(
     client: AuthClient,
     *,
-    task_name: str,
+    task_id_or_name: Union[int, str],
     **task_update_dict,
 ) -> BaseInterface:
     task_update = TaskUpdate(**task_update_dict)
@@ -132,6 +133,7 @@ async def task_edit(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
+    # FIXME: get ID or name
     task_id = await get_cached_task_by_name(name=task_name, client=client)
 
     res = await client.patch(
@@ -145,7 +147,7 @@ async def task_add_subtask(
     client: AuthClient,
     *,
     batch: bool = False,
-    parent_task_name: str,
+    parent_task_id_or_name: Union[int, str],
     subtask_name: str,
     args_file: Optional[str] = None,
     order: Optional[int] = None,
@@ -158,6 +160,7 @@ async def task_add_subtask(
     else:
         args = {}
 
+    # FIXME: get ID or name
     parent_task_id = await get_cached_task_by_name(
         name=parent_task_name, client=client
     )
@@ -191,11 +194,12 @@ async def task_apply(
     project_id: int,
     input_dataset_id: int,
     output_dataset_id: int,
-    workflow_name: str,
+    workflow_id_or_name: Union[int, str],
     overwrite_input: bool,
     **kwargs,
 ) -> RichJsonInterface:
 
+    # FIXME: get ID or name
     workflow_id = await get_cached_task_by_name(
         name=workflow_name, client=client
     )
