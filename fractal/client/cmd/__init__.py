@@ -8,6 +8,7 @@ from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
 from ._dataset import dataset_add_resource
+from ._dataset import dataset_delete_resource
 from ._dataset import dataset_edit
 from ._dataset import dataset_show
 from ._project import project_add_dataset
@@ -60,6 +61,15 @@ async def dataset(
             dataset_id=kwargs.pop("dataset_id"),
             path=kwargs.pop("path"),
             glob_pattern=kwargs.pop("glob_pattern"),
+            **kwargs,
+        )
+    elif subcmd == "rm-resource":
+        iface = await dataset_delete_resource(
+            client,
+            batch=batch,
+            project_id=kwargs.pop("project_id"),
+            dataset_id=kwargs.pop("dataset_id"),
+            resource_id=kwargs.pop("resource_id"),
             **kwargs,
         )
     elif subcmd == "edit":

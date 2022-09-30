@@ -107,3 +107,8 @@ class AuthClient:
         return await self.client.patch(
             headers=await self.auth.header(), *args, **kwargs
         )
+
+    async def delete(self, *args, **kwargs):
+        return await self.client.delete(
+            headers=await self.auth.header(), *args, **kwargs
+        )
