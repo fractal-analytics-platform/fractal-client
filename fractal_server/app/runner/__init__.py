@@ -276,24 +276,43 @@ def _process_workflow(
     this_metadata = deepcopy(metadata)
 
     workflow_id = task.id
+    workflow_name = task.name
     dfk = load_parsl_config(workflow_id=workflow_id, logger=logger)
 
-    apps: List[PythonApp] = []
+    # Preliminary check that all required executors are in the DFK
+    try:
+        for i, task in enumerate(preprocessed):
+            get_unique_executor(
+                workflow_id=workflow_id,
+                task_executor=task.executor,
+                data_flow_kernel=dfk,
+            )
+    except ValueError as e:
+        # When assigning a task to an unknown executor, make sure to cleanup
+        # DFK before raising an error
+        dfk.cleanup()
+        logger.info(
+            f"END workflow {workflow_name}, due to ValueError "
+            "(unknown executors)."
+        )
+        raise ValueError(str(e))
 
+    app_futures: List[PythonApp] = []
     for i, task in enumerate(preprocessed):
-        this_task_app = _atomic_task_factory(
+        this_task_app_future = _atomic_task_factory(
             task=task,
             input_paths=this_input,
             output_path=this_output,
-            metadata=apps[i - 1] if i > 0 else this_metadata,
+            metadata=app_futures[i - 1] if i > 0 else this_metadata,
             workflow_id=workflow_id,
             data_flow_kernel=dfk,
         )
-        apps.append(this_task_app)
+
+        app_futures.append(this_task_app_future)
         this_input = [this_output]
 
     # Got to make sure that it is executed serially, task by task
-    return apps[-1], dfk
+    return app_futures[-1], dfk
 
 
 async def auto_output_dataset(
