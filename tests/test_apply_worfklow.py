@@ -124,7 +124,6 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
 
     debug(parsl_app_future)
     metadata = parsl_app_future.result()
-    dfk.cleanup()
     debug(metadata)
     assert metadata
 
@@ -176,7 +175,6 @@ def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
     )
     debug(app)
     app.result()
-    dfk.cleanup()
 
     print(list(tmp_path.glob("*.json")))
     for f in tmp_path.glob("*.json"):
@@ -214,7 +212,6 @@ def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
             metadata={},
         )
         debug(app)
-        dfk.cleanup()
 
 
 async def test_apply_workflow(
