@@ -11,6 +11,15 @@ async def test_task_new(clear_db, testserver, register_user, invoke):
     assert res.data["module"] == "mypackage.subpkg:foo"
 
 
+async def test_task_new_wrong_name(
+    clear_db, testserver, register_user, invoke
+):
+    with pytest.raises(ValueError):
+        await invoke(
+            "task new 123 task image zarr --module mypackage.subpkg:foo"
+        )
+
+
 async def test_task_list(clear_db, testserver, register_user, invoke):
     res = await invoke(
         "task new mytask0 task image zarr --module mypackage.subpkg:foo"
