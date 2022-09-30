@@ -79,10 +79,8 @@ async def dataset_show(
     res = await client.get(
         f"{settings.BASE_URL}/dataset/{project_id}/{dataset_id}"
     )
-    from devtools import debug
     from rich.console import Group
 
-    debug(res.json())
     dataset = check_response(res, expected_status_code=200, coerce=DatasetRead)
 
     if kwargs.get("json", False):
