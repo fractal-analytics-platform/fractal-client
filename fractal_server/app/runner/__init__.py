@@ -431,7 +431,9 @@ async def submit_workflow(
     )
 
     logger.info(f'END workflow "{workflow.name}"')
-    dfk.cleanup()
+
+    # FIXME: This line is commented to avoid issue #94 of fractal-server
+    # dfk.cleanup()
 
     db.add(output_dataset)
 
