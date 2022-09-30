@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 from typing import List
 from typing import Optional
@@ -18,18 +17,19 @@ from fractal.common.models import TaskUpdate
 
 
 async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
+
     # Set paths
-    cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
-    cache_file = f"{cache_dir}/tasks"
+    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+    cache_file = cache_dir / "tasks"
 
     # If cache is missing, create it
     cache_up_to_date = False
-    if not os.path.isfile(cache_file):
+    if not cache_file.exists():
         await refresh_task_cache(client)
         cache_up_to_date = True
 
     # Read cache
-    with open(cache_file, "r") as f:
+    with cache_file.open("r") as f:
         task_cache = json.load(f)
 
     # Look for name in cache
@@ -59,13 +59,13 @@ async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
     # Refresh cache of (name,id) pairs
     task_cache = {task["name"]: task["id"] for task in task_list}
 
-    # Create cache folder, if needed
-    cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
-    if not os.path.isdir(cache_dir):
-        os.makedirs(cache_dir)
+    # Set paths and create cache folder (if needed)
+    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+    cache_file = cache_dir / "tasks"
+    cache_dir.mkdir(parents=True, exist_ok=True)
 
     # Write task cache
-    with open(f"{cache_dir}/tasks", "w") as f:
+    with cache_file.open("w") as f:
         json.dump(task_cache, f)
 
     return task_list
