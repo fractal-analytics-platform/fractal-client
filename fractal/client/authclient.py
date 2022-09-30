@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 import jwt
@@ -79,7 +78,6 @@ class AuthClient:
         self.client = None
         self.username = username
         self.password = password
-        logging.debug(f"AuthClient {self.username} {self.password}")
 
     async def __aenter__(self):
         self.client = AsyncClient()
