@@ -41,11 +41,11 @@ async def project_create(
 
 
 async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
-    res = await client.get(
-        f"{settings.BASE_URL}/project/",
-    )
-    data = res.json()
-    projects = [ProjectRead(**item) for item in data]
+
+    res = await client.get(f"{settings.BASE_URL}/project/")
+    res = check_response(res, expected_status_code=200)
+
+    projects = [ProjectRead(**item) for item in res]
 
     table = Table(title="Project List")
     table.add_column("Id", style="cyan", no_wrap=True)

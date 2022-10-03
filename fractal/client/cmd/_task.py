@@ -42,7 +42,7 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
     # Case 3: name is missing but cache may be out of date
     else:
         await refresh_task_cache(client)
-        with open(cache_file, "r") as f:
+        with cache_file.open("r") as f:
             task_cache = json.load(f)
         try:
             return task_cache[name]
@@ -57,7 +57,9 @@ async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
     task_list = check_response(res, expected_status_code=200)
 
     # Refresh cache of (name,id) pairs
-    task_cache = {task["name"]: task["id"] for task in task_list}
+    task_cache = {}
+    for task in task_list:
+        task_cache[task["name"]] = task["id"]
 
     # Set paths and create cache folder (if needed)
     cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
@@ -66,7 +68,7 @@ async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
 
     # Write task cache
     with cache_file.open("w") as f:
-        json.dump(task_cache, f)
+        json.dump(task_cache, f, indent=4)
 
     return task_list
 
