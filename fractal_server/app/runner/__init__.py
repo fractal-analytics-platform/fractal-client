@@ -1,9 +1,7 @@
 import importlib
+import logging
 from concurrent.futures import Future
 from copy import deepcopy
-from logging import FileHandler
-from logging import Formatter
-from logging import getLogger
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -29,13 +27,21 @@ from .runner_utils import async_wrap
 from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
 
+# from logging import FileHandler
+# from logging import Formatter
+# from logging import getLogger
 
-formatter = Formatter("%(asctime)s; %(levelname)s; %(message)s")
-logger = getLogger(__name__)
-handler = FileHandler("fractal.log", mode="a")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel("INFO")
+
+def setup_logger(logger_name, log_file, level=logging.INFO):
+    # https://oliverleach.wordpress.com/2016/06/15/creating-multiple-log-files-using-python-logging-library/
+    log_setup = logging.getLogger(logger_name)
+    # formatter = logging.Formatter('%(levelname)s: %(asctime)s %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p')
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
+    fileHandler = logging.FileHandler(log_file, mode="a")
+    fileHandler.setFormatter(formatter)
+    fileHandler.setLevel(level)
+    log_setup.setLevel(level)
+    log_setup.addHandler(fileHandler)
 
 
 def _task_fun(
@@ -48,13 +54,16 @@ def _task_fun(
     executors: Union[
         List[str], Literal["all"]
     ],  # This is only needed for logging
-    inputs,
+    inputs: Iterable,
+    logger=None,
 ):
 
     # NOTE: logging takes place here (in the function, not in the app), so that
     # it is only triggered when the function executes, rather than when the app
     # is defined. The executors argument is only needed for logging, in this
     # function.
+
+    # logger = logging.getLogger(f"WF{workflow_id}")
     logger.info(f'Starting "{task.name}" task on {executors=}.')
 
     task_module = importlib.import_module(task.import_path)
@@ -65,6 +74,7 @@ def _task_fun(
         metadata=metadata,
         **task_args,
     )
+    logger.info(f'End of "{task.name}" task on {executors=}.')
     metadata.update(metadata_update)
     try:
         metadata["history"].append(task.name)
@@ -80,13 +90,18 @@ def _task_app_future(
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
+    workflow_id: int,
     inputs,
     executors: Union[List[str], Literal["all"]] = "all",
     data_flow_kernel=None,
 ) -> AppFuture:
 
+    logger = logging.getLogger(f"WF{workflow_id}")
+
     app = PythonApp(
-        _task_fun, executors=executors, data_flow_kernel=data_flow_kernel
+        _task_fun,
+        executors=executors,
+        data_flow_kernel=data_flow_kernel,
     )
     # TODO: can we reassign app.__name__, for clarity in monitoring?
     return app(
@@ -97,6 +112,7 @@ def _task_app_future(
         task_args=task_args,
         inputs=inputs,
         executors=executors,
+        logger=logger,
     )
 
 
@@ -108,9 +124,10 @@ def _task_component_fun(
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
+    logger=None,
 ):
 
-    logger.info(f'  Starting "{task.name}" for {component=}.')
+    logger.info("AAAAAAAAAAA")
 
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
@@ -121,6 +138,9 @@ def _task_component_fun(
         component=component,
         **task_args,
     )
+
+    logger.info("AAAAAAAAAAA")
+
     return task.name, component
 
 
@@ -159,6 +179,7 @@ def _atomic_task_factory(
         depends_on = []
 
     task_args = task._arguments
+    logger = logging.getLogger(f"WF{workflow_id}")
 
     try:
         task_executor = get_unique_executor(
@@ -169,6 +190,7 @@ def _atomic_task_factory(
     except ValueError as e:
         # When assigning a task to an unknown executor, make sure to cleanup
         # DFK before raising an error
+        # FIXME: temporarily commented out
         # data_flow_kernel.cleanup()
         logger.info("END of workflow due to ValueError (unknown executors).")
         raise ValueError(str(e))
@@ -199,6 +221,7 @@ def _atomic_task_factory(
             output_path: Path,
             metadata: AppFuture,
             task_args: Optional[Dict[str, Any]],
+            workflow_id: int,
             executors: Union[List[str], Literal["all"]] = "all",
         ) -> AppFuture:
 
@@ -219,6 +242,8 @@ def _atomic_task_factory(
                     output_path=output_path,
                     metadata=metadata,
                     task_args=task_args,
+                    # workflow_id=workflow_id,
+                    logger=logger,
                 )
                 app_futures.append(component_app_future)
 
@@ -240,6 +265,7 @@ def _atomic_task_factory(
             metadata=metadata,
             task_args=task_args,
             executors=[task_executor],
+            workflow_id=workflow_id,
         )
         return res
     else:
@@ -252,6 +278,7 @@ def _atomic_task_factory(
             inputs=depends_on,
             executors=[task_executor],
             data_flow_kernel=data_flow_kernel,
+            workflow_id=workflow_id,
         )
         return res
 
@@ -285,8 +312,10 @@ def _process_workflow(
 
     workflow_id = task.id
     workflow_name = task.name
+
     dfk = load_parsl_config(
-        workflow_id=workflow_id, workflow_name=workflow_name, logger=logger
+        workflow_id=workflow_id,
+        workflow_name=workflow_name,
     )
 
     app_futures: List[PythonApp] = []
@@ -414,7 +443,16 @@ async def submit_workflow(
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
 
-    logger.info("*" * 80)
+    workflow_id = workflow.id
+
+    import os
+
+    if not os.path.isdir("logs"):
+        os.path.makedirs("logs")
+
+    setup_logger(f"WF{workflow_id}", f"logs/workflow_{workflow_id:05d}.txt")
+    logger = logging.getLogger(f"WF{workflow_id}")
+
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
     logger.info(f"START workflow {workflow.name}")
     logger.info(f"{input_paths=}")
