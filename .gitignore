@@ -11,5 +11,6 @@ file:cachedb
 monitoring.db
 runinfo
 .*.py.swp
+.*.sh.swp
 parsl_executors.log
 fractal.log
