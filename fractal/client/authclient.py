@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 
 import jwt
@@ -44,8 +43,6 @@ class AuthToken:
         # Create cache folder, if needed
         cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
         cache_dir.mkdir(parents=True, exist_ok=True)
-        if not os.path.isdir(cache_dir):
-            os.makedirs(cache_dir)
 
         # Write token in cache_file
         cache_file = cache_dir / "session"
