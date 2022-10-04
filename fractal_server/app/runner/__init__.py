@@ -11,6 +11,7 @@ from typing import Literal
 from typing import Optional
 from typing import Union
 
+from devtools import debug
 from parsl.app.app import join_app
 from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
@@ -27,22 +28,6 @@ from .runner_utils import async_wrap
 from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
 
-# from logging import FileHandler
-# from logging import Formatter
-# from logging import getLogger
-
-
-def setup_logger(logger_name, log_file, level=logging.INFO):
-    # https://oliverleach.wordpress.com/2016/06/15/creating-multiple-log-files-using-python-logging-library/
-    log_setup = logging.getLogger(logger_name)
-    # formatter = logging.Formatter('%(levelname)s: %(asctime)s %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p')
-    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
-    fileHandler = logging.FileHandler(log_file, mode="a")
-    fileHandler.setFormatter(formatter)
-    fileHandler.setLevel(level)
-    log_setup.setLevel(level)
-    log_setup.addHandler(fileHandler)
-
 
 def _task_fun(
     *,
@@ -55,7 +40,6 @@ def _task_fun(
         List[str], Literal["all"]
     ],  # This is only needed for logging
     inputs: Iterable,
-    logger=None,
 ):
 
     # NOTE: logging takes place here (in the function, not in the app), so that
@@ -63,8 +47,17 @@ def _task_fun(
     # is defined. The executors argument is only needed for logging, in this
     # function.
 
-    # logger = logging.getLogger(f"WF{workflow_id}")
-    logger.info(f'Starting "{task.name}" task on {executors=}.')
+    import logging
+
+    logger = logging.getLogger(__name__)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    logger.info(f'Start of "{task.name}" task on {executors=}.')
 
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
@@ -74,7 +67,9 @@ def _task_fun(
         metadata=metadata,
         **task_args,
     )
+
     logger.info(f'End of "{task.name}" task on {executors=}.')
+
     metadata.update(metadata_update)
     try:
         metadata["history"].append(task.name)
@@ -97,7 +92,7 @@ def _task_app_future(
 ) -> AppFuture:
 
     logger = logging.getLogger(f"WF{workflow_id}")
-
+    logger.info(f"Defining app future for {task.name=}")
     app = PythonApp(
         _task_fun,
         executors=executors,
@@ -112,7 +107,6 @@ def _task_app_future(
         task_args=task_args,
         inputs=inputs,
         executors=executors,
-        logger=logger,
     )
 
 
@@ -124,10 +118,24 @@ def _task_component_fun(
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
-    logger=None,
+    executors: Union[
+        List[str], Literal["all"]
+    ],  # This is only needed for logging
 ):
 
-    logger.info("AAAAAAAAAAA")
+    import logging
+
+    logger = logging.getLogger(__name__)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    logger.info(
+        f'Start of "{task.name}" task on {executors=} with {component=}.'
+    )
 
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
@@ -139,7 +147,9 @@ def _task_component_fun(
         **task_args,
     )
 
-    logger.info("AAAAAAAAAAA")
+    logger.info(
+        f'End of "{task.name}" task on {executors=} with {component=}.'
+    )
 
     return task.name, component
 
@@ -179,6 +189,7 @@ def _atomic_task_factory(
         depends_on = []
 
     task_args = task._arguments
+
     logger = logging.getLogger(f"WF{workflow_id}")
 
     try:
@@ -199,6 +210,7 @@ def _atomic_task_factory(
     if metadata and parall_level:
 
         # Define a single app
+        logger.info(f"Defining app future for {task.name=}")
         task_component_app = PythonApp(
             _task_component_fun,
             executors=[task_executor],
@@ -225,6 +237,18 @@ def _atomic_task_factory(
             executors: Union[List[str], Literal["all"]] = "all",
         ) -> AppFuture:
 
+            import logging
+
+            logger = logging.getLogger(__name__)
+            formatter = logging.Formatter(
+                "%(asctime)s; %(levelname)s; %(message)s"
+            )
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            logger.addHandler(console_handler)
+            logger.setLevel(logging.INFO)
+            logger.propagate = False
+
             logger.info(
                 f'Starting {len(metadata[parall_level])} "{task.name}"'
                 f" tasks in parallel, on {executors=}."
@@ -242,8 +266,7 @@ def _atomic_task_factory(
                     output_path=output_path,
                     metadata=metadata,
                     task_args=task_args,
-                    # workflow_id=workflow_id,
-                    logger=logger,
+                    executors=executors,
                 )
                 app_futures.append(component_app_future)
 
@@ -450,11 +473,21 @@ async def submit_workflow(
     if not os.path.isdir("logs"):
         os.path.makedirs("logs")
 
-    setup_logger(f"WF{workflow_id}", f"logs/workflow_{workflow_id:05d}.txt")
+    # setup_logger(f"WF{workflow_id}", f"logs/workflow_{workflow_id:05d}.txt")
+    log_file = f"logs/workflow_{workflow_id:05d}.txt"
     logger = logging.getLogger(f"WF{workflow_id}")
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
+    fileHandler = logging.FileHandler(log_file, mode="a")
+    fileHandler.setFormatter(formatter)
+    fileHandler.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(fileHandler)
+
+    debug("RIGHT AFTER DEFINITION")
 
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
     logger.info(f"START workflow {workflow.name}")
+
     logger.info(f"{input_paths=}")
     logger.info(f"{output_path=}")
 

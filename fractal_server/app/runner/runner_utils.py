@@ -74,9 +74,19 @@ def generate_parsl_config(
 
     if config == "local":
         # Define a single provider
+        channel = LocalChannel()
+        import os
+
+        channel._script_dir = os.path.abspath(
+            f"logs/scripts_{workflow_id:05d}"
+        )
+
+        # assert False
+
         prov_local = LocalProvider(
+            move_files=True,
             launcher=SingleNodeLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=channel,
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
