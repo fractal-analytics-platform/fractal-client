@@ -690,7 +690,7 @@ sqlmodel = ">=0.0.8,<0.0.9"
 
 [[package]]
 name = "fractal-tasks-core"
-version = "0.1.9"
+version = "0.2.1"
 description = ""
 category = "main"
 optional = true
@@ -703,6 +703,7 @@ dask = ">=2022.6,<2022.8"
 defusedxml = ">=0.7.1,<0.8.0"
 graphviz = ">=0.20,<0.21"
 imagecodecs = ">=2022.2.22,<2023.0.0"
+imageio-ffmpeg = ">=0.4.7,<0.5.0"
 llvmlite = ">=0.39.1,<0.40.0"
 napari-skimage-regionprops = ">=0.5.3,<0.6.0"
 napari-workflows = ">=0.2.3,<0.3.0"
@@ -952,6 +953,14 @@ opencv = ["opencv-python"]
 pyav = ["av"]
 test = ["fsspec[github]", "invoke", "pytest", "pytest-cov"]
 tifffile = ["tifffile"]
+
+[[package]]
+name = "imageio-ffmpeg"
+version = "0.4.7"
+description = "FFMPEG wrapper for Python"
+category = "main"
+optional = true
+python-versions = ">=3.5"
 
 [[package]]
 name = "imagesize"
@@ -3335,8 +3344,8 @@ fractal-client = [
     {file = "fractal_client-0.2.3-py3-none-any.whl", hash = "sha256:2d499cd5987fdd41da31278a25f2d496527fe3747ad721f45657a0413ff3ea1e"},
 ]
 fractal-tasks-core = [
-    {file = "fractal-tasks-core-0.1.9.tar.gz", hash = "sha256:82a9fcb4f36f779fb540f25de42b7b30985ec4d79f23654435fedd2063ec9d24"},
-    {file = "fractal_tasks_core-0.1.9-py3-none-any.whl", hash = "sha256:9c57e602362ea2db3f75b13812a7dab01b70725ef500100422c9d648ef9e6ff4"},
+    {file = "fractal-tasks-core-0.2.1.tar.gz", hash = "sha256:b6830085469e9b9490d187aec1c53f602ec68880895e3310d5b46605ca33bf66"},
+    {file = "fractal_tasks_core-0.2.1-py3-none-any.whl", hash = "sha256:949766d21683a63bb6064cc1b2dbb5eff16c7dce80e27b12acfff97b2aa5a41a"},
 ]
 freetype-py = [
     {file = "freetype-py-2.3.0.zip", hash = "sha256:f9b64ce3272a5c358dcee824800a32d70997fb872a0965a557adca20fce7a5d0"},
@@ -3554,6 +3563,14 @@ imagecodecs = [
 imageio = [
     {file = "imageio-2.22.0-py3-none-any.whl", hash = "sha256:aff0e9b5faf4936728f982a1ab63797b1339847a4533c3e4c8343635149dfbfc"},
     {file = "imageio-2.22.0.tar.gz", hash = "sha256:a332d127ec387b2d3dca967fd065a90f1c1a4ba2343570b03fe2cebb6ed064ea"},
+]
+imageio-ffmpeg = [
+    {file = "imageio-ffmpeg-0.4.7.tar.gz", hash = "sha256:7a08838f97f363e37ca41821b864fd3fdc99ab1fe2421040c78eb5f56a9e723e"},
+    {file = "imageio_ffmpeg-0.4.7-py3-none-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:6514f1380daf42815bc8c83aad63f33e0b8b47133421ddafe7b410cd8dfbbea5"},
+    {file = "imageio_ffmpeg-0.4.7-py3-none-manylinux2010_x86_64.whl", hash = "sha256:27b48c32becae1658aa81c3a6b922538e4099edf5fbcbdb4ff5dbc84b8ffd3d3"},
+    {file = "imageio_ffmpeg-0.4.7-py3-none-manylinux2014_aarch64.whl", hash = "sha256:fc60686ef03c2d0f842901b206223c30051a6a120384458761390104470846fd"},
+    {file = "imageio_ffmpeg-0.4.7-py3-none-win32.whl", hash = "sha256:6aba52ddf0a64442ffcb8d30ac6afb668186acec99ecbc7ae5bd171c4f500bbc"},
+    {file = "imageio_ffmpeg-0.4.7-py3-none-win_amd64.whl", hash = "sha256:8e724d12dfe83e2a6eb39619e820243ca96c81c47c2648e66e05f7ee24e14312"},
 ]
 imagesize = [
     {file = "imagesize-1.4.1-py2.py3-none-any.whl", hash = "sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b"},
