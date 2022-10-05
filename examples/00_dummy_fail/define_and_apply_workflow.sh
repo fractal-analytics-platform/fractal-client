@@ -1,12 +1,12 @@
 # Register user (this step will change in the future)
 curl -d '{"email":"test@me.com", "password":"test"}' -H "Content-Type: application/json" -X POST localhost:8000/auth/register
+sleep 0.1
 
 # Set useful variables
-LABEL=$1
-PRJ_NAME="myproj-$LABEL"
-DS_IN_NAME="input-ds-$LABEL"
-DS_OUT_NAME="output-ds-$LABEL"
-WF_NAME="My workflow $LABEL"
+PRJ_NAME="myproj-dummy_fail"
+DS_IN_NAME="input-ds-dummy_fail"
+DS_OUT_NAME="output-ds-dummy_fail"
+WF_NAME="My workflow dummy_fail"
 export FRACTAL_CACHE_PATH=`pwd`/".cache"
 rm -v ${FRACTAL_CACHE_PATH}/session
 rm -v ${FRACTAL_CACHE_PATH}/tasks
@@ -17,7 +17,7 @@ rm -r $TMPDIR
 mkdir $TMPDIR
 TMPJSON=${TMPDIR}/tmp.json
 
-INPUT_PATH=../images/10.5281_zenodo.7059515
+INPUT_PATH=/tmp
 OUTPUT_PATH=${TMPDIR}/output
 
 CMD="fractal"
@@ -36,26 +36,17 @@ $CMD dataset add-resource -g "*.png" $PRJ_ID $DS_IN_ID $INPUT_PATH
 
 # Add output dataset, and add a resource to it
 DS_OUT_ID=`$CMD --batch project add-dataset $PRJ_ID "$DS_OUT_NAME"`
-$CMD dataset edit -t zarr --read-write $PRJ_ID $DS_OUT_ID
-$CMD dataset add-resource -g "*.zarr" $PRJ_ID $DS_OUT_ID $OUTPUT_PATH
+$CMD dataset edit -t none --read-write $PRJ_ID $DS_OUT_ID
+$CMD dataset add-resource -g "*.json" $PRJ_ID $DS_OUT_ID $OUTPUT_PATH
 
 # Create workflow
 WF_ID=`$CMD --batch task new "$WF_NAME" workflow image zarr`
 echo "WF_ID: $WF_ID"
 
 # Add subtasks
-
-echo "{\"num_levels\": 5, \"coarsening_xy\": 2, \"channel_parameters\": {\"A01_C01\": {\"label\": \"DAPI\",\"colormap\": \"00FFFF\",\"start\": 110,\"end\": 800 }, \"A01_C02\": {\"label\": \"nanog\",\"colormap\": \"FF00FF\",\"start\": 110,\"end\": 290 }, \"A02_C03\": {\"label\": \"Lamin B1\",\"colormap\": \"FFFF00\",\"start\": 110,\"end\": 1600 }}}" > ${TMPDIR}/args_create.json
-$CMD task add-subtask $WF_ID "Create OME-ZARR structure" --args-file ${TMPDIR}/args_create.json
-
-$CMD task add-subtask $WF_ID "Yokogawa to Zarr"
-
-echo "{\"labeling_level\": 4, \"executor\": \"gpu\"}" > ${TMPDIR}/args_labeling.json
-$CMD task add-subtask $WF_ID "Per-FOV image labeling" --args-file ${TMPDIR}/args_labeling.json
-
-$CMD task add-subtask $WF_ID "Replicate Zarr structure"
-
-$CMD task add-subtask $WF_ID "Maximum Intensity Projection"
+$CMD task add-subtask $WF_ID "dummy_fail"
 
 # Apply workflow
 $CMD task apply $PRJ_ID $DS_IN_ID $DS_OUT_ID $WF_ID
+
+fractal task list
