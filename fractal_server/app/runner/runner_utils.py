@@ -177,43 +177,73 @@ def generate_parsl_config(
             )
 
     elif config == "fmi":
-
-        # FIXME: fix partition
-
-        # Define a cpu provider
-        provider_args = dict(
-            partition="main",
-            launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+        common_args = dict(
+            partition="cpu_long",
             nodes_per_block=1,
             init_blocks=1,
             min_blocks=0,
-            max_blocks=4,
-            walltime="10:00:00",
+            max_blocks=100,
+            parallelism=1,
             exclusive=False,
+            walltime="20:00:00",
         )
-        prov_slurm_cpu = SlurmProvider(**provider_args)
+        prov_cpu_low = SlurmProvider(
+            launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
+            cores_per_node=1,
+            mem_per_node=7,
+            **common_args,
+        )
+        prov_cpu_mid = SlurmProvider(
+            launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
+            cores_per_node=4,
+            mem_per_node=15,
+            **common_args,
+        )
+        prov_cpu_high = SlurmProvider(
+            launcher=SrunLauncher(debug=False),
+            channel=LocalChannel(),
+            cores_per_node=20,
+            mem_per_node=61,
+            **common_args,
+        )
+        # # Define a gpu provider
+        # prov_gpu = SlurmProvider(
+        #     partition="gpu",
+        #     launcher=SrunLauncher(debug=False),
+        #     channel=LocalChannel(),
+        #     nodes_per_block=1,
+        #     init_blocks=1,
+        #     min_blocks=0,
+        #     max_blocks=2,
+        #     mem_per_node=61,
+        #     walltime="10:00:00",
+        # )
 
         # Define executors
-        htex_slurm_cpu = HighThroughputExecutor(
-            label=add_prefix(
-                workflow_id=workflow_id, executor_label="cpu-low"
-            ),
-            provider=prov_slurm_cpu,
-            address=address_by_hostname(),
-            cpu_affinity="block",
-        )
-        htex_slurm_cpu_2 = HighThroughputExecutor(
-            label=add_prefix(workflow_id=workflow_id, executor_label="cpu-2"),
-            provider=prov_slurm_cpu,
-            address=address_by_hostname(),
-            cpu_affinity="block",
-        )
+        providers = [prov_cpu_low, prov_cpu_mid, prov_cpu_high]
+        # labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
+        labels = ["cpu-low", "cpu-mid", "cpu-high"]
 
-        executors = [htex_slurm_cpu, htex_slurm_cpu_2]
-
-    # Extract the executor labels
-    # new_executor_labels = [executor.label for executor in executors]
+        # FIXME
+        list_mem_per_worker = [7, 15, 61]  # FIXME
+        executors = []
+        for provider, label in zip(providers, labels):
+            executors.append(
+                HighThroughputExecutor(
+                    label=add_prefix(
+                        workflow_id=workflow_id, executor_label=label
+                    ),
+                    provider=provider,
+                    mem_per_worker=list_mem_per_worker[
+                        labels.index(label)
+                    ],  # FIXME
+                    max_workers=100,
+                    address=address_by_hostname(),
+                    cpu_affinity="block",
+                )
+            )
 
     # Define monitoring hub and finalize configuration
     if enable_monitoring:
