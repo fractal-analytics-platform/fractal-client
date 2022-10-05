@@ -15,6 +15,7 @@ Zurich.
 """
 import asyncio
 import logging
+import os
 from functools import partial
 from functools import wraps
 from typing import Callable
@@ -72,43 +73,42 @@ def generate_parsl_config(
     if config == "custom":
         raise NotImplementedError
 
+    # Set log dir in channel
+    FRACTAL_LOG_DIR = settings.FRACTAL_LOG_DIR
+    if not os.path.isdir(FRACTAL_LOG_DIR):
+        os.mkdir(FRACTAL_LOG_DIR)
+    workflow_log_dir = f"{FRACTAL_LOG_DIR}/workflow_{workflow_id:06d}"
+    if not os.path.isdir(workflow_log_dir):
+        os.mkdir(workflow_log_dir)
+    script_dir = f"{workflow_log_dir}/scripts"
+    script_dir = os.path.abspath(script_dir)
+    channel_args = dict(script_dir=script_dir)
+
     if config == "local":
         # Define a single provider
-        channel = LocalChannel()
-        import os
-
-        channel._script_dir = os.path.abspath(
-            f"logs/scripts_{workflow_id:05d}"
-        )
-
-        # assert False
-
         prov_local = LocalProvider(
             move_files=True,
             launcher=SingleNodeLauncher(debug=False),
-            channel=channel,
+            channel=LocalChannel(**channel_args),
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
         )
         # Define executors
-        providers = [prov_local] * 4
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         executors = []
-        for provider, label in zip(providers, labels):
+        for label in labels:
             executors.append(
                 HighThroughputExecutor(
                     label=add_prefix(
                         workflow_id=workflow_id, executor_label=label
                     ),
-                    provider=provider,
+                    provider=prov_local,
                     address=address_by_hostname(),
                     cpu_affinity="block",
                 )
             )
-
     elif config == "pelkmanslab":
-
         # Define providers
         common_args = dict(
             partition="main",
@@ -119,24 +119,26 @@ def generate_parsl_config(
             parallelism=1,
             exclusive=False,
             walltime="20:00:00",
+            channel=LocalChannel(**channel_args),
+            move_files=True,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=LocalChannel(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=LocalChannel(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=LocalChannel(**channel_args),
             cores_per_node=16,
             mem_per_node=61,
             **common_args,
@@ -145,20 +147,19 @@ def generate_parsl_config(
         prov_gpu = SlurmProvider(
             partition="gpu",
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=LocalChannel(**channel_args),
             nodes_per_block=1,
             init_blocks=1,
             min_blocks=0,
             max_blocks=2,
             mem_per_node=61,
-            walltime="10:00:00",
+            walltime="20:00:00",
+            move_files=True,
         )
 
         # Define executors
         providers = [prov_cpu_low, prov_cpu_mid, prov_cpu_high, prov_gpu]
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
-        # FIXME
-        list_mem_per_worker = [7, 15, 61, 61]  # FIXME
         executors = []
         for provider, label in zip(providers, labels):
             executors.append(
@@ -167,9 +168,7 @@ def generate_parsl_config(
                         workflow_id=workflow_id, executor_label=label
                     ),
                     provider=provider,
-                    mem_per_worker=list_mem_per_worker[
-                        labels.index(label)
-                    ],  # FIXME
+                    mem_per_worker=provider.mem_per_node,
                     max_workers=100,
                     address=address_by_hostname(),
                     cpu_affinity="block",
@@ -186,48 +185,34 @@ def generate_parsl_config(
             parallelism=1,
             exclusive=False,
             walltime="20:00:00",
+            move_files=True,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=LocalChannel(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=LocalChannel(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(),
+            channel=LocalChannel(**channel_args),
             cores_per_node=20,
             mem_per_node=61,
             **common_args,
         )
-        # # Define a gpu provider
-        # prov_gpu = SlurmProvider(
-        #     partition="gpu",
-        #     launcher=SrunLauncher(debug=False),
-        #     channel=LocalChannel(),
-        #     nodes_per_block=1,
-        #     init_blocks=1,
-        #     min_blocks=0,
-        #     max_blocks=2,
-        #     mem_per_node=61,
-        #     walltime="10:00:00",
-        # )
 
         # Define executors
         providers = [prov_cpu_low, prov_cpu_mid, prov_cpu_high]
-        # labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         labels = ["cpu-low", "cpu-mid", "cpu-high"]
 
-        # FIXME
-        list_mem_per_worker = [7, 15, 61]  # FIXME
         executors = []
         for provider, label in zip(providers, labels):
             executors.append(
@@ -236,9 +221,7 @@ def generate_parsl_config(
                         workflow_id=workflow_id, executor_label=label
                     ),
                     provider=provider,
-                    mem_per_worker=list_mem_per_worker[
-                        labels.index(label)
-                    ],  # FIXME
+                    mem_per_worker=provider.mem_per_node,
                     max_workers=100,
                     address=address_by_hostname(),
                     cpu_affinity="block",
