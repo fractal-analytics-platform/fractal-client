@@ -68,7 +68,7 @@ SUBTASK_ID=`$CMD_CORE_TASKS "Maximum Intensity Projection"`
 echo "{\"executor\": \"cpu-mid\"}" > ${TMPDIR}/args_mip.json
 fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_mip.json
 
-SUBTASK_ID=`$CMD_CORE_TASKS "Per-FOV image labeling"`
+SUBTASK_ID=`$CMD_CORE_TASKS "Cellpose Segmentation"`
 echo "{\"labeling_level\": 2, \"executor\": \"cpu-mid\", \"ROI_table_name\": \"well_ROI_table\"}" > ${TMPDIR}/args_labeling.json
 fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_labeling.json
 
@@ -78,4 +78,3 @@ fractal task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_measureme
 
 # Apply workflow
 fractal task apply $PRJ_ID $DS_IN_ID $DS_OUT_ID $WF_ID
-
