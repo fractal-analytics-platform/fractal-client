@@ -1,12 +1,14 @@
 #!/bin/bash
 
-echo "lsof -i :8000"
+PORT=`cat PORT`
+
+echo "lsof -i :$PORT"
 echo
-lsof -i :8000
+lsof -i :$PORT
 echo
 echo
 
-PIDs=`lsof -i :8000 | awk '(NR>1) {print $2}'`
+PIDs=`lsof -i :$PORT | awk '(NR>1) {print $2}'`
 
 echo "now killing following processes:"
 echo
