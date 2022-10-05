@@ -50,7 +50,7 @@ $CMD task add-subtask $WF_ID "Create OME-ZARR structure" --args-file ${TMPDIR}/a
 
 $CMD task add-subtask $WF_ID "Yokogawa to Zarr"
 
-echo "{\"labeling_level\": 4}" > ${TMPDIR}/args_labeling.json
+echo "{\"labeling_level\": 4, \"executor\": \"gpu\"}" > ${TMPDIR}/args_labeling.json
 $CMD task add-subtask $WF_ID "Per-FOV image labeling" --args-file ${TMPDIR}/args_labeling.json
 
 $CMD task add-subtask $WF_ID "Replicate Zarr structure"
