@@ -308,7 +308,7 @@ sqlmodel = "*"
 
 [[package]]
 name = "fractal-server"
-version = "0.1.4"
+version = "0.2.0"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -1285,8 +1285,8 @@ fastapi-users-db-sqlmodel = [
     {file = "fastapi_users_db_sqlmodel-0.2.0-py3-none-any.whl", hash = "sha256:b4e91fe9afe719040888ad886ea033b8e1f8fcd459b242733e95e33cfa16984c"},
 ]
 fractal-server = [
-    {file = "fractal-server-0.1.4.tar.gz", hash = "sha256:eadbf5e473fa7f3fae5cc385c7ff0dc94dc7bc6dce3fd3ea6fc18440a09cd110"},
-    {file = "fractal_server-0.1.4-py3-none-any.whl", hash = "sha256:a86e7f6be6bff4aac79db9fa7ae3c2b04745f66ed787286fcf8442a0c360f0ce"},
+    {file = "fractal-server-0.2.0.tar.gz", hash = "sha256:bb246fc669bb03aa80c340a9c6a871ab0928d339aebb015b8d6a81b1a6efa524"},
+    {file = "fractal_server-0.2.0-py3-none-any.whl", hash = "sha256:025ac88fe63bdab9d4e646eb66a8a9ec0587eada28d4dc21af7c71e725d7c995"},
 ]
 globus-sdk = [
     {file = "globus-sdk-3.12.0.tar.gz", hash = "sha256:36cbe4f8190f7d505e6466c7d35a4c2b4bb4d7e65a7f29af6c9ece6148952269"},
