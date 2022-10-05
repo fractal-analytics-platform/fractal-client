@@ -690,7 +690,7 @@ sqlmodel = ">=0.0.8,<0.0.9"
 
 [[package]]
 name = "fractal-tasks-core"
-version = "0.2.2"
+version = "0.2.3"
 description = ""
 category = "main"
 optional = true
@@ -3344,8 +3344,8 @@ fractal-client = [
     {file = "fractal_client-0.2.4-py3-none-any.whl", hash = "sha256:cf1e9ce504c0497e94be5a031c82f50d506f2f617fd99fa06d5b78a4b03bc4f1"},
 ]
 fractal-tasks-core = [
-    {file = "fractal-tasks-core-0.2.2.tar.gz", hash = "sha256:dfd3725c40080fe122d2d263dfb08a536e3d7b89146be1cf03babe299ceb0f85"},
-    {file = "fractal_tasks_core-0.2.2-py3-none-any.whl", hash = "sha256:ddd029ae26e434b0bd991caaaaf2cfb41cd45938e753f02774da51f861fc2145"},
+    {file = "fractal-tasks-core-0.2.3.tar.gz", hash = "sha256:1fb11c5549f15a68d3ba656dcc1129cd90021ce5d7ef3ea2b1dc8ee777e53ac4"},
+    {file = "fractal_tasks_core-0.2.3-py3-none-any.whl", hash = "sha256:2fbc16a1a89731ff6087b58ace422fc469e066bf2fd9bf6cc032d857454ba28c"},
 ]
 freetype-py = [
     {file = "freetype-py-2.3.0.zip", hash = "sha256:f9b64ce3272a5c358dcee824800a32d70997fb872a0965a557adca20fce7a5d0"},
