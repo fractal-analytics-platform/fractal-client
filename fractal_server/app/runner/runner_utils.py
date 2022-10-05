@@ -119,7 +119,6 @@ def generate_parsl_config(
             parallelism=1,
             exclusive=False,
             walltime="20:00:00",
-            channel=LocalChannel(**channel_args),
             move_files=True,
         )
         prov_cpu_low = SlurmProvider(
