@@ -21,8 +21,8 @@ TMPJSON=${TMPDIR}/tmp.json
 TMPTASKS=${TMPDIR}/core_tasks.json
 
 CMD="fractal"
-CMD_JSON="poetry run python aux_extract_from_simple_json.py $TMPJSON"
-CMD_CORE_TASKS="poetry run python aux_extract_id_for_core_task.py $TMPTASKS"
+CMD_JSON="python aux_extract_from_simple_json.py $TMPJSON"
+CMD_CORE_TASKS="python aux_extract_id_for_core_task.py $TMPTASKS"
 $CMD task list > $TMPTASKS
 
 # Create project
