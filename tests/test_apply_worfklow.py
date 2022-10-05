@@ -18,6 +18,7 @@ LEN_NONTRIVIAL_WORKFLOW = 3
 @pytest.fixture
 def nontrivial_workflow():
     workflow = Task(
+        id=999,
         name="outer workflow",
         resource_type="workflow",
         subtask_list=[
@@ -51,6 +52,7 @@ def nontrivial_workflow():
             ),
             Subtask(
                 subtask=Task(
+                    id=1001,
                     name="dummy2",
                     module="fractal_tasks_core.dummy:dummy",
                     default_args=dict(message="dummy2", executor="cpu-low"),
