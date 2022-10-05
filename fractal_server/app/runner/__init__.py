@@ -1,9 +1,8 @@
 import importlib
+import logging
+import os
 from concurrent.futures import Future
 from copy import deepcopy
-from logging import FileHandler
-from logging import Formatter
-from logging import getLogger
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -20,6 +19,7 @@ from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ... import __VERSION__
+from ...config import settings
 from ..models.project import Dataset
 from ..models.project import Project
 from ..models.task import PreprocessedTask
@@ -30,14 +30,6 @@ from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
 
 
-formatter = Formatter("%(asctime)s; %(levelname)s; %(message)s")
-logger = getLogger(__name__)
-handler = FileHandler("fractal.log", mode="a")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel("INFO")
-
-
 def _task_fun(
     *,
     task: Task,
@@ -45,18 +37,27 @@ def _task_fun(
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
-    executors: Union[
-        List[str], Literal["all"]
-    ],  # This is only needed for logging
-    inputs,
+    inputs: Iterable,
 ):
 
-    # NOTE: logging takes place here (in the function, not in the app), so that
-    # it is only triggered when the function executes, rather than when the app
-    # is defined. The executors argument is only needed for logging, in this
-    # function.
-    logger.info(f'Starting "{task.name}" task on {executors=}.')
+    # NOTE 1: logging takes place here (in the function, not in the app), so
+    # that it is only triggered when the function executes, rather than when
+    # the app is defined. The executors argument is only needed for logging, in
+    # this function.
+    # NOTE 2: for functions that become parsl app, we always need to re-import
+    # relevant modules (e.g. logging)
 
+    import logging
+
+    logger = logging.getLogger(__name__)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    logger.info(f'Start execution of task "{task.name}".')
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
     metadata_update = _callable(
@@ -65,6 +66,8 @@ def _task_fun(
         metadata=metadata,
         **task_args,
     )
+    logger.info(f'End execution of task "{task.name}".')
+
     metadata.update(metadata_update)
     try:
         metadata["history"].append(task.name)
@@ -80,13 +83,21 @@ def _task_app_future(
     output_path: Path,
     metadata: Optional[Dict[str, Any]],
     task_args: Optional[Dict[str, Any]],
+    workflow_id: int,
     inputs,
     executors: Union[List[str], Literal["all"]] = "all",
     data_flow_kernel=None,
 ) -> AppFuture:
 
+    logger = logging.getLogger(f"WF{workflow_id}")
+    logger.info(
+        f'Defining app future for task "{task.name}", '
+        f"to be executed on {executors=}"
+    )
     app = PythonApp(
-        _task_fun, executors=executors, data_flow_kernel=data_flow_kernel
+        _task_fun,
+        executors=executors,
+        data_flow_kernel=data_flow_kernel,
     )
     # TODO: can we reassign app.__name__, for clarity in monitoring?
     return app(
@@ -96,7 +107,6 @@ def _task_app_future(
         metadata=metadata,
         task_args=task_args,
         inputs=inputs,
-        executors=executors,
     )
 
 
@@ -110,8 +120,17 @@ def _task_component_fun(
     task_args: Optional[Dict[str, Any]],
 ):
 
-    logger.info(f'  Starting "{task.name}" for {component=}.')
+    import logging
 
+    logger = logging.getLogger(__name__)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    logger.info(f'Start execution of task "{task.name}" for {component=}.')
     task_module = importlib.import_module(task.import_path)
     _callable = getattr(task_module, task.callable)
     _callable(
@@ -121,6 +140,8 @@ def _task_component_fun(
         component=component,
         **task_args,
     )
+    logger.info(f'End execution of task "{task.name}" for {component=}.')
+
     return task.name, component
 
 
@@ -160,26 +181,35 @@ def _atomic_task_factory(
 
     task_args = task._arguments
 
+    logger = logging.getLogger(f"WF{workflow_id}")
+
     try:
         task_executor = get_unique_executor(
             workflow_id=workflow_id,
             task_executor=task.executor,
             data_flow_kernel=data_flow_kernel,
         )
+        executors = [task_executor]
     except ValueError as e:
         # When assigning a task to an unknown executor, make sure to cleanup
         # DFK before raising an error
+        # FIXME: temporarily commented out, to avoid issue #94 of
+        # fractal-server
         # data_flow_kernel.cleanup()
-        logger.info("END of workflow due to ValueError (unknown executors).")
+        logger.error("END of workflow due to ValueError (unknown executors).")
         raise ValueError(str(e))
 
     parall_level = task.parallelization_level
     if metadata and parall_level:
 
         # Define a single app
+        logger.info(
+            f'Defining app future for task "{task.name}", '
+            f"to be executed on {executors=}"
+        )
         task_component_app = PythonApp(
             _task_component_fun,
-            executors=[task_executor],
+            executors=executors,
             data_flow_kernel=data_flow_kernel,
         )
 
@@ -199,12 +229,27 @@ def _atomic_task_factory(
             output_path: Path,
             metadata: AppFuture,
             task_args: Optional[Dict[str, Any]],
+            workflow_id: int,
             executors: Union[List[str], Literal["all"]] = "all",
         ) -> AppFuture:
 
+            import logging
+
+            logger = logging.getLogger(__name__)
+            formatter = logging.Formatter(
+                "%(asctime)s; %(levelname)s; %(message)s"
+            )
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            logger.addHandler(console_handler)
+            logger.setLevel(logging.INFO)
+            logger.propagate = False
+
+            num_parallel_items = len(metadata[parall_level])
             logger.info(
-                f'Starting {len(metadata[parall_level])} "{task.name}"'
-                f" tasks in parallel, on {executors=}."
+                f"Defining {num_parallel_items} app futures "
+                f' for parallel execution of task "{task.name}" '
+                f"on {executors=}."
             )
 
             # Define a list of futures, to be used as inputs (AKA dependencies)
@@ -239,7 +284,8 @@ def _atomic_task_factory(
             output_path=output_path,
             metadata=metadata,
             task_args=task_args,
-            executors=[task_executor],
+            executors=executors,
+            workflow_id=workflow_id,
         )
         return res
     else:
@@ -250,8 +296,9 @@ def _atomic_task_factory(
             metadata=metadata,
             task_args=task_args,
             inputs=depends_on,
-            executors=[task_executor],
+            executors=executors,
             data_flow_kernel=data_flow_kernel,
+            workflow_id=workflow_id,
         )
         return res
 
@@ -285,8 +332,10 @@ def _process_workflow(
 
     workflow_id = task.id
     workflow_name = task.name
+
     dfk = load_parsl_config(
-        workflow_id=workflow_id, workflow_name=workflow_name, logger=logger
+        workflow_id=workflow_id,
+        workflow_name=workflow_name,
     )
 
     app_futures: List[PythonApp] = []
@@ -303,7 +352,6 @@ def _process_workflow(
         app_futures.append(this_task_app_future)
         this_input = [this_output]
 
-    # Got to make sure that it is executed serially, task by task
     return app_futures[-1], dfk
 
 
@@ -414,9 +462,27 @@ async def submit_workflow(
     input_paths = input_dataset.paths
     output_path = output_dataset.paths[0]
 
-    logger.info("*" * 80)
+    workflow_id = workflow.id
+
+    FRACTAL_LOG_DIR = settings.FRACTAL_LOG_DIR
+    if not os.path.isdir(FRACTAL_LOG_DIR):
+        os.mkdir(FRACTAL_LOG_DIR)
+    workflow_log_dir = f"{FRACTAL_LOG_DIR}/workflow_{workflow_id:06d}"
+    if not os.path.isdir(workflow_log_dir):
+        os.mkdir(workflow_log_dir)
+
+    log_file = f"{workflow_log_dir}/workflow.log"
+    logger = logging.getLogger(f"WF{workflow_id}")
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
+    fileHandler = logging.FileHandler(log_file, mode="a")
+    fileHandler.setFormatter(formatter)
+    fileHandler.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(fileHandler)
+
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
     logger.info(f"START workflow {workflow.name}")
+
     logger.info(f"{input_paths=}")
     logger.info(f"{output_path=}")
 
@@ -426,10 +492,13 @@ async def submit_workflow(
         output_path=output_path,
         metadata=input_dataset.meta,
     )
+    logger.info(
+        "Definition of app futures complete, now start execution. "
+        f"See {workflow_log_dir}/scripts for further info."
+    )
     output_dataset.meta = await async_wrap(get_app_future_result)(
         app_future=final_metadata
     )
-
     logger.info(f'END workflow "{workflow.name}"')
 
     # FIXME: This line is commented to avoid issue #94 of fractal-server

@@ -120,6 +120,7 @@ class Settings(BaseSettings):
     DATA_DIR_ROOT: str = fail_getenv("DATA_DIR_ROOT")
     PARSL_CONFIG: str = getenv("PARSL_CONFIG", "local")
     PARSL_DEFAULT_EXECUTOR: str = getenv("PARSL_DEFAULT_EXECUTOR", "cpu-low")
+    FRACTAL_LOG_DIR: str = getenv("FRACTAL_LOG_DIR", "logs")
 
     @root_validator(pre=True)
     def collect_oauth_clients(cls, values):
