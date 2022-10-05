@@ -66,7 +66,7 @@ SUBTASK_ID=`$CMD_CORE_TASKS "Maximum Intensity Projection"`
 echo "{\"executor\": \"cpu-mid\"}" > ${TMPDIR}/args_mip.json
 $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_mip.json
 
-SUBTASK_ID=`$CMD_CORE_TASKS "Per-FOV image labeling"`
+SUBTASK_ID=`$CMD_CORE_TASKS "Cellpose Segmentation"`
 echo "{\"labeling_level\": 3, \"executor\": \"cpu-mid\", \"ROI_table_name\": \"well_ROI_table\", \"diameter_level0\": 1200.0, \"cellprob_threshold\": -1.0, \"flow_threshold\":  0.6}" > ${TMPDIR}/args_labeling.json
 $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_labeling.json
 

@@ -52,7 +52,7 @@ $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_create.json
 SUBTASK_ID=`$CMD_CORE_TASKS "Yokogawa to Zarr"`
 $CMD task add-subtask $WF_ID $SUBTASK_ID
 
-SUBTASK_ID=`$CMD_CORE_TASKS "Per-FOV image labeling"`
+SUBTASK_ID=`$CMD_CORE_TASKS "Cellpose Segmentation"`
 echo "{\"labeling_level\": 1, \"executor\": \"gpu\"}" > ${TMPDIR}/args_labeling.json
 $CMD task add-subtask $WF_ID $SUBTASK_ID --args-file ${TMPDIR}/args_labeling.json
 

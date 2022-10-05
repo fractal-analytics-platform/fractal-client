@@ -67,7 +67,7 @@ echo "{\"executor\": \"cpu-low\"}" > ${TMPDIR}/args_yoko.json
 fractal task add-subtask $WF_ID "Yokogawa to Zarr" > ${TMPDIR}/args_yoko.json
 
 echo "{\"labeling_level\": 1, \"executor\": \"gpu\", \"ROI_table_name\": \"FOV_ROI_table\"}" > ${TMPDIR}/args_labeling_FOV.json
-fractal task add-subtask $WF_ID "Per-FOV image labeling" --args-file ${TMPDIR}/args_labeling_FOV.json
+fractal task add-subtask $WF_ID "Cellpose Segmentation" --args-file ${TMPDIR}/args_labeling_FOV.json
 
 echo "{\"level\": 0, \"measurement_table_name\": \"nuclei_3D\", \"executor\": \"cpu-high\", \"ROI_table_name\": \"FOV_ROI_table\",\"workflow_file\": \"$TMPDIR/../regionprops_from_existing_labels_feature.yaml\"}" > ${TMPDIR}/args_measurement_FOV.json
 fractal task add-subtask $WF_ID "Measurement" --args-file ${TMPDIR}/args_measurement_FOV.json
@@ -84,11 +84,10 @@ echo "{\"executor\": \"cpu-low\"}" > ${TMPDIR}/args_mip.json
 fractal task add-subtask $WF_ID "Maximum Intensity Projection" --args-file ${TMPDIR}/args_mip.json
 
 echo "{\"labeling_level\": 2, \"executor\": \"cpu-low\", \"ROI_table_name\": \"well_ROI_table\"}" > ${TMPDIR}/args_labeling.json
-fractal task add-subtask $WF_ID "Per-FOV image labeling" --args-file ${TMPDIR}/args_labeling.json
+fractal task add-subtask $WF_ID "Cellpose Segmentation" --args-file ${TMPDIR}/args_labeling.json
 
 echo "{\"level\": 0, \"measurement_table_name\": \"nuclei\", \"executor\": \"cpu-low\", \"ROI_table_name\": \"well_ROI_table\",\"workflow_file\": \"$TMPDIR/../regionprops_from_existing_labels_feature.yaml\"}" > ${TMPDIR}/args_measurement.json
 fractal task add-subtask $WF_ID "Measurement" --args-file ${TMPDIR}/args_measurement.json
 
 # Apply workflow
 fractal task apply $PRJ_ID $DS_IN_ID $DS_OUT_ID $WF_ID
-
