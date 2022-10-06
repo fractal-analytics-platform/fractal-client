@@ -32,7 +32,7 @@ from parsl.monitoring.monitoring import MonitoringHub
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
-from ...config import settings
+from ...config_runner import settings
 
 
 def add_prefix(*, workflow_id: int, executor_label: str):
@@ -67,17 +67,17 @@ def generate_parsl_config(
     enable_monitoring: bool = True,
 ) -> Config:
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
-    config = settings.PARSL_CONFIG
+    config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
     if config == "custom":
         raise NotImplementedError
 
     # Set log dir in channel
-    FRACTAL_LOG_DIR = settings.FRACTAL_LOG_DIR
-    if not os.path.isdir(FRACTAL_LOG_DIR):
-        os.mkdir(FRACTAL_LOG_DIR)
-    workflow_log_dir = f"{FRACTAL_LOG_DIR}/workflow_{workflow_id:06d}"
+    RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
+    if not os.path.isdir(RUNNER_LOG_DIR):
+        os.mkdir(RUNNER_LOG_DIR)
+    workflow_log_dir = f"{RUNNER_LOG_DIR}/workflow_{workflow_id:06d}"
     if not os.path.isdir(workflow_log_dir):
         os.mkdir(workflow_log_dir)
     script_dir = f"{workflow_log_dir}/scripts"
@@ -251,8 +251,8 @@ def load_parsl_config(
 ):
 
     logger = logging.getLogger(f"WF{workflow_id}")
-    logger.info(f"{settings.PARSL_CONFIG=}")
-    logger.info(f"{settings.PARSL_DEFAULT_EXECUTOR=}")
+    logger.info(f"{settings.RUNNER_CONFIG=}")
+    logger.info(f"{settings.RUNNER_DEFAULT_EXECUTOR=}")
 
     if not config:
         config = generate_parsl_config(
@@ -302,7 +302,7 @@ def get_unique_executor(
 
     # Handle missing value
     if task_executor is None:
-        task_executor = settings.PARSL_DEFAULT_EXECUTOR
+        task_executor = settings.RUNNER_DEFAULT_EXECUTOR
 
     # Redefine task_executor, by prepending workflow_id
     new_task_executor = add_prefix(

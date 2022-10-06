@@ -19,7 +19,7 @@ from parsl.dataflow.futures import AppFuture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ... import __VERSION__
-from ...config import settings
+from ...config_runner import settings
 from ..models.project import Dataset
 from ..models.project import Project
 from ..models.task import PreprocessedTask
@@ -464,10 +464,10 @@ async def submit_workflow(
 
     workflow_id = workflow.id
 
-    FRACTAL_LOG_DIR = settings.FRACTAL_LOG_DIR
-    if not os.path.isdir(FRACTAL_LOG_DIR):
-        os.mkdir(FRACTAL_LOG_DIR)
-    workflow_log_dir = f"{FRACTAL_LOG_DIR}/workflow_{workflow_id:06d}"
+    RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
+    if not os.path.isdir(RUNNER_LOG_DIR):
+        os.mkdir(RUNNER_LOG_DIR)
+    workflow_log_dir = f"{RUNNER_LOG_DIR}/workflow_{workflow_id:06d}"
     if not os.path.isdir(workflow_log_dir):
         os.mkdir(workflow_log_dir)
 
