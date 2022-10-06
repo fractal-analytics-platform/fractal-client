@@ -87,8 +87,8 @@ dummy_subtask_parallel = Subtask(
     ("task", "message", "nfiles"),
     [
         (dummy_task, DUMMY_MESSAGE, 1),
-        (dummy_subtask, DUMMY_SUBTASK_MESSAGE, 1),
-        (dummy_subtask_parallel, DUMMY_SUBTASK_MESSAGE, N_INDICES),
+        #(dummy_subtask, DUMMY_SUBTASK_MESSAGE, 1),
+        #(dummy_subtask_parallel, DUMMY_SUBTASK_MESSAGE, N_INDICES),
     ],
 )
 def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
@@ -104,6 +104,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
         * the output is as expected
     """
 
+
     from fractal_server.app.runner import _atomic_task_factory
     from fractal_server.app.runner.runner_utils import load_parsl_config
 
@@ -115,6 +116,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
     output_path = tmp_path
     metadata = {"index": list(range(N_INDICES))}
 
+
     parsl_app_future = _atomic_task_factory(
         task=task,
         input_paths=[Path(input_path_str)],
@@ -123,6 +125,7 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
         workflow_id=workflow_id,
         data_flow_kernel=dfk,
     )
+
 
     debug(parsl_app_future)
     metadata = parsl_app_future.result()

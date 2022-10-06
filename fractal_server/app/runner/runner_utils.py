@@ -21,6 +21,7 @@ from functools import wraps
 from typing import Callable
 
 import parsl
+from devtools import debug
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
@@ -60,13 +61,69 @@ def async_wrap(func: Callable) -> Callable:
     return run
 
 
+class LocalChannel_fractal(LocalChannel):
+    def __init__(self, *args, username: str = None, **kwargs):
+        self.username: str = username
+        # debug(f"LocalChannel_fractal, {username=}")
+        super().__init__(*args, **kwargs)
+
+    def makedirs(self, path, mode=0o777, exist_ok=False):
+        """
+        Changes with respect to LocalChannel.makedirs:
+          * Set mode=0o777 default
+          * Set umask(0), to mask user limitations, and reset it after mkdir.
+        """
+        # debug(f"LocalChannel_fractal.makedirs, {path=}")
+        old_umask = os.umask(0)
+        os.makedirs(path, mode, exist_ok)
+        os.umask(old_umask)
+        return f"Create {path} dir"
+
+    def execute_wait(self, cmd, *args, **kwargs):
+        debug(self.username)
+        assert self.username is not None
+        if self.username is None:
+            return super().execute_wait(cmd, *args, **kwargs)
+        else:
+            if cmd.startswith("/bin/bash -c '"):
+                debug(cmd)
+                removal = "/bin/bash -c '"
+                new_cmd = cmd[len(removal) :]
+                new_cmd = f'export PATH="/home/{self.username}/miniconda3/bin:$PATH"; conda init bash; conda activate fractal; {new_cmd}'
+                new_cmd = f"sudo su - {self.username} -c '{new_cmd}"
+                debug(new_cmd)
+
+                # new_cmd = cmd.replace("/bin/bash -c", f"sudo su - {self.username} -c")
+                # new_cmd = f"source /home/{self.username}/.bashrc; conda activate fractal; {cmd}"
+                # new_cmd = f'sudo -u {self.username} -c "{new_cmd}"'
+                # new_cmd = f'sudo su - {self.username} -c "{cmd}"'
+                # new_cmd = cmd
+                # new_cmd = f'sudo su - {self.username} -c "conda activate fractal; {cmd}"'
+            elif cmd.startswith("ps"):
+                new_cmd = f'sudo su - {self.username} -c "{cmd}"'
+                # new_cmd = cmd
+            elif (
+                cmd.startswith("sbatch")
+                or cmd.startswith("scancel")
+                or cmd.startswith("squeue")
+                or cmd.startswith("kill")
+            ):
+                new_cmd = f'sudo su - {self.username} -c "{cmd}"'
+            else:
+                raise Exception(f"{cmd} not supported.")
+            debug(f"LocalChannel_fractal.execute_wait")
+            res = super().execute_wait(new_cmd, *args, **kwargs)
+            debug(res)
+            return res
+
+
 def generate_parsl_config(
     *,
     workflow_id: int,
     workflow_name: str,
     enable_monitoring: bool = True,
 ) -> Config:
-    allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
+    allowed_configs = ["minimal", "local", "pelkmanslab", "fmi", "custom"]
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
@@ -82,14 +139,38 @@ def generate_parsl_config(
         os.mkdir(workflow_log_dir)
     script_dir = f"{workflow_log_dir}/scripts"
     script_dir = os.path.abspath(script_dir)
-    channel_args = dict(script_dir=script_dir)
+    channel_args = dict(script_dir=script_dir, username="tommaso")
 
-    if config == "local":
+    if config == "minimal":
         # Define a single provider
         prov_local = LocalProvider(
             move_files=True,
             launcher=SingleNodeLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
+            init_blocks=1,
+            min_blocks=0,
+            max_blocks=4,
+        )
+        # Define executors
+        labels = ["cpu-low"]
+        executors = []
+        for label in labels:
+            executors.append(
+                HighThroughputExecutor(
+                    label=add_prefix(
+                        workflow_id=workflow_id, executor_label=label
+                    ),
+                    provider=prov_local,
+                    address=address_by_hostname(),
+                    cpu_affinity="block",
+                )
+            )
+    elif config == "local":
+        # Define a single provider
+        prov_local = LocalProvider(
+            move_files=True,
+            launcher=SingleNodeLauncher(debug=False),
+            channel=LocalChannel_fractal(**channel_args),
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
@@ -108,6 +189,7 @@ def generate_parsl_config(
                     cpu_affinity="block",
                 )
             )
+
     elif config == "pelkmanslab":
         # Define providers
         common_args = dict(
@@ -123,21 +205,21 @@ def generate_parsl_config(
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=16,
             mem_per_node=61,
             **common_args,
@@ -146,7 +228,7 @@ def generate_parsl_config(
         prov_gpu = SlurmProvider(
             partition="gpu",
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             nodes_per_block=1,
             init_blocks=1,
             min_blocks=0,
@@ -188,21 +270,21 @@ def generate_parsl_config(
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=20,
             mem_per_node=61,
             **common_args,
