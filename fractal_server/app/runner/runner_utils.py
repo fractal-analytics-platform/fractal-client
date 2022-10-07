@@ -122,13 +122,6 @@ def generate_parsl_config(
     if config == "custom":
         raise NotImplementedError
 
-    from devtools import debug
-    debug("generate_parsl_config")
-    debug(worker_init)
-    debug(username)
-    debug(config)
-
-
     # Prepare log folders for channels and executors
     RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
     if not os.path.isdir(RUNNER_LOG_DIR):
