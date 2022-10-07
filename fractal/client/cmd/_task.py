@@ -216,6 +216,8 @@ async def task_apply(
     output_dataset_id: int,
     workflow_id_or_name: str,
     overwrite_input: bool,
+    username: str,
+    worker_init: str,
     **kwargs,
 ) -> RichJsonInterface:
 
@@ -232,6 +234,8 @@ async def task_apply(
         output_dataset_id=output_dataset_id,
         workflow_id=workflow_id,
         overwrite_input=overwrite_input,
+        username=username,
+        worker_init=worker_init,
     )
 
     res = await client.post(
