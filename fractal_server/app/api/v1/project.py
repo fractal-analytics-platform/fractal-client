@@ -183,11 +183,15 @@ async def apply_workflow(
         workflow=workflow,
         input_dataset=input_dataset,
         output_dataset=output_dataset,
+        username=apply_workflow.username,
         db=db,
     )
 
     # TODO we should return a job id of some sort
-    return dict(status="submitted")
+    if apply_workflow.username is not None:
+        return dict(status=f"submitted, as user {apply_workflow.username}")
+    else:
+        return dict(status="submitted")
 
 
 @router.post(
