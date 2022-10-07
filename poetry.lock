@@ -693,7 +693,7 @@ sqlmodel = "^0.0.8"
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal.git"
 reference = "add_username_to_task_apply"
-resolved_reference = "bb28dcb43bb1ab15f12468fce462f0e56d33f9d7"
+resolved_reference = "94b64fef7db9cdffcae75b8fb6b50312ffd8cc90"
 
 [[package]]
 name = "fractal-tasks-core"
