@@ -21,7 +21,6 @@ from functools import wraps
 from typing import Callable
 
 import parsl
-from devtools import debug
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
@@ -64,7 +63,6 @@ def async_wrap(func: Callable) -> Callable:
 class LocalChannel_fractal(LocalChannel):
     def __init__(self, *args, username: str = None, **kwargs):
         self.username: str = username
-        # debug(f"LocalChannel_fractal, {username=}")
         super().__init__(*args, **kwargs)
 
     def makedirs(self, path, mode=0o777, exist_ok=False):
@@ -73,48 +71,38 @@ class LocalChannel_fractal(LocalChannel):
           * Set mode=0o777 default
           * Set umask(0), to mask user limitations, and reset it after mkdir.
         """
-        # debug(f"LocalChannel_fractal.makedirs, {path=}")
         old_umask = os.umask(0)
         os.makedirs(path, mode, exist_ok)
         os.umask(old_umask)
         return f"Create {path} dir"
 
     def execute_wait(self, cmd, *args, **kwargs):
-        debug(self.username)
-        assert self.username is not None
         if self.username is None:
             return super().execute_wait(cmd, *args, **kwargs)
         else:
-            if cmd.startswith("/bin/bash -c '"):
-                debug(cmd)
-                removal = "/bin/bash -c '"
-                new_cmd = cmd[len(removal) :]
-                new_cmd = f'export PATH="/home/{self.username}/miniconda3/bin:$PATH"; conda init bash; conda activate fractal; {new_cmd}'
-                new_cmd = f"sudo su - {self.username} -c '{new_cmd}"
-                debug(new_cmd)
-
-                # new_cmd = cmd.replace("/bin/bash -c", f"sudo su - {self.username} -c")
-                # new_cmd = f"source /home/{self.username}/.bashrc; conda activate fractal; {cmd}"
-                # new_cmd = f'sudo -u {self.username} -c "{new_cmd}"'
+            if cmd.startswith(("/bin/bash -c '", "ps", "kill")):
+                # Here are some previous attemps
+                # 1) A working one, for ps and kill
                 # new_cmd = f'sudo su - {self.username} -c "{cmd}"'
-                # new_cmd = cmd
-                # new_cmd = f'sudo su - {self.username} -c "conda activate fractal; {cmd}"'
-            elif cmd.startswith("ps"):
-                new_cmd = f'sudo su - {self.username} -c "{cmd}"'
-                # new_cmd = cmd
-            elif (
-                cmd.startswith("sbatch")
-                or cmd.startswith("scancel")
-                or cmd.startswith("squeue")
-                or cmd.startswith("kill")
-            ):
+                # 2) A failing one, for /bin/bash
+                # removal = "/bin/bash -c '"
+                # new_cmd = cmd[len(removal) :]
+                # load_conda = (f'export PATH="/home/{self.username}/"
+                #               "miniconda3/bin:$PATH"')
+                # new_cmd = (f'{load_conda}; conda init bash; "
+                #            "conda activate fractal; {new_cmd}')
+                # new_cmd = f"sudo su - {self.username} -c '{new_cmd}"
+                msg = (
+                    f'We cannot add "sudo - {self.username} -c" in front of '
+                    f"LocalProvider commands like {cmd=}"
+                )
+                raise NotImplementedError(msg)
+            elif cmd.startswith(("sbatch", "scancel", "squeue")):
                 new_cmd = f'sudo su - {self.username} -c "{cmd}"'
             else:
-                raise Exception(f"{cmd} not supported.")
-            debug(f"LocalChannel_fractal.execute_wait")
-            res = super().execute_wait(new_cmd, *args, **kwargs)
-            debug(res)
-            return res
+                msg = "We cannot add sudo in front of " f"commands like {cmd=}"
+                raise NotImplementedError(msg)
+            return super().execute_wait(new_cmd, *args, **kwargs)
 
 
 def generate_parsl_config(
@@ -122,15 +110,17 @@ def generate_parsl_config(
     workflow_id: int,
     workflow_name: str,
     enable_monitoring: bool = True,
+    username: str = None,
+    worker_init: str = None,
 ) -> Config:
-    allowed_configs = ["minimal", "local", "pelkmanslab", "fmi", "custom"]
+    allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
     if config == "custom":
         raise NotImplementedError
 
-    # Set log dir in channel
+    # Prepare log folders for channels and executors
     RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
     if not os.path.isdir(RUNNER_LOG_DIR):
         os.mkdir(RUNNER_LOG_DIR)
@@ -138,10 +128,17 @@ def generate_parsl_config(
     if not os.path.isdir(workflow_log_dir):
         os.mkdir(workflow_log_dir)
     script_dir = f"{workflow_log_dir}/scripts"
+    worker_logdir_root = f"{workflow_log_dir}/executors"
     script_dir = os.path.abspath(script_dir)
-    channel_args = dict(script_dir=script_dir, username="tommaso")
+    channel_args = dict(script_dir=script_dir)
 
-    if config == "minimal":
+    # Set additional parameters for channel/provider
+    if username is not None:
+        channel_args["username"] = username
+    if worker_init is None:
+        worker_init = ""
+
+    if config == "local":
         # Define a single provider
         prov_local = LocalProvider(
             move_files=True,
@@ -150,30 +147,7 @@ def generate_parsl_config(
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
-        )
-        # Define executors
-        labels = ["cpu-low"]
-        executors = []
-        for label in labels:
-            executors.append(
-                HighThroughputExecutor(
-                    label=add_prefix(
-                        workflow_id=workflow_id, executor_label=label
-                    ),
-                    provider=prov_local,
-                    address=address_by_hostname(),
-                    cpu_affinity="block",
-                )
-            )
-    elif config == "local":
-        # Define a single provider
-        prov_local = LocalProvider(
-            move_files=True,
-            launcher=SingleNodeLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
-            init_blocks=1,
-            min_blocks=0,
-            max_blocks=4,
+            worker_init=worker_init,
         )
         # Define executors
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
@@ -187,6 +161,7 @@ def generate_parsl_config(
                     provider=prov_local,
                     address=address_by_hostname(),
                     cpu_affinity="block",
+                    worker_logdir_root=worker_logdir_root,
                 )
             )
 
@@ -202,6 +177,8 @@ def generate_parsl_config(
             exclusive=False,
             walltime="20:00:00",
             move_files=True,
+            worker_init=worker_init,
+            worker_logdir_root=worker_logdir_root,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
@@ -236,6 +213,8 @@ def generate_parsl_config(
             mem_per_node=61,
             walltime="20:00:00",
             move_files=True,
+            worker_init=worker_init,
+            worker_logdir_root=worker_logdir_root,
         )
 
         # Define executors
@@ -267,6 +246,8 @@ def generate_parsl_config(
             exclusive=False,
             walltime="20:00:00",
             move_files=True,
+            worker_init=worker_init,
+            worker_logdir_root=worker_logdir_root,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
@@ -330,6 +311,8 @@ def load_parsl_config(
     workflow_name: str = "default workflow name",
     config: Config = None,
     enable_monitoring: bool = True,
+    username: str = None,
+    worker_init: str = None,
 ):
 
     logger = logging.getLogger(f"WF{workflow_id}")
@@ -341,6 +324,8 @@ def load_parsl_config(
             enable_monitoring=enable_monitoring,
             workflow_id=workflow_id,
             workflow_name=workflow_name,
+            username=username,
+            worker_init=worker_init,
         )
 
     try:

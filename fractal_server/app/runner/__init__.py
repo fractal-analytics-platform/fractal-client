@@ -308,6 +308,8 @@ def _process_workflow(
     input_paths: List[Path],
     output_path: Path,
     metadata: Dict[str, Any],
+    username: str = None,
+    worker_init: str = None,
 ) -> AppFuture:
     """
     Creates the PARSL app that will execute the full workflow, taking care of
@@ -336,6 +338,8 @@ def _process_workflow(
     dfk = load_parsl_config(
         workflow_id=workflow_id,
         workflow_name=workflow_name,
+        worker_init=worker_init,
+        username=username,
     )
 
     app_futures: List[PythonApp] = []
@@ -443,6 +447,8 @@ async def submit_workflow(
     workflow: Task,
     input_dataset: Dataset,
     output_dataset: Dataset,
+    username: str = None,
+    worker_init: str = None,
 ):
     """
     Prepares a workflow and applies it to a dataset
@@ -491,6 +497,8 @@ async def submit_workflow(
         input_paths=input_paths,
         output_path=output_path,
         metadata=input_dataset.meta,
+        username=username,
+        worker_init=worker_init,
     )
     logger.info(
         "Definition of app futures complete, now start execution. "
