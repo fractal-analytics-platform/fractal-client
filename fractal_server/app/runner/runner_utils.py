@@ -113,12 +113,21 @@ def generate_parsl_config(
     username: str = None,
     worker_init: str = None,
 ) -> Config:
+
+
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
     if config == "custom":
         raise NotImplementedError
+
+    from devtools import debug
+    debug("generate_parsl_config")
+    debug(worker_init)
+    debug(username)
+    debug(config)
+
 
     # Prepare log folders for channels and executors
     RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
@@ -178,7 +187,6 @@ def generate_parsl_config(
             walltime="20:00:00",
             move_files=True,
             worker_init=worker_init,
-            worker_logdir_root=worker_logdir_root,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
@@ -214,7 +222,6 @@ def generate_parsl_config(
             walltime="20:00:00",
             move_files=True,
             worker_init=worker_init,
-            worker_logdir_root=worker_logdir_root,
         )
 
         # Define executors
@@ -232,6 +239,7 @@ def generate_parsl_config(
                     max_workers=100,
                     address=address_by_hostname(),
                     cpu_affinity="block",
+                    worker_logdir_root=worker_logdir_root,
                 )
             )
 
@@ -247,7 +255,6 @@ def generate_parsl_config(
             walltime="20:00:00",
             move_files=True,
             worker_init=worker_init,
-            worker_logdir_root=worker_logdir_root,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
@@ -287,6 +294,7 @@ def generate_parsl_config(
                     max_workers=100,
                     address=address_by_hostname(),
                     cpu_affinity="block",
+                    worker_logdir_root=worker_logdir_root,
                 )
             )
 
