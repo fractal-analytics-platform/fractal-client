@@ -15,7 +15,7 @@ license = "BSD-3-Clause"
 [tool.poetry.dependencies]
 python = "^3.8"
 python-dotenv = "^0.20.0"
-fractal-client = "<1.0.0"
+fractal-client = { git = "https://github.com/fractal-analytics-platform/fractal.git", branch = "add_username_to_task_apply" }
 fastapi = "^0.78.0"
 sqlmodel = "^0.0.8"
 aiosqlite = "^0.17.0"
