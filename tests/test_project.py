@@ -1,3 +1,4 @@
+import pytest
 from devtools import debug
 
 
@@ -103,7 +104,6 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
         payload = dict(
             name="new dataset",
             project_id=project_id,
-            resource_list=["./test"],
             meta={"xy": 2},
         )
         res = await client.post(
@@ -128,6 +128,25 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
         assert res.status_code == 200
         for k, v in payload.items():
             assert patched_dataset[k] == payload[k]
+
+        # ADD RESOURCE TO DATASET
+
+        payload = dict(path="/some/absolute/path", glob_pattern="*.png")
+        res = await client.post(
+            f"{PREFIX}/{project_id}/{dataset['id']}",
+            json=payload,
+        )
+        assert res.status_code == 201
+        resource = res.json()
+        debug(resource)
+        assert resource["path"] == payload["path"]
+
+        with pytest.raises(ValueError):
+            payload = dict(path="some/local/path", glob_pattern="*.png")
+            res = await client.post(
+                f"{PREFIX}/{project_id}/{dataset['id']}",
+                json=payload,
+            )
 
 
 async def test_delete_project(client, MockCurrentUser):
