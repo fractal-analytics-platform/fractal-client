@@ -1,9 +1,11 @@
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from warnings import warn
 
 from pydantic import BaseModel
 from pydantic import root_validator
@@ -14,14 +16,57 @@ from sqlmodel import SQLModel
 from ..utils import slugify
 
 
-class ApplyWorkflow(BaseModel):
+__all__ = (
+    "ApplyWorkflowBase",
+    "ApplyWorkflowCreate",
+    "ApplyWorkflowRead",
+    "ApplyWorkflow",  # deprecated
+    "ProjectBase",
+    "ProjectCreate",
+    "ProjectRead",
+    "DatasetBase",
+    "DatasetUpdate",
+    "DatasetCreate",
+    "DatasetRead",
+    "ResourceBase",
+    "ResourceCreate",
+    "ResourceRead",
+    "TaskBase",
+    "TaskCreate",
+    "TaskUpdate",
+    "TaskRead",
+    "SubtaskBase",
+    "SubtaskCreate",
+    "SubtaskRead",
+)
+
+
+class ApplyWorkflowBase(BaseModel):
     project_id: int
     input_dataset_id: int
     output_dataset_id: Optional[int]
     workflow_id: Optional[int]
     overwrite_input: bool = False
-    username: str = None
-    worker_init: str = None
+    username: Optional[str] = None
+    worker_init: Optional[str] = None
+
+
+class ApplyWorkflowCreate(ApplyWorkflowBase):
+    pass
+
+
+class ApplyWorkflow(ApplyWorkflowBase):
+    warn(
+        "`ApplyWorkflow` model is deprecated and will be removed in a future "
+        "version of `fractal.common`",
+        PendingDeprecationWarning,
+    )
+    pass
+
+
+class ApplyWorkflowRead(ApplyWorkflowBase):
+    id: int
+    start_timestamp: datetime
 
 
 # PROJECT
