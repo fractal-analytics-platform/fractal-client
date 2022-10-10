@@ -9,7 +9,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from fractal.common.models import ApplyWorkflow
+from fractal.common.models import ApplyWorkflowCreate
 from fractal.common.models import SubtaskCreate
 from fractal.common.models import TaskCreate
 from fractal.common.models import TaskRead
@@ -228,7 +228,7 @@ async def task_apply(
             name=workflow_id_or_name, client=client
         )
 
-    workflow = ApplyWorkflow(
+    workflow = ApplyWorkflowCreate(
         project_id=project_id,
         input_dataset_id=input_dataset_id,
         output_dataset_id=output_dataset_id,
