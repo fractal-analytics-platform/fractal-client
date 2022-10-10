@@ -273,6 +273,24 @@ task_apply_parser.add_argument(
     default=False,
     help="Overwrite the input dataset",
 )
+task_apply_parser.add_argument(
+    "-us",
+    "--slurm_username",
+    help="The user that will run SLURM jobs",
+    type=str,
+    default=None,
+)
+task_apply_parser.add_argument(
+    "-wi",
+    "--worker_init",
+    help=(
+        "Commands to be executed at the beginning of SLURM scripts "
+        "(e.g. conda activate env)"
+    ),
+    type=str,
+    default=None,
+)
+
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
