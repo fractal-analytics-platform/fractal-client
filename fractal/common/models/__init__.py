@@ -5,6 +5,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from warnings import warn
 
 from pydantic import BaseModel
 from pydantic import root_validator
@@ -13,6 +14,31 @@ from sqlmodel import Field
 from sqlmodel import SQLModel
 
 from ..utils import slugify
+
+
+__all__ = (
+    "ApplyWorkflowBase",
+    "ApplyWorkflowCreate",
+    "ApplyWorkflowRead",
+    "ApplyWorkflow",  # deprecated
+    "ProjectBase",
+    "ProjectCreate",
+    "ProjectRead",
+    "DatasetBase",
+    "DatasetUpdate",
+    "DatasetCreate",
+    "DatasetRead",
+    "ResourceBase",
+    "ResourceCreate",
+    "ResourceRead",
+    "TaskBase",
+    "TaskCreate",
+    "TaskUpdate",
+    "TaskRead",
+    "SubtaskBase",
+    "SubtaskCreate",
+    "SubtaskRead",
+)
 
 
 class ApplyWorkflowBase(BaseModel):
@@ -26,6 +52,15 @@ class ApplyWorkflowBase(BaseModel):
 
 
 class ApplyWorkflowCreate(ApplyWorkflowBase):
+    pass
+
+
+class ApplyWorkflow(ApplyWorkflowBase):
+    warn(
+        "`ApplyWorkflow` model is deprecated and will be removed in a future "
+        "version of `fractal.common`",
+        PendingDeprecationWarning,
+    )
     pass
 
 
