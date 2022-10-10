@@ -1,3 +1,6 @@
+import pytest
+
+
 async def test_add_resource(clear_db, testserver, register_user, invoke):
     res = await invoke("project new prj0 prj_path0")
     project_id = res.data["id"]
@@ -12,6 +15,27 @@ async def test_add_resource(clear_db, testserver, register_user, invoke):
     assert res.retcode == 0
     assert res.data["path"] == PATH
     assert res.data["dataset_id"] == dataset_id
+
+
+async def test_add_resource_relative_path(
+    clear_db, testserver, register_user, invoke
+):
+    res = await invoke("project new prj0 prj_path0")
+    project_id = res.data["id"]
+    dataset_id = res.data["dataset_list"][0]["id"]
+    assert res.data["dataset_list"][0]["resource_list"] == []
+
+    PATH = "../new/resource/path"
+    with pytest.raises(ValueError):
+        res = await invoke(
+            f"dataset add-resource {project_id} {dataset_id} {PATH}"
+        )
+
+    PATH = "local-folder/new/resource/path"
+    with pytest.raises(ValueError):
+        res = await invoke(
+            f"dataset add-resource {project_id} {dataset_id} {PATH}"
+        )
 
 
 async def test_edit_dataset(clear_db, testserver, register_user, invoke):
