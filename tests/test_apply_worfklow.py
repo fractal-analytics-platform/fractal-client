@@ -87,8 +87,8 @@ dummy_subtask_parallel = Subtask(
     ("task", "message", "nfiles"),
     [
         (dummy_task, DUMMY_MESSAGE, 1),
-        # (dummy_subtask, DUMMY_SUBTASK_MESSAGE, 1),
-        # (dummy_subtask_parallel, DUMMY_SUBTASK_MESSAGE, N_INDICES),
+        (dummy_subtask, DUMMY_SUBTASK_MESSAGE, 1),
+        (dummy_subtask_parallel, DUMMY_SUBTASK_MESSAGE, N_INDICES),
     ],
 )
 def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
