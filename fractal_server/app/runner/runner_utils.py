@@ -36,7 +36,7 @@ from ...config_runner import settings
 
 
 def add_prefix(*, workflow_id: int, executor_label: str):
-    return f"{workflow_id}___{executor_label}"
+    return f"{workflow_id}__{executor_label}"
 
 
 def async_wrap(func: Callable) -> Callable:
@@ -81,24 +81,20 @@ class LocalChannel_fractal(LocalChannel):
             return super().execute_wait(cmd, *args, **kwargs)
         else:
             if cmd.startswith(("/bin/bash -c '", "ps", "kill")):
-                # Here are some previous attemps
-                # 1) A working one, for ps and kill
-                # new_cmd = f'sudo su - {self.username} -c "{cmd}"'
-                # 2) A failing one, for /bin/bash
-                # removal = "/bin/bash -c '"
-                # new_cmd = cmd[len(removal) :]
-                # load_conda = (f'export PATH="/home/{self.username}/"
-                #               "miniconda3/bin:$PATH"')
-                # new_cmd = (f'{load_conda}; conda init bash; "
-                #            "conda activate fractal; {new_cmd}')
-                # new_cmd = f"sudo su - {self.username} -c '{new_cmd}"
                 msg = (
                     f'We cannot add "sudo - {self.username} -c" in front of '
                     f"LocalProvider commands like {cmd=}"
                 )
                 raise NotImplementedError(msg)
-            elif cmd.startswith(("sbatch", "scancel", "squeue")):
-                new_cmd = f'sudo su - {self.username} -c "{cmd}"'
+            elif cmd.startswith(("sbatch", "scancel")):
+                if cmd == "scancel ":
+                    new_cmd = ('echo "execute_wait was called with dummy "'
+                               f'"command \"{cmd}\". We are replacing it with '
+                               'this echo command."')
+                else:
+                    new_cmd = f'sudo su - {self.username} -c "{cmd}"'
+            elif cmd.startswith("squeue"):
+                new_cmd = cmd
             else:
                 msg = "We cannot add sudo in front of " f"commands like {cmd=}"
                 raise NotImplementedError(msg)
@@ -125,13 +121,26 @@ def generate_parsl_config(
     # Prepare log folders for channels and executors
     RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
     if not os.path.isdir(RUNNER_LOG_DIR):
+        old_umask = os.umask(0)
         os.mkdir(RUNNER_LOG_DIR)
+        os.umask(old_umask)
     workflow_log_dir = f"{RUNNER_LOG_DIR}/workflow_{workflow_id:06d}"
+    workflow_log_dir = os.path.abspath(workflow_log_dir)
     if not os.path.isdir(workflow_log_dir):
+        old_umask = os.umask(0)
         os.mkdir(workflow_log_dir)
+        os.umask(old_umask)
     script_dir = f"{workflow_log_dir}/scripts"
-    worker_logdir_root = f"{workflow_log_dir}/executors"
     script_dir = os.path.abspath(script_dir)
+    if not os.path.isdir(script_dir):
+        old_umask = os.umask(0)
+        os.mkdir(script_dir)
+        os.umask(old_umask)
+    worker_logdir_root = f"{workflow_log_dir}/executors"
+    if not os.path.isdir(worker_logdir_root):
+        old_umask = os.umask(0)
+        os.mkdir(worker_logdir_root, 0o777)
+        os.umask(old_umask)
     channel_args = dict(script_dir=script_dir)
 
     # Set additional parameters for channel/provider
@@ -155,17 +164,16 @@ def generate_parsl_config(
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         executors = []
         for label in labels:
-            executors.append(
-                HighThroughputExecutor(
-                    label=add_prefix(
-                        workflow_id=workflow_id, executor_label=label
-                    ),
-                    provider=prov_local,
-                    address=address_by_hostname(),
-                    cpu_affinity="block",
-                    worker_logdir_root=worker_logdir_root,
-                )
+            htex = HighThroughputExecutor(
+                label=add_prefix(
+                    workflow_id=workflow_id, executor_label=label
+                ),
+                provider=prov_local,
+                address=address_by_hostname(),
+                cpu_affinity="block",
+                worker_logdir_root=worker_logdir_root,
             )
+            executors.append(htex)
 
     elif config == "pelkmanslab":
         # Define providers
@@ -222,8 +230,7 @@ def generate_parsl_config(
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         executors = []
         for provider, label in zip(providers, labels):
-            executors.append(
-                HighThroughputExecutor(
+            htex = HighThroughputExecutor(
                     label=add_prefix(
                         workflow_id=workflow_id, executor_label=label
                     ),
@@ -233,8 +240,8 @@ def generate_parsl_config(
                     address=address_by_hostname(),
                     cpu_affinity="block",
                     worker_logdir_root=worker_logdir_root,
-                )
             )
+            executors.append(htex)
 
     elif config == "fmi":
         common_args = dict(
