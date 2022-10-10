@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -29,6 +30,12 @@ async def dataset_add_resource(
     **kwargs,
 ) -> BaseInterface:
     resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
+
+    # Check that path is absolute, which is needed for when the server submits
+    # tasks as a different user
+    if not os.path.isabs(path):
+        msg = f"{path=} is not an absolute path"
+        raise ValueError(msg)
 
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
