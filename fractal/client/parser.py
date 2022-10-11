@@ -139,6 +139,20 @@ dataset_add_resource_parser.add_argument(
     "-g", "--glob-pattern", help="Glob pattern"
 )
 
+# dataset add-resource
+dataset_rm_resource_parser = dataset_subparsers.add_parser(
+    "rm-resource", help="Add resource to existing dataset"
+)
+dataset_rm_resource_parser.add_argument(
+    "project_id", type=int, help="Project id"
+)
+dataset_rm_resource_parser.add_argument(
+    "dataset_id", type=int, help="Dataset id"
+)
+dataset_rm_resource_parser.add_argument(
+    "resource_id", type=int, help="Resource id"
+)
+
 # dataset edit
 dataset_edit_parser = dataset_subparsers.add_parser(
     "edit", help="Edit dataset", argument_default=ap.SUPPRESS
@@ -289,11 +303,3 @@ task_apply_parser.add_argument(
 version_parser = subparsers_main.add_parser(
     "version", help="Print verison and exit"
 )
-
-
-if __name__ == "__main__":
-    args = parser_main.parse_args()
-
-    from devtools import debug
-
-    debug(args)
