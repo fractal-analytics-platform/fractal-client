@@ -46,7 +46,6 @@ class ApplyWorkflowBase(SQLModel):
     output_dataset_id: Optional[int]
     workflow_id: Optional[int]
     overwrite_input: bool = False
-    username: Optional[str] = None
     worker_init: Optional[str] = None
 
 
