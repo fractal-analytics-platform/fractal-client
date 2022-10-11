@@ -11,6 +11,8 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 from collections.abc import MutableMapping
+from datetime import datetime
+from datetime import timezone
 from typing import Any
 from warnings import warn as _warn
 
@@ -39,3 +41,7 @@ def popget(d: MutableMapping, key: str, default: Any = None) -> Any:
         return d.pop(key)
     except KeyError:
         return default
+
+
+def get_timestamp() -> datetime:
+    return datetime.now(timezone=timezone.utc)
