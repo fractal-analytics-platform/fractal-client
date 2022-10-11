@@ -26,6 +26,7 @@ class UserOAuth(SQLModelBaseUserDB, table=True):
         nullable=False,
         sa_column=Column(UUIDType(), primary_key=True),
     )
+    slurm_user: Optional[str]
     oauth_accounts: List["OAuthAccount"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
@@ -38,7 +39,7 @@ class OAuthAccount(SQLModelBaseOAuthAccount, table=True):
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
-    pass
+    slurm_user: str
 
 
 class UserUpdate(schemas.BaseUserUpdate):
@@ -46,4 +47,4 @@ class UserUpdate(schemas.BaseUserUpdate):
 
 
 class UserCreate(schemas.BaseUserCreate):
-    pass
+    slurm_user: str
