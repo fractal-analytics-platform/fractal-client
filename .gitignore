@@ -26,3 +26,4 @@ file:cachedb*
 parsl_executors.log
 fractal.log
 _test.db
+logs

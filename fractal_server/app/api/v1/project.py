@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter
@@ -194,11 +195,13 @@ async def apply_workflow(
         workflow=workflow,
         input_dataset=input_dataset,
         output_dataset=output_dataset,
+        username=user.slurm_user,
         db=db,
         job_id=job.id,
     )
 
     return job
+
 
 
 @router.post(
@@ -215,6 +218,7 @@ async def add_dataset(
     """
     Add new dataset to current project
     """
+
     project = await db.get(Project, project_id)
     if project.user_owner_id != user.id:
         raise HTTPException(
@@ -301,6 +305,16 @@ async def add_resource(
     """
     Add resource to an existing dataset
     """
+
+    # Check that path is absolute, which is needed for when the server submits
+    # tasks as a different user
+
+    if not Path(resource.path).is_absolute():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Path `{resource.path}` is not absolute.",
+        )
+
     stm = (
         select(Project, Dataset)
         .join(Dataset)

@@ -674,7 +674,7 @@ testing = ["covdefaults (>=2.2)", "coverage (>=6.4.2)", "pytest (>=7.1.2)", "pyt
 
 [[package]]
 name = "fractal-client"
-version = "0.2.7"
+version = "0.2.8"
 description = "Client and common components of the Fractal analytics platform"
 category = "main"
 optional = false
