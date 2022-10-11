@@ -170,7 +170,7 @@ class ResourceTypeEnum(str, Enum):
 
 
 class TaskBase(SQLModel):
-    name: str = Field(sa_column_kwargs=dict(unique=True))
+    name: str
     resource_type: ResourceTypeEnum
     module: Optional[str]
     input_type: str
