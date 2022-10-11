@@ -198,7 +198,6 @@ async def apply_workflow(
         job_id=job.id,
     )
 
-    # TODO we should return a job id of some sort
     return job
 
 
