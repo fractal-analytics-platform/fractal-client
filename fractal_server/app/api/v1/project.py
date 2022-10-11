@@ -34,8 +34,8 @@ from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
 
-# following import is explicit from suppkg because of name clash with
-# fractal_common.models.ApplyWorkflow
+# Import of ApplyWorkflow is explicit from suppkg models.run because of name
+# clash with fractal_common.models.ApplyWorkflow
 
 router = APIRouter()
 
