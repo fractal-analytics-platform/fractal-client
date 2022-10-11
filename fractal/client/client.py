@@ -18,6 +18,7 @@ from sys import argv
 from typing import List
 
 from httpx import AsyncClient
+from httpx import ConnectError
 
 from . import cmd
 from .authclient import AuthClient
@@ -52,6 +53,8 @@ async def handle(cli_args: List[str] = argv):
             ) as client:
                 interface = await handler(client, **vars(args))
     except AuthenticationError as e:
+        return PrintInterface(retcode=1, data=e.args[0])
+    except ConnectError as e:
         return PrintInterface(retcode=1, data=e.args[0])
 
     return interface

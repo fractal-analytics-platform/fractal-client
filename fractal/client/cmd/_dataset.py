@@ -51,6 +51,21 @@ async def dataset_add_resource(
         return RichJsonInterface(retcode=0, data=new_resource.dict())
 
 
+async def dataset_delete_resource(
+    client: AuthClient,
+    *,
+    project_id: int,
+    dataset_id: int,
+    resource_id: int,
+    **kwargs,
+) -> BaseInterface:
+    res = await client.delete(
+        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}/{resource_id}"
+    )
+    check_response(res, expected_status_code=204)
+    return PrintInterface(retcode=0, data="")
+
+
 async def dataset_edit(
     client: AuthClient,
     *,
@@ -87,10 +102,8 @@ async def dataset_show(
     res = await client.get(
         f"{settings.BASE_URL}/dataset/{project_id}/{dataset_id}"
     )
-    from devtools import debug
     from rich.console import Group
 
-    debug(res.json())
     dataset = check_response(res, expected_status_code=200, coerce=DatasetRead)
 
     if kwargs.get("json", False):
