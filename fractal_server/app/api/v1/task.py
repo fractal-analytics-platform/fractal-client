@@ -9,7 +9,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import select
 
 from ....tasks import collect_tasks
@@ -35,13 +35,8 @@ async def upsert_task(
     async with async_session_maker() as db:
         task_obj = TaskCreate(**task)
         try:
-            task_orm = Task.from_orm(task_obj)
-            db.add(task_orm)
-            await db.commit()
-            return "inserted"
-        except IntegrityError:
-            await db.rollback()
-            stm = select(Task).where(Task.name == task_obj.name)
+            # task already present, update
+            stm = select(Task).where(Task.module == task["module"])
             res = await db.execute(stm)
             this_task = res.scalars().one()
             for key, value in task_obj.dict(exclude={"subtask_list"}).items():
@@ -49,6 +44,12 @@ async def upsert_task(
             db.add(this_task)
             await db.commit()
             return "updated"
+        except NoResultFound:
+            # task not present, insert
+            task_orm = Task.from_orm(task_obj)
+            db.add(task_orm)
+            await db.commit()
+            return "inserted"
 
 
 async def collect_tasks_headless():
