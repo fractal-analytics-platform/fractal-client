@@ -204,6 +204,7 @@ async def add_dataset(
     """
     Add new dataset to current project
     """
+
     project = await db.get(Project, project_id)
     if project.user_owner_id != user.id:
         raise HTTPException(
@@ -290,6 +291,15 @@ async def add_resource(
     """
     Add resource to an existing dataset
     """
+
+    # Check that path is absolute, which is needed for when the server submits
+    # tasks as a different user
+    import os
+
+    if not os.path.isabs(resource.path):
+        msg = f"In add_resource, {resource.path} is not an absolute path"
+        raise ValueError(msg)
+
     stm = (
         select(Project, Dataset)
         .join(Dataset)
