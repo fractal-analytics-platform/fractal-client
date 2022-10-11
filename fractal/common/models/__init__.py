@@ -147,6 +147,10 @@ class ResourceCreate(ResourceBase):
     pass
 
 
+class ResourceUpdate(ResourceBase):
+    pass
+
+
 class ResourceRead(ResourceBase):
     id: int
     dataset_id: int
