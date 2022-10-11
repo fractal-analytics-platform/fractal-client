@@ -7,7 +7,6 @@ from typing import List
 from typing import Optional
 from warnings import warn
 
-from pydantic import BaseModel
 from pydantic import root_validator
 from pydantic import validator
 from sqlmodel import Field
@@ -41,7 +40,7 @@ __all__ = (
 )
 
 
-class ApplyWorkflowBase(BaseModel):
+class ApplyWorkflowBase(SQLModel):
     project_id: int
     input_dataset_id: int
     output_dataset_id: Optional[int]
