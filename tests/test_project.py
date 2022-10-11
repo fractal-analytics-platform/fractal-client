@@ -1,4 +1,3 @@
-import pytest
 from devtools import debug
 
 
@@ -193,11 +192,12 @@ async def test_add_dataset_local_path_error(app, client, MockCurrentUser, db):
 
         payload = dict(path="some/local/path", glob_pattern="*.png")
         debug(payload["path"])
-        with pytest.raises(ValueError):
-            res = await client.post(
-                f"{PREFIX}/{project_id}/{dataset['id']}",
-                json=payload,
-            )
+
+        res = await client.post(
+            f"{PREFIX}/{project_id}/{dataset['id']}",
+            json=payload,
+        )
+        assert res.status_code == 422
 
 
 async def test_delete_project(client, MockCurrentUser):

@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter
@@ -294,11 +295,12 @@ async def add_resource(
 
     # Check that path is absolute, which is needed for when the server submits
     # tasks as a different user
-    import os
 
-    if not os.path.isabs(resource.path):
-        msg = f"In add_resource, {resource.path} is not an absolute path"
-        raise ValueError(msg)
+    if not Path(resource.path).is_absolute():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Path `{resource.path}` is not absolute.",
+        )
 
     stm = (
         select(Project, Dataset)
