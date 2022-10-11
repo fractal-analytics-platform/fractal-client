@@ -20,7 +20,6 @@ class ApplyWorkflow(BaseModel):
     output_dataset_id: Optional[int]
     workflow_id: Optional[int]
     overwrite_input: bool = False
-    username: str = None
     worker_init: str = None
 
 

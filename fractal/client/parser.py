@@ -274,13 +274,6 @@ task_apply_parser.add_argument(
     help="Overwrite the input dataset",
 )
 task_apply_parser.add_argument(
-    "-us",
-    "--slurm_username",
-    help="The user that will run SLURM jobs",
-    type=str,
-    default=None,
-)
-task_apply_parser.add_argument(
     "-wi",
     "--worker_init",
     help=(

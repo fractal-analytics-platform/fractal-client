@@ -216,7 +216,6 @@ async def task_apply(
     output_dataset_id: int,
     workflow_id_or_name: str,
     overwrite_input: bool,
-    slurm_username: str,
     worker_init: str,
     **kwargs,
 ) -> RichJsonInterface:
@@ -234,7 +233,6 @@ async def task_apply(
         output_dataset_id=output_dataset_id,
         workflow_id=workflow_id,
         overwrite_input=overwrite_input,
-        username=slurm_username,
         worker_init=worker_init,
     )
 
