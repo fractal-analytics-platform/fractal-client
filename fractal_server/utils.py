@@ -10,6 +10,9 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+from datetime import datetime
+from datetime import timezone
+
 from warnings import warn as _warn
 
 from .config import DeploymentType
@@ -27,3 +30,7 @@ def warn(message):
         _warn(message, RuntimeWarning)
     else:
         raise RuntimeError(message)
+
+
+def get_timestamp() -> datetime:
+    return datetime.now(tz=timezone.utc)

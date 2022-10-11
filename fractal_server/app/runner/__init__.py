@@ -447,6 +447,7 @@ async def submit_workflow(
     workflow: Task,
     input_dataset: Dataset,
     output_dataset: Dataset,
+    job_id: int,
     username: str = None,
     worker_init: str = None,
 ):
