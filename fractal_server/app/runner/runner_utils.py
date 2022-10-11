@@ -88,9 +88,11 @@ class LocalChannel_fractal(LocalChannel):
                 raise NotImplementedError(msg)
             elif cmd.startswith(("sbatch", "scancel")):
                 if cmd == "scancel ":
-                    new_cmd = ('echo "execute_wait was called with dummy "'
-                               f'"command \"{cmd}\". We are replacing it with '
-                               'this echo command."')
+                    new_cmd = (
+                        'echo "execute_wait was called with dummy "'
+                        f'"command "{cmd}". We are replacing it with '
+                        'this echo command."'
+                    )
                 else:
                     new_cmd = f'sudo su - {self.username} -c "{cmd}"'
             elif cmd.startswith("squeue"):
@@ -110,7 +112,6 @@ def generate_parsl_config(
     worker_init: str = None,
 ) -> Config:
 
-
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
@@ -128,7 +129,7 @@ def generate_parsl_config(
     workflow_log_dir = os.path.abspath(workflow_log_dir)
     if not os.path.isdir(workflow_log_dir):
         old_umask = os.umask(0)
-        os.mkdir(workflow_log_dir)
+        os.mkdir(workflow_log_dir, mode=0o777)
         os.umask(old_umask)
     script_dir = f"{workflow_log_dir}/scripts"
     script_dir = os.path.abspath(script_dir)
@@ -231,15 +232,15 @@ def generate_parsl_config(
         executors = []
         for provider, label in zip(providers, labels):
             htex = HighThroughputExecutor(
-                    label=add_prefix(
-                        workflow_id=workflow_id, executor_label=label
-                    ),
-                    provider=provider,
-                    mem_per_worker=provider.mem_per_node,
-                    max_workers=100,
-                    address=address_by_hostname(),
-                    cpu_affinity="block",
-                    worker_logdir_root=worker_logdir_root,
+                label=add_prefix(
+                    workflow_id=workflow_id, executor_label=label
+                ),
+                provider=provider,
+                mem_per_worker=provider.mem_per_node,
+                max_workers=100,
+                address=address_by_hostname(),
+                cpu_affinity="block",
+                worker_logdir_root=worker_logdir_root,
             )
             executors.append(htex)
 
