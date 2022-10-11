@@ -443,6 +443,7 @@ async def submit_workflow(
     workflow: Task,
     input_dataset: Dataset,
     output_dataset: Dataset,
+    job_id: int,
 ):
     """
     Prepares a workflow and applies it to a dataset

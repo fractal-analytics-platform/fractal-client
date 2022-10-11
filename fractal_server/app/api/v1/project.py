@@ -14,7 +14,8 @@ from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
 from ...db import get_sync_db
-from ...models import ApplyWorkflow
+from ...models import ApplyWorkflowCreate
+from ...models import ApplyWorkflowRead
 from ...models import Dataset
 from ...models import DatasetCreate
 from ...models import DatasetRead
@@ -25,12 +26,16 @@ from ...models import ProjectRead
 from ...models import Resource
 from ...models import ResourceCreate
 from ...models import ResourceRead
+from ...models.run import ApplyWorkflow
 from ...models.task import Task
 from ...runner import auto_output_dataset
 from ...runner import submit_workflow
 from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
+
+# following import is explicit from suppkg because of name clash with
+# fractal_common.models.ApplyWorkflow
 
 router = APIRouter()
 
@@ -131,9 +136,10 @@ async def create_project(
 @router.post(
     "/apply/",
     status_code=status.HTTP_202_ACCEPTED,
+    response_model=ApplyWorkflowRead,
 )
 async def apply_workflow(
-    apply_workflow: ApplyWorkflow,
+    apply_workflow: ApplyWorkflowCreate,
     background_tasks: BackgroundTasks,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
@@ -178,16 +184,22 @@ async def apply_workflow(
     if not input_dataset or not output_dataset or not workflow:
         raise ValueError
 
+    job = ApplyWorkflow.from_orm(apply_workflow)
+    db.add(job)
+    await db.commit()
+    await db.refresh(job)
+
     background_tasks.add_task(
         submit_workflow,
         workflow=workflow,
         input_dataset=input_dataset,
         output_dataset=output_dataset,
         db=db,
+        job_id=job.id,
     )
 
     # TODO we should return a job id of some sort
-    return dict(status="submitted")
+    return job
 
 
 @router.post(
@@ -313,7 +325,6 @@ async def patch_dataset(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-
     project = await db.get(Project, project_id)
     if project.user_owner_id != user.id:
         raise HTTPException(

@@ -44,4 +44,4 @@ def popget(d: MutableMapping, key: str, default: Any = None) -> Any:
 
 
 def get_timestamp() -> datetime:
-    return datetime.now(timezone=timezone.utc)
+    return datetime.now(tz=timezone.utc)
