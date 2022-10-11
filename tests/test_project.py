@@ -141,8 +141,59 @@ async def test_add_dataset(app, client, MockCurrentUser, db):
         debug(resource)
         assert resource["path"] == payload["path"]
 
+
+async def test_add_dataset_local_path_error(app, client, MockCurrentUser, db):
+
+    async with MockCurrentUser(persist=True):
+
+        # CREATE A PROJECT
+
+        res = await client.post(
+            f"{PREFIX}/",
+            json=dict(
+                name="test project",
+                project_dir="/tmp/",
+            ),
+        )
+        assert res.status_code == 201
+        project = res.json()
+        project_id = project["id"]
+
+        # ADD DATASET
+
+        payload = dict(
+            name="new dataset",
+            project_id=project_id,
+            meta={"xy": 2},
+        )
+        res = await client.post(
+            f"{PREFIX}/{project_id}/",
+            json=payload,
+        )
+        assert res.status_code == 201
+        dataset = res.json()
+        assert dataset["name"] == payload["name"]
+        assert dataset["project_id"] == payload["project_id"]
+        assert dataset["meta"] == payload["meta"]
+
+        # EDIT DATASET
+
+        payload = dict(name="new dataset name", meta={})
+        res = await client.patch(
+            f"{PREFIX}/{project_id}/{dataset['id']}",
+            json=payload,
+        )
+        patched_dataset = res.json()
+        debug(patched_dataset)
+        assert res.status_code == 200
+        for k, v in payload.items():
+            assert patched_dataset[k] == payload[k]
+
+        # ADD WRONG RESOURCE TO DATASET
+
+        payload = dict(path="some/local/path", glob_pattern="*.png")
+        debug(payload["path"])
         with pytest.raises(ValueError):
-            payload = dict(path="some/local/path", glob_pattern="*.png")
             res = await client.post(
                 f"{PREFIX}/{project_id}/{dataset['id']}",
                 json=payload,
