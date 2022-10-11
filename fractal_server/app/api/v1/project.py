@@ -27,6 +27,7 @@ from ...models import ProjectRead
 from ...models import Resource
 from ...models import ResourceCreate
 from ...models import ResourceRead
+from ...models import ResourceUpdate
 from ...models.run import ApplyWorkflow
 from ...models.task import Task
 from ...runner import auto_output_dataset
@@ -203,7 +204,6 @@ async def apply_workflow(
     return job
 
 
-
 @router.post(
     "/{project_id}/",
     response_model=DatasetRead,
@@ -328,6 +328,35 @@ async def add_resource(
     await db.commit()
     await db.refresh(db_resource)
     return db_resource
+
+
+@router.patch(
+    "/{project_id}/{dataset_id}/{resource_id}", response_model=ResourceRead
+)
+async def edit_resource(
+    project_id: int,
+    dataset_id: int,
+    resource_id: int,
+    resource_update: ResourceUpdate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stm = (
+        select(Resource)
+        .join(Dataset)
+        .join(Project)
+        .where(Project.id == project_id)
+        .where(Project.user_owner_id == user.id)
+        .where(Dataset.id == dataset_id)
+        .where(Resource.id == resource_id)
+    )
+    res = await db.execute(stm)
+    orig_resource = res.scalar()
+    for key, value in resource_update.dict(exclude_unset=True).items():
+        setattr(orig_resource, key, value)
+    await db.commit()
+    await db.refresh(orig_resource)
+    return orig_resource
 
 
 @router.patch("/{project_id}/{dataset_id}", response_model=DatasetRead)

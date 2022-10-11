@@ -228,3 +228,26 @@ async def test_delete_project(client, MockCurrentUser):
         res = await client.get(f"{PREFIX}/")
         data = res.json()
         assert len(data) == 0
+
+
+async def test_edit_resource(
+    client, MockCurrentUser, project_factory, dataset_factory, resource_factory
+):
+    async with MockCurrentUser(persist=True) as user:
+        prj = await project_factory(user)
+        ds = await dataset_factory(project=prj)
+        orig_resource = await resource_factory(dataset=ds)
+
+        payload = dict(path="my/new/path")
+        res = await client.patch(
+            f"{PREFIX}/{prj.id}/{ds.id}/{orig_resource.id}", json=payload
+        )
+        data = res.json()
+        debug(data)
+        assert res.status_code == 200
+        for key, value in payload.items():
+            assert data[key] == value
+
+        for key, value in orig_resource.dict().items():
+            if key not in payload:
+                assert data[key] == value
