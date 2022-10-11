@@ -32,11 +32,11 @@ from parsl.monitoring.monitoring import MonitoringHub
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
-from ...config import settings
+from ...config_runner import settings
 
 
 def add_prefix(*, workflow_id: int, executor_label: str):
-    return f"{workflow_id}___{executor_label}"
+    return f"{workflow_id}__{executor_label}"
 
 
 def async_wrap(func: Callable) -> Callable:
@@ -60,54 +60,122 @@ def async_wrap(func: Callable) -> Callable:
     return run
 
 
+class LocalChannel_fractal(LocalChannel):
+    def __init__(self, *args, username: str = None, **kwargs):
+        self.username: str = username
+        super().__init__(*args, **kwargs)
+
+    def makedirs(self, path, mode=0o777, exist_ok=False):
+        """
+        Changes with respect to LocalChannel.makedirs:
+          * Set mode=0o777 default
+          * Set umask(0), to mask user limitations, and reset it after mkdir.
+        """
+        old_umask = os.umask(0)
+        os.makedirs(path, mode, exist_ok)
+        os.umask(old_umask)
+        return f"Create {path} dir"
+
+    def execute_wait(self, cmd, *args, **kwargs):
+        if self.username is None:
+            return super().execute_wait(cmd, *args, **kwargs)
+        else:
+            if cmd.startswith(("/bin/bash -c '", "ps", "kill")):
+                msg = (
+                    f'We cannot add "sudo - {self.username} -c" in front of '
+                    f"LocalProvider commands like {cmd=}"
+                )
+                raise NotImplementedError(msg)
+            elif cmd.startswith(("sbatch", "scancel")):
+                if cmd == "scancel ":
+                    new_cmd = (
+                        'echo "execute_wait was called with dummy "'
+                        f'"command "{cmd}". We are replacing it with '
+                        'this echo command."'
+                    )
+                else:
+                    new_cmd = f'sudo su - {self.username} -c "{cmd}"'
+            elif cmd.startswith("squeue"):
+                new_cmd = cmd
+            else:
+                msg = "We cannot add sudo in front of " f"commands like {cmd=}"
+                raise NotImplementedError(msg)
+            return super().execute_wait(new_cmd, *args, **kwargs)
+
+
 def generate_parsl_config(
     *,
     workflow_id: int,
     workflow_name: str,
     enable_monitoring: bool = True,
+    username: str = None,
+    worker_init: str = None,
 ) -> Config:
+
     allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
-    config = settings.PARSL_CONFIG
+    config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
     if config == "custom":
         raise NotImplementedError
 
-    # Set log dir in channel
-    FRACTAL_LOG_DIR = settings.FRACTAL_LOG_DIR
-    if not os.path.isdir(FRACTAL_LOG_DIR):
-        os.mkdir(FRACTAL_LOG_DIR)
-    workflow_log_dir = f"{FRACTAL_LOG_DIR}/workflow_{workflow_id:06d}"
+    # Prepare log folders for channels and executors
+    RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
+    if not os.path.isdir(RUNNER_LOG_DIR):
+        old_umask = os.umask(0)
+        os.mkdir(RUNNER_LOG_DIR)
+        os.umask(old_umask)
+    workflow_log_dir = f"{RUNNER_LOG_DIR}/workflow_{workflow_id:06d}"
+    workflow_log_dir = os.path.abspath(workflow_log_dir)
     if not os.path.isdir(workflow_log_dir):
-        os.mkdir(workflow_log_dir)
+        old_umask = os.umask(0)
+        os.mkdir(workflow_log_dir, mode=0o777)
+        os.umask(old_umask)
     script_dir = f"{workflow_log_dir}/scripts"
     script_dir = os.path.abspath(script_dir)
+    if not os.path.isdir(script_dir):
+        old_umask = os.umask(0)
+        os.mkdir(script_dir)
+        os.umask(old_umask)
+    worker_logdir_root = f"{workflow_log_dir}/executors"
+    if not os.path.isdir(worker_logdir_root):
+        old_umask = os.umask(0)
+        os.mkdir(worker_logdir_root, 0o777)
+        os.umask(old_umask)
     channel_args = dict(script_dir=script_dir)
+
+    # Set additional parameters for channel/provider
+    if username is not None:
+        channel_args["username"] = username
+    if worker_init is None:
+        worker_init = ""
 
     if config == "local":
         # Define a single provider
         prov_local = LocalProvider(
             move_files=True,
             launcher=SingleNodeLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
+            worker_init=worker_init,
         )
         # Define executors
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         executors = []
         for label in labels:
-            executors.append(
-                HighThroughputExecutor(
-                    label=add_prefix(
-                        workflow_id=workflow_id, executor_label=label
-                    ),
-                    provider=prov_local,
-                    address=address_by_hostname(),
-                    cpu_affinity="block",
-                )
+            htex = HighThroughputExecutor(
+                label=add_prefix(
+                    workflow_id=workflow_id, executor_label=label
+                ),
+                provider=prov_local,
+                address=address_by_hostname(),
+                cpu_affinity="block",
+                worker_logdir_root=worker_logdir_root,
             )
+            executors.append(htex)
+
     elif config == "pelkmanslab":
         # Define providers
         common_args = dict(
@@ -120,24 +188,25 @@ def generate_parsl_config(
             exclusive=False,
             walltime="20:00:00",
             move_files=True,
+            worker_init=worker_init,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=16,
             mem_per_node=61,
             **common_args,
@@ -146,7 +215,7 @@ def generate_parsl_config(
         prov_gpu = SlurmProvider(
             partition="gpu",
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             nodes_per_block=1,
             init_blocks=1,
             min_blocks=0,
@@ -154,6 +223,7 @@ def generate_parsl_config(
             mem_per_node=61,
             walltime="20:00:00",
             move_files=True,
+            worker_init=worker_init,
         )
 
         # Define executors
@@ -161,18 +231,18 @@ def generate_parsl_config(
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         executors = []
         for provider, label in zip(providers, labels):
-            executors.append(
-                HighThroughputExecutor(
-                    label=add_prefix(
-                        workflow_id=workflow_id, executor_label=label
-                    ),
-                    provider=provider,
-                    mem_per_worker=provider.mem_per_node,
-                    max_workers=100,
-                    address=address_by_hostname(),
-                    cpu_affinity="block",
-                )
+            htex = HighThroughputExecutor(
+                label=add_prefix(
+                    workflow_id=workflow_id, executor_label=label
+                ),
+                provider=provider,
+                mem_per_worker=provider.mem_per_node,
+                max_workers=100,
+                address=address_by_hostname(),
+                cpu_affinity="block",
+                worker_logdir_root=worker_logdir_root,
             )
+            executors.append(htex)
 
     elif config == "fmi":
         common_args = dict(
@@ -185,24 +255,25 @@ def generate_parsl_config(
             exclusive=False,
             walltime="20:00:00",
             move_files=True,
+            worker_init=worker_init,
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel(**channel_args),
+            channel=LocalChannel_fractal(**channel_args),
             cores_per_node=20,
             mem_per_node=61,
             **common_args,
@@ -224,6 +295,7 @@ def generate_parsl_config(
                     max_workers=100,
                     address=address_by_hostname(),
                     cpu_affinity="block",
+                    worker_logdir_root=worker_logdir_root,
                 )
             )
 
@@ -248,17 +320,21 @@ def load_parsl_config(
     workflow_name: str = "default workflow name",
     config: Config = None,
     enable_monitoring: bool = True,
+    username: str = None,
+    worker_init: str = None,
 ):
 
     logger = logging.getLogger(f"WF{workflow_id}")
-    logger.info(f"{settings.PARSL_CONFIG=}")
-    logger.info(f"{settings.PARSL_DEFAULT_EXECUTOR=}")
+    logger.info(f"{settings.RUNNER_CONFIG=}")
+    logger.info(f"{settings.RUNNER_DEFAULT_EXECUTOR=}")
 
     if not config:
         config = generate_parsl_config(
             enable_monitoring=enable_monitoring,
             workflow_id=workflow_id,
             workflow_name=workflow_name,
+            username=username,
+            worker_init=worker_init,
         )
 
     try:
@@ -302,7 +378,7 @@ def get_unique_executor(
 
     # Handle missing value
     if task_executor is None:
-        task_executor = settings.PARSL_DEFAULT_EXECUTOR
+        task_executor = settings.RUNNER_DEFAULT_EXECUTOR
 
     # Redefine task_executor, by prepending workflow_id
     new_task_executor = add_prefix(

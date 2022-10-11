@@ -13,7 +13,7 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
-from ...utils import popget
+from .models_utils import popget
 
 
 def flatten(xx):
