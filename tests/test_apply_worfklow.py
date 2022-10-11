@@ -270,7 +270,7 @@ async def test_apply_workflow(
     # DONE CREATING WORKFLOW
 
     await submit_workflow(
-        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf, job_id=123
     )
     with open(output_path, "r") as f:
         data = json.load(f)
@@ -344,7 +344,7 @@ async def test_create_zarr(
     # DONE CREATING WORKFLOW
 
     await submit_workflow(
-        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf, job_id=123
     )
     zattrs = Path(output_path).parent / "myplate.zarr/.zattrs"
     with open(zattrs) as f:
@@ -431,7 +431,7 @@ async def test_yokogawa(
     # DONE CREATING WORKFLOW
 
     await submit_workflow(
-        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf
+        db=db, input_dataset=ds, output_dataset=out_ds, workflow=wf, job_id=123
     )
     out_ds = await db.get(Dataset, out_ds.id)
     debug(out_ds)
