@@ -20,11 +20,10 @@ from functools import partial
 from functools import wraps
 from typing import Callable
 
-import parsl
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
-from parsl.dataflow.dflow import DataFlowKernelLoader
+from parsl.dataflow.dflow import DataFlowKernel
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
@@ -337,6 +336,7 @@ def load_parsl_config(
             worker_init=worker_init,
         )
 
+    """
     try:
         dfk = DataFlowKernelLoader.dfk()
         old_executor_labels = [
@@ -360,6 +360,9 @@ def load_parsl_config(
         parsl.clear()
         DataFlowKernelLoader.load(config)
         dfk = DataFlowKernelLoader.dfk()
+    """
+
+    dfk = DataFlowKernel(config=config)
 
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()

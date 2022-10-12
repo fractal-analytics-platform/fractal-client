@@ -138,6 +138,8 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
             assert len(data) == 1
             assert data[0]["message"] == message
 
+    dfk.cleanup()
+
 
 def test_preprocess_workflow(nontrivial_workflow):
     """
@@ -187,6 +189,8 @@ def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
     assert data[0]["message"] == "dummy0"
     assert data[1]["message"] == "dummy1"
     assert data[2]["message"] == "dummy2"
+
+    dfk.cleanup()
 
 
 def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):

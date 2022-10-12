@@ -193,9 +193,7 @@ def _atomic_task_factory(
     except ValueError as e:
         # When assigning a task to an unknown executor, make sure to cleanup
         # DFK before raising an error
-        # FIXME: temporarily commented out, to avoid issue #94 of
-        # fractal-server
-        # data_flow_kernel.cleanup()
+        data_flow_kernel.cleanup()
         logger.error("END of workflow due to ValueError (unknown executors).")
         raise ValueError(str(e))
 
@@ -510,8 +508,7 @@ async def submit_workflow(
     )
     logger.info(f'END workflow "{workflow.name}"')
 
-    # FIXME: This line is commented to avoid issue #94 of fractal-server
-    # dfk.cleanup()
+    dfk.cleanup()
 
     db.add(output_dataset)
 
