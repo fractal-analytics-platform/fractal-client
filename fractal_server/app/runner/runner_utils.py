@@ -336,41 +336,12 @@ def load_parsl_config(
             worker_init=worker_init,
         )
 
-    """
-    try:
-        dfk = DataFlowKernelLoader.dfk()
-        old_executor_labels = [
-            executor_label for executor_label in dfk.executors.keys()
-        ]
-        logger.info(
-            f"DFK {dfk} exists, with {len(dfk.executors)} executors: "
-            f"{old_executor_labels}"
-        )
-
-        # FIXME: what if an executor was already there?
-        # (re-submitting same workflow?)
-        dfk.add_executors(config.executors)
-
-    # FIXME: better exception handling
-    except RuntimeError:
-        logger.info(
-            "DFK probably missing, "
-            "proceed with parsl.clear and parsl.config.Config"
-        )
-        parsl.clear()
-        DataFlowKernelLoader.load(config)
-        dfk = DataFlowKernelLoader.dfk()
-    """
-
     dfk = DataFlowKernel(config=config)
 
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
     ]
-    logger.info(
-        f"DFK {dfk} now has {len(executor_labels)} executors: "
-        f"{executor_labels}"
-    )
+    logger.info(f"New DFK {dfk}, with executors {executor_labels}")
 
     return dfk
 
