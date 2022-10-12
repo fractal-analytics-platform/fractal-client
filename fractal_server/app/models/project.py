@@ -4,15 +4,15 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from fractal.common.models import DatasetBase
-from fractal.common.models import ProjectBase
-from fractal.common.models import ResourceBase
 from pydantic import UUID4
 from sqlalchemy import Column
 from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
+from ...common.models import DatasetBase
+from ...common.models import ProjectBase
+from ...common.models import ResourceBase
 from .security import UserOAuth
 
 

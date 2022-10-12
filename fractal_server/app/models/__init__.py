@@ -1,6 +1,4 @@
-from fractal.common.models import *  # noqa F401
-from fractal.common.models import ResourceUpdate  # noqa F401
-
+from ...common.models import *  # noqa F401
 from .project import *  # noqa: F403, F401
 from .run import *  # noqa: F403, F401
 from .security import *  # noqa: F403, F401

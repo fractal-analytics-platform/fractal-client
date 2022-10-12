@@ -3,9 +3,9 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from fractal.common.models import ApplyWorkflowBase
 from sqlmodel import Field
 
+from ...common.models import ApplyWorkflowBase
 from ...config_runner import settings
 from .models_utils import get_timestamp
 

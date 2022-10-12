@@ -3,8 +3,6 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from fractal.common.models import SubtaskBase
-from fractal.common.models import TaskBase
 from pydantic import BaseModel
 from sqlalchemy import Column
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +11,8 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
+from ...common.models import SubtaskBase
+from ...common.models import TaskBase
 from .models_utils import popget
 
 
