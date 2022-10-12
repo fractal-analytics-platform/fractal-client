@@ -342,14 +342,18 @@ def load_parsl_config(
     workflow_id: int,
     workflow_name: str = "default workflow name",
     config: Config = None,
-    enable_monitoring: bool = True,
+    enable_monitoring: bool = None,
     username: str = None,
     worker_init: str = None,
 ):
 
+    if enable_monitoring is None:
+        enable_monitoring = settings.RUNNER_MONITORING
+
     logger = logging.getLogger(f"WF{workflow_id}")
     logger.info(f"{settings.RUNNER_CONFIG=}")
     logger.info(f"{settings.RUNNER_DEFAULT_EXECUTOR=}")
+    logger.info(f"{enable_monitoring=}")
 
     if not config:
         config = generate_parsl_config(
