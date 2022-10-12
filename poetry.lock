@@ -705,7 +705,7 @@ SQLAlchemy = ">=1.4.18"
 
 [[package]]
 name = "fractal-client"
-version = "0.2.8"
+version = "0.2.9"
 description = "Client and common components of the Fractal analytics platform"
 category = "main"
 optional = false
@@ -1690,7 +1690,7 @@ invoke = ["invoke (>=1.3)"]
 
 [[package]]
 name = "parsl"
-version = "1.3.1.dev0"
+version = "1.3.0.dev0"
 description = "Simple data dependent workflows in Python"
 category = "main"
 optional = false
@@ -2987,7 +2987,7 @@ tasks-core = ["fractal-tasks-core"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "7f3f2e8d3191fa761c6872059a36ed909dd9ea4cf04353cb89306e714b33c120"
+content-hash = "25c7cbce6cdc87973a0339cef2859755dae7ad1e5c94dce77d43ef90993b956c"
 
 [metadata.files]
 aiobotocore = [
@@ -3500,8 +3500,8 @@ flask-sqlalchemy = [
     {file = "Flask_SQLAlchemy-3.0.1-py3-none-any.whl", hash = "sha256:649eddf17ae18814f87f33eb26d9d7b37412ec7ee67985873b3cf882aca099f5"},
 ]
 fractal-client = [
-    {file = "fractal-client-0.2.8.tar.gz", hash = "sha256:e350016311c36e3258dffe82535e77c079c05b74cd6c5178ded7fb4ae7abaa61"},
-    {file = "fractal_client-0.2.8-py3-none-any.whl", hash = "sha256:f1f7ee99f9f190bbdf41b7875f21ead0d97d97f85130220971e53c852eedbd53"},
+    {file = "fractal-client-0.2.9.tar.gz", hash = "sha256:b9cba7a7c295df44663d327bd5cc5fb42935a65dfb0e35b0a771c8b59d70530c"},
+    {file = "fractal_client-0.2.9-py3-none-any.whl", hash = "sha256:d4f923bf3d1dc9f3759b2c2fd1194349c23b34fbdc3bb70f12afb26872ba3f0c"},
 ]
 fractal-tasks-core = [
     {file = "fractal-tasks-core-0.2.3.tar.gz", hash = "sha256:1fb11c5549f15a68d3ba656dcc1129cd90021ce5d7ef3ea2b1dc8ee777e53ac4"},
