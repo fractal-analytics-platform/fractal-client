@@ -67,6 +67,7 @@ def _task_fun(
         **task_args,
     )
     logger.info(f'End execution of task "{task.name}".')
+    console_handler.flush()
 
     metadata.update(metadata_update)
     try:
@@ -141,6 +142,7 @@ def _task_component_fun(
         **task_args,
     )
     logger.info(f'End execution of task "{task.name}" for {component=}.')
+    console_handler.flush()
 
     return task.name, component
 
@@ -249,6 +251,7 @@ def _atomic_task_factory(
                 f' for parallel execution of task "{task.name}" '
                 f"on {executors=}."
             )
+            console_handler.flush()
 
             # Define a list of futures, to be used as inputs (AKA dependencies)
             # for parallel_collection_app. This must happen within a join_app,
