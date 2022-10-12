@@ -30,6 +30,7 @@ __all__ = (
     "ResourceBase",
     "ResourceCreate",
     "ResourceRead",
+    "ResourceUpdate",
     "TaskBase",
     "TaskCreate",
     "TaskUpdate",
