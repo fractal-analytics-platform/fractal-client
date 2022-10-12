@@ -507,6 +507,8 @@ async def submit_workflow(
         app_future=final_metadata
     )
     logger.info(f'END workflow "{workflow.name}"')
+    logger.info("Now closing the FileHandler")
+    fileHandler.close()
 
     dfk.cleanup()
 
