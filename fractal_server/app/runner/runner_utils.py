@@ -111,7 +111,7 @@ def generate_parsl_config(
     worker_init: str = None,
 ) -> Config:
 
-    allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
+    allowed_configs = ["minimal", "local", "pelkmanslab", "fmi", "custom"]
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
@@ -149,7 +149,31 @@ def generate_parsl_config(
     if worker_init is None:
         worker_init = ""
 
-    if config == "local":
+    if config == "minimal":
+        # Define a single provider
+        prov_local = LocalProvider(
+            move_files=True,
+            launcher=SingleNodeLauncher(debug=False),
+            channel=LocalChannel_fractal(**channel_args),
+            init_blocks=1,
+            min_blocks=0,
+            max_blocks=4,
+            worker_init=worker_init,
+        )
+        # Define executor
+        executors = [
+            HighThroughputExecutor(
+                label=add_prefix(
+                    workflow_id=workflow_id, executor_label="cpu-low"
+                ),
+                provider=prov_local,
+                address=address_by_hostname(),
+                cpu_affinity="block",
+                worker_logdir_root=worker_logdir_root,
+            )
+        ]
+
+    elif config == "local":
         # Define a single provider
         prov_local = LocalProvider(
             move_files=True,
