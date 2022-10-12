@@ -11,6 +11,8 @@ from fractal_server.app.models import Subtask
 from fractal_server.app.models import Task
 from fractal_server.app.models import TaskRead
 
+pytest.skip(allow_module_level=True)
+
 
 LEN_NONTRIVIAL_WORKFLOW = 3
 

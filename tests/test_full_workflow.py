@@ -17,6 +17,7 @@ from typing import List
 
 from devtools import debug
 
+pytest.skip(allow_module_level=True)
 
 PREFIX = "/api/v1"
 
