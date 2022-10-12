@@ -5,8 +5,8 @@ from typing import Optional
 
 from sqlmodel import Field
 
-from ...common.models import ApplyWorkflowBase
 from ...config_runner import settings
+from ..schemas import ApplyWorkflowBase
 from .models_utils import get_timestamp
 
 

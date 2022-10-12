@@ -1,8 +1,11 @@
 from typing import Any
 from typing import Dict
+from typing import List
 
 from sqlmodel import Field
 from sqlmodel import SQLModel
+
+from ..schemas import TaskRead
 
 
 class WorkflowBase(SQLModel):
@@ -12,6 +15,7 @@ class WorkflowBase(SQLModel):
 
 class WorkflowRead(WorkflowBase):
     id: int
+    task_list: List[TaskRead]
 
 
 class TaskBase(SQLModel):

@@ -1,4 +1,5 @@
 import pytest
+from devtools import debug
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
@@ -44,3 +45,21 @@ async def test_project_workflow_relation(db, project_factory, MockCurrentUser):
         wf = Workflow(name="my wfl", project_id=project.id)
         db.add(wf)
         await db.commit()
+
+
+async def test_task_workflow_association(
+    db, project_factory, MockCurrentUser, task_factory
+):
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        task = await task_factory()
+
+        wf = Workflow(name="my wfl", project_id=project.id)
+        wf.task_list.append(task)
+
+        db.add(wf)
+        await db.commit()
+        await db.refresh(wf)
+
+        debug(wf)
+        assert False

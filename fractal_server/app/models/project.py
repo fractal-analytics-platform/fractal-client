@@ -10,9 +10,9 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
-from ...common.models import DatasetBase
-from ...common.models import ProjectBase
-from ...common.models import ResourceBase
+from ..schemas import DatasetBase
+from ..schemas import ProjectBase
+from ..schemas import ResourceBase
 from .security import UserOAuth
 
 

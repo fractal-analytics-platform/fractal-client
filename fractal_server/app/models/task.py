@@ -11,8 +11,8 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
-from ...common.models import SubtaskBase
-from ...common.models import TaskBase
+from ..schemas import SubtaskBase
+from ..schemas import TaskBase
 from .models_utils import popget
 
 
