@@ -10,6 +10,7 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+from os import environ
 from typing import Any
 from typing import Dict
 from typing import List
@@ -19,6 +20,8 @@ from devtools import debug
 
 
 PREFIX = "/api/v1"
+
+environ["RUNNER_MONITORING"] = "0"
 
 
 def task_id_by_name(name: str, task_list: List[Dict[str, Any]]) -> int:
@@ -35,6 +38,7 @@ async def test_full_workflow(
     collect_tasks,
     tmp_path,
 ):
+
     async with MockCurrentUser(persist=True):
 
         # CREATE PROJECT

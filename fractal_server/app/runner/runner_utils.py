@@ -20,11 +20,10 @@ from functools import partial
 from functools import wraps
 from typing import Callable
 
-import parsl
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config
-from parsl.dataflow.dflow import DataFlowKernelLoader
+from parsl.dataflow.dflow import DataFlowKernel
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
 from parsl.launchers import SrunLauncher
@@ -112,7 +111,7 @@ def generate_parsl_config(
     worker_init: str = None,
 ) -> Config:
 
-    allowed_configs = ["local", "pelkmanslab", "fmi", "custom"]
+    allowed_configs = ["minimal", "local", "pelkmanslab", "fmi", "custom"]
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
@@ -150,7 +149,31 @@ def generate_parsl_config(
     if worker_init is None:
         worker_init = ""
 
-    if config == "local":
+    if config == "minimal":
+        # Define a single provider
+        prov_local = LocalProvider(
+            move_files=True,
+            launcher=SingleNodeLauncher(debug=False),
+            channel=LocalChannel_fractal(**channel_args),
+            init_blocks=1,
+            min_blocks=0,
+            max_blocks=4,
+            worker_init=worker_init,
+        )
+        # Define executor
+        executors = [
+            HighThroughputExecutor(
+                label=add_prefix(
+                    workflow_id=workflow_id, executor_label="cpu-low"
+                ),
+                provider=prov_local,
+                address=address_by_hostname(),
+                cpu_affinity="block",
+                worker_logdir_root=worker_logdir_root,
+            )
+        ]
+
+    elif config == "local":
         # Define a single provider
         prov_local = LocalProvider(
             move_files=True,
@@ -319,14 +342,18 @@ def load_parsl_config(
     workflow_id: int,
     workflow_name: str = "default workflow name",
     config: Config = None,
-    enable_monitoring: bool = True,
+    enable_monitoring: bool = None,
     username: str = None,
     worker_init: str = None,
 ):
 
+    if enable_monitoring is None:
+        enable_monitoring = settings.RUNNER_MONITORING
+
     logger = logging.getLogger(f"WF{workflow_id}")
     logger.info(f"{settings.RUNNER_CONFIG=}")
     logger.info(f"{settings.RUNNER_DEFAULT_EXECUTOR=}")
+    logger.info(f"{enable_monitoring=}")
 
     if not config:
         config = generate_parsl_config(
@@ -337,37 +364,12 @@ def load_parsl_config(
             worker_init=worker_init,
         )
 
-    try:
-        dfk = DataFlowKernelLoader.dfk()
-        old_executor_labels = [
-            executor_label for executor_label in dfk.executors.keys()
-        ]
-        logger.info(
-            f"DFK {dfk} exists, with {len(dfk.executors)} executors: "
-            f"{old_executor_labels}"
-        )
-
-        # FIXME: what if an executor was already there?
-        # (re-submitting same workflow?)
-        dfk.add_executors(config.executors)
-
-    # FIXME: better exception handling
-    except RuntimeError:
-        logger.info(
-            "DFK probably missing, "
-            "proceed with parsl.clear and parsl.config.Config"
-        )
-        parsl.clear()
-        DataFlowKernelLoader.load(config)
-        dfk = DataFlowKernelLoader.dfk()
+    dfk = DataFlowKernel(config=config)
 
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
     ]
-    logger.info(
-        f"DFK {dfk} now has {len(executor_labels)} executors: "
-        f"{executor_labels}"
-    )
+    logger.info(f"New DFK {dfk}, with executors {executor_labels}")
 
     return dfk
 
