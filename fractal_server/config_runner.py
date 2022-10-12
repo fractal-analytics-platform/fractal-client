@@ -16,7 +16,7 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    RUNNER_CONFIG: str = getenv("RUNNER_CONFIG", "minimal")
+    RUNNER_CONFIG: str = getenv("RUNNER_CONFIG", "local")
     RUNNER_LOG_DIR: str = getenv("RUNNER_LOG_DIR", "logs")
     RUNNER_DEFAULT_EXECUTOR: str = getenv("RUNNER_DEFAULT_EXECUTOR", "cpu-low")
 
