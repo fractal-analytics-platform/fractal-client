@@ -251,3 +251,28 @@ async def test_edit_resource(
         for key, value in orig_resource.dict().items():
             if key not in payload:
                 assert data[key] == value
+
+
+async def test_delete_dataset(
+    client, MockCurrentUser, project_factory, dataset_factory
+):
+    async with MockCurrentUser(persist=True) as user:
+        prj = await project_factory(user)
+        ds0 = await dataset_factory(project=prj)
+        ds1 = await dataset_factory(project=prj)
+
+        ds_ids = (ds0.id, ds1.id)
+
+        res = await client.get(f"{PREFIX}/{prj.id}")
+        prj_dict = res.json()
+        assert len(prj_dict["dataset_list"]) == 2
+        assert prj_dict["dataset_list"][0]["id"] in ds_ids
+        assert prj_dict["dataset_list"][1]["id"] in ds_ids
+
+        res = await client.delete(f"{PREFIX}/{prj.id}/{ds0.id}")
+        assert res.status_code == 204
+
+        res = await client.get(f"{PREFIX}/{prj.id}")
+        prj_dict = res.json()
+        assert len(prj_dict["dataset_list"]) == 1
+        assert prj_dict["dataset_list"][0]["id"] == ds1.id

@@ -233,6 +233,27 @@ async def add_dataset(
     return db_dataset
 
 
+@router.delete("/{project_id}/{dataset_id}", status_code=204)
+async def delete_dataset(
+    project_id: int,
+    dataset_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stm = (
+        select(Dataset)
+        .join(Project)
+        .where(Project.user_owner_id == user.id)
+        .where(Project.id == project_id)
+        .where(Dataset.id == dataset_id)
+    )
+    res = await db.execute(stm)
+    dataset = res.scalar()
+    await db.delete(dataset)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.get(
     "/{project_id}/{dataset_id}",
     response_model=List[ResourceRead],
