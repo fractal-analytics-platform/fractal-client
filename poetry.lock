@@ -674,7 +674,7 @@ testing = ["covdefaults (>=2.2)", "coverage (>=6.4.2)", "pytest (>=7.1.2)", "pyt
 
 [[package]]
 name = "fractal-client"
-version = "0.2.8"
+version = "0.2.9"
 description = "Client and common components of the Fractal analytics platform"
 category = "main"
 optional = false
@@ -2851,7 +2851,7 @@ tasks-core = ["fractal-tasks-core"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "96a1a3e7ec4bf76884b4d03fd1524c8dc491a68dd5dcda91a04ce270008db9a7"
+content-hash = "5d895d48a1ba3759d215c580b1f85482f28416c3f89cc9f3d6d3125c8b267502"
 
 [metadata.files]
 aiobotocore = [
@@ -3356,8 +3356,8 @@ filelock = [
     {file = "filelock-3.8.0.tar.gz", hash = "sha256:55447caa666f2198c5b6b13a26d2084d26fa5b115c00d065664b2124680c4edc"},
 ]
 fractal-client = [
-    {file = "fractal-client-0.2.8.tar.gz", hash = "sha256:e350016311c36e3258dffe82535e77c079c05b74cd6c5178ded7fb4ae7abaa61"},
-    {file = "fractal_client-0.2.8-py3-none-any.whl", hash = "sha256:f1f7ee99f9f190bbdf41b7875f21ead0d97d97f85130220971e53c852eedbd53"},
+    {file = "fractal-client-0.2.9.tar.gz", hash = "sha256:b9cba7a7c295df44663d327bd5cc5fb42935a65dfb0e35b0a771c8b59d70530c"},
+    {file = "fractal_client-0.2.9-py3-none-any.whl", hash = "sha256:d4f923bf3d1dc9f3759b2c2fd1194349c23b34fbdc3bb70f12afb26872ba3f0c"},
 ]
 fractal-tasks-core = [
     {file = "fractal-tasks-core-0.2.3.tar.gz", hash = "sha256:1fb11c5549f15a68d3ba656dcc1129cd90021ce5d7ef3ea2b1dc8ee777e53ac4"},
