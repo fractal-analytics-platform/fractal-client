@@ -5,7 +5,7 @@ from typing import Optional
 from fractal.common.models import ApplyWorkflowBase
 from sqlmodel import Field
 
-from ...utils import get_timestamp
+from .models_utils import get_timestamp
 
 
 class StatusType(str, Enum):

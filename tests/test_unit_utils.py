@@ -2,7 +2,7 @@ from datetime import timezone
 
 from devtools import debug
 
-from fractal_server.utils import get_timestamp
+from fractal_server.app.models.models_utils import get_timestamp
 
 
 def test_timestamp():

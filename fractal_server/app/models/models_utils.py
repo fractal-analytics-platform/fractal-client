@@ -1,5 +1,11 @@
 from collections.abc import MutableMapping
+from datetime import datetime
+from datetime import timezone
 from typing import Any
+
+
+def get_timestamp() -> datetime:
+    return datetime.now(tz=timezone.utc)
 
 
 def popget(d: MutableMapping, key: str, default: Any = None) -> Any:
