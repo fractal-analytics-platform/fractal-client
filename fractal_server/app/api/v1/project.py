@@ -181,6 +181,11 @@ async def apply_workflow(
     # TODO check that user is allowed to use this task
 
     workflow = db_sync.get(Task, apply_workflow.workflow_id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workflow {apply_workflow.workflow_id} not found",
+        )
 
     if apply_workflow.output_dataset_id:
         stm = (
@@ -205,8 +210,16 @@ async def apply_workflow(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
         )
 
-    if not input_dataset or not output_dataset or not workflow:
-        raise ValueError
+    if not input_dataset:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dataset {apply_workflow.dataset_id} not found",
+        )
+    if not output_dataset:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Could not determine output dataset.",
+        )
 
     job = ApplyWorkflow.from_orm(apply_workflow)
     db.add(job)
@@ -215,12 +228,9 @@ async def apply_workflow(
 
     background_tasks.add_task(
         submit_workflow,
-        workflow=workflow,
-        input_dataset=input_dataset,
-        output_dataset=output_dataset,
-        username=user.slurm_user,
+        job=job,
+        user=user,
         db=db,
-        job_id=job.id,
     )
 
     return job
