@@ -15,7 +15,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-import pytest
 from devtools import debug
 
 
@@ -190,7 +189,6 @@ async def test_full_workflow(
             pass
 
 
-@pytest.mark.faulty
 async def test_full_workflow_repeated_tasks(
     app,
     client,
