@@ -13,7 +13,7 @@ Zurich.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-__VERSION__ = "0.2.1"
+__VERSION__ = "0.3.0"
 
 
 def collect_routers(app: FastAPI) -> None:
