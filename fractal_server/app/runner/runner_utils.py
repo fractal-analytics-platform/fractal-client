@@ -16,6 +16,7 @@ Zurich.
 import asyncio
 import logging
 import os
+import warnings
 from functools import partial
 from functools import wraps
 from typing import Callable
@@ -84,7 +85,7 @@ class LocalChannel_fractal(LocalChannel):
                     f'We do not add "sudo - {self.username} -c" in front of '
                     f"LocalProvider commands like {cmd=}."
                 )
-                raise Warning(msg)
+                warnings.warn(msg)
                 new_cmd = cmd
             elif cmd.startswith(("sbatch", "scancel")):
                 if cmd == "scancel ":
