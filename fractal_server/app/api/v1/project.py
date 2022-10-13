@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from pathlib import Path
 from typing import List
@@ -8,6 +9,7 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Response
 from fastapi import status
+from pydantic import UUID4
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
@@ -15,12 +17,14 @@ from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
 from ...db import get_sync_db
+from ...models import ApplyWorkflow
 from ...models import ApplyWorkflowCreate
 from ...models import ApplyWorkflowRead
 from ...models import Dataset
 from ...models import DatasetCreate
 from ...models import DatasetRead
 from ...models import DatasetUpdate
+from ...models import LinkUserProject
 from ...models import Project
 from ...models import ProjectCreate
 from ...models import ProjectRead
@@ -28,7 +32,6 @@ from ...models import Resource
 from ...models import ResourceCreate
 from ...models import ResourceRead
 from ...models import ResourceUpdate
-from ...models.run import ApplyWorkflow
 from ...models.task import Task
 from ...runner import auto_output_dataset
 from ...runner import submit_workflow
@@ -36,10 +39,35 @@ from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
 
-# Import of ApplyWorkflow is explicit from suppkg models.run because of name
-# clash with fractal_common.models.ApplyWorkflow
 
 router = APIRouter()
+
+
+async def get_project_check_owner(
+    project_id: int,
+    user_id: UUID4,
+    db: AsyncSession = Depends(get_db),
+) -> Project:
+    """
+    Check that user is a member of project and return
+
+    Raise 403_FORBIDDEN if the user is not a member
+    Raise 404_NOT_FOUND if the project does not exist
+    """
+    project, link_user_project = await asyncio.gather(
+        db.get(Project, project_id),
+        db.get(LinkUserProject, (project_id, user_id)),
+    )
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
+        )
+    if not link_user_project:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Not allowed on project {project_id}",
+        )
+    return project
 
 
 @router.get("/", response_model=List[ProjectRead])
@@ -47,7 +75,11 @@ async def get_list_project(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stm = select(Project).where(Project.user_owner_id == user.id)
+    stm = (
+        select(Project)
+        .join(LinkUserProject)
+        .where(LinkUserProject.user_id == user.id)
+    )
     res = await db.execute(stm)
     project_list = res.scalars().all()
     return project_list
@@ -60,11 +92,16 @@ async def get_project(
     db: AsyncSession = Depends(get_db),
 ):
     project = await db.get(Project, project_id)
+    link_user_project = await db.get(LinkUserProject, (project_id, user.id))
+    from devtools import debug
+
+    debug(project)
+    debug(link_user_project)
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )
-    if project.user_owner_id != user.id:
+    if not link_user_project:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not allowed on project",
@@ -106,8 +143,9 @@ async def create_project(
     # Check that there is no project with the same user and name
     stm = (
         select(Project)
-        .where(Project.user_owner_id == user.id)
+        .join(LinkUserProject)
         .where(Project.name == project.name)
+        .where(LinkUserProject.user_id == user.id)
     )
     res = await db.execute(stm)
     if res.scalars().all():
@@ -118,8 +156,7 @@ async def create_project(
 
     db_project = Project.from_orm(project)
     db_project.dataset_list.append(Dataset(name=project.default_dataset_name))
-
-    db_project.user_owner_id = user.id
+    db_project.user_member_list.append(user)
     try:
         db.add(db_project)
         await db.commit()
@@ -219,8 +256,12 @@ async def add_dataset(
     Add new dataset to current project
     """
 
-    project = await db.get(Project, project_id)
-    if project.user_owner_id != user.id:
+    project, link_user_project = await asyncio.gather(
+        db.get(Project, project_id),
+        db.get(LinkUserProject, (project_id, user.id)),
+    )
+
+    if not link_user_project:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not allowed on project",
