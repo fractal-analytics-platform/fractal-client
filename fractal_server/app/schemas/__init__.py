@@ -35,9 +35,6 @@ __all__ = (
     "TaskCreate",
     "TaskUpdate",
     "TaskRead",
-    "SubtaskBase",
-    "SubtaskCreate",
-    "SubtaskRead",
 )
 
 
@@ -198,27 +195,8 @@ class TaskCreate(TaskBase):
     pass
 
 
-class SubtaskBase(SQLModel):
-    parent_task_id: Optional[int] = None
-    subtask_id: Optional[int] = None
-    order: Optional[int] = None
-    args: Dict[str, Any] = Field(default={})
-
-
-class SubtaskCreate(SubtaskBase):
-    subtask_id: int
-
-
-class SubtaskRead(SubtaskBase):
-    parent_task_id: int
-    subtask_id: int
-    subtask: "TaskRead"
-
-
 class TaskRead(TaskBase):
     id: int
-    subtask_list: List[SubtaskRead]
 
 
-SubtaskRead.update_forward_refs()
 DatasetRead.update_forward_refs()

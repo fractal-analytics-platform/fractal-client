@@ -68,38 +68,6 @@ async def test_task_get_list(db, client, task_factory, MockCurrentUser):
         debug(data)
         assert len(data) == 3
         assert data[2]["id"] == t2.id
-        assert data[2]["subtask_list"][0]["subtask"]["id"] == t0.id
-        assert data[2]["subtask_list"][1]["subtask"]["id"] == t1.id
-
-
-async def test_task_get(db, client, task_factory, MockCurrentUser):
-    grandgrandchild = await task_factory(name="grandgrandchild")
-    grandchild = await task_factory(
-        name="grandchild", subtask_list=[grandgrandchild]
-    )
-    child = await task_factory(name="child", subtask_list=[grandchild])
-    parent = await task_factory(name="parent", subtask_list=[child])
-
-    async with MockCurrentUser(persist=True):
-        res = await client.get(f"api/v1/task/{parent.id}")
-        assert res.status_code == 200
-    res_parent = res.json()
-    debug(res_parent)
-    assert res_parent
-    assert res_parent["name"] == parent.name
-    assert len(res_parent["subtask_list"]) == 1
-
-    res_child = res_parent["subtask_list"][0]["subtask"]
-    assert res_child["name"] == child.name
-    assert len(res_child["subtask_list"]) == 1
-
-    res_grandchild = res_child["subtask_list"][0]["subtask"]
-    assert res_grandchild["name"] == grandchild.name
-    assert len(res_grandchild["subtask_list"]) == 1
-
-    res_grandgrandchild = res_grandchild["subtask_list"][0]["subtask"]
-    assert res_grandgrandchild["name"] == grandgrandchild.name
-    assert len(res_grandgrandchild["subtask_list"]) == 0
 
 
 async def test_task_create(db, client, MockCurrentUser):
@@ -120,45 +88,3 @@ async def test_task_create(db, client, MockCurrentUser):
         data = res.json()
         for key, item in task.dict().items():
             assert data[key] == item
-
-
-async def test_subtask_create(client, MockCurrentUser, task_factory):
-    """
-    GIVEN two tasks `mother` and `daugher` in the database
-    WHEN the create subtask endpoint is called to add `daughter` as subtask of
-         `mother`
-    THEN `daughter` is correctly added as subtask of `mother`
-    """
-    t0 = await task_factory(name="mother")
-    t1 = await task_factory(name="daughter")
-    t2 = await task_factory(name="second daughter")
-    t3 = await task_factory(name="insert at 1 daughter")
-
-    assert t0.subtask_list == []
-
-    async with MockCurrentUser(persist=True):
-        res = await client.post(
-            f"api/v1/task/{t0.id}/subtask/", json=dict(subtask_id=t1.id)
-        )
-        assert res.status_code == 201
-
-        res = await client.post(
-            f"api/v1/task/{t0.id}/subtask/", json=dict(subtask_id=t2.id)
-        )
-
-        res = await client.post(
-            f"api/v1/task/{t0.id}/subtask/",
-            json=dict(subtask_id=t3.id, order=1),
-        )
-
-        data = res.json()
-
-    debug(data)
-    assert data["subtask_list"][0]["subtask_id"] == t1.id
-    assert data["subtask_list"][1]["subtask_id"] == t3.id
-    assert data["subtask_list"][2]["subtask_id"] == t2.id
-    data_subtask = data["subtask_list"][0]["subtask"]
-    t1_dict = t1.dict()
-    t1_dict["subtask_list"] = t1.subtask_list
-    for key, value in data_subtask.items():
-        value == t1_dict[key]

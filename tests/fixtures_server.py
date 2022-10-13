@@ -287,15 +287,11 @@ async def task_factory(db: AsyncSession):
             module=f"task{index}",
             input_type="zarr",
             output_type="zarr",
-            subtask_list=[],
         )
         args = dict(**defaults)
         args.update(kwargs)
-        subtask_list = args.pop("subtask_list")
         t = Task(**args)
         db.add(t)
-        for st in subtask_list:
-            await t.add_subtask(db=db, subtask=st, commit_and_refresh=False)
         await db.commit()
         await db.refresh(t)
         return t
