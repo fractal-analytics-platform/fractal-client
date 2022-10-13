@@ -81,10 +81,11 @@ class LocalChannel_fractal(LocalChannel):
         else:
             if cmd.startswith(("/bin/bash -c '", "ps", "kill")):
                 msg = (
-                    f'We cannot add "sudo - {self.username} -c" in front of '
-                    f"LocalProvider commands like {cmd=}"
+                    f'We do not add "sudo - {self.username} -c" in front of '
+                    f"LocalProvider commands like {cmd=}."
                 )
                 raise Warning(msg)
+                new_cmd = cmd
             elif cmd.startswith(("sbatch", "scancel")):
                 if cmd == "scancel ":
                     new_cmd = (
