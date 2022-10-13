@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from fractal_server.app.models import Project
+from fractal_server.app.models.workflow import LinkTaskWorkflow
 from fractal_server.app.models.workflow import Workflow
 
 
@@ -52,14 +53,44 @@ async def test_task_workflow_association(
 ):
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
-        task = await task_factory()
+        t0 = await task_factory()
+        t1 = await task_factory()
 
         wf = Workflow(name="my wfl", project_id=project.id)
-        wf.task_list.append(task)
+        wf.insert_task(t0)
 
         db.add(wf)
         await db.commit()
         await db.refresh(wf)
 
         debug(wf)
-        assert False
+        # check workflow
+        assert len(wf.task_list) == 1
+        assert wf.task_list[0].id == t0.id
+        # check association table
+        stm = (
+            select(LinkTaskWorkflow)
+            .where(LinkTaskWorkflow.workflow_id == wf.id)
+            .where(LinkTaskWorkflow.task_id == t0.id)
+        )
+        res = await db.execute(stm)
+        link = res.scalars().one()
+        debug(link)
+        assert link.task_id == t0.id
+
+        # Insert at position 0
+        wf.insert_task(t1, order=0)
+        db.add(wf)
+        await db.commit()
+        await db.refresh(wf)
+
+        stm = (
+            select(LinkTaskWorkflow)
+            .where(LinkTaskWorkflow.workflow_id == wf.id)
+            .where(LinkTaskWorkflow.task_id == t1.id)
+        )
+        res = await db.execute(stm)
+        link = res.scalars().one()
+        debug(link)
+        assert link.order == 0
+        assert link.task_id == t1.id
