@@ -4,9 +4,13 @@ from pathlib import Path
 from typing import Optional
 
 from sqlmodel import Field
+from sqlmodel import Relationship
 
 from ...config_runner import settings
+from ..project import Dataset
+from ..project import Project
 from ..schemas import ApplyWorkflowBase
+from ..workflow import Workflow
 from .models_utils import get_timestamp
 
 
@@ -21,7 +25,22 @@ class ApplyWorkflow(ApplyWorkflowBase, table=True):  # type: ignore
     project_id: int = Field(foreign_key="project.id")
     input_dataset_id: int = Field(foreign_key="dataset.id")
     output_dataset_id: int = Field(foreign_key="dataset.id")
-    workflow_id: int = Field(foreign_key="task.id")
+    workflow_id: int = Field(foreign_key="workflow.id")
+
+    project: Project = Relationship()
+    input_dataset: Dataset = Relationship(
+        sa_relationship_kwargs=dict(
+            lazy="selectin",
+            primaryjoin="ApplyWorkflow.input_dataset_id==Dataset.id",
+        )
+    )
+    output_dataset: Dataset = Relationship(
+        sa_relationship_kwargs=dict(
+            lazy="selectin",
+            primaryjoin="ApplyWorkflow.output_dataset_id==Dataset.id",
+        )
+    )
+    workflow: Workflow = Relationship()
 
     start_timestamp: datetime = Field(
         default_factory=get_timestamp, nullable=False

@@ -11,13 +11,15 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 from os import getenv
+from pathlib import Path
 
 from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    RUNNER_ROOT_DIR: Path = Path(getenv("RUNNER_DIR", "artifacts"))
+
     RUNNER_CONFIG: str = getenv("RUNNER_CONFIG", "local")
-    RUNNER_LOG_DIR: str = getenv("RUNNER_LOG_DIR", "logs")
     RUNNER_DEFAULT_EXECUTOR: str = getenv("RUNNER_DEFAULT_EXECUTOR", "cpu-low")
 
     # NOTE: we currently set RUNNER_MONITORING to False, due to
