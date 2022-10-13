@@ -45,6 +45,7 @@ class PreprocessedTask(BaseModel):
 
 class Task(TaskBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
+    project_id: Optional[int] = Field(foreign_key="project.id")
     default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
 
     def preprocess(self):

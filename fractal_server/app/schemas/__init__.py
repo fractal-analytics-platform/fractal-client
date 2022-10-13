@@ -177,6 +177,7 @@ class TaskBase(SQLModel):
     input_type: str
     output_type: str
     default_args: Dict[str, Any] = Field(default={})
+    project_id: Optional[int]
 
     class Config:
         arbitrary_types_allowed = True
@@ -184,11 +185,9 @@ class TaskBase(SQLModel):
 
 class TaskUpdate(TaskBase):
     name: Optional[str]  # type:ignore
-    resource_type: Optional[ResourceTypeEnum]  # type:ignore
     input_type: Optional[str]  # type:ignore
     output_type: Optional[str]  # type:ignore
     default_args: Optional[Dict[str, Any]] = None  # type:ignore
-    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
 
 
 class TaskCreate(TaskBase):
