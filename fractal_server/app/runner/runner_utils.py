@@ -84,7 +84,7 @@ class LocalChannel_fractal(LocalChannel):
                     f'We cannot add "sudo - {self.username} -c" in front of '
                     f"LocalProvider commands like {cmd=}"
                 )
-                raise NotImplementedError(msg)
+                raise Warning(msg)
             elif cmd.startswith(("sbatch", "scancel")):
                 if cmd == "scancel ":
                     new_cmd = (
