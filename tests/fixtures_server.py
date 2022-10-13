@@ -195,6 +195,9 @@ async def MockCurrentUser(app, db):
                 db.add(self.user)
                 await db.commit()
                 await db.refresh(self.user)
+                # Removing object from test db session, so that we can operate
+                # on user from other sessions
+                db.expunge(self.user)
             self.previous_user = app.dependency_overrides.get(
                 current_active_user, None
             )
@@ -223,11 +226,11 @@ async def project_factory(db):
         defaults = dict(
             name="project",
             project_dir="/tmp/",
-            user_owner_id=user.id,
             slug="slug",
         )
         defaults.update(kwargs)
         project = Project(**defaults)
+        project.user_member_list.append(user)
         db.add(project)
         await db.commit()
         await db.refresh(project)
