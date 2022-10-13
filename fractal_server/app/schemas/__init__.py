@@ -5,7 +5,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-from warnings import warn
 
 from pydantic import root_validator
 from pydantic import validator
@@ -19,7 +18,6 @@ __all__ = (
     "ApplyWorkflowBase",
     "ApplyWorkflowCreate",
     "ApplyWorkflowRead",
-    "ApplyWorkflow",  # deprecated
     "ProjectBase",
     "ProjectCreate",
     "ProjectRead",
@@ -48,15 +46,6 @@ class ApplyWorkflowBase(SQLModel):
 
 
 class ApplyWorkflowCreate(ApplyWorkflowBase):
-    pass
-
-
-class ApplyWorkflow(ApplyWorkflowBase):
-    warn(
-        "`ApplyWorkflow` model is deprecated and will be removed in a future "
-        "version of `fractal.common`",
-        PendingDeprecationWarning,
-    )
     pass
 
 
