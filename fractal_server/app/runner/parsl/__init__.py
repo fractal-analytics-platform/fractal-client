@@ -17,7 +17,6 @@ from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
 from ...models.task import PreprocessedTask
-from ...models.task import Subtask
 from ...models.task import Task
 from .._common import async_wrap
 from .runner_utils import get_unique_executor
@@ -158,7 +157,7 @@ def _task_parallel_collect(
 
 def _atomic_task_factory(
     *,
-    task: Union[Task, Subtask, PreprocessedTask],
+    task: Union[Task, PreprocessedTask],
     input_paths: List[Path],
     output_path: Path,
     data_flow_kernel: DataFlowKernel,
@@ -299,7 +298,7 @@ def _atomic_task_factory(
 
 
 def _process_workflow(
-    task: Union[Task, Subtask],
+    task: Task,
     input_paths: List[Path],
     output_path: Path,
     metadata: Dict[str, Any],

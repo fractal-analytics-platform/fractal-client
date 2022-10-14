@@ -7,11 +7,11 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 
 from ...config_runner import settings
-from ..project import Dataset
-from ..project import Project
 from ..schemas import ApplyWorkflowBase
-from ..workflow import Workflow
 from .models_utils import get_timestamp
+from .project import Dataset
+from .project import Project
+from .workflow import Workflow
 
 
 class StatusType(str, Enum):
