@@ -195,6 +195,9 @@ async def MockCurrentUser(app, db):
                 db.add(self.user)
                 await db.commit()
                 await db.refresh(self.user)
+                # Removing object from test db session, so that we can operate
+                # on user from other sessions
+                db.expunge(self.user)
             self.previous_user = app.dependency_overrides.get(
                 current_active_user, None
             )
@@ -223,11 +226,11 @@ async def project_factory(db):
         defaults = dict(
             name="project",
             project_dir="/tmp/",
-            user_owner_id=user.id,
             slug="slug",
         )
         defaults.update(kwargs)
         project = Project(**defaults)
+        project.user_member_list.append(user)
         db.add(project)
         await db.commit()
         await db.refresh(project)
@@ -287,15 +290,11 @@ async def task_factory(db: AsyncSession):
             module=f"task{index}",
             input_type="zarr",
             output_type="zarr",
-            subtask_list=[],
         )
         args = dict(**defaults)
         args.update(kwargs)
-        subtask_list = args.pop("subtask_list")
         t = Task(**args)
         db.add(t)
-        for st in subtask_list:
-            await t.add_subtask(db=db, subtask=st, commit_and_refresh=False)
         await db.commit()
         await db.refresh(t)
         return t

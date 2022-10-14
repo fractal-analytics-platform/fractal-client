@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from pathlib import Path
 from typing import List
@@ -8,6 +9,7 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Response
 from fastapi import status
+from pydantic import UUID4
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
@@ -15,12 +17,14 @@ from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
 from ...db import get_sync_db
+from ...models import ApplyWorkflow
 from ...models import ApplyWorkflowCreate
 from ...models import ApplyWorkflowRead
 from ...models import Dataset
 from ...models import DatasetCreate
 from ...models import DatasetRead
 from ...models import DatasetUpdate
+from ...models import LinkUserProject
 from ...models import Project
 from ...models import ProjectCreate
 from ...models import ProjectRead
@@ -28,7 +32,6 @@ from ...models import Resource
 from ...models import ResourceCreate
 from ...models import ResourceRead
 from ...models import ResourceUpdate
-from ...models.run import ApplyWorkflow
 from ...models.task import Task
 from ...runner import auto_output_dataset
 from ...runner import submit_workflow
@@ -36,18 +39,51 @@ from ...runner import validate_workflow_compatibility
 from ...security import current_active_user
 from ...security import User
 
-# Import of ApplyWorkflow is explicit from suppkg models.run because of name
-# clash with fractal_common.models.ApplyWorkflow
 
 router = APIRouter()
+
+
+async def get_project_check_owner(
+    *,
+    project_id: int,
+    user_id: UUID4,
+    db: AsyncSession = Depends(get_db),
+) -> Project:
+    """
+    Check that user is a member of project and return
+
+    Raise 403_FORBIDDEN if the user is not a member
+    Raise 404_NOT_FOUND if the project does not exist
+    """
+    project, link_user_project = await asyncio.gather(
+        db.get(Project, project_id),
+        db.get(LinkUserProject, (project_id, user_id)),
+    )
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
+        )
+    if not link_user_project:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Not allowed on project {project_id}",
+        )
+    return project
 
 
 @router.get("/", response_model=List[ProjectRead])
 async def get_list_project(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
-):
-    stm = select(Project).where(Project.user_owner_id == user.id)
+) -> List[Project]:
+    """
+    Return list of projects user is member of
+    """
+    stm = (
+        select(Project)
+        .join(LinkUserProject)
+        .where(LinkUserProject.user_id == user.id)
+    )
     res = await db.execute(stm)
     project_list = res.scalars().all()
     return project_list
@@ -59,16 +95,9 @@ async def get_project(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    project = await db.get(Project, project_id)
-    if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        )
-    if project.user_owner_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not allowed on project",
-        )
+    project = await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
     return project
 
 
@@ -78,16 +107,9 @@ async def delete_project(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    project = await db.get(Project, project_id)
-    if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        )
-    if project.user_owner_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not allowed on project",
-        )
+    project = await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
     await db.delete(project)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -106,8 +128,9 @@ async def create_project(
     # Check that there is no project with the same user and name
     stm = (
         select(Project)
-        .where(Project.user_owner_id == user.id)
+        .join(LinkUserProject)
         .where(Project.name == project.name)
+        .where(LinkUserProject.user_id == user.id)
     )
     res = await db.execute(stm)
     if res.scalars().all():
@@ -118,8 +141,7 @@ async def create_project(
 
     db_project = Project.from_orm(project)
     db_project.dataset_list.append(Dataset(name=project.default_dataset_name))
-
-    db_project.user_owner_id = user.id
+    db_project.user_member_list.append(user)
     try:
         db.add(db_project)
         await db.commit()
@@ -159,6 +181,11 @@ async def apply_workflow(
     # TODO check that user is allowed to use this task
 
     workflow = db_sync.get(Task, apply_workflow.workflow_id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workflow {apply_workflow.workflow_id} not found",
+        )
 
     if apply_workflow.output_dataset_id:
         stm = (
@@ -183,8 +210,16 @@ async def apply_workflow(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
         )
 
-    if not input_dataset or not output_dataset or not workflow:
-        raise ValueError
+    if not input_dataset:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dataset {apply_workflow.dataset_id} not found",
+        )
+    if not output_dataset:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Could not determine output dataset.",
+        )
 
     job = ApplyWorkflow.from_orm(apply_workflow)
     db.add(job)
@@ -193,12 +228,9 @@ async def apply_workflow(
 
     background_tasks.add_task(
         submit_workflow,
-        workflow=workflow,
-        input_dataset=input_dataset,
-        output_dataset=output_dataset,
-        username=user.slurm_user,
+        job=job,
+        user=user,
         db=db,
-        job_id=job.id,
     )
 
     return job
@@ -218,13 +250,9 @@ async def add_dataset(
     """
     Add new dataset to current project
     """
-
-    project = await db.get(Project, project_id)
-    if project.user_owner_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not allowed on project",
-        )
+    project = await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
     dataset.project_id = project.id
     db_dataset = Dataset.from_orm(dataset)
     db.add(db_dataset)
@@ -240,10 +268,12 @@ async def delete_dataset(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
+    await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
     stm = (
         select(Dataset)
         .join(Project)
-        .where(Project.user_owner_id == user.id)
         .where(Project.id == project_id)
         .where(Dataset.id == dataset_id)
     )
@@ -267,13 +297,9 @@ async def get_resource(
     """
     Get resources from a dataset
     """
-    project = await db.get(Project, project_id)
-    if project.user_owner_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not allowed on project",
-        )
-
+    await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
     stm = select(Resource).where(Resource.dataset_id == dataset_id)
     res = await db.execute(stm)
     resource_list = res.scalars().all()
@@ -288,16 +314,9 @@ async def delete_resource(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    project = await db.get(Project, project_id)
-    if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        )
-    if project.user_owner_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not allowed on project",
-        )
+    project = await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
     resource = await db.get(Resource, resource_id)
     if not resource or resource.dataset_id not in (
         ds.id for ds in project.dataset_list
@@ -336,14 +355,16 @@ async def add_resource(
             detail=f"Path `{resource.path}` is not absolute.",
         )
 
-    stm = (
-        select(Project, Dataset)
-        .join(Dataset)
-        .where(Project.user_owner_id == user.id)
-        .where(Project.id == project_id)
-        .where(Dataset.id == dataset_id)
+    project = await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
     )
-    project, dataset = (await db.execute(stm)).one()
+    dataset = await db.get(Dataset, dataset_id)
+    if dataset not in project.dataset_list:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Dataset {dataset_id} is not part of project {project_id}",
+        )
+
     db_resource = Resource(dataset_id=dataset.id, **resource.dict())
     db.add(db_resource)
     await db.commit()
@@ -362,17 +383,26 @@ async def edit_resource(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stm = (
-        select(Resource)
-        .join(Dataset)
-        .join(Project)
-        .where(Project.id == project_id)
-        .where(Project.user_owner_id == user.id)
-        .where(Dataset.id == dataset_id)
-        .where(Resource.id == resource_id)
+    project = await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
     )
-    res = await db.execute(stm)
-    orig_resource = res.scalar()
+    dataset = await db.get(Dataset, dataset_id)
+    orig_resource = await db.get(Resource, resource_id)
+
+    if dataset not in project.dataset_list:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Dataset {dataset_id} is not part of project {project_id}",
+        )
+    if orig_resource not in dataset.resource_list:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                f"Resource {resource_id} is not part of "
+                f"dataset {dataset_id}"
+            ),
+        )
+
     for key, value in resource_update.dict(exclude_unset=True).items():
         setattr(orig_resource, key, value)
     await db.commit()
@@ -388,14 +418,16 @@ async def patch_dataset(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    project = await db.get(Project, project_id)
-    if project.user_owner_id != user.id:
+    project = await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
+    db_dataset = await db.get(Dataset, dataset_id)
+    if db_dataset not in project.dataset_list:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not allowed on project",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Dataset {dataset_id} is not part of project {project_id}",
         )
 
-    db_dataset = await db.get(Dataset, dataset_id)
     for key, value in dataset_update.dict(exclude_unset=True).items():
         setattr(db_dataset, key, value)
 

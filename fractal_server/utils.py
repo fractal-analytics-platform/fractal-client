@@ -27,3 +27,7 @@ def warn(message):
         _warn(message, RuntimeWarning)
     else:
         raise RuntimeError(message)
+
+
+def slugify(value: str):
+    return value.lower().replace(" ", "_")
