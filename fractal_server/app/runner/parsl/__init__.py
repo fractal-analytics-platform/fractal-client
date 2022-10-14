@@ -20,11 +20,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .... import __VERSION__
 from ....config_runner import settings
+from ....utils import async_wrap
 from ...models.project import Dataset
 from ...models.task import PreprocessedTask
 from ...models.task import Subtask
 from ...models.task import Task
-from .runner_utils import async_wrap
 from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
 
