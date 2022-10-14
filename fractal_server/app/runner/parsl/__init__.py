@@ -16,6 +16,7 @@ from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
+from ....utils import async_wrap
 from ...models.task import PreprocessedTask
 from ...models.task import Subtask
 from ...models.task import Task
@@ -364,3 +365,33 @@ def get_app_future_result(app_future: AppFuture):
     we avoid a (long) blocking statement.
     """
     return app_future.result()
+
+
+async def process_workflow(
+    *,
+    workflow: Task,
+    input_paths: List[Path],
+    output_path: Path,
+    input_metadata: Dict[str, Any],
+    logger: logging.Logger,
+    username: str = None,
+    worker_init: str = None,
+):
+    logger.info(f"{input_paths=}")
+    logger.info(f"{output_path=}")
+
+    final_metadata_future, dfk = _process_workflow(
+        task=workflow,
+        input_paths=input_paths,
+        output_path=output_path,
+        metadata=input_metadata,
+        username=username,
+        worker_init=worker_init,
+    )
+    logger.info("Definition of app futures complete, now start execution. ")
+    final_metadata = await async_wrap(get_app_future_result)(
+        app_future=final_metadata_future
+    )
+
+    dfk.cleanup()
+    return final_metadata

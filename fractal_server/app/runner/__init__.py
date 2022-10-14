@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ... import __VERSION__
 from ...config_runner import settings
-from ...utils import async_wrap
 from ..models import Dataset
 from ..models import Task
 from ._common import auto_output_dataset  # noqa: F401
@@ -19,9 +18,9 @@ RUNNER_BACKEND = "PARSL"
 
 
 if RUNNER_BACKEND == "PARSL":
-    from .parsl import _process_workflow, get_app_future_result
+    from .parsl import process_workflow
 elif RUNNER_BACKEND == "process":
-    from .process import submit_workflow
+    from .process import process_workflow
 else:
 
     def no_function(*args, **kwarsg):
@@ -78,26 +77,17 @@ async def submit_workflow(
 
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
     logger.info(f"START workflow {workflow.name}")
-
-    logger.info(f"{input_paths=}")
-    logger.info(f"{output_path=}")
-
-    final_metadata, dfk = _process_workflow(
-        task=workflow,
+    output_dataset.meta = await process_workflow(
+        workflow=workflow,
         input_paths=input_paths,
         output_path=output_path,
-        metadata=input_dataset.meta,
+        input_metadata=input_dataset.meta,
         username=username,
         worker_init=worker_init,
+        logger=logger,
     )
-    logger.info("Definition of app futures complete, now start execution. ")
-    output_dataset.meta = await async_wrap(get_app_future_result)(
-        app_future=final_metadata
-    )
+
     logger.info(f'END workflow "{workflow.name}"')
-
-    dfk.cleanup()
-
     close_job_logger(logger)
     db.add(output_dataset)
 
