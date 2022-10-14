@@ -104,8 +104,8 @@ def test_atomic_task_factory(task, message, nfiles, tmp_path, patch_settings):
         * the output is as expected
     """
 
-    from fractal_server.app.runner import _atomic_task_factory
-    from fractal_server.app.runner.runner_utils import load_parsl_config
+    from fractal_server.app.runner.parsl import _atomic_task_factory
+    from fractal_server.app.runner.parsl.runner_utils import load_parsl_config
 
     workflow_id = 0
 
@@ -169,7 +169,7 @@ def test_process_workflow(tmp_path, nontrivial_workflow, patch_settings):
         * the output is the one expected from the workflow
     """
 
-    from fractal_server.app.runner import _process_workflow
+    from fractal_server.app.runner.parsl import _process_workflow
 
     app, dfk = _process_workflow(
         task=nontrivial_workflow,
@@ -200,7 +200,7 @@ def test_process_workflow_with_wrong_executor(tmp_path, patch_settings):
     THEN ValueError
     """
 
-    from fractal_server.app.runner import _process_workflow
+    from fractal_server.app.runner.parsl import _process_workflow
 
     dummy_task = Task(
         id=999,

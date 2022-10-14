@@ -32,7 +32,7 @@ from parsl.monitoring.monitoring import MonitoringHub
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
-from ...config_runner import settings
+from ....config_runner import settings
 
 
 def add_prefix(*, workflow_id: int, executor_label: str):
