@@ -113,6 +113,14 @@ def generate_parsl_config(
     worker_init: str = None,
 ) -> Config:
 
+    if enable_monitoring:
+        msg = (
+            "parsl monitoring is currently disabled, due to"
+            "https://github.com/fractal-analytics-platform/"
+            "fractal-server/issues/148"
+        )
+        raise NotImplementedError(msg)
+
     allowed_configs = ["minimal", "local", "pelkmanslab", "fmi", "custom"]
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:

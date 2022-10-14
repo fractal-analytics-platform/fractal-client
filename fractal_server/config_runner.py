@@ -19,7 +19,11 @@ class Settings(BaseSettings):
     RUNNER_CONFIG: str = getenv("RUNNER_CONFIG", "local")
     RUNNER_LOG_DIR: str = getenv("RUNNER_LOG_DIR", "logs")
     RUNNER_DEFAULT_EXECUTOR: str = getenv("RUNNER_DEFAULT_EXECUTOR", "cpu-low")
-    RUNNER_MONITORING: bool = int(getenv("RUNNER_MONITORING", 1))
+
+    # NOTE: we currently set RUNNER_MONITORING to False, due to
+    # https://github.com/fractal-analytics-platform/fractal-server/issues/148
+    # RUNNER_MONITORING: bool = int(getenv("RUNNER_MONITORING", 1))
+    RUNNER_MONITORING: bool = False
 
 
 settings = Settings()
