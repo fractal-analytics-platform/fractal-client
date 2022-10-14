@@ -14,18 +14,15 @@ from ._common import set_job_logger
 from ._common import validate_workflow_compatibility  # noqa: F401
 
 
-RUNNER_BACKEND = "PARSL"
-
-
-if RUNNER_BACKEND == "PARSL":
+if settings.RUNNER_BACKEND == "PARSL":
     from .parsl import process_workflow
-elif RUNNER_BACKEND == "process":
+elif settings.RUNNER_BACKEND == "process":
     from .process import process_workflow
 else:
 
     def no_function(*args, **kwarsg):
         raise NotImplementedError(
-            f"Runner backend {RUNNER_BACKEND} not implemented"
+            f"Runner backend {settings.RUNNER_BACKEND} not implemented"
         )
 
     submit_workflow = no_function

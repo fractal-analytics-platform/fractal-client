@@ -17,6 +17,7 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    RUNNER_BACKEND: str = getenv("RUNNER_BACKEND", None)
     RUNNER_ROOT_DIR: Path = Path(getenv("RUNNER_DIR", "artifacts"))
 
     RUNNER_CONFIG: str = getenv("RUNNER_CONFIG", "local")
