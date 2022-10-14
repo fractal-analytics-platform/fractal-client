@@ -1,5 +1,9 @@
+import asyncio
 import logging
+from functools import partial
+from functools import wraps
 from pathlib import Path
+from typing import Callable
 from typing import Optional
 
 from ..models import Dataset
@@ -101,3 +105,24 @@ def close_job_logger(logger: logging.Logger) -> None:
     for handle in logger.handlers:
         if isinstance(handle, logging.FileHandler):
             handle.close()
+
+
+def async_wrap(func: Callable) -> Callable:
+    """
+    See issue #140 and https://stackoverflow.com/q/43241221/19085332
+
+    By replacing
+        .. = final_metadata.result()
+    with
+        .. = await async_wrap(get_app_future_result)(app_future=final_metadata)
+    we avoid a (long) blocking statement.
+    """
+
+    @wraps(func)
+    async def run(*args, loop=None, executor=None, **kwargs):
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        pfunc = partial(func, *args, **kwargs)
+        return await loop.run_in_executor(executor, pfunc)
+
+    return run

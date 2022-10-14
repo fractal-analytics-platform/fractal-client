@@ -16,10 +16,10 @@ from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
-from ....utils import async_wrap
 from ...models.task import PreprocessedTask
 from ...models.task import Subtask
 from ...models.task import Task
+from .._common import async_wrap
 from .runner_utils import get_unique_executor
 from .runner_utils import load_parsl_config
 
