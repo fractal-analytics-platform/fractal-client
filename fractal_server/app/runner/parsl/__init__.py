@@ -376,7 +376,15 @@ async def process_workflow(
     logger: logging.Logger,
     username: str = None,
     worker_init: str = None,
-):
+) -> Dict[str, Any]:
+    """
+    Public interface to the runner backend
+
+    Return
+    ------
+    final_metadata: Dict[str, Any]
+        mapping representing the final state of the output dataset metadata
+    """
     logger.info(f"{input_paths=}")
     logger.info(f"{output_path=}")
 
