@@ -1,7 +1,9 @@
+import logging
+from pathlib import Path
 from typing import Optional
 
-from ..models.project import Dataset
-from ..models.project import Project
+from ..models import Dataset
+from ..models import Project
 from ..models.task import Task
 
 
@@ -72,3 +74,30 @@ def validate_workflow_compatibility(
                 "Cannot determine output path: Multiple paths in dataset."
             )
     return output_path
+
+
+def set_job_logger(
+    *,
+    logger_name: str,
+    log_file_path: Path,
+    level: int = logging.warning,
+    formatter: Optional[logging.Formatter] = None,
+) -> logging.Logger:
+    """
+    Return a dedicated per-job logger
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel = level
+    file_handler = logging.FileHandler(log_file_path, mode="a")
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
+
+
+def close_job_logger(logger: logging.Logger) -> None:
+    """
+    Close all FileHandles of `logger`
+    """
+    for handle in logger.handlers:
+        if isinstance(handle, logging.FileHandler):
+            handle.close()

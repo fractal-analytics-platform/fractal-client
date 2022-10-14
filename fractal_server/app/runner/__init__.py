@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +10,8 @@ from ...utils import async_wrap
 from ..models import Dataset
 from ..models import Task
 from ._common import auto_output_dataset  # noqa: F401
+from ._common import close_job_logger
+from ._common import set_job_logger
 from ._common import validate_workflow_compatibility  # noqa: F401
 
 
@@ -66,14 +69,12 @@ async def submit_workflow(
     if not os.path.isdir(workflow_log_dir):
         os.mkdir(workflow_log_dir)
 
-    log_file = f"{workflow_log_dir}/workflow.log"
-    logger = logging.getLogger(f"WF{workflow_id}")
-    formatter = logging.Formatter("%(asctime)s; %(levelname)s; %(message)s")
-    fileHandler = logging.FileHandler(log_file, mode="a")
-    fileHandler.setFormatter(formatter)
-    fileHandler.setLevel(logging.INFO)
-    logger.setLevel(logging.INFO)
-    logger.addHandler(fileHandler)
+    logger = set_job_logger(
+        logger_name=f"WF{workflow_id}",
+        log_file_path=Path(f"{workflow_log_dir}/workflow.log"),
+        level=logging.INFO,
+        formatter=logging.Formatter("%(asctime)s; %(levelname)s; %(message)s"),
+    )
 
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
     logger.info(f"START workflow {workflow.name}")
@@ -89,19 +90,15 @@ async def submit_workflow(
         username=username,
         worker_init=worker_init,
     )
-    logger.info(
-        "Definition of app futures complete, now start execution. "
-        f"See {workflow_log_dir}/scripts for further info."
-    )
+    logger.info("Definition of app futures complete, now start execution. ")
     output_dataset.meta = await async_wrap(get_app_future_result)(
         app_future=final_metadata
     )
     logger.info(f'END workflow "{workflow.name}"')
-    logger.info("Now closing the FileHandler")
-    fileHandler.close()
 
     dfk.cleanup()
 
+    close_job_logger(logger)
     db.add(output_dataset)
 
     await db.commit()
