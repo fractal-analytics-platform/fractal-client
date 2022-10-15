@@ -10,19 +10,22 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
 
+from ..db import AsyncSession
 from ..schemas.task import WorkflowBase
 from .task import Task
 
 
-class LinkTaskWorkflow(SQLModel, table=True):
+class WorkflowTask(SQLModel, table=True):
     """
-    Crossing table between Task and Workflow
+    A Task as part of a Workflow
 
-    In addition to the foreign keys, it allows for parameter overriding and
-    keeps the order within the list of tasks of the workflow.
+    This is a crossing table between Task and Workflow. In addition to the
+    foreign keys, it allows for parameter overriding and keeps the order
+    within the list of tasks of the workflow.
 
     Attributes
     ----------
+    TODO
     """
 
     class Config:
@@ -36,6 +39,8 @@ class LinkTaskWorkflow(SQLModel, table=True):
 
     order: Optional[int]
     args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
+
+    task: Task = Relationship(sa_relationship_kwargs=dict(lazy="selectin"))
 
 
 class Workflow(WorkflowBase, table=True):
@@ -51,22 +56,27 @@ class Workflow(WorkflowBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     project_id: int = Field(foreign_key="project.id")
 
-    task_list: List["LinkTaskWorkflow"] = Relationship(
+    task_list: List["WorkflowTask"] = Relationship(
         sa_relationship_kwargs=dict(
             lazy="selectin",
-            order_by="LinkTaskWorkflow.order",
+            order_by="WorkflowTask.order",
             collection_class=ordering_list("order"),
         ),
     )
 
-    def insert_task(
+    async def insert_task(
         self,
         task: Task,
         *,
         args: Dict[str, Any] = None,
-        order: Optional[int] = None
+        order: Optional[int] = None,
+        db: AsyncSession,
+        commit: bool = True,
     ) -> None:
         if order is None:
             order = len(self.task_list)
-
-        self.task_list.insert(order, LinkTaskWorkflow(task_id=task.id))
+        wf_task = WorkflowTask(task_id=task.id)
+        db.add(wf_task)
+        self.task_list.insert(order, wf_task)
+        if commit:
+            await db.commit()
