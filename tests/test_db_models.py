@@ -4,8 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from fractal_server.app.models import Project
-from fractal_server.app.models.workflow import LinkTaskWorkflow
 from fractal_server.app.models.workflow import Workflow
+from fractal_server.app.models.workflow import WorkflowTask
 
 
 async def test_project_name_not_unique(MockCurrentUser, db, project_factory):
@@ -57,7 +57,7 @@ async def test_task_workflow_association(
         t1 = await task_factory()
 
         wf = Workflow(name="my wfl", project_id=project.id)
-        wf.insert_task(t0)
+        await wf.insert_task(t0, db=db)
 
         db.add(wf)
         await db.commit()
@@ -69,9 +69,9 @@ async def test_task_workflow_association(
         assert wf.task_list[0].id == t0.id
         # check association table
         stm = (
-            select(LinkTaskWorkflow)
-            .where(LinkTaskWorkflow.workflow_id == wf.id)
-            .where(LinkTaskWorkflow.task_id == t0.id)
+            select(WorkflowTask)
+            .where(WorkflowTask.workflow_id == wf.id)
+            .where(WorkflowTask.task_id == t0.id)
         )
         res = await db.execute(stm)
         link = res.scalars().one()
@@ -79,15 +79,15 @@ async def test_task_workflow_association(
         assert link.task_id == t0.id
 
         # Insert at position 0
-        wf.insert_task(t1, order=0)
+        await wf.insert_task(t1, order=0, db=db)
         db.add(wf)
         await db.commit()
         await db.refresh(wf)
 
         stm = (
-            select(LinkTaskWorkflow)
-            .where(LinkTaskWorkflow.workflow_id == wf.id)
-            .where(LinkTaskWorkflow.task_id == t1.id)
+            select(WorkflowTask)
+            .where(WorkflowTask.workflow_id == wf.id)
+            .where(WorkflowTask.task_id == t1.id)
         )
         res = await db.execute(stm)
         link = res.scalars().one()
