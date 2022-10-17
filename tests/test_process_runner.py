@@ -11,6 +11,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from devtools import debug
 
@@ -18,6 +19,7 @@ import fractal_server.tasks.dummy as dummy
 from fractal_server.app.models import Task
 from fractal_server.app.models import Workflow
 from fractal_server.app.runner import set_job_logger
+from fractal_server.app.runner.process import _call_command_wrapper
 from fractal_server.app.runner.process import process_workflow
 
 
@@ -68,3 +70,14 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path):
     )
 
     # check output
+    raise NotImplementedError
+
+
+async def test_command_wrapper():
+    with ThreadPoolExecutor() as executor:
+        future = executor.submit(
+            _call_command_wrapper, f"ls -al {dummy.__file__}"
+        )
+    result = future.result()
+    debug(result.stdout, result.stderr, result.returncode)
+    assert dummy.__file__ in result.stdout.decode("utf-8")
