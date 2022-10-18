@@ -3,12 +3,25 @@ import logging
 from functools import partial
 from functools import wraps
 from pathlib import Path
+from typing import Any
 from typing import Callable
+from typing import Dict
+from typing import List
 from typing import Optional
+
+from pydantic import BaseModel
 
 from ..models import Dataset
 from ..models import Project
 from ..models.task import Task
+
+
+class TaskParameters(BaseModel):
+    input_paths: List[Path]
+    output_path: Path
+    metadata: Dict[str, Any]
+    logger: logging.Logger
+    username: str = None
 
 
 async def auto_output_dataset(
