@@ -2,6 +2,7 @@ import asyncio
 import logging
 from functools import partial
 from functools import wraps
+from json import JSONEncoder
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -16,12 +17,22 @@ from ..models import Project
 from ..models.task import Task
 
 
+class TaskParameterEncoder(JSONEncoder):
+    def default(self, value):
+        if isinstance(value, Path):
+            return value.as_posix()
+        return JSONEncoder.default(self, value)
+
+
 class TaskParameters(BaseModel):
     input_paths: List[Path]
     output_path: Path
     metadata: Dict[str, Any]
     logger: logging.Logger
     username: str = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 async def auto_output_dataset(
