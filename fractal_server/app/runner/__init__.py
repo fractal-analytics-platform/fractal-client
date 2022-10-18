@@ -8,10 +8,10 @@ from ... import __VERSION__
 from ...config_runner import settings
 from ..models import Dataset
 from ..models import Task
-from ._common import auto_output_dataset  # noqa: F401
-from ._common import close_job_logger
-from ._common import set_job_logger
-from ._common import validate_workflow_compatibility  # noqa: F401
+from .common import auto_output_dataset  # noqa: F401
+from .common import close_job_logger
+from .common import set_job_logger
+from .common import validate_workflow_compatibility  # noqa: F401
 
 
 if settings.RUNNER_BACKEND == "PARSL":
