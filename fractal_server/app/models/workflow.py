@@ -12,6 +12,7 @@ from sqlmodel import SQLModel
 
 from ..db import AsyncSession
 from ..schemas.task import WorkflowBase
+from .models_utils import popget
 from .task import Task
 
 
@@ -41,6 +42,17 @@ class WorkflowTask(SQLModel, table=True):
     args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
 
     task: Task = Relationship(sa_relationship_kwargs=dict(lazy="selectin"))
+
+    @property
+    def arguments(self):
+        """
+        Override default arguments and strip specific arguments (executor and
+        parallelization_level)
+        """
+        out = self.task.default_args.copy()
+        out.update(self.args)
+        popget(out, "parallelization_level")
+        return out
 
 
 class Workflow(WorkflowBase, table=True):
