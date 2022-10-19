@@ -76,5 +76,5 @@ fractal-server = "fractal_server.__main__:run"
 omit = ["tests/*"]
 
 [[tool.mypy.overrides]]
-module = ["devtools", "uvicorn"]
+module = ["devtools", "uvicorn", "sqlalchemy_utils"]
 ignore_missing_imports = true
