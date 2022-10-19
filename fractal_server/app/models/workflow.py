@@ -92,3 +92,4 @@ class Workflow(_WorkflowBase, table=True):
         self.task_list.insert(order, wf_task)
         if commit:
             await db.commit()
+        return wf_task
