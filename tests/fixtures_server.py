@@ -286,10 +286,10 @@ async def task_factory(db: AsyncSession):
     async def __task_factory(db: AsyncSession = db, index: int = 0, **kwargs):
         defaults = dict(
             name=f"task{index}",
-            resource_type="task",
-            module=f"task{index}",
             input_type="zarr",
             output_type="zarr",
+            command="cmd",
+            source="source",
         )
         args = dict(**defaults)
         args.update(kwargs)
