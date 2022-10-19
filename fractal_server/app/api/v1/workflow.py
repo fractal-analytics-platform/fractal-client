@@ -12,43 +12,51 @@ Zurich.
 """
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import status
+from sqlmodel import select
 
 from ...db import AsyncSession
 from ...db import get_db
+from ...models import Workflow
+from ...models import WorkflowCreate
+from ...models import WorkflowRead
 from ...security import current_active_user
 from ...security import User
+from .project import get_project_check_owner
 
 router = APIRouter()
 
 
-@router.post("/")
+@router.post(
+    "/", response_model=WorkflowRead, status_code=status.HTTP_201_CREATED
+)
 async def create_workflow(
+    workflow: WorkflowCreate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Add new global workflow
-    """
-    raise NotImplementedError
-
-
-@router.post("/{wofklow_id}")
-async def add_task(
-    user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Add global task to global workflow
-    """
-    raise NotImplementedError
-
-
-@router.get("/")
-async def get_list_workflow(
-    user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    List public workflows
-    """
-    raise NotImplementedError
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    # Check that there is no workflow with the same name
+    # and same project_id
+    stm = (
+        select(Workflow)
+        .where(Workflow.name == workflow.name)
+        .where(Workflow.project_id == workflow.project_id)
+    )
+    res = await db.execute(stm)
+    if res.scalars().all():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Workflow with name={workflow.name} and\
+                    project_id={workflow.project_id} already in use",
+        )
+    db_workflow = Workflow.from_orm(workflow)
+    db.add(db_workflow)
+    await db.commit()
+    await db.refresh(db_workflow)
+    return db_workflow

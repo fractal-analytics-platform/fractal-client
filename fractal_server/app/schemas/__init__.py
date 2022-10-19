@@ -33,6 +33,9 @@ __all__ = (
     "TaskCreate",
     "TaskUpdate",
     "TaskRead",
+    "WorkflowBase",
+    "WorkflowRead",
+    "WorkflowCreate",
 )
 
 
@@ -187,3 +190,20 @@ class TaskRead(TaskBase):
 
 
 DatasetRead.update_forward_refs()
+
+
+# WORKFLOW
+
+
+class WorkflowBase(SQLModel):
+    name: str
+    project_id: int
+
+
+class WorkflowRead(WorkflowBase):
+    id: int
+    task_list: List[TaskRead]
+
+
+class WorkflowCreate(WorkflowBase):
+    pass

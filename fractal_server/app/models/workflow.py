@@ -10,7 +10,7 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
 
-from ..schemas.task import WorkflowBase
+from ..schemas import WorkflowBase
 from .task import Task
 
 
