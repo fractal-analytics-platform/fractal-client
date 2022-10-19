@@ -22,20 +22,19 @@ from ...db import get_db
 from ...security import current_active_user
 from ...security import User
 
-from ...models.workflow import Workflow
+from ...models import Workflow
+from ...models import WorkflowCreate
+from ...models import WorkflowRead
 
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("/", response_model=WorkflowRead, status_code=status.HTTP_201_CREATED)
 async def create_workflow(
-    workflow: Workflow,
+    workflow: WorkflowCreate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Add new global workflow
-    """
     # Check that there is no workflow with the same name
     stm = select(Workflow).where(Workflow.name == workflow.name)
     res = await db.execute(stm)
@@ -49,28 +48,3 @@ async def create_workflow(
     await db.commit()
     await db.refresh(db_workflow)
     return db_workflow
-
-
-@router.post("/{workflow_id}")
-async def add_task(
-    user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Add global task to global workflow
-    """ 
-    raise NotImplementedError
-
-
-@router.get("/")
-async def get_list_workflow(
-    user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    List public workflows
-    """
-    raise NotImplementedError
-
-
-### ----------
