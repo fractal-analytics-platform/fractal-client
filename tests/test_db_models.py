@@ -57,13 +57,15 @@ async def test_task_workflow_association(
         t1 = await task_factory()
 
         wf = Workflow(name="my wfl", project_id=project.id)
-        await wf.insert_task(t0, db=db)
+        args = dict(arg="test arg")
+        await wf.insert_task(t0, db=db, args=args)
 
         db.add(wf)
         await db.commit()
         await db.refresh(wf)
 
         debug(wf)
+        assert wf.task_list[0].args == args
         # check workflow
         assert len(wf.task_list) == 1
         assert wf.task_list[0].id == t0.id

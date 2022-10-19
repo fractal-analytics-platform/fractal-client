@@ -84,10 +84,10 @@ class Workflow(WorkflowBase, table=True):
         order: Optional[int] = None,
         db: AsyncSession,
         commit: bool = True,
-    ) -> None:
+    ) -> WorkflowTask:
         if order is None:
             order = len(self.task_list)
-        wf_task = WorkflowTask(task_id=task.id)
+        wf_task = WorkflowTask(task_id=task.id, args=args)
         db.add(wf_task)
         self.task_list.insert(order, wf_task)
         if commit:
