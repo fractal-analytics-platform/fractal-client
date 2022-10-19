@@ -18,6 +18,8 @@ from ...db import get_db
 from ...security import current_active_user
 from ...security import User
 
+from ...models.workflow import Workflow
+
 router = APIRouter()
 
 
@@ -52,3 +54,6 @@ async def get_list_workflow(
     List public workflows
     """
     raise NotImplementedError
+
+
+### ----------
