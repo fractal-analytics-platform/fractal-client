@@ -12,6 +12,10 @@ Zurich.
 """
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import status
+from sqlalchemy.exc import NoResultFound
+from sqlmodel import select
 
 from ...db import AsyncSession
 from ...db import get_db
@@ -25,23 +29,36 @@ router = APIRouter()
 
 @router.post("/")
 async def create_workflow(
+    workflow: Workflow,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Add new global workflow
     """
-    raise NotImplementedError
+    # Check that there is no workflow with the same name
+    stm = select(Workflow).where(Workflow.name == workflow.name)
+    res = await db.execute(stm)
+    if res.scalars().all():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Workflow name ({workflow.name}) already in use",
+        )
+    db_workflow = Workflow.from_orm(workflow)
+    db.add(db_workflow)
+    await db.commit()
+    await db.refresh(db_workflow)
+    return db_workflow
 
 
-@router.post("/{wofklow_id}")
+@router.post("/{workflow_id}")
 async def add_task(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Add global task to global workflow
-    """
+    """ 
     raise NotImplementedError
 
 
