@@ -83,7 +83,7 @@ class Settings(BaseSettings):
 
     if DB_ENGINE == "postgres":
         POSTGRES_USER: str = fail_getenv("POSTGRES_USER")
-        POSTGRES_PASSWORD: str = fail_getenv("POSTGRES_PASSWORD", "password")
+        POSTGRES_PASSWORD: str = fail_getenv("POSTGRES_PASSWORD")
         POSTGRES_SERVER: str = getenv("POSTGRES_SERVER", "localhost")
         POSTGRES_PORT: str = getenv("POSTGRES_PORT", "5432")
         POSTGRES_DB: str = fail_getenv("POSTGRES_DB")

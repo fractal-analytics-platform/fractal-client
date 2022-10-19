@@ -1,5 +1,7 @@
 import uuid
 from typing import AsyncGenerator
+from typing import Optional
+from typing import Union
 
 from fastapi import APIRouter
 from fastapi import Depends
@@ -24,7 +26,7 @@ from ..models.security import UserUpdate
 
 async def get_user_db(
     session: AsyncSession = Depends(get_db),
-) -> SQLModelUserDatabaseAsync:
+) -> AsyncGenerator[SQLModelUserDatabaseAsync, None]:
     yield SQLModelUserDatabaseAsync(session, User, OAuthAccount)
 
 
@@ -102,10 +104,12 @@ auth_router.include_router(
     prefix="/users",
 )
 
+
 # OAUTH CLIENTS
 for client in settings.OAUTH_CLIENTS:
     # INIT CLIENTS
     client_name = client.CLIENT_NAME.lower()
+    _client: Optional[Union["GitHubOAuth2", "OAuth2"]] = None
     if client_name == "github":
         from httpx_oauth.clients.github import GitHubOAuth2
 
@@ -113,6 +117,15 @@ for client in settings.OAUTH_CLIENTS:
     else:  # GENERIC CLIENT
         from httpx_oauth.oauth2 import OAuth2
 
+        if (
+            not client.CLIENT_SECRET
+            or not client.AUTHORIZE_ENDPOINT
+            or not client.ACCESS_TOKEN_ENDPOINT
+        ):
+            raise ValueError(
+                "Must specify CLIENT_SECRET, AUTHORIZE_ENDPOINT and "
+                "ACCESS_TOKEN_ENDPOINT to define custom OAuth2 client."
+            )
         _client = OAuth2(
             client.CLIENT_ID,
             client.CLIENT_SECRET,

@@ -51,7 +51,7 @@ async def upsert_task(
             return "inserted"
 
 
-async def collect_tasks_headless():
+async def collect_tasks_headless() -> Dict[str, int]:
     out = dict(inserted=0, updated=0)
     results = await asyncio.gather(
         *[upsert_task(task) for task in collect_tasks()]

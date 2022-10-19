@@ -1,13 +1,12 @@
 import logging
 import os
-from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ... import __VERSION__
 from ...config_runner import settings
 from ..models import Dataset
-from ..models import Task
+from ..models import Workflow
 from .common import auto_output_dataset  # noqa: F401
 from .common import close_job_logger
 from .common import set_job_logger
@@ -29,7 +28,7 @@ else:
 async def submit_workflow(
     *,
     db: AsyncSession,
-    workflow: Task,
+    workflow: Workflow,
     input_dataset: Dataset,
     output_dataset: Dataset,
     job_id: int,
@@ -56,16 +55,13 @@ async def submit_workflow(
 
     workflow_id = workflow.id
 
-    RUNNER_LOG_DIR = settings.RUNNER_ROOT_DIR
-    if not os.path.isdir(RUNNER_LOG_DIR):
-        os.mkdir(RUNNER_LOG_DIR)
-    workflow_log_dir = f"{RUNNER_LOG_DIR}/workflow_{workflow_id:06d}"
-    if not os.path.isdir(workflow_log_dir):
-        os.mkdir(workflow_log_dir)
+    WORKFLOW_DIR = settings.RUNNER_ROOT_DIR / "workflow_{workflow_id:06d}"
+    if not os.path.isdir(WORKFLOW_DIR):
+        os.mkdir(WORKFLOW_DIR)
 
     logger = set_job_logger(
         logger_name=f"WF{workflow_id}",
-        log_file_path=Path(f"{workflow_log_dir}/workflow.log"),
+        log_file_path=WORKFLOW_DIR / "workflow.log",
         level=logging.INFO,
         formatter=logging.Formatter("%(asctime)s; %(levelname)s; %(message)s"),
     )
@@ -78,8 +74,8 @@ async def submit_workflow(
         output_path=output_path,
         input_metadata=input_dataset.meta,
         username=username,
-        worker_init=worker_init,
         logger=logger,
+        workflow_dir=WORKFLOW_DIR,
     )
 
     logger.info(f'END workflow "{workflow.name}"')
