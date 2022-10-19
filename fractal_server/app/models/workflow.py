@@ -10,8 +10,8 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
 
-from ..schemas import WorkflowBase
 from ..db import AsyncSession
+from ..schemas.workflow import _WorkflowBase
 from .models_utils import popget
 from .task import Task
 
@@ -55,7 +55,7 @@ class WorkflowTask(SQLModel, table=True):
         return out
 
 
-class Workflow(WorkflowBase, table=True):
+class Workflow(_WorkflowBase, table=True):
     """
     Workflow
 
