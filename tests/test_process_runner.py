@@ -87,11 +87,16 @@ def test_recursive_task_submission_step0(tmp_path):
             order=0,
         )
     ]
+    job_logger = set_job_logger(
+        logger_name="job_logger",
+        log_file_path=tmp_path / "job.log",
+        level=logging.DEBUG,
+    )
     task_pars = TaskParameters(
         input_paths=[tmp_path],
         output_path=tmp_path,
         metadata={},
-        logger=logging.getLogger(),
+        logger=job_logger,
     )
 
     with ThreadPoolExecutor() as executor:
@@ -126,11 +131,16 @@ def test_recursive_task_submission_inductive_step(tmp_path):
             order=1,
         ),
     ]
+    job_logger = set_job_logger(
+        logger_name="job_logger",
+        log_file_path=tmp_path / "job.log",
+        level=logging.DEBUG,
+    )
     task_pars = TaskParameters(
         input_paths=[tmp_path],
         output_path=tmp_path / "output.json",
         metadata=METADATA_0,
-        logger=logging.getLogger(),
+        logger=job_logger,
     )
 
     with ThreadPoolExecutor() as executor:
@@ -177,7 +187,8 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path):
     await db.refresh(tk)
     await db.refresh(wf)
 
-    await wf.insert_task(tk, db=db)
+    await wf.insert_task(tk, db=db, args=dict(message="task 0"))
+    await wf.insert_task(tk, db=db, args=dict(message="task 1"))
     await db.refresh(wf)
 
     debug(tk)
@@ -189,13 +200,13 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path):
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
-    await process_workflow(
+    out = await process_workflow(
         workflow=wf,
         input_paths=[tmp_path / "*.txt"],
-        output_path=tmp_path / "out.txt",
+        output_path=tmp_path / "out.json",
         input_metadata={},
         logger=job_logger,
+        workflow_dir=tmp_path,
     )
-
-    # check output
-    raise NotImplementedError
+    debug(out)
+    assert "dummy" in out.metadata

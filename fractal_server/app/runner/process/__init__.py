@@ -92,6 +92,8 @@ def call_single_task(
 
     # assemble full command
     cmd = f"{task.task.command} -j {args_file_path}"
+
+    task_pars.logger.debug(f"executing task {task.order=}")
     completed_process = _call_command_wrapper(cmd)
 
     # NOTE:
@@ -141,9 +143,7 @@ def recursive_task_submission(
         pseudo_future.set_result(task_pars)
         return pseudo_future
 
-    task_pars.logger.debug([t.order for t in task_list])
-    task_pars.logger.debug(f"{this_task.order=}")
-
+    task_pars.logger.debug(f"submitting task {this_task.order=}")
     this_future = executor.submit(
         call_single_task,
         task=this_task,
@@ -155,7 +155,6 @@ def recursive_task_submission(
         ).result(),
         workflow_dir=workflow_dir,
     )
-    task_pars.logger.debug(f"returning for {this_task.order=}")
     return this_future
 
 
@@ -166,11 +165,12 @@ async def process_workflow(
     output_path: Path,
     input_metadata: Dict[str, Any],
     logger: logging.Logger,
+    workflow_dir: Path,
     username: str = None,
 ) -> Dict[str, Any]:
 
     with ThreadPoolExecutor() as executor:
-        recursive_task_submission(
+        output_dataset_metadata = recursive_task_submission(
             executor=executor,
             task_list=workflow.task_list,
             task_pars=TaskParameters(
@@ -179,6 +179,6 @@ async def process_workflow(
                 metadata=input_metadata,
                 logger=logger,
             ),
+            workflow_dir=workflow_dir,
         )
-
-    raise NotImplementedError
+    return output_dataset_metadata.result()
