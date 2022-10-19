@@ -29,7 +29,7 @@ class TaskParameters(BaseModel):
     output_path: Path
     metadata: Dict[str, Any]
     logger: logging.Logger
-    username: str = None
+    username: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -96,11 +96,13 @@ def validate_workflow_compatibility(
             else:
                 output_path = input_paths[0]
     else:
-        output_path = output_dataset.paths
-        if len(output_path) != 1:
+
+        if len(output_dataset.paths) != 1:
             raise ValueError(
                 "Cannot determine output path: Multiple paths in dataset."
             )
+        else:
+            output_path = output_dataset.paths[0]
     return output_path
 
 
@@ -108,14 +110,14 @@ def set_job_logger(
     *,
     logger_name: str,
     log_file_path: Path,
-    level: int = logging.warning,
+    level: int = logging.WARNING,
     formatter: Optional[logging.Formatter] = None,
 ) -> logging.Logger:
     """
     Return a dedicated per-job logger
     """
     logger = logging.getLogger(logger_name)
-    logger.setLevel = level
+    logger.setLevel(level)
     file_handler = logging.FileHandler(log_file_path, mode="a")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
