@@ -42,6 +42,7 @@ async def create_workflow(
         db=db,
     )
     # Check that there is no workflow with the same name
+    # and same project_id
     stm = (
         select(Workflow)
         .where(Workflow.name == workflow.name)
