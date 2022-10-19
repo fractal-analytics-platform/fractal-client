@@ -7,7 +7,7 @@ from sqlalchemy import Column
 from sqlalchemy.types import JSON
 from sqlmodel import Field
 
-from ..schemas import TaskBase
+from ..schemas.task import _TaskBase
 from .models_utils import popget
 
 
@@ -43,7 +43,7 @@ class PreprocessedTask(BaseModel):
         return self.args
 
 
-class Task(TaskBase, table=True):  # type: ignore
+class Task(_TaskBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     project_id: Optional[int] = Field(foreign_key="project.id")
     default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
