@@ -78,7 +78,8 @@ async def test_task_create(db, client, MockCurrentUser):
     """
     task = TaskCreate(
         name="mytask",
-        resource_type="workflow",
+        command="cmd",
+        source="/source",
         input_type="Any",
         output_type="Any",
     )

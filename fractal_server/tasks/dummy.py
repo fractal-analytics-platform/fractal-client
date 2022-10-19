@@ -12,13 +12,21 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import json
 import logging
-import os
+from datetime import datetime
+from datetime import timezone
+from json.decoder import JSONDecodeError
 from pathlib import Path
+from sys import stdout
 from typing import Any
 from typing import Dict
 from typing import Iterable
+from typing import List
 from typing import Optional
+
+from pydantic import BaseModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +41,12 @@ def dummy(
     message: str,
     index: int = 0,
     **task_args,
-) -> Dict:
+) -> Dict[str, Any]:
     """
     Dummy task
 
     This task appends to a json file the parameters it was called with, such
-    that it is easy  to parse the file in a test settings.
+    that it is easy to parse the file in a test settings.
 
     Incidentally, this task defines the reference interface of a task.
 
@@ -64,11 +72,7 @@ def dummy(
     metadata_update (Dict[str, Any]) :
         a dictionary that will update the metadata
     """
-    from datetime import datetime, timezone
-    import json
-    from json.decoder import JSONDecodeError
-
-    logger.info("START of dummy task (from within task)")
+    logger.info("ENTERING dummy task")
 
     if component:
         index = component
@@ -82,8 +86,9 @@ def dummy(
         message=message,
     )
 
-    if not os.path.isdir(output_path.parent):
-        os.makedirs(output_path.parent)
+    if not output_path.parent.is_dir():
+        output_path.parent.mkdir()
+
     if not output_path.as_posix().endswith(".json"):
         filename_out = f"{index}.json"
         out_fullpath = output_path / filename_out
@@ -100,27 +105,60 @@ def dummy(
         json.dump(data, fout, indent=2)
 
     # Update metadata
-    metadata_update = {"dummy": "dummy"}
+    metadata_update = {"dummy": f"dummy {index}"}
 
-    logger.info("END of dummy task (from within task)")
+    logger.info("EXITING dummy task")
 
     return metadata_update
 
 
 if __name__ == "__main__":
-    from argparse import ArgumentParser as AP
+    from argparse import ArgumentParser
 
-    parser = AP.ArgumentParser()
+    class TaskArguments(BaseModel):
+        """
+        Wrap task arguments to ease marshalling
+
+        This way we can automatically cast the input from command line onto
+        the correct type required by the task.
+        """
+
+        input_paths: List[Path]
+        output_path: Path
+        metadata: Optional[Dict[str, Any]] = None
+        component: Optional[Any] = None
+        message: str
+        index: int = 0
+
+    parser = ArgumentParser()
     parser.add_argument("-j", "--json", help="Read parameters from json file")
+    parser.add_argument(
+        "-o",
+        "--output",
+        help=(
+            "Output file to redirect serialised returned data "
+            "(default stdout)"
+        ),
+    )
 
     args = parser.parse_args()
 
+    if args.output and Path(args.output).exists():
+        logger.error(f"Output file {args.output} already exists. Terminating")
+        exit(1)
+
     pars = {}
-
     if args.json:
-        import json
-
         with open(args.json, "r") as f:
             pars = json.load(f)
 
-    dummy(**pars)
+    task_args = TaskArguments(**pars)
+    metadata_update = dummy(**task_args.dict())
+
+    if args.output:
+        with open(args.output, "w") as fout:
+            json.dump(metadata_update, fout)
+    else:
+        stdout.write(json.dumps(metadata_update))
+
+    exit(0)

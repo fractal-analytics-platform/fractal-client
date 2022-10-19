@@ -8,15 +8,13 @@ from ... import __VERSION__
 from ...config_runner import settings
 from ..models import Dataset
 from ..models import Task
-from ._common import auto_output_dataset  # noqa: F401
-from ._common import close_job_logger
-from ._common import set_job_logger
-from ._common import validate_workflow_compatibility  # noqa: F401
+from .common import auto_output_dataset  # noqa: F401
+from .common import close_job_logger
+from .common import set_job_logger
+from .common import validate_workflow_compatibility  # noqa: F401
 
 
-if settings.RUNNER_BACKEND == "PARSL":
-    from .parsl import process_workflow
-elif settings.RUNNER_BACKEND == "process":
+if settings.RUNNER_BACKEND == "process":
     from .process import process_workflow
 else:
 
@@ -25,7 +23,7 @@ else:
             f"Runner backend {settings.RUNNER_BACKEND} not implemented"
         )
 
-    submit_workflow = no_function
+    process_workflow = no_function
 
 
 async def submit_workflow(
@@ -58,7 +56,7 @@ async def submit_workflow(
 
     workflow_id = workflow.id
 
-    RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
+    RUNNER_LOG_DIR = settings.RUNNER_ROOT_DIR
     if not os.path.isdir(RUNNER_LOG_DIR):
         os.mkdir(RUNNER_LOG_DIR)
     workflow_log_dir = f"{RUNNER_LOG_DIR}/workflow_{workflow_id:06d}"

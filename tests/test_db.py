@@ -30,9 +30,10 @@ async def test_sync_db(db_sync, db):
     db.add(
         Task(
             name="mytask",
-            resource_type="core task",
             input_type="image",
             output_type="zarr",
+            command="cmd",
+            source="/source",
         )
     )
     await db.commit()
