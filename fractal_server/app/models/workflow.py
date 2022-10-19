@@ -10,8 +10,8 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
 
+from ..schemas import WorkflowBase
 from .task import Task
-from ..schemas import TaskRead
 
 
 class LinkTaskWorkflow(SQLModel, table=True):
@@ -36,19 +36,6 @@ class LinkTaskWorkflow(SQLModel, table=True):
 
     order: Optional[int]
     args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
-
-
-class WorkflowBase(SQLModel):
-    name: str
-    project_id: int
-
-
-class WorkflowRead(WorkflowBase):
-    id: int
-    task_list: List[TaskRead]
-
-class WorkflowCreate(WorkflowBase):
-    pass
 
 
 class Workflow(WorkflowBase, table=True):
