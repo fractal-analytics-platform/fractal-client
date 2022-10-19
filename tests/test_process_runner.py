@@ -10,6 +10,7 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -24,7 +25,130 @@ from fractal_server.app.runner.common import TaskParameters
 from fractal_server.app.runner.process import _call_command_wrapper
 from fractal_server.app.runner.process import call_single_task
 from fractal_server.app.runner.process import process_workflow
+from fractal_server.app.runner.process import recursive_task_submission
 from fractal_server.tasks import dummy as dummy_module
+
+
+class MockTask(BaseModel):
+    command: str
+
+
+class MockWorkflowTask(BaseModel):
+    order: int = 0
+    task: MockTask
+    arguments = {}
+
+
+async def test_command_wrapper():
+    with ThreadPoolExecutor() as executor:
+        future = executor.submit(
+            _call_command_wrapper, f"ls -al {dummy.__file__}"
+        )
+    result = future.result()
+    debug(result.stdout, result.stderr, result.returncode)
+    assert dummy.__file__ in result.stdout.decode("utf-8")
+
+
+def test_call_single_task(tmp_path):
+    task = MockWorkflowTask(
+        task=MockTask(command=f"python {dummy_module.__file__}"),
+        arguments=dict(message="test"),
+        order=0,
+    )
+    task_pars = TaskParameters(
+        input_paths=[tmp_path],
+        output_path=tmp_path,
+        metadata={},
+        logger=logging.getLogger(),
+    )
+
+    debug(task)
+
+    out = call_single_task(
+        task=task, task_pars=task_pars, workflow_dir=tmp_path
+    )
+    debug(out)
+    assert isinstance(out, TaskParameters)
+    # check specific of the dummy task
+    assert out.metadata["dummy"] == "dummy 0"
+
+
+def test_recursive_task_submission_step0(tmp_path):
+    """
+    GIVEN a workflow with a single task
+    WHEN it is passed to the recursive task submission
+    THEN it is correctly executed, i.e., step 0 of the induction
+    """
+    INDEX = 666
+    task_list = [
+        MockWorkflowTask(
+            task=MockTask(command=f"python {dummy_module.__file__}"),
+            arguments=dict(message="test", index=INDEX),
+            order=0,
+        )
+    ]
+    task_pars = TaskParameters(
+        input_paths=[tmp_path],
+        output_path=tmp_path,
+        metadata={},
+        logger=logging.getLogger(),
+    )
+
+    with ThreadPoolExecutor() as executor:
+        res = recursive_task_submission(
+            executor=executor,
+            task_list=task_list,
+            task_pars=task_pars,
+            workflow_dir=tmp_path,
+        )
+        debug(res.result())
+        assert res.result().metadata["dummy"] == f"dummy {INDEX}"
+
+
+def test_recursive_task_submission_inductive_step(tmp_path):
+    """
+    GIVEN a workflow with two or more tasks
+    WHEN it is passed to the recursive task submission
+    THEN it is correctly executed, i.e., n => n+1
+    """
+    METADATA_0 = {}
+    METADATA_1 = dict(dummy="dummy 0")  # for how dummy task works
+
+    task_list = [
+        MockWorkflowTask(
+            task=MockTask(command=f"python {dummy_module.__file__}"),
+            arguments=dict(message="test 0", index=0),
+            order=0,
+        ),
+        MockWorkflowTask(
+            task=MockTask(command=f"python {dummy_module.__file__}"),
+            arguments=dict(message="test 1", index=1),
+            order=1,
+        ),
+    ]
+    task_pars = TaskParameters(
+        input_paths=[tmp_path],
+        output_path=tmp_path / "output.json",
+        metadata=METADATA_0,
+        logger=logging.getLogger(),
+    )
+
+    with ThreadPoolExecutor() as executor:
+        res = recursive_task_submission(
+            executor=executor,
+            task_list=task_list,
+            task_pars=task_pars,
+            workflow_dir=tmp_path,
+        )
+
+    output = res.result()
+    debug(output)
+    with open(output.output_path, "r") as f:
+        data = json.load(f)
+    debug(data)
+    assert len(data) == 2
+    assert data[0]["metadata"] == METADATA_0
+    assert data[1]["metadata"] == METADATA_1
 
 
 async def test_runner(db, project_factory, MockCurrentUser, tmp_path):
@@ -63,7 +187,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path):
     job_logger = set_job_logger(
         logger_name="job_logger",
         log_file_path=tmp_path / "job.log",
-        level=logging.INFO,
+        level=logging.DEBUG,
     )
     await process_workflow(
         workflow=wf,
@@ -75,81 +199,3 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path):
 
     # check output
     raise NotImplementedError
-
-
-async def test_command_wrapper():
-    with ThreadPoolExecutor() as executor:
-        future = executor.submit(
-            _call_command_wrapper, f"ls -al {dummy.__file__}"
-        )
-    result = future.result()
-    debug(result.stdout, result.stderr, result.returncode)
-    assert dummy.__file__ in result.stdout.decode("utf-8")
-
-
-def test_recursive_task_submission():
-    from pydantic import BaseModel
-
-    class TaskParameters(BaseModel):
-        input_path: str
-        output_path: str
-        metadata: str
-
-    def recursive_task_submission(task_list, task_parameters):
-        try:
-            *depenency_tasks, this_task = task_list
-        except ValueError:
-            return task_parameters
-        dependency = recursive_task_submission(
-            depenency_tasks, task_parameters
-        )
-
-        this_task_parameters = dependency
-        debug(this_task, this_task_parameters)
-        return TaskParameters(
-            input_path=task_parameters.output_path,
-            output_path=task_parameters.output_path,
-            metadata=f"metaupdate {this_task}",
-        )
-
-    recursive_task_submission(
-        ["task0", "task1", "task2"],
-        task_parameters=TaskParameters(
-            input_path="input0",
-            output_path="output",
-            metadata="metadata0",
-        ),
-    )
-    assert False
-
-
-def test_call_single_task(tmp_path):
-    class MockTask(BaseModel):
-        command: str
-
-    class MockWorkflowTask(BaseModel):
-        order: int = 0
-        task: MockTask
-        arguments = {}
-
-    task = MockWorkflowTask(
-        task=MockTask(command=f"python {dummy_module.__file__}"),
-        arguments=dict(message="test"),
-        order=0,
-    )
-    task_pars = TaskParameters(
-        input_paths=[tmp_path],
-        output_path=tmp_path,
-        metadata={},
-        logger=logging.getLogger(),
-    )
-
-    debug(task)
-
-    out = call_single_task(
-        task=task, task_pars=task_pars, workflow_dir=tmp_path
-    )
-    debug(out)
-    debug(out.stderr.decode("utf-8"))
-    debug(out.returncode)
-    assert False
