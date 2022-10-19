@@ -11,9 +11,9 @@ from sqlmodel import Field
 from sqlmodel import Relationship
 from sqlmodel import SQLModel
 
-from ..schemas import DatasetBase
-from ..schemas import ProjectBase
-from ..schemas import ResourceBase
+from ..schemas.project import _DatasetBase
+from ..schemas.project import _ProjectBase
+from ..schemas.project import _ResourceBase
 from .security import UserOAuth as User
 
 
@@ -26,7 +26,7 @@ class LinkUserProject(SQLModel, table=True):
     user_id: UUID4 = Field(foreign_key="user_oauth.id", primary_key=True)
 
 
-class Dataset(DatasetBase, table=True):
+class Dataset(_DatasetBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     project_id: int = Field(foreign_key="project.id")
     resource_list: List["Resource"] = Relationship(
@@ -42,7 +42,7 @@ class Dataset(DatasetBase, table=True):
         return [r.glob_path for r in self.resource_list]
 
 
-class Project(ProjectBase, table=True):
+class Project(_ProjectBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     slug: Optional[str] = Field()
 
@@ -61,6 +61,6 @@ class Project(ProjectBase, table=True):
     )
 
 
-class Resource(ResourceBase, table=True):
+class Resource(_ResourceBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     dataset_id: int = Field(foreign_key="dataset.id")
