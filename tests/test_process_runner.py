@@ -42,8 +42,11 @@ class MockWorkflowTask(BaseModel):
     arguments: Dict = {}
 
 
+MOCKPARALLELTASK_NAME = "This is just a name"
+
+
 class MockParallelTask(BaseModel):
-    name: str = "MockParallelTask name"
+    name: str = MOCKPARALLELTASK_NAME
     command: str
     parallelization_level: str
 
@@ -167,6 +170,7 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
             workflow_dir=tmp_path,
         )
         debug(res.result())
+        assert MOCKPARALLELTASK_NAME in res.result().metadata["history"][0]
 
     # Validate results
     assert output_path.parent.exists()
