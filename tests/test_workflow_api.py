@@ -82,21 +82,21 @@ async def test_workflow_delete(
             "api/v1/workflow/",
             json=workflow,
         )
-        wf = (await db.execute(select(Workflow))).scalars().one()
+        wf_id = res.json()["id"]
+        wf = await db.get(Workflow, wf_id)
+
         t0 = await task_factory()
         t1 = await task_factory()
         await wf.insert_task(t0, db=db)
         await wf.insert_task(t1, db=db)
 
-        assert len((await db.execute(select(Workflow))).scalars().all()) == 1
-        assert (
-            len((await db.execute(select(WorkflowTask))).scalars().all()) == 2
+        wf_tasks = select(WorkflowTask).where(
+            WorkflowTask.workflow_id == wf_id
         )
+        assert len((await db.execute(wf_tasks)).scalars().all()) == 2
 
         res = await client.delete(f"api/v1/workflow/{wf.id}")
         assert res.status_code == 204
 
-        assert len((await db.execute(select(Workflow))).scalars().all()) == 0
-        assert (
-            len((await db.execute(select(WorkflowTask))).scalars().all()) == 0
-        )
+        assert (await db.get(Workflow, wf_id)) is None
+        assert len((await db.execute(wf_tasks)).scalars().all()) == 0
