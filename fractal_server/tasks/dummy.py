@@ -36,11 +36,9 @@ def dummy(
     input_paths: Iterable[Path],
     output_path: Path,
     metadata: Optional[Dict[str, Any]] = None,
-    component: Optional[Any] = None,
     # arguments of this task
     message: str,
     index: int = 0,
-    **task_args,
 ) -> Dict[str, Any]:
     """
     Dummy task
@@ -64,18 +62,12 @@ def dummy(
         the arguments specific to the issue, i.e., `message` and `index` in the
         present exmaple
 
-    **task_args (Any) :
-        Task should always include a catch-all kwarg
-
     Retrun
     ------
     metadata_update (Dict[str, Any]) :
         a dictionary that will update the metadata
     """
     logger.info("ENTERING dummy task")
-
-    if component:
-        index = component
 
     payload = dict(
         task="DUMMY TASK",
@@ -126,7 +118,6 @@ if __name__ == "__main__":
         input_paths: List[Path]
         output_path: Path
         metadata: Optional[Dict[str, Any]] = None
-        component: Optional[Any] = None
         message: str
         index: int = 0
 
