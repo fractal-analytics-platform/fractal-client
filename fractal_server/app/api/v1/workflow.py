@@ -60,3 +60,12 @@ async def create_workflow(
     await db.commit()
     await db.refresh(db_workflow)
     return db_workflow
+
+
+@router.delete("/{_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_workflow(
+    _id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    pass

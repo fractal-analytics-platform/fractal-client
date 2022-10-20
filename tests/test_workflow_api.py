@@ -1,11 +1,10 @@
 from sqlmodel import select
 
 from fractal_server.app.models import Workflow
+from fractal_server.app.models import WorkflowTask
 
 
-async def test_workflow_post(
-    db, client, MockCurrentUser, project_factory, task_factory
-):
+async def test_workflow_post(db, client, MockCurrentUser, project_factory):
     async with MockCurrentUser(persist=True) as user:
         res = await client.post(
             "api/v1/workflow/",
@@ -60,3 +59,44 @@ async def test_workflow_post(
 
             assert db_workflow.name == "My Workflow"
             assert db_workflow.project_id == id
+
+
+async def test_workflow_delete(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Workflow with two Tasks
+    WHEN the delete endpoint is called
+    THEN the Workflow and its associated WorkflowTasks
+        are removed from the db
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        p_id = project.id
+        workflow = {
+            "name": "My Workflow",
+            "project_id": p_id,
+        }
+
+        res = await client.post(
+            "api/v1/workflow/",
+            json=workflow,
+        )
+        wf = (await db.execute(select(Workflow))).scalars().one()
+        t0 = await task_factory()
+        t1 = await task_factory()
+        await wf.insert_task(t0, db=db)
+        await wf.insert_task(t1, db=db)
+
+        assert len((await db.execute(select(Workflow))).scalars().all()) == 1
+        assert (
+            len((await db.execute(select(WorkflowTask))).scalars().all()) == 2
+        )
+
+        res = await client.delete(f"api/v1/workflow/{wf.id}")
+        assert res.status_code == 204
+
+        assert len((await db.execute(select(Workflow))).scalars().all()) == 0
+        assert (
+            len((await db.execute(select(WorkflowTask))).scalars().all()) == 0
+        )
