@@ -186,11 +186,9 @@ def call_single_task(
     # This assumes that the new metadata is printed to stdout
     # and nothing else outputs to stdout
     diff_metadata = json.loads(completed_process.stdout)
+    updated_metadata = task_pars.metadata.copy()
+    updated_metadata.update(diff_metadata)
 
-    # TODO:
-    # update metadata
-    # updated_metadata = task_pars.metadata.update(diff_metadata)
-    updated_metadata = diff_metadata
     out_task_parameters = TaskParameters(
         input_paths=[task_pars.output_path],
         output_path=task_pars.output_path,
