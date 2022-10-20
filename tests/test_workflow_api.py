@@ -1,11 +1,10 @@
+from devtools import debug  # noqa
 from sqlmodel import select
 
 from fractal_server.app.models import Workflow
 
 
-async def test_workflow_post(
-    db, client, MockCurrentUser, project_factory, task_factory
-):
+async def test_workflow_post(db, client, MockCurrentUser, project_factory):
     async with MockCurrentUser(persist=True) as user:
         res = await client.post(
             "api/v1/workflow/",
@@ -60,3 +59,34 @@ async def test_workflow_post(
 
             assert db_workflow.name == "My Workflow"
             assert db_workflow.project_id == id
+
+
+async def test_workflow_delete(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Workflow with two Tasks
+    WHEN the delete endpoint is called
+    THEN the Workflow and its associated WorkflowTasks
+        are removed from the db
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        p_id = project.id
+        workflow = {
+            "name": "My Workflow",
+            "project_id": p_id,
+        }
+
+        res = await client.post(
+            "api/v1/workflow/",
+            json=workflow,
+        )
+        wf_id = res.json()["id"]
+
+        res = await client.delete(f"api/v1/workflow/{wf_id}")
+        assert res.status_code == 204
+
+        # TODO add tasks with API and test cascade delete
+
+        assert not await db.get(Workflow, wf_id)

@@ -13,6 +13,7 @@ Zurich.
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import Response
 from fastapi import status
 from sqlmodel import select
 
@@ -60,3 +61,25 @@ async def create_workflow(
     await db.commit()
     await db.refresh(db_workflow)
     return db_workflow
+
+
+@router.delete("/{workflow_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_workflow(
+    workflow_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    workflow = await db.get(Workflow, workflow_id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    await db.delete(workflow)
+    await db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
