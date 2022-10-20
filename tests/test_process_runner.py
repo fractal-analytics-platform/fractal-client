@@ -13,6 +13,8 @@ Zurich.
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from typing import Dict
+from typing import Optional
 
 from devtools import debug
 from pydantic import BaseModel
@@ -27,16 +29,30 @@ from fractal_server.app.runner.process import call_single_task
 from fractal_server.app.runner.process import process_workflow
 from fractal_server.app.runner.process import recursive_task_submission
 from fractal_server.tasks import dummy as dummy_module
+from fractal_server.tasks import dummy_parallel as dummy_parallel_module
 
 
 class MockTask(BaseModel):
     command: str
+    parallelization_level: Optional[str] = None
 
 
 class MockWorkflowTask(BaseModel):
     order: int = 0
     task: MockTask
-    arguments = {}
+    arguments: Dict = {}
+
+
+class MockParallelTask(BaseModel):
+    name: str
+    command: str
+    parallelization_level: str
+
+
+class MockParallelWorkflowTask(BaseModel):
+    order: int = 0
+    task: MockParallelTask
+    arguments: Dict = {}
 
 
 async def test_command_wrapper():
@@ -108,6 +124,65 @@ def test_recursive_task_submission_step0(tmp_path):
         )
         debug(res.result())
         assert res.result().metadata["dummy"] == f"dummy {INDEX}"
+
+
+def test_recursive_parallel_task_submission_step0(tmp_path):
+    """
+    GIVEN a workflow with a single parallel task
+    WHEN it is passed to the recursive task submission
+    THEN it is correctly executed, i.e., step 0 of the induction
+    """
+    LIST_INDICES = ["0", "1"]
+    MESSAGE = "test message"
+    MOCKPARALLELTASK_NAME = "This is just a name"
+    task_list = [
+        MockParallelWorkflowTask(
+            task=MockParallelTask(
+                name=MOCKPARALLELTASK_NAME,
+                command=f"python {dummy_parallel_module.__file__}",
+                parallelization_level="index",
+            ),
+            arguments=dict(message=MESSAGE),
+            order=0,
+        )
+    ]
+    job_logger = set_job_logger(
+        logger_name="job_logger",
+        log_file_path=tmp_path / "job.log",
+        level=logging.DEBUG,
+    )
+    output_path = tmp_path / "output/*.json"
+    task_pars = TaskParameters(
+        input_paths=[tmp_path],
+        output_path=output_path,
+        metadata={"index": LIST_INDICES},
+        logger=job_logger,
+    )
+
+    debug(task_list)
+    debug(task_pars)
+
+    with ThreadPoolExecutor() as executor:
+        res = recursive_task_submission(
+            executor=executor,
+            task_list=task_list,
+            task_pars=task_pars,
+            workflow_dir=tmp_path,
+        )
+        debug(res.result())
+        assert MOCKPARALLELTASK_NAME in res.result().metadata["history"][0]
+
+    # Validate results
+    assert output_path.parent.exists()
+    output_files = list(output_path.parent.glob("*"))
+    debug(output_files)
+    assert len(output_files) == len(LIST_INDICES)
+
+    for output_file in output_files:
+        with output_file.open("r") as fin:
+            data = json.load(fin)
+        assert output_file.name == f'{data["component"]}.json'
+        assert data["message"] == MESSAGE
 
 
 def test_recursive_task_submission_inductive_step(tmp_path):
