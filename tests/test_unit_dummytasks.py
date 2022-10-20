@@ -8,6 +8,9 @@ from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_fail as dummy_fail_module
 from fractal_server.tasks.dummy import dummy
 from fractal_server.tasks.dummy_fail import dummy_fail
+from fractal_server.tasks.dummy_parallel import dummy_parallel
+
+# from fractal_server.tasks import dummy_parallel as dummy_parallel_module
 
 
 FIRST_TEST_MESSAGE = "first call"
@@ -118,3 +121,30 @@ async def test_dummy_fail_process_call(tmp_path):
     debug(stderr)
     assert proc.returncode == 1
     assert f"ValueError: {ERROR_MESSAGE}" in str(stderr)
+
+
+def test_dummy_parallel_direct_call(tmp_path):
+
+    list_components = ["A", "B", "C"]
+
+    for component in list_components:
+        out_path = tmp_path / "*.json"
+        metadata_update = dummy_parallel(
+            input_paths=[tmp_path],
+            output_path=out_path,
+            component=component,
+            metadata={"before": "test"},
+            message=FIRST_TEST_MESSAGE,
+        )
+        assert not metadata_update
+
+    assert out_path.parent.exists()
+    out_files = list(out_path.parent.glob("*"))
+    debug(out_files)
+    assert len(out_files) == len(list_components)
+
+    for out_file in out_files:
+        with out_file.open("r") as fin:
+            data = json.load(fin)
+        assert out_file.name == f'{data["component"]}.json'
+        assert data["message"] == FIRST_TEST_MESSAGE
