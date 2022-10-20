@@ -63,22 +63,22 @@ async def create_workflow(
     return db_workflow
 
 
-@router.delete("/{_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{workflow_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_workflow(
-    _id: int,
+    workflow_id: int,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    workflow = await db.get(Workflow, _id)
+    workflow = await db.get(Workflow, workflow_id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
     await get_project_check_owner(
         project_id=workflow.project_id,
         user_id=user.id,
         db=db,
     )
-    if not workflow:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
-        )
     await db.delete(workflow)
     await db.commit()
 

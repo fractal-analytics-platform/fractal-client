@@ -1,7 +1,7 @@
+from devtools import debug  # noqa
 from sqlmodel import select
 
 from fractal_server.app.models import Workflow
-from fractal_server.app.models import WorkflowTask
 
 
 async def test_workflow_post(db, client, MockCurrentUser, project_factory):
@@ -83,22 +83,10 @@ async def test_workflow_delete(
             json=workflow,
         )
         wf_id = res.json()["id"]
-        wf = await db.get(Workflow, wf_id)
-
-        t0 = await task_factory()
-        t1 = await task_factory()
-        await wf.insert_task(t0, db=db)
-        await wf.insert_task(t1, db=db)
-
-        wf_tasks_query = select(WorkflowTask).where(
-            WorkflowTask.workflow_id == wf_id
-        )
-        assert len((await db.execute(wf_tasks_query)).scalars().all()) == 2
 
         res = await client.delete(f"api/v1/workflow/{wf_id}")
         assert res.status_code == 204
 
-        await db.rollback()
+        # TODO add tasks with API and test cascade delete
 
-        assert (await db.get(Workflow, wf_id)) is None
-        assert len((await db.execute(wf_tasks_query)).scalars().all()) == 0
+        assert not await db.get(Workflow, wf_id)
