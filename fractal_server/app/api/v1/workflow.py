@@ -76,5 +76,5 @@ async def delete_workflow(
         )
     await db.delete(workflow)
     await db.commit()
-    workflow = await db.get(Workflow, _id)
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
