@@ -77,8 +77,7 @@ def dummy_parallel(
     )
 
     # Create folder, if missing
-    if not output_path.parent.is_dir():
-        output_path.parent.mkdir()
+    output_path.parent.mkdir(exist_ok=True)
 
     # Write output to out_fullpath
     out_fullpath = output_path.parent / f"{component}.json"
