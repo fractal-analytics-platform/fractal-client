@@ -85,11 +85,12 @@ def _call_single_parallel_task(
     return completed_process
 
 
-def call_parallel_task() -> Future[TaskParameters]:
-    """
-    AKA collect results
-    """
-    raise NotImplementedError
+# FIXME: put this back
+# def call_parallel_task() -> Future[TaskParameters]:
+#    """
+#    AKA collect results
+#    """
+#    raise NotImplementedError
 
 
 def call_single_task(
@@ -198,50 +199,54 @@ def recursive_task_submission(
 
     # step n => step n+1
     task_pars.logger.debug(f"submitting task {this_task.order=}")
-    parallel = False
-    if parallel:
-        # risolvere dipendenze
+    parallelization_level = this_task.task.parallelization_level
+    if parallelization_level:
+
+        # FIXME: move this code block to call_parallel_task
+
+        # Wait for execution of tasks {n-1,n-2,..}
         this_task_pars = recursive_task_submission(
             executor=executor,
             task_list=dependencies,
             task_pars=task_pars,
             workflow_dir=workflow_dir,
         ).result()
-        component_list = this_task_pars.metadata[this_task.parall_level]
+        component_list = this_task_pars.metadata[parallelization_level]
 
-        # submit tutti i task con ciascun component
+        # Submit all tasks (one per component)
         this_partial_call_task = partial(
             _call_single_parallel_task,
             task=this_task,
             task_pars=this_task_pars,
             workflow_dir=workflow_dir,
         )
-
+        # FIXME: find a better way to do this
         map_iter = executor.map(
-            this_partial_call_task,
+            lambda component_value: this_partial_call_task(
+                component=component_value
+            ),
             component_list,
         )
-        # collect all results
-        list(map_iter)  # this calls explicitly the result() on
-        # each parallel task
 
-        # assemblare un Future[TaskParameters]
+        # Wait for execution of all parallel (this explicitly calls .result()
+        # on each parallel task)
+        list(map_iter)
 
+        # Assemble a Future[TaskParameter]
         history = f"{this_task.task.name}: {component_list}"
         try:
             this_task_pars.metadata["history"].append(history)
         except KeyError:
             this_task_pars.metadata["history"] = [history]
 
-        pseudo_future: Future = Future()
+        this_future: Future = Future()
         out_task_parameters = TaskParameters(
             input_paths=[task_pars.output_path],
             output_path=task_pars.output_path,
             metadata=this_task_pars.metadata,
             logger=task_pars.logger,
         )
-        pseudo_future.set_result(out_task_parameters)
-        return pseudo_future
+        this_future.set_result(out_task_parameters)
 
     else:
         this_future = executor.submit(
