@@ -95,7 +95,7 @@ async def test_workflow_delete(
         )
         assert len((await db.execute(wf_tasks)).scalars().all()) == 2
 
-        res = await client.delete(f"api/v1/workflow/{wf.id}")
+        res = await client.delete(f"api/v1/workflow/{wf_id}")
         assert res.status_code == 204
 
         assert (await db.get(Workflow, wf_id)) is None
