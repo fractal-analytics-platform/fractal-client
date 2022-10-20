@@ -58,10 +58,6 @@ def dummy(
     metadata (Dict or None) :
         Optional metadata about the input the task may need
 
-    any further argument (Any) :
-        the arguments specific to the issue, i.e., `message` and `index` in the
-        present exmaple
-
     Retrun
     ------
     metadata_update (Dict[str, Any]) :

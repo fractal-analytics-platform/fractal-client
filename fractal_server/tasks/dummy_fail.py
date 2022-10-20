@@ -54,10 +54,6 @@ def dummy_fail(
     metadata (Dict or None) :
         Optional metadata about the input the task may need
 
-    any further argument (Any) :
-        the arguments specific to the issue, i.e., `errro_message` in the
-        present example
-
     Retrun
     ------
     metadata_update (Dict[str, Any]) :
