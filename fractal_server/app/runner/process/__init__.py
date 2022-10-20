@@ -4,6 +4,7 @@ import subprocess  # nosec
 from concurrent.futures import Executor
 from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from pathlib import Path
 from shlex import split as shlex_split
 from typing import Any
@@ -56,12 +57,46 @@ def _call_command_wrapper(cmd: str) -> subprocess.CompletedProcess:
     return result
 
 
+def _call_single_parallel_task(
+    *,
+    task: WorkflowTask,
+    task_pars: TaskParameters,
+    component: str,
+    workflow_dir: Path = None,
+) -> subprocess.CompletedProcess:
+    if not workflow_dir:
+        raise RuntimeError
+
+    # assemble full args
+    args_dict = task_pars.dict(exclude={"logger"})
+    args_dict.update(task.arguments)
+    args_dict["component"] = component
+
+    # write args file
+    args_file_path = workflow_dir / f"{task.order}_par_{component}.args.json"
+    with open(args_file_path, "w") as f:
+        json.dump(args_dict, f, cls=TaskParameterEncoder)
+
+    # assemble full command
+    cmd = f"{task.task.command} -j {args_file_path}"
+
+    task_pars.logger.debug(f"executing task {task.order=}")
+    completed_process = _call_command_wrapper(cmd)
+    return completed_process
+
+
+def call_parallel_task() -> Future[TaskParameters]:
+    """
+    AKA collect results
+    """
+    raise NotImplementedError
+
+
 def call_single_task(
     *,
     task: WorkflowTask,
     task_pars: TaskParameters,
     workflow_dir: Path = None,
-    **kwargs,
 ) -> TaskParameters:
     """
     Call a single task
@@ -82,10 +117,6 @@ def call_single_task(
     workflow_dir (Path):
         the directory in which the execution takes place, and where all
         artifacts are written.
-    **kwargs:
-        Any further keyword argument provided is appended to the arguments
-        that will be passed to the taks, and takes precedence over arguments
-        defined at `task` or `task_pars` level (i.e., it is merged last).
 
     Return
     ------
@@ -100,7 +131,6 @@ def call_single_task(
     # assemble full args
     args_dict = task_pars.dict(exclude={"logger"})
     args_dict.update(task.arguments)
-    args_dict.update(kwargs)
 
     # write args file
     args_file_path = workflow_dir / f"{task.order}.args.json"
@@ -170,25 +200,49 @@ def recursive_task_submission(
     task_pars.logger.debug(f"submitting task {this_task.order=}")
     parallel = False
     if parallel:
-        # FIXME
-        map_iter = executor.map(
-            lambda component: call_single_task(
-                task=this_task,
-                task_pars=recursive_task_submission(
-                    executor=executor,
-                    task_list=dependencies,
-                    task_pars=task_pars,
-                    workflow_dir=workflow_dir,
-                ).result(),
-                workflow_dir=workflow_dir,
-                component=component,
-            ),
-            # TODO
-            [this_component for this_component in []],
+        # risolvere dipendenze
+        this_task_pars = recursive_task_submission(
+            executor=executor,
+            task_list=dependencies,
+            task_pars=task_pars,
+            workflow_dir=workflow_dir,
+        ).result()
+        component_list = this_task_pars.metadata[this_task.parall_level]
+
+        # submit tutti i task con ciascun component
+        this_partial_call_task = partial(
+            _call_single_parallel_task,
+            task=this_task,
+            task_pars=this_task_pars,
+            workflow_dir=workflow_dir,
         )
+
+        map_iter = executor.map(
+            this_partial_call_task,
+            component_list,
+        )
+        # collect all results
+        list(map_iter)  # this calls explicitly the result() on
+        # each parallel task
+
+        # assemblare un Future[TaskParameters]
+
+        history = f"{this_task.task.name}: {component_list}"
+        try:
+            this_task_pars.metadata["history"].append(history)
+        except KeyError:
+            this_task_pars.metadata["history"] = [history]
+
         pseudo_future: Future = Future()
-        pseudo_future.set_result(list(map_iter))
+        out_task_parameters = TaskParameters(
+            input_paths=[task_pars.output_path],
+            output_path=task_pars.output_path,
+            metadata=this_task_pars.metadata,
+            logger=task_pars.logger,
+        )
+        pseudo_future.set_result(out_task_parameters)
         return pseudo_future
+
     else:
         this_future = executor.submit(
             call_single_task,
@@ -215,7 +269,12 @@ async def process_workflow(
     username: str = None,
 ) -> Dict[str, Any]:
     """
-    TODO
+    TODO:
+    in case of failure we must return the most recent clean metadata
+
+    Returns:
+    output_dataset_metadata (Dict):
+        the output metadata
     """
 
     with ThreadPoolExecutor() as executor:
