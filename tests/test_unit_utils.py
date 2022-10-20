@@ -15,3 +15,21 @@ def test_timestamp():
     debug(ts)
     assert ts
     assert ts.tzinfo is timezone.utc
+
+
+def test_cascade_delete_workflow():
+    """
+    GIVEN a Workflow
+    WHEN the Workflow is deleted
+    THEN all the related WorkflowTask are deleted
+    """
+    pass
+
+
+def test_cascade_delete_project():
+    """
+    GIVEN a Project
+    WHEN the Project is deleted
+    THEN all the related Workflows are deleted
+    """
+    pass
