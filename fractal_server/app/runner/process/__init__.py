@@ -50,7 +50,6 @@ def _call_command_wrapper(cmd: str) -> subprocess.CompletedProcess:
     """
     Call command and return stdout, stderr, retcode
     """
-
     result = subprocess.run(shlex_split(cmd), capture_output=True)  # nosec
     if result.returncode != 0:
         raise TaskExecutionError(result)
@@ -62,6 +61,7 @@ def call_single_task(
     task: WorkflowTask,
     task_pars: TaskParameters,
     workflow_dir: Path = None,
+    **kwargs,
 ) -> TaskParameters:
     """
     Call a single task
@@ -70,6 +70,22 @@ def call_single_task(
     arguments (arguments that are specific to the task, such as message or
     index in the dummy task), writes them to file, call the task executable
     command passing the arguments file as an input and assembles the output
+
+    Attributes
+    ----------
+    task (WorkflowTask):
+        the workflow task to be called. This includes task specific arguments
+        via the task.task.arguments attribute.
+    task_pars (TaskParameters):
+        the parameters required to run the task which are not specific to the
+        task, e.g., I/O paths.
+    workflow_dir (Path):
+        the directory in which the execution takes place, and where all
+        artifacts are written.
+    **kwargs:
+        Any further keyword argument provided is appended to the arguments
+        that will be passed to the taks, and takes precedence over arguments
+        defined at `task` or `task_pars` level (i.e., it is merged last).
 
     Return
     ------
@@ -84,6 +100,7 @@ def call_single_task(
     # assemble full args
     args_dict = task_pars.dict(exclude={"logger"})
     args_dict.update(task.arguments)
+    args_dict.update(kwargs)
 
     # write args file
     args_file_path = workflow_dir / f"{task.order}.args.json"
@@ -98,7 +115,13 @@ def call_single_task(
 
     # NOTE:
     # This assumes that the new metadata is printed to stdout
-    updated_metadata = json.loads(completed_process.stdout)
+    # and nothing else outputs to stdout
+    diff_metadata = json.loads(completed_process.stdout)
+
+    # TODO:
+    # update metadata
+    # updated_metadata = task_pars.metadata.update(diff_metadata)
+    updated_metadata = diff_metadata
     out_task_parameters = TaskParameters(
         input_paths=[task_pars.output_path],
         output_path=task_pars.output_path,
@@ -143,18 +166,41 @@ def recursive_task_submission(
         pseudo_future.set_result(task_pars)
         return pseudo_future
 
+    # step n => step n+1
     task_pars.logger.debug(f"submitting task {this_task.order=}")
-    this_future = executor.submit(
-        call_single_task,
-        task=this_task,
-        task_pars=recursive_task_submission(
-            executor=executor,
-            task_list=dependencies,
-            task_pars=task_pars,
+    parallel = False
+    if parallel:
+        # FIXME
+        map_iter = executor.map(
+            lambda component: call_single_task(
+                task=this_task,
+                task_pars=recursive_task_submission(
+                    executor=executor,
+                    task_list=dependencies,
+                    task_pars=task_pars,
+                    workflow_dir=workflow_dir,
+                ).result(),
+                workflow_dir=workflow_dir,
+                component=component,
+            ),
+            # TODO
+            [this_component for this_component in []],
+        )
+        pseudo_future: Future = Future()
+        pseudo_future.set_result(list(map_iter))
+        return pseudo_future
+    else:
+        this_future = executor.submit(
+            call_single_task,
+            task=this_task,
+            task_pars=recursive_task_submission(
+                executor=executor,
+                task_list=dependencies,
+                task_pars=task_pars,
+                workflow_dir=workflow_dir,
+            ).result(),
             workflow_dir=workflow_dir,
-        ).result(),
-        workflow_dir=workflow_dir,
-    )
+        )
     return this_future
 
 
@@ -168,6 +214,9 @@ async def process_workflow(
     workflow_dir: Path,
     username: str = None,
 ) -> Dict[str, Any]:
+    """
+    TODO
+    """
 
     with ThreadPoolExecutor() as executor:
         output_dataset_metadata = recursive_task_submission(
