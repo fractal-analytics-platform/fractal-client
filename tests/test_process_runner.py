@@ -42,6 +42,7 @@ class MockWorkflowTask(BaseModel):
 
 
 class MockParallelTask(BaseModel):
+    name: str = "MockParallelTask name"
     command: str
     parallelization_level: str
 
@@ -165,8 +166,6 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
             workflow_dir=tmp_path,
         )
         debug(res.result())
-
-    assert False
 
     # Validate results
     assert output_path.parent.exists()
