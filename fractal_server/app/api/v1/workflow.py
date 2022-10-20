@@ -70,6 +70,11 @@ async def delete_workflow(
     db: AsyncSession = Depends(get_db),
 ):
     workflow = await db.get(Workflow, _id)
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
     if not workflow:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
