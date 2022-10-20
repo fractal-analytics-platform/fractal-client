@@ -159,5 +159,5 @@ def test_dummy_parallel_fail_direct_call(tmp_path):
                 output_path=out_path,
                 component=component,
                 metadata={"before": "test"},
-                message=FIRST_TEST_MESSAGE,
+                error_message=ERROR_MESSAGE,
             )
