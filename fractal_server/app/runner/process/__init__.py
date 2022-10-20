@@ -58,15 +58,16 @@ def _call_command_wrapper(cmd: str) -> subprocess.CompletedProcess:
 
 
 def _call_single_parallel_task(
+    component: str,
     *,
     task: WorkflowTask,
     task_pars: TaskParameters,
-    component: str,
     workflow_dir: Path = None,
 ) -> subprocess.CompletedProcess:
     if not workflow_dir:
         raise RuntimeError
 
+    task_pars.logger.debug(f"calling task {task.order=} on {component=}")
     # assemble full args
     args_dict = task_pars.dict(exclude={"logger"})
     args_dict.update(task.arguments)
@@ -85,12 +86,49 @@ def _call_single_parallel_task(
     return completed_process
 
 
-# FIXME: put this back
-# def call_parallel_task() -> Future[TaskParameters]:
-#    """
-#    AKA collect results
-#    """
-#    raise NotImplementedError
+def call_parallel_task(
+    *,
+    executor: Executor,
+    task: WorkflowTask,
+    task_pars_depend_future: Future,  # py3.9 Future[TaskParameters],
+    workflow_dir: Path,
+    parallelization_level: str,
+) -> Future:  # py3.9 Future[TaskParameters]:
+    """
+    AKA collect results
+    """
+    task_pars_depend = task_pars_depend_future.result()
+    component_list = task_pars_depend.metadata[parallelization_level]
+
+    # Submit all tasks (one per component)
+    partial_call_task = partial(
+        _call_single_parallel_task,
+        task=task,
+        task_pars=task_pars_depend,
+        workflow_dir=workflow_dir,
+    )
+    map_iter = executor.map(partial_call_task, component_list)
+    # Wait for execution of all parallel (this explicitly calls .result()
+    # on each parallel task)
+    for _ in map_iter:
+        pass  # noqa: 701
+
+    # Assemble a Future[TaskParameter]
+    history = f"{task.task.name}: {component_list}"
+    try:
+        task_pars_depend.metadata["history"].append(history)
+    except KeyError:
+        task_pars_depend.metadata["history"] = [history]
+
+    this_future: Future = Future()
+    out_task_parameters = TaskParameters(
+        input_paths=[task_pars_depend.output_path],
+        output_path=task_pars_depend.output_path,
+        metadata=task_pars_depend.metadata,
+        logger=task_pars_depend.logger,
+    )
+    this_future.set_result(out_task_parameters)
+    return this_future
 
 
 def call_single_task(
@@ -200,64 +238,27 @@ def recursive_task_submission(
     # step n => step n+1
     task_pars.logger.debug(f"submitting task {this_task.order=}")
     parallelization_level = this_task.task.parallelization_level
+
+    task_pars_depend_future = recursive_task_submission(
+        executor=executor,
+        task_list=dependencies,
+        task_pars=task_pars,
+        workflow_dir=workflow_dir,
+    )
+
     if parallelization_level:
-
-        # FIXME: move this code block to call_parallel_task
-
-        # Wait for execution of tasks {n-1,n-2,..}
-        this_task_pars = recursive_task_submission(
+        this_future = call_parallel_task(
             executor=executor,
-            task_list=dependencies,
-            task_pars=task_pars,
-            workflow_dir=workflow_dir,
-        ).result()
-        component_list = this_task_pars.metadata[parallelization_level]
-
-        # Submit all tasks (one per component)
-        this_partial_call_task = partial(
-            _call_single_parallel_task,
             task=this_task,
-            task_pars=this_task_pars,
+            task_pars_depend_future=task_pars_depend_future,
             workflow_dir=workflow_dir,
+            parallelization_level=parallelization_level,
         )
-        # FIXME: find a better way to do this
-        map_iter = executor.map(
-            lambda component_value: this_partial_call_task(
-                component=component_value
-            ),
-            component_list,
-        )
-
-        # Wait for execution of all parallel (this explicitly calls .result()
-        # on each parallel task)
-        list(map_iter)
-
-        # Assemble a Future[TaskParameter]
-        history = f"{this_task.task.name}: {component_list}"
-        try:
-            this_task_pars.metadata["history"].append(history)
-        except KeyError:
-            this_task_pars.metadata["history"] = [history]
-
-        this_future: Future = Future()
-        out_task_parameters = TaskParameters(
-            input_paths=[task_pars.output_path],
-            output_path=task_pars.output_path,
-            metadata=this_task_pars.metadata,
-            logger=task_pars.logger,
-        )
-        this_future.set_result(out_task_parameters)
-
     else:
         this_future = executor.submit(
             call_single_task,
             task=this_task,
-            task_pars=recursive_task_submission(
-                executor=executor,
-                task_list=dependencies,
-                task_pars=task_pars,
-                workflow_dir=workflow_dir,
-            ).result(),
+            task_pars=task_pars_depend_future.result(),
             workflow_dir=workflow_dir,
         )
     return this_future
