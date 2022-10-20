@@ -96,3 +96,97 @@ async def test_task_workflow_association(
         debug(link)
         assert link.order == 0
         assert link.task_id == t1.id
+
+
+async def test_cascade_delete_workflow(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Workflow
+    WHEN the Workflow is deleted
+    THEN all the related WorkflowTask are deleted
+    """
+    async with MockCurrentUser(persist=True) as user:
+
+        project = await project_factory(user=user)
+
+        workflow = Workflow(
+            name="My Workflow",
+            project_id=project.id,
+        )
+
+        db.add(workflow)
+        await db.commit()
+        await db.refresh(workflow)
+        wf_id = workflow.id
+
+        t0 = await task_factory()
+        t1 = await task_factory()
+
+        await workflow.insert_task(t0, db=db)
+        await workflow.insert_task(t1, db=db)
+
+        await db.refresh(workflow)
+
+        before_delete_wft_ids = [_wft.id for _wft in workflow.task_list]
+
+        await db.delete(workflow)
+        await db.commit()
+
+        del_workflow = await db.get(Workflow, wf_id)
+        assert del_workflow is None
+
+        after_delete_wft_ids = (
+            (await db.execute(select(WorkflowTask.id))).scalars().all()
+        )
+
+        debug(set(after_delete_wft_ids), set(before_delete_wft_ids))
+        assert not set(after_delete_wft_ids).intersection(
+            set(before_delete_wft_ids)
+        )
+
+
+async def test_cascade_delete_project(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Project
+    WHEN the Project is deleted
+    THEN all the related Workflows are deleted
+    """
+
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user=user)
+        project_id = project.id
+
+        workflow1 = Workflow(
+            name="My first Workflow",
+            project_id=project.id,
+        )
+        workflow2 = Workflow(
+            name="My second Workflow",
+            project_id=project.id,
+        )
+        db.add(workflow1)
+        db.add(workflow2)
+        await db.commit()
+
+        await db.refresh(project)
+        await db.refresh(workflow1)
+        await db.refresh(workflow2)
+
+        before_delete_wf_ids = [wf.id for wf in project.workflow_list]
+
+        await db.delete(project)
+        await db.commit()
+
+        assert not await db.get(Project, project_id)
+
+        after_delete_wf_ids = (
+            (await db.execute(select(Workflow.id))).scalars().all()
+        )
+
+        debug(set(before_delete_wf_ids), set(after_delete_wf_ids))
+        assert not set(after_delete_wf_ids).intersection(
+            set(before_delete_wf_ids)
+        )
