@@ -25,7 +25,7 @@ async def test_cascade_delete_workflow(
 ):
     """
     GIVEN a Workflow
-    WHEN the Workflow is deleted
+    WHEN the Workflow is deleted via API
     THEN all the related WorkflowTask are deleted
     """
     async with MockCurrentUser(persist=True) as user:
@@ -53,11 +53,39 @@ async def test_cascade_delete_workflow(
 
         await client.delete(f"/api/v1/workflow/{wf_id}")
 
+        assert len(db.execute(wf_tasks).scalars().all()) == 0
 
-def test_cascade_delete_project():
+
+async def test_cascade_delete_project(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
     """
     GIVEN a Project
-    WHEN the Project is deleted
+    WHEN the Project is deleted via API
     THEN all the related Workflows are deleted
     """
-    pass
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        workflow1 = {
+            "name": "My First Workflow",
+            "project_id": project.id,
+        }
+        await client.post(
+            "api/v1/workflow/",
+            json=workflow1,
+        )
+        workflow2 = {
+            "name": "My Second Workflow",
+            "project_id": project.id,
+        }
+        await client.post(
+            "api/v1/workflow/",
+            json=workflow2,
+        )
+
+        workflows = select(Workflow).where(Workflow.project_id == project.id)
+        assert len(db.execute(workflows).scalars().all()) == 2
+
+        await client.delete(f"/api/v1/project/{project.id}")
+
+        assert len(db.execute(workflows).scalars().all()) == 0
