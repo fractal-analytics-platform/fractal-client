@@ -73,6 +73,7 @@ class Workflow(_WorkflowBase, table=True):
             lazy="selectin",
             order_by="WorkflowTask.order",
             collection_class=ordering_list("order"),
+            cascade="all, delete-orphan",
         ),
     )
 
