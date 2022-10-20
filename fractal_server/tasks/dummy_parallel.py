@@ -106,6 +106,7 @@ if __name__ == "__main__":
         input_paths: List[Path]
         output_path: Path
         metadata: Optional[Dict[str, Any]] = None
+        component: str
         message: str
 
     parser = ArgumentParser()
