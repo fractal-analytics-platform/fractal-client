@@ -33,6 +33,7 @@ from fractal_server.tasks import dummy_parallel as dummy_parallel_module
 
 class MockTask(BaseModel):
     command: str
+    parallelization_level: str = None
 
 
 class MockWorkflowTask(BaseModel):
@@ -178,6 +179,16 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
             data = json.load(fin)
         assert output_file.name == f'{data["component"]}.json'
         assert data["message"] == MESSAGE
+
+
+def test_recursive_parallel_task_submission_inductive_step(tmp_path):
+    """
+    GIVEN a workflow with three global/parallel/global tasks
+    WHEN it is passed to the recursive task submission
+    THEN it is correctly executed, i.e., n => n+1
+    """
+    # FIXME
+    pass
 
 
 def test_recursive_task_submission_inductive_step(tmp_path):
