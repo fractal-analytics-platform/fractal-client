@@ -14,6 +14,7 @@ import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
+from typing import Optional
 
 from devtools import debug
 from pydantic import BaseModel
@@ -33,7 +34,7 @@ from fractal_server.tasks import dummy_parallel as dummy_parallel_module
 
 class MockTask(BaseModel):
     command: str
-    parallelization_level: str = None
+    parallelization_level: Optional[str] = None
 
 
 class MockWorkflowTask(BaseModel):
@@ -42,11 +43,8 @@ class MockWorkflowTask(BaseModel):
     arguments: Dict = {}
 
 
-MOCKPARALLELTASK_NAME = "This is just a name"
-
-
 class MockParallelTask(BaseModel):
-    name: str = MOCKPARALLELTASK_NAME
+    name: str
     command: str
     parallelization_level: str
 
@@ -136,9 +134,11 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
     """
     LIST_INDICES = ["0", "1"]
     MESSAGE = "test message"
+    MOCKPARALLELTASK_NAME = "This is just a name"
     task_list = [
         MockParallelWorkflowTask(
             task=MockParallelTask(
+                name=MOCKPARALLELTASK_NAME,
                 command=f"python {dummy_parallel_module.__file__}",
                 parallelization_level="index",
             ),
