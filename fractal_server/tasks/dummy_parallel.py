@@ -16,7 +16,6 @@ import json
 import logging
 from datetime import datetime
 from datetime import timezone
-from json.decoder import JSONDecodeError
 from pathlib import Path
 from sys import stdout
 from typing import Any
@@ -31,22 +30,22 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
-def dummy(
+def dummy_parallel(
     *,
     input_paths: Iterable[Path],
     output_path: Path,
+    component: str,
     metadata: Optional[Dict[str, Any]] = None,
     # arguments of this task
     message: str,
-    index: int = 0,
 ) -> Dict[str, Any]:
     """
     Dummy task
 
-    This task appends to a json file the parameters it was called with, such
-    that it is easy to parse the file in a test settings.
-
-    Incidentally, this task defines the reference interface of a task.
+    This task writes its arguments to to a JSON file named `component`.json (in
+    the `output_path` parent folder); mapping this task over a list of
+    `component`s produces a corresponding list of files that can be parsed in
+    tests.
 
     Arguments
     ---------
@@ -55,6 +54,8 @@ def dummy(
     output_path (Path) :
         The output path, pointing either to a file or to a directory in which
         the task will write its output files.
+    component (str) :
+        The component to process, e.g. component="1"
     metadata (Dict or None) :
         Optional metadata about the input the task may need
 
@@ -63,7 +64,7 @@ def dummy(
     metadata_update (Dict[str, Any]) :
         a dictionary that will update the metadata
     """
-    logger.info("ENTERING dummy task")
+    logger.info("ENTERING dummy_parallel task")
 
     payload = dict(
         task="DUMMY TASK",
@@ -71,32 +72,22 @@ def dummy(
         input_paths=[p.as_posix() for p in input_paths],
         output_path=output_path.as_posix(),
         metadata=metadata,
+        component=component,
         message=message,
     )
 
-    if not output_path.parent.is_dir():
-        output_path.parent.mkdir()
+    # Create folder, if missing
+    output_path.parent.mkdir(exist_ok=True)
 
-    if not output_path.as_posix().endswith(".json"):
-        filename_out = f"{index}.json"
-        out_fullpath = output_path / filename_out
-    else:
-        out_fullpath = output_path
-
-    try:
-        with open(out_fullpath, "r") as fin:
-            data = json.load(fin)
-    except (JSONDecodeError, FileNotFoundError):
-        data = []
-    data.append(payload)
+    # Write output to out_fullpath
+    out_fullpath = output_path.parent / f"{component}.json"
     with open(out_fullpath, "w") as fout:
-        json.dump(data, fout, indent=2)
+        json.dump(payload, fout, indent=2, sort_keys=True)
 
-    # Update metadata
-    metadata_update = {"dummy": f"dummy {index}"}
+    logger.info("EXITING dummy_parallel task")
 
-    logger.info("EXITING dummy task")
-
+    # Return empty metadata, since the "history" will be filled by fractal
+    metadata_update: Dict = {}
     return metadata_update
 
 
@@ -114,8 +105,8 @@ if __name__ == "__main__":
         input_paths: List[Path]
         output_path: Path
         metadata: Optional[Dict[str, Any]] = None
+        component: str
         message: str
-        index: int = 0
 
     parser = ArgumentParser()
     parser.add_argument("-j", "--json", help="Read parameters from json file")
@@ -140,7 +131,7 @@ if __name__ == "__main__":
             pars = json.load(f)
 
     task_args = TaskArguments(**pars)
-    metadata_update = dummy(**task_args.dict())
+    metadata_update = dummy_parallel(**task_args.dict())
 
     if args.output:
         with open(args.output, "w") as fout:
