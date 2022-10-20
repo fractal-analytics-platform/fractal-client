@@ -144,3 +144,49 @@ async def test_cascade_delete_workflow(
         assert not set(after_delete_wft_ids).intersection(
             set(before_delete_wft_ids)
         )
+
+
+async def test_cascade_delete_project(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Project
+    WHEN the Project is deleted
+    THEN all the related Workflows are deleted
+    """
+
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user=user)
+        project_id = project.id
+
+        workflow1 = Workflow(
+            name="My first Workflow",
+            project_id=project.id,
+        )
+        workflow2 = Workflow(
+            name="My second Workflow",
+            project_id=project.id,
+        )
+        db.add(workflow1)
+        db.add(workflow2)
+        await db.commit()
+
+        await db.refresh(project)
+        await db.refresh(workflow1)
+        await db.refresh(workflow2)
+
+        before_delete_wf_ids = [wf.id for wf in project.workflow_list]
+
+        await db.delete(project)
+        await db.commit()
+
+        assert not await db.get(Project, project_id)
+
+        after_delete_wf_ids = (
+            (await db.execute(select(Workflow.id))).scalars().all()
+        )
+
+        debug(set(before_delete_wf_ids), set(after_delete_wf_ids))
+        assert not set(after_delete_wf_ids).intersection(
+            set(before_delete_wf_ids)
+        )
