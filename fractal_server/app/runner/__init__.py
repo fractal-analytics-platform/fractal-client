@@ -11,15 +11,31 @@ from .common import auto_output_dataset  # noqa: F401
 from .common import close_job_logger
 from .common import set_job_logger
 from .common import validate_workflow_compatibility  # noqa: F401
+from .process import process_workflow as process_process_workflow
 
 
-if settings.RUNNER_BACKEND == "process":
-    from .process import process_workflow
-else:
+_backends = {}
+_backend_errors = {}
+
+_backends["process"] = process_process_workflow
+
+try:
+    from .parsl import process_workflow as parsl_process_workflow
+
+    _backends["parsl"] = parsl_process_workflow
+except Exception as e:
+    _backend_errors["parsl"] = e
+
+
+try:
+    process_workflow = _backends[settings.RUNNER_BACKEND]
+except KeyError:
 
     def no_function(*args, **kwarsg):
+        error = _backend_errors.get(settings.RUNNER_BACKEND)
         raise NotImplementedError(
             f"Runner backend {settings.RUNNER_BACKEND} not implemented"
+            f"\n{error}"
         )
 
     process_workflow = no_function
