@@ -23,6 +23,8 @@ from ...models import Workflow
 from ...models import WorkflowCreate
 from ...models import WorkflowRead
 from ...models import WorkflowTaskCreate
+from ...models import WorkflowTaskRead
+from ...models import WorkflowUpdate
 from ...security import current_active_user
 from ...security import User
 from .project import get_project_check_owner
@@ -106,10 +108,32 @@ async def get_workflow(
     return workflow
 
 
-@router.patch("{_id}/add-task/")
+@router.patch("{_id}/add-task/", response_model=WorkflowTaskRead)
 async def add_task_to_workflow(
     _id: int,
     new_task: WorkflowTaskCreate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    raise NotImplementedError
+
+
+@router.delete(
+    "{_id}/rm-task/{task_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_task_from_workflow(
+    _id: int,
+    task_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    raise NotImplementedError
+
+
+@router.patch("{_id}", response_model=WorkflowRead)
+async def patch_workflow(
+    _id: int,
+    patch: WorkflowUpdate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
