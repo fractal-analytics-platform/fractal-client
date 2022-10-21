@@ -58,7 +58,7 @@ async def test_task_workflow_association(
 
         wf = Workflow(name="my wfl", project_id=project.id)
         args = dict(arg="test arg")
-        await wf.insert_task(t0, db=db, args=args)
+        await wf.insert_task(t0.id, db=db, args=args)
 
         db.add(wf)
         await db.commit()
@@ -81,7 +81,7 @@ async def test_task_workflow_association(
         assert link.task_id == t0.id
 
         # Insert at position 0
-        await wf.insert_task(t1, order=0, db=db)
+        await wf.insert_task(t1.id, order=0, db=db)
         db.add(wf)
         await db.commit()
         await db.refresh(wf)
@@ -123,8 +123,8 @@ async def test_cascade_delete_workflow(
         t0 = await task_factory()
         t1 = await task_factory()
 
-        await workflow.insert_task(t0, db=db)
-        await workflow.insert_task(t1, db=db)
+        await workflow.insert_task(t0.id, db=db)
+        await workflow.insert_task(t1.id, db=db)
 
         await db.refresh(workflow)
 
