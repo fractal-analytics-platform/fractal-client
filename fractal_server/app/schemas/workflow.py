@@ -24,7 +24,8 @@ class _WorkflowTaskBase(SQLModel):
 
 
 class WorkflowTaskCreate(_WorkflowTaskBase):
-    pass
+    workflow_id: int
+    task_id: int
 
 
 class WorkflowTaskRead(_WorkflowTaskBase):
