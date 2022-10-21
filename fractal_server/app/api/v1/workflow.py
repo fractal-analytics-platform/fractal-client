@@ -19,6 +19,7 @@ from sqlmodel import select
 
 from ...db import AsyncSession
 from ...db import get_db
+from ...models import Task
 from ...models import Workflow
 from ...models import WorkflowCreate
 from ...models import WorkflowRead
@@ -63,13 +64,13 @@ async def create_workflow(
     return db_workflow
 
 
-@router.delete("/{workflow_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_workflow(
-    workflow_id: int,
+    _id: int,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    workflow = await db.get(Workflow, workflow_id)
+    workflow = await db.get(Workflow, _id)
     if not workflow:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
@@ -83,3 +84,33 @@ async def delete_workflow(
     await db.commit()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{_id}", response_model=WorkflowRead)
+async def get_workflow(
+    _id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    workflow = db.get(Workflow, _id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
+    # check autorization
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    return workflow
+
+
+@router.patch("{_id}/add-task/")
+async def add_task_to_workflow(
+    _id: int,
+    new_task: Task,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    raise NotImplementedError
