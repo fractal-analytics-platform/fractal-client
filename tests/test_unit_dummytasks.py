@@ -5,11 +5,8 @@ import pytest
 from devtools import debug
 
 from fractal_server.tasks import dummy as dummy_module
-from fractal_server.tasks import dummy_fail as dummy_fail_module
 from fractal_server.tasks.dummy import dummy
-from fractal_server.tasks.dummy_fail import dummy_fail
 from fractal_server.tasks.dummy_parallel import dummy_parallel
-from fractal_server.tasks.dummy_parallel_fail import dummy_parallel_fail
 
 
 FIRST_TEST_MESSAGE = "first call"
@@ -88,11 +85,12 @@ async def test_dummy_process_call(tmp_path):
 def test_dummy_fail_direct_call(tmp_path):
     out_path = tmp_path / "out.json"
     with pytest.raises(ValueError):
-        dummy_fail(
+        dummy(
             input_paths=[tmp_path],
             output_path=out_path,
             metadata={"before": "test"},
-            error_message=ERROR_MESSAGE,
+            message=ERROR_MESSAGE,
+            raise_error=True,
         )
 
 
@@ -103,12 +101,13 @@ async def test_dummy_fail_process_call(tmp_path):
         input_paths=[tmp_path.as_posix()],
         output_path=out_path.as_posix(),
         metadata={"before": "test"},
-        error_message=ERROR_MESSAGE,
+        message=ERROR_MESSAGE,
+        raise_error=True,
     )
     with open(args_file, "w") as fargs:
         json.dump(args, fargs)
 
-    cmd = f"python {dummy_fail_module.__file__} -j {args_file}"
+    cmd = f"python {dummy_module.__file__} -j {args_file}"
     proc = await asyncio.create_subprocess_shell(
         cmd,
         stdout=asyncio.subprocess.PIPE,
@@ -154,10 +153,11 @@ def test_dummy_parallel_fail_direct_call(tmp_path):
 
     for component in list_components:
         with pytest.raises(ValueError):
-            dummy_parallel_fail(
+            dummy_parallel(
                 input_paths=[tmp_path],
                 output_path=out_path,
                 component=component,
                 metadata={"before": "test"},
-                error_message=ERROR_MESSAGE,
+                message=ERROR_MESSAGE,
+                raise_error=True,
             )

@@ -13,6 +13,7 @@ Zurich.
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import Response
 from fastapi import status
 from sqlmodel import select
 
@@ -21,6 +22,8 @@ from ...db import get_db
 from ...models import Workflow
 from ...models import WorkflowCreate
 from ...models import WorkflowRead
+from ...models import WorkflowTaskCreate
+from ...models import WorkflowUpdate
 from ...security import current_active_user
 from ...security import User
 from .project import get_project_check_owner
@@ -60,3 +63,77 @@ async def create_workflow(
     await db.commit()
     await db.refresh(db_workflow)
     return db_workflow
+
+
+@router.delete("/{_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_workflow(
+    _id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    workflow = await db.get(Workflow, _id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    await db.delete(workflow)
+    await db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{_id}", response_model=WorkflowRead)
+async def get_workflow(
+    _id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    workflow = db.get(Workflow, _id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
+    # check autorization
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    return workflow
+
+
+@router.post("{_id}/add-task/", response_model=WorkflowRead)
+async def add_task_to_workflow(
+    _id: int,
+    new_task: WorkflowTaskCreate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    raise NotImplementedError
+
+
+@router.delete(
+    "{_id}/rm-task/{task_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_task_from_workflow(
+    _id: int,
+    task_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    raise NotImplementedError
+
+
+@router.patch("{_id}", response_model=WorkflowRead)
+async def patch_workflow(
+    _id: int,
+    patch: WorkflowUpdate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    raise NotImplementedError

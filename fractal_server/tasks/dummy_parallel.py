@@ -38,6 +38,7 @@ def dummy_parallel(
     metadata: Optional[Dict[str, Any]] = None,
     # arguments of this task
     message: str,
+    raise_error: bool = False,
 ) -> Dict[str, Any]:
     """
     Dummy task
@@ -65,6 +66,8 @@ def dummy_parallel(
         a dictionary that will update the metadata
     """
     logger.info("ENTERING dummy_parallel task")
+    if raise_error:
+        raise ValueError(message)
 
     payload = dict(
         task="DUMMY TASK",
@@ -107,6 +110,7 @@ if __name__ == "__main__":
         metadata: Optional[Dict[str, Any]] = None
         component: str
         message: str
+        raise_error: bool = False
 
     parser = ArgumentParser()
     parser.add_argument("-j", "--json", help="Read parameters from json file")

@@ -32,6 +32,8 @@ from ...models import Resource
 from ...models import ResourceCreate
 from ...models import ResourceRead
 from ...models import ResourceUpdate
+from ...models import Workflow
+from ...models import WorkflowRead
 from ...models.task import Task
 from ...runner import auto_output_dataset
 from ...runner import submit_workflow
@@ -434,3 +436,18 @@ async def patch_dataset(
     await db.commit()
     await db.refresh(db_dataset)
     return db_dataset
+
+
+@router.get("/{project_id}/workflows/", response_model=List[WorkflowRead])
+async def get_workflow_list(
+    project_id: int,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await get_project_check_owner(
+        project_id=project_id, user_id=user.id, db=db
+    )
+    stm = select(Workflow).where(Workflow.project_id == project_id)
+    res = await db.execute(stm)
+    workflow_list = res.scalars().all()
+    return workflow_list

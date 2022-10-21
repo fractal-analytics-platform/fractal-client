@@ -56,8 +56,8 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
     await db.refresh(tk)
     await db.refresh(wf)
 
-    await wf.insert_task(tk, db=db, args=dict(message="task 0"))
-    await wf.insert_task(tk, db=db, args=dict(message="task 1"))
+    await wf.insert_task(tk.id, db=db, args=dict(message="task 0"))
+    await wf.insert_task(tk.id, db=db, args=dict(message="task 1"))
     await db.refresh(wf)
 
     debug(tk)
