@@ -19,10 +19,10 @@ from sqlmodel import select
 
 from ...db import AsyncSession
 from ...db import get_db
-from ...models import Task
 from ...models import Workflow
 from ...models import WorkflowCreate
 from ...models import WorkflowRead
+from ...models import WorkflowTaskCreate
 from ...security import current_active_user
 from ...security import User
 from .project import get_project_check_owner
@@ -109,7 +109,7 @@ async def get_workflow(
 @router.patch("{_id}/add-task/")
 async def add_task_to_workflow(
     _id: int,
-    new_task: Task,
+    new_task: WorkflowTaskCreate,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):

@@ -8,15 +8,15 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
-from sqlmodel import SQLModel
 
 from ..db import AsyncSession
 from ..schemas.workflow import _WorkflowBase
+from ..schemas.workflow import _WorkflowTaskBase
 from .models_utils import popget
 from .task import Task
 
 
-class WorkflowTask(SQLModel, table=True):
+class WorkflowTask(_WorkflowTaskBase, table=True):
     """
     A Task as part of a Workflow
 
