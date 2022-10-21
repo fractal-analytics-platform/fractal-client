@@ -103,20 +103,18 @@ async def test_workflow_get(
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
         p_id = project.id
+        WF_ID = 1
         workflow = {
+            "id": WF_ID,
             "name": "My Workflow",
             "project_id": p_id,
+            "task_list": [],
         }
         res = await client.post(
             "api/v1/workflow/",
             json=workflow,
         )
 
-        wf_id = res.json()["id"]
-        res = await client.get(f"api/v1/workflow/{wf_id}")
+        res = await client.get(f"api/v1/workflow/{WF_ID}")
         assert res.status_code == 200
-
-        assert res.json()["task_list"] == []
-        workflow["task_list"] = []
-        workflow["id"] = wf_id
         assert res.json() == workflow
