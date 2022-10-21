@@ -21,7 +21,7 @@ class _WorkflowTaskBase(SQLModel):
     workflow_id: Optional[int]
     task_id: Optional[int]
     order: Optional[int]
-    args: Dict[str, Any]
+    args: Optional[Dict[str, Any]]
 
 
 class WorkflowTaskCreate(_WorkflowTaskBase):

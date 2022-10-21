@@ -1,7 +1,9 @@
 from devtools import debug  # noqa
 from sqlmodel import select
 
+from fractal_server.app.models import TaskRead
 from fractal_server.app.models import Workflow
+from fractal_server.app.models import WorkflowRead
 
 
 async def test_workflow_post(db, client, MockCurrentUser, project_factory):
@@ -118,3 +120,55 @@ async def test_workflow_get(
         res = await client.get(f"api/v1/workflow/{WF_ID}")
         assert res.status_code == 200
         assert res.json() == workflow
+
+
+async def test_workflow_post_task(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Workflow with a list of Tasks
+    WHEN the POST endpoint is called
+    THEN the it is inserted in the Workflow
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        WF_ID = 1
+        workflow = {
+            "id": WF_ID,
+            "name": "My Workflow",
+            "project_id": project.id,
+        }
+        res = await client.post(
+            "api/v1/workflow/",
+            json=workflow,
+        )
+        assert res.status_code == 201
+
+        workflow = await db.get(Workflow, WF_ID)
+        t0 = await task_factory()
+        t1 = await task_factory()
+        await workflow.insert_task(t0.id, db=db)
+        await workflow.insert_task(t1.id, db=db)
+        await db.refresh(workflow)
+
+        assert len(workflow.task_list) == 2
+        assert workflow.task_list[0].task == t0
+        assert workflow.task_list[1].task == t1
+
+        t2 = await task_factory()
+        new_task = {
+            "task_id": t2.id,
+        }
+
+        res = await client.post(
+            f"api/v1/workflow/{WF_ID}/add-task/",
+            json=new_task,
+        )
+        assert res.status_code == 201
+        debug(res.json())
+        workflow = WorkflowRead(**res.json())
+
+        assert len(workflow.task_list) == 3
+        assert workflow.task_list[0].task == TaskRead(**t0.__dict__)
+        assert workflow.task_list[1].task == TaskRead(**t1.__dict__)
+        assert workflow.task_list[2].task == TaskRead(**t2.__dict__)

@@ -65,7 +65,7 @@ async def create_workflow(
     return db_workflow
 
 
-@router.delete("/{_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_workflow(
     _id: int,
     user: User = Depends(current_active_user),
@@ -87,7 +87,7 @@ async def delete_workflow(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/{_id}", response_model=WorkflowRead)
+@router.get("/{_id}/", response_model=WorkflowRead)
 async def get_workflow(
     _id: int,
     user: User = Depends(current_active_user),
@@ -109,7 +109,7 @@ async def get_workflow(
 
 
 @router.post(
-    "{_id}/add-task/",
+    "/{_id}/add-task/",
     response_model=WorkflowRead,
     status_code=status.HTTP_201_CREATED,
 )
@@ -119,7 +119,25 @@ async def add_task_to_workflow(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    raise NotImplementedError
+    # TODO move check autorization as first thing (issue #171)
+    workflow = await db.get(Workflow, _id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
+    # check autorization
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    await workflow.insert_task(new_task.task_id, db=db)
+
+    db.merge(workflow)
+    db.commit()
+    await db.refresh(workflow)
+
+    return workflow
 
 
 @router.delete(
