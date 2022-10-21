@@ -90,3 +90,33 @@ async def test_workflow_delete(
         # TODO add tasks with API and test cascade delete
 
         assert not await db.get(Workflow, wf_id)
+
+
+async def test_workflow_get(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Workflow
+    WHEN the get endpoint is called
+    THEN the Workflow is returned
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        p_id = project.id
+        workflow = {
+            "name": "My Workflow",
+            "project_id": p_id,
+        }
+        res = await client.post(
+            "api/v1/workflow/",
+            json=workflow,
+        )
+
+        wf_id = res.json()["id"]
+        res = await client.get(f"api/v1/workflow/{wf_id}")
+        assert res.status_code == 200
+
+        assert res.json()["task_list"] == []
+        workflow["task_list"] = []
+        workflow["id"] = wf_id
+        assert res.json() == workflow

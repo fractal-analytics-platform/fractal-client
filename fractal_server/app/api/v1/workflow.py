@@ -93,7 +93,8 @@ async def get_workflow(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    workflow = db.get(Workflow, _id)
+    # TODO move check autorization as first thing (issue #171)
+    workflow = await db.get(Workflow, _id)
     if not workflow:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
@@ -107,7 +108,11 @@ async def get_workflow(
     return workflow
 
 
-@router.post("{_id}/add-task/", response_model=WorkflowRead)
+@router.post(
+    "{_id}/add-task/",
+    response_model=WorkflowRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_task_to_workflow(
     _id: int,
     new_task: WorkflowTaskCreate,
