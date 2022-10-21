@@ -21,10 +21,10 @@ from devtools import debug
 from pydantic import BaseModel
 
 from fractal_server.app.runner import set_job_logger
+from fractal_server.app.runner._process import _call_command_wrapper
+from fractal_server.app.runner._process import call_single_task
+from fractal_server.app.runner._process import recursive_task_submission
 from fractal_server.app.runner.common import TaskParameters
-from fractal_server.app.runner.process import _call_command_wrapper
-from fractal_server.app.runner.process import call_single_task
-from fractal_server.app.runner.process import recursive_task_submission
 from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_parallel as dummy_parallel_module
 
