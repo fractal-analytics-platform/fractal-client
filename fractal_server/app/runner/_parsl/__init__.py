@@ -52,26 +52,24 @@ async def process_workflow(
     # FIXME
     # in the following we most likely want a unique run id rather than the
     # generic name and id of the workflow
-    dfk = load_parsl_config(
+    with load_parsl_config(
         workflow_id=workflow.id,  # here
         workflow_name=workflow.name,  # here
         workflow_dir=workflow_dir,
         username=username,
         logger=logger,
-    )
+    ) as dfk:
+        final_metadata_future, dfk = recursive_task_assembly(
+            data_flow_kernel=dfk,
+            task=workflow,
+            input_paths=input_paths,
+            output_path=output_path,
+            metadata=input_metadata,
+            username=username,
+        )
+        logger.info("Definition of app futures complete, now start execution.")
+        final_metadata = await async_wrap(get_app_future_result)(
+            app_future=final_metadata_future
+        )
 
-    final_metadata_future, dfk = recursive_task_assembly(
-        data_flow_kernel=dfk,
-        task=workflow,
-        input_paths=input_paths,
-        output_path=output_path,
-        metadata=input_metadata,
-        username=username,
-    )
-    logger.info("Definition of app futures complete, now start execution. ")
-    final_metadata = await async_wrap(get_app_future_result)(
-        app_future=final_metadata_future
-    )
-
-    dfk.cleanup()
     return final_metadata

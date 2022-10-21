@@ -16,6 +16,7 @@ Zurich.
 import logging
 import os
 import warnings
+from contextlib import contextmanager
 from pathlib import Path
 
 from parsl.addresses import address_by_hostname
@@ -308,6 +309,7 @@ def generate_parsl_config(
     return config
 
 
+@contextmanager
 def load_parsl_config(
     *,
     workflow_id: int,
@@ -339,5 +341,7 @@ def load_parsl_config(
         executor_label for executor_label in dfk.executors.keys()
     ]
     logger.info(f"New DFK {dfk}, with executors {executor_labels}")
-
-    return dfk
+    try:
+        yield dfk
+    finally:
+        dfk.cleanup()
