@@ -7,6 +7,7 @@ from sqlmodel import SQLModel
 
 from .task import TaskRead
 
+
 __all__ = (
     "WorkflowCreate",
     "WorkflowRead",
@@ -24,12 +25,14 @@ class _WorkflowTaskBase(SQLModel):
 
 
 class WorkflowTaskCreate(_WorkflowTaskBase):
-    workflow_id: int
+    workflow_id: Optional[int]
     task_id: int
 
 
 class WorkflowTaskRead(_WorkflowTaskBase):
-    pass
+    id: int
+    workflow_id: int
+    task: TaskRead
 
 
 class _WorkflowBase(SQLModel):
@@ -39,7 +42,7 @@ class _WorkflowBase(SQLModel):
 
 class WorkflowRead(_WorkflowBase):
     id: int
-    task_list: List[TaskRead]
+    task_list: List[WorkflowTaskRead]
 
 
 class WorkflowCreate(_WorkflowBase):

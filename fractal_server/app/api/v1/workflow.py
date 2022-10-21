@@ -23,7 +23,6 @@ from ...models import Workflow
 from ...models import WorkflowCreate
 from ...models import WorkflowRead
 from ...models import WorkflowTaskCreate
-from ...models import WorkflowTaskRead
 from ...models import WorkflowUpdate
 from ...security import current_active_user
 from ...security import User
@@ -108,7 +107,7 @@ async def get_workflow(
     return workflow
 
 
-@router.patch("{_id}/add-task/", response_model=WorkflowTaskRead)
+@router.post("{_id}/add-task/", response_model=WorkflowRead)
 async def add_task_to_workflow(
     _id: int,
     new_task: WorkflowTaskCreate,
