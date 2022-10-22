@@ -4,6 +4,7 @@ from sqlmodel import select
 from fractal_server.app.models import TaskRead
 from fractal_server.app.models import Workflow
 from fractal_server.app.models import WorkflowRead
+from fractal_server.app.models import WorkflowTask
 
 
 async def test_post_workflow(db, client, MockCurrentUser, project_factory):
@@ -128,7 +129,7 @@ async def test_post_newtask(
     """
     GIVEN a Workflow with a list of Tasks
     WHEN the POST endpoint is called
-    THEN the it is inserted in the Workflow
+    THEN the new Task is inserted in Workflow.task_list
     """
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
@@ -172,3 +173,54 @@ async def test_post_newtask(
         assert workflow.task_list[0].task == TaskRead(**t0.__dict__)
         assert workflow.task_list[1].task == TaskRead(**t1.__dict__)
         assert workflow.task_list[2].task == TaskRead(**t2.__dict__)
+
+
+async def test_delete_task(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Workflow with a list of Tasks
+    WHEN the DELETE endpoint is called
+    THEN the selected Task is properly removed
+         from Workflow.task_list
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        WF_ID = 1
+        workflow = {
+            "id": WF_ID,
+            "name": "My Workflow",
+            "project_id": project.id,
+        }
+        res = await client.post(
+            "api/v1/workflow/",
+            json=workflow,
+        )
+        assert res.status_code == 201
+
+        workflow = await db.get(Workflow, WF_ID)
+        t0 = await task_factory()
+        t1 = await task_factory()
+        t2 = await task_factory()
+        await workflow.insert_task(t0.id, db=db)
+        await workflow.insert_task(t1.id, db=db)
+        await workflow.insert_task(t2.id, db=db)
+        await db.refresh(workflow)
+
+        assert (
+            len((await db.execute(select(WorkflowTask))).scalars().all()) == 3
+        )
+        assert len(workflow.task_list) == 3
+        for i, task in enumerate(workflow.task_list):
+            assert task.order == i
+
+        res = await client.delete(f"api/v1/workflow/{WF_ID}/rm-task/{t1.id}/")
+        assert res.status_code == 204
+
+        await db.refresh(workflow)
+        assert (
+            len((await db.execute(select(WorkflowTask))).scalars().all()) == 2
+        )
+        assert len(workflow.task_list) == 2
+        for i, task in enumerate(workflow.task_list):
+            assert task.order == i

@@ -141,7 +141,7 @@ async def add_task_to_workflow(
 
 
 @router.delete(
-    "{_id}/rm-task/{task_id}", status_code=status.HTTP_204_NO_CONTENT
+    "/{_id}/rm-task/{task_id}/", status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_task_from_workflow(
     _id: int,
@@ -149,7 +149,22 @@ async def delete_task_from_workflow(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    raise NotImplementedError
+    # TODO move check autorization as first thing (issue #171)
+    workflow = await db.get(Workflow, _id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
+    # check autorization
+    await get_project_check_owner(
+        project_id=workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    await workflow.remove_task(task_id, db=db)
+    await db.merge(workflow)
+    await db.commit()
+    return
 
 
 @router.patch("{_id}", response_model=WorkflowRead)
