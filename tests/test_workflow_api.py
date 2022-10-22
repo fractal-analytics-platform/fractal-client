@@ -224,3 +224,33 @@ async def test_delete_task(
         assert len(workflow.task_list) == 2
         for i, task in enumerate(workflow.task_list):
             assert task.order == i
+
+
+async def test_get_project_workflows(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Project containing three Workflows
+    WHEN the GET endpoint is called
+    THEN the list of all its Workflows is returned
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        other_project = await project_factory(user)
+        workflow1 = {"id": 1, "name": "WF1", "project_id": project.id}
+        workflow2 = {"id": 2, "name": "WF2", "project_id": project.id}
+        workflow3 = {"id": 3, "name": "WF3", "project_id": other_project.id}
+        workflow4 = {"id": 4, "name": "WF4", "project_id": project.id}
+        res = await client.post("api/v1/workflow/", json=workflow1)
+        res = await client.post("api/v1/workflow/", json=workflow2)
+        res = await client.post("api/v1/workflow/", json=workflow3)
+        res = await client.post("api/v1/workflow/", json=workflow4)
+
+        res = await client.get(f"api/v1/project/{project.id}/workflows/")
+        workflow_list = res.json()
+
+        assert len((await db.execute(select(Workflow))).scalars().all()) == 4
+        assert len(workflow_list) == 3
+        assert set([1, 2, 4]) == set(
+            [workflow["id"] for workflow in workflow_list]
+        )
