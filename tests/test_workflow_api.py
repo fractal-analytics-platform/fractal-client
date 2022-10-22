@@ -6,7 +6,7 @@ from fractal_server.app.models import Workflow
 from fractal_server.app.models import WorkflowRead
 
 
-async def test_workflow_post(db, client, MockCurrentUser, project_factory):
+async def test_post_workflow(db, client, MockCurrentUser, project_factory):
     async with MockCurrentUser(persist=True) as user:
         res = await client.post(
             "api/v1/workflow/",
@@ -63,7 +63,7 @@ async def test_workflow_post(db, client, MockCurrentUser, project_factory):
             assert db_workflow.project_id == id
 
 
-async def test_workflow_delete(
+async def test_delete_workflow(
     db, client, MockCurrentUser, project_factory, task_factory
 ):
     """
@@ -81,12 +81,12 @@ async def test_workflow_delete(
         }
 
         res = await client.post(
-            "api/v1/workflow/",
+            "/api/v1/workflow/",
             json=workflow,
         )
         wf_id = res.json()["id"]
 
-        res = await client.delete(f"api/v1/workflow/{wf_id}")
+        res = await client.delete(f"/api/v1/workflow/{wf_id}/")
         assert res.status_code == 204
 
         # TODO add tasks with API and test cascade delete
@@ -94,11 +94,11 @@ async def test_workflow_delete(
         assert not await db.get(Workflow, wf_id)
 
 
-async def test_workflow_get(
+async def test_get_workflow(
     db, client, MockCurrentUser, project_factory, task_factory
 ):
     """
-    GIVEN a Workflow
+    GIVEN a Workflow in the db
     WHEN the get endpoint is called
     THEN the Workflow is returned
     """
@@ -113,16 +113,16 @@ async def test_workflow_get(
             "task_list": [],
         }
         res = await client.post(
-            "api/v1/workflow/",
+            "/api/v1/workflow/",
             json=workflow,
         )
 
-        res = await client.get(f"api/v1/workflow/{WF_ID}")
+        res = await client.get(f"/api/v1/workflow/{WF_ID}/")
         assert res.status_code == 200
         assert res.json() == workflow
 
 
-async def test_workflow_post_task(
+async def test_post_newtask(
     db, client, MockCurrentUser, project_factory, task_factory
 ):
     """
