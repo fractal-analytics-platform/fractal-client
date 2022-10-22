@@ -254,3 +254,36 @@ async def test_get_project_workflows(
         assert set([1, 2, 4]) == set(
             [workflow["id"] for workflow in workflow_list]
         )
+
+
+async def test_patch_workflow(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a Workflow
+    WHEN the PATCH endpoint is called
+    THEN the Workflow is updated
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        other_project = await project_factory(user)
+        WF_ID = 1
+        workflow = {"id": WF_ID, "name": "WF", "project_id": project.id}
+        res = await client.post("api/v1/workflow/", json=workflow)
+
+        workflow = await db.get(Workflow, WF_ID)
+        assert workflow.name == "WF"
+        res = await client.get(f"api/v1/project/{project.id}/workflows/")
+        assert len(res.json()) == 1
+        res = await client.get(f"api/v1/project/{other_project.id}/workflows/")
+        assert len(res.json()) == 0
+
+        patch = {"name": "FW", "project_id": other_project.id}
+        res = await client.patch(f"api/v1/{WF_ID}/", json=patch)
+
+        await db.refresh(workflow)
+        assert workflow.name == "FW"
+        res = await client.get(f"api/v1/project/{project.id}/workflows/")
+        assert len(res.json()) == 0
+        res = await client.get(f"api/v1/project/{other_project.id}/workflows/")
+        assert len(res.json()) == 1
