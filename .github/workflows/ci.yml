@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  test:
+  tests:
     name: "Python ${{ matrix.python-version }}"
     runs-on: ubuntu-latest
     timeout-minutes: 30
