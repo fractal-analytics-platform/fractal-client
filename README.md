@@ -2,6 +2,10 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/fractal-server?color=gree)](https://pypi.org/project/fractal-server/)
 
+<a href="https://github.com/fractal-analytics-platform/fractal-server/actions?query=branch%3Amain+event%3Apush+workflow%3Aci">
+<img src="https://github.com/fractal-analytics-platform/fractal-server/workflows/ci/badge.svg?event=push&branch=main" alt="test badge">
+</a>
+
 Fractal is a framework to process high content imaging data at scale and prepare it for interactive visualization.
 
 This is the server component of the fractal analytics platform. If you are interested in the client component, please refer to the [main

@@ -73,6 +73,8 @@ push = true
 fractal-server = "fractal_server.__main__:run"
 
 [tool.coverage.run]
+branch = true
+parallel = true
 omit = ["tests/*"]
 
 [[tool.mypy.overrides]]
