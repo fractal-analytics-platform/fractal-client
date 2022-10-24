@@ -28,6 +28,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -65,6 +66,7 @@ def dummy(
         a dictionary that will update the metadata
     """
     logger.info("ENTERING dummy task")
+
     if raise_error:
         raise ValueError(message)
 
