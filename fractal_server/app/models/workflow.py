@@ -3,6 +3,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from pydantic import validator
 from sqlalchemy import Column
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.types import JSON
@@ -43,6 +44,23 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
 
     task: Task = Relationship(sa_relationship_kwargs=dict(lazy="selectin"))
 
+    @validator("args")
+    def validate_args(cls, value):
+        forbidden_args_keys = {
+            "input_paths",
+            "output_path",
+            "metadata",
+            "logger",
+        }
+        args_keys = set(value.keys())
+        intersect_keys = forbidden_args_keys.intersection(args_keys)
+        if intersect_keys:
+            raise ValueError(
+                "`args` contains the following forbidden keys: "
+                f"{intersect_keys}"
+            )
+        return value
+
     @property
     def arguments(self):
         """
@@ -53,6 +71,30 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
         out.update(self.args)
         popget(out, "parallelization_level")
         return out
+
+    @property
+    def is_parallel(self) -> bool:
+        return self.task.is_parallel
+
+    @property
+    def parallelization_level(self) -> str:
+        return self.task.parallelization_level
+
+    def assemble_args(self, extra: Dict[str, Any] = None):
+        """
+        Merge of `extra` arguments and `self.arguments`.
+
+        Return
+        ------
+        full_arsgs (Dict):
+            A dictionary consisting of the merge of `extra` and
+            self.arguments.
+        """
+        full_args = {}
+        if extra:
+            full_args.update(extra)
+        full_args.update(self.arguments)
+        return full_args
 
 
 class Workflow(_WorkflowBase, table=True):

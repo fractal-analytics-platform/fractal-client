@@ -4,6 +4,7 @@ University of Zurich
 
 Original author(s):
 Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
 
 This file is part of Fractal and was originally developed by eXact lab S.r.l.
 <exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
@@ -13,61 +14,39 @@ Zurich.
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict
-from typing import Optional
 
 from devtools import debug
-from pydantic import BaseModel
 
-import fractal_server.tasks.dummy as dummy
-from fractal_server.app.models import Task
-from fractal_server.app.models import Workflow
+from .fixtures_tasks import MockTask
+from .fixtures_tasks import MockWorkflowTask
 from fractal_server.app.runner import set_job_logger
+from fractal_server.app.runner._common import _call_command_wrapper
+from fractal_server.app.runner._process import call_single_task
+from fractal_server.app.runner._process import recursive_task_submission
 from fractal_server.app.runner.common import TaskParameters
-from fractal_server.app.runner.process import _call_command_wrapper
-from fractal_server.app.runner.process import call_single_task
-from fractal_server.app.runner.process import process_workflow
-from fractal_server.app.runner.process import recursive_task_submission
 from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_parallel as dummy_parallel_module
 
 
-class MockTask(BaseModel):
-    command: str
-    parallelization_level: Optional[str] = None
-
-
-class MockWorkflowTask(BaseModel):
-    order: int = 0
-    task: MockTask
-    arguments: Dict = {}
-
-
-class MockParallelTask(BaseModel):
-    name: str
-    command: str
-    parallelization_level: str
-
-
-class MockParallelWorkflowTask(BaseModel):
-    order: int = 0
-    task: MockParallelTask
-    arguments: Dict = {}
-
-
-async def test_command_wrapper():
+async def test_command_wrapper(tmp_path):
+    OUT_PATH = tmp_path / "out"
+    ERR_PATH = tmp_path / "err"
     with ThreadPoolExecutor() as executor:
         future = executor.submit(
-            _call_command_wrapper, f"ls -al {dummy.__file__}"
+            _call_command_wrapper,
+            f"ls -al {dummy_module.__file__}",
+            stdout=OUT_PATH,
+            stderr=ERR_PATH,
         )
-    result = future.result()
-    debug(result.stdout, result.stderr, result.returncode)
-    assert dummy.__file__ in result.stdout.decode("utf-8")
+    future.result()
+
+    with OUT_PATH.open("r") as fout:
+        assert dummy_module.__file__ in fout.read()
 
 
 def test_call_single_task(tmp_path):
     task = MockWorkflowTask(
-        task=MockTask(command=f"python {dummy_module.__file__}"),
+        task=MockTask(name="task0", command=f"python {dummy_module.__file__}"),
         arguments=dict(message="test"),
         order=0,
     )
@@ -98,7 +77,9 @@ def test_recursive_task_submission_step0(tmp_path):
     INDEX = 666
     task_list = [
         MockWorkflowTask(
-            task=MockTask(command=f"python {dummy_module.__file__}"),
+            task=MockTask(
+                name="task0", command=f"python {dummy_module.__file__}"
+            ),
             arguments=dict(message="test", index=INDEX),
             order=0,
         )
@@ -136,8 +117,8 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
     MESSAGE = "test message"
     MOCKPARALLELTASK_NAME = "This is just a name"
     task_list = [
-        MockParallelWorkflowTask(
-            task=MockParallelTask(
+        MockWorkflowTask(
+            task=MockTask(
                 name=MOCKPARALLELTASK_NAME,
                 command=f"python {dummy_parallel_module.__file__}",
                 parallelization_level="index",
@@ -196,12 +177,16 @@ def test_recursive_task_submission_inductive_step(tmp_path):
 
     task_list = [
         MockWorkflowTask(
-            task=MockTask(command=f"python {dummy_module.__file__}"),
+            task=MockTask(
+                name="task0", command=f"python {dummy_module.__file__}"
+            ),
             arguments=dict(message="test 0", index=0),
             order=0,
         ),
         MockWorkflowTask(
-            task=MockTask(command=f"python {dummy_module.__file__}"),
+            task=MockTask(
+                name="task1", command=f"python {dummy_module.__file__}"
+            ),
             arguments=dict(message="test 1", index=1),
             order=1,
         ),
@@ -234,54 +219,3 @@ def test_recursive_task_submission_inductive_step(tmp_path):
     assert len(data) == 2
     assert data[0]["metadata"] == METADATA_0
     assert data[1]["metadata"] == METADATA_1
-
-
-async def test_runner(db, project_factory, MockCurrentUser, tmp_path):
-    """
-    GIVEN a non-trivial workflow
-    WHEN the workflow is processed
-    THEN the tasks are correctly executed
-    """
-    async with MockCurrentUser(persist=True) as user:
-        prj = await project_factory(user=user)
-
-    # Add dummy task as a Task
-    tk = Task(
-        name="dummy",
-        command=f"python {dummy.__file__}",
-        source=dummy.__file__,
-        input_type="Any",
-        output_type="Any",
-    )
-
-    # Create a workflow with the dummy task as member
-    wf = Workflow(name="wf", project_id=prj.id)
-
-    db.add_all([tk, wf])
-    await db.commit()
-    await db.refresh(tk)
-    await db.refresh(wf)
-
-    await wf.insert_task(tk.id, db=db, args=dict(message="task 0"))
-    await wf.insert_task(tk.id, db=db, args=dict(message="task 1"))
-    await db.refresh(wf)
-
-    debug(tk)
-    debug(wf)
-
-    # process workflow
-    job_logger = set_job_logger(
-        logger_name="job_logger",
-        log_file_path=tmp_path / "job.log",
-        level=logging.DEBUG,
-    )
-    out = await process_workflow(
-        workflow=wf,
-        input_paths=[tmp_path / "*.txt"],
-        output_path=tmp_path / "out.json",
-        input_metadata={},
-        logger=job_logger,
-        workflow_dir=tmp_path,
-    )
-    debug(out)
-    assert "dummy" in out.metadata

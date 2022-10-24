@@ -16,10 +16,12 @@ Zurich.
 import logging
 import os
 import warnings
+from contextlib import contextmanager
+from pathlib import Path
 
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
-from parsl.config import Config
+from parsl.config import Config as ParslConfig
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SingleNodeLauncher
@@ -31,11 +33,11 @@ from parsl.providers import SlurmProvider
 from ....config_runner import settings
 
 
-def add_prefix(*, workflow_id: int, executor_label: str):
+def get_executor_label(*, workflow_id: int, executor_label: str):
     return f"{workflow_id}__{executor_label}"
 
 
-class LocalChannel_fractal(LocalChannel):
+class FractalLocalChannel(LocalChannel):
     def __init__(self, *args, username: str = None, **kwargs):
         self.username: str = username
         super().__init__(*args, **kwargs)
@@ -57,20 +59,13 @@ class LocalChannel_fractal(LocalChannel):
         else:
             if cmd.startswith(("/bin/bash -c '", "ps", "kill")):
                 msg = (
-                    f'We do not add "sudo - {self.username} -c" in front of '
-                    f"LocalProvider commands like {cmd=}."
+                    "We do not impersonate other users for commands such "
+                    f"as {cmd=}."
                 )
                 warnings.warn(msg)
                 new_cmd = cmd
             elif cmd.startswith(("sbatch", "scancel")):
-                if cmd == "scancel ":
-                    new_cmd = (
-                        'echo "execute_wait was called with dummy "'
-                        f'"command "{cmd}". We are replacing it with '
-                        'this echo command."'
-                    )
-                else:
-                    new_cmd = f'sudo su - {self.username} -c "{cmd}"'
+                new_cmd = f'sudo --non-interactive -u {self.username} "{cmd}"'
             elif cmd.startswith("squeue"):
                 new_cmd = cmd
             else:
@@ -83,10 +78,11 @@ def generate_parsl_config(
     *,
     workflow_id: int,
     workflow_name: str,
+    workflow_dir: Path,
     enable_monitoring: bool = True,
     username: str = None,
     worker_init: str = None,
-) -> Config:
+) -> ParslConfig:
 
     if enable_monitoring:
         msg = (
@@ -104,28 +100,12 @@ def generate_parsl_config(
         raise NotImplementedError
 
     # Prepare log folders for channels and executors
-    RUNNER_LOG_DIR = settings.RUNNER_LOG_DIR
-    if not os.path.isdir(RUNNER_LOG_DIR):
-        old_umask = os.umask(0)
-        os.mkdir(RUNNER_LOG_DIR)
-        os.umask(old_umask)
-    workflow_log_dir = f"{RUNNER_LOG_DIR}/workflow_{workflow_id:06d}"
-    workflow_log_dir = os.path.abspath(workflow_log_dir)
-    if not os.path.isdir(workflow_log_dir):
-        old_umask = os.umask(0)
-        os.mkdir(workflow_log_dir, mode=0o777)
-        os.umask(old_umask)
-    script_dir = f"{workflow_log_dir}/scripts"
-    script_dir = os.path.abspath(script_dir)
-    if not os.path.isdir(script_dir):
-        old_umask = os.umask(0)
-        os.mkdir(script_dir)
-        os.umask(old_umask)
-    worker_logdir_root = f"{workflow_log_dir}/executors"
-    if not os.path.isdir(worker_logdir_root):
-        old_umask = os.umask(0)
-        os.mkdir(worker_logdir_root, 0o777)
-        os.umask(old_umask)
+    script_dir = workflow_dir / "scripts"
+    worker_logdir_root = workflow_dir / "executors"
+
+    script_dir.mkdir(exist_ok=True, parents=True)
+    worker_logdir_root.mkdir(exist_ok=True, parents=True)
+
     channel_args = dict(script_dir=script_dir)
 
     # Set additional parameters for channel/provider
@@ -139,7 +119,7 @@ def generate_parsl_config(
         prov_local = LocalProvider(
             move_files=True,
             launcher=SingleNodeLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
@@ -148,7 +128,7 @@ def generate_parsl_config(
         # Define executor
         executors = [
             HighThroughputExecutor(
-                label=add_prefix(
+                label=get_executor_label(
                     workflow_id=workflow_id, executor_label="cpu-low"
                 ),
                 provider=prov_local,
@@ -163,7 +143,7 @@ def generate_parsl_config(
         prov_local = LocalProvider(
             move_files=True,
             launcher=SingleNodeLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             init_blocks=1,
             min_blocks=0,
             max_blocks=4,
@@ -174,13 +154,13 @@ def generate_parsl_config(
         executors = []
         for label in labels:
             htex = HighThroughputExecutor(
-                label=add_prefix(
+                label=get_executor_label(
                     workflow_id=workflow_id, executor_label=label
                 ),
                 provider=prov_local,
                 address=address_by_hostname(),
                 cpu_affinity="block",
-                worker_logdir_root=worker_logdir_root,
+                worker_logdir_root=worker_logdir_root.as_posix(),
             )
             executors.append(htex)
 
@@ -200,21 +180,21 @@ def generate_parsl_config(
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             cores_per_node=16,
             mem_per_node=61,
             **common_args,
@@ -223,7 +203,7 @@ def generate_parsl_config(
         prov_gpu = SlurmProvider(
             partition="gpu",
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             nodes_per_block=1,
             init_blocks=1,
             min_blocks=0,
@@ -240,7 +220,7 @@ def generate_parsl_config(
         executors = []
         for provider, label in zip(providers, labels):
             htex = HighThroughputExecutor(
-                label=add_prefix(
+                label=get_executor_label(
                     workflow_id=workflow_id, executor_label=label
                 ),
                 provider=provider,
@@ -267,21 +247,21 @@ def generate_parsl_config(
         )
         prov_cpu_low = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             cores_per_node=1,
             mem_per_node=7,
             **common_args,
         )
         prov_cpu_mid = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             cores_per_node=4,
             mem_per_node=15,
             **common_args,
         )
         prov_cpu_high = SlurmProvider(
             launcher=SrunLauncher(debug=False),
-            channel=LocalChannel_fractal(**channel_args),
+            channel=FractalLocalChannel(**channel_args),
             cores_per_node=20,
             mem_per_node=61,
             **common_args,
@@ -295,7 +275,7 @@ def generate_parsl_config(
         for provider, label in zip(providers, labels):
             executors.append(
                 HighThroughputExecutor(
-                    label=add_prefix(
+                    label=get_executor_label(
                         workflow_id=workflow_id, executor_label=label
                     ),
                     provider=provider,
@@ -316,17 +296,20 @@ def generate_parsl_config(
     else:
         monitoring = None
 
-    config = Config(
+    config = ParslConfig(
         executors=executors, monitoring=monitoring, max_idletime=20.0
     )
     return config
 
 
+@contextmanager
 def load_parsl_config(
     *,
     workflow_id: int,
-    workflow_name: str = "default workflow name",
-    config: Config = None,
+    logger: logging.Logger,
+    workflow_name: str,
+    workflow_dir: Path,
+    parsl_config: ParslConfig = None,
     enable_monitoring: bool = None,
     username: str = None,
     worker_init: str = None,
@@ -335,49 +318,23 @@ def load_parsl_config(
     if enable_monitoring is None:
         enable_monitoring = settings.RUNNER_MONITORING
 
-    logger = logging.getLogger(f"WF{workflow_id}")
-    logger.info(f"{settings.RUNNER_CONFIG=}")
-    logger.info(f"{settings.RUNNER_DEFAULT_EXECUTOR=}")
-    logger.info(f"{enable_monitoring=}")
-
-    if not config:
-        config = generate_parsl_config(
+    if not parsl_config:
+        parsl_config = generate_parsl_config(
             enable_monitoring=enable_monitoring,
             workflow_id=workflow_id,
             workflow_name=workflow_name,
+            workflow_dir=workflow_dir,
             username=username,
             worker_init=worker_init,
         )
 
-    dfk = DataFlowKernel(config=config)
+    dfk = DataFlowKernel(config=parsl_config)
 
     executor_labels = [
         executor_label for executor_label in dfk.executors.keys()
     ]
     logger.info(f"New DFK {dfk}, with executors {executor_labels}")
-
-    return dfk
-
-
-def get_unique_executor(
-    *, workflow_id: int, task_executor: str = None, data_flow_kernel=None
-):
-
-    # Handle missing value
-    if task_executor is None:
-        task_executor = settings.RUNNER_DEFAULT_EXECUTOR
-
-    # Redefine task_executor, by prepending workflow_id
-    new_task_executor = add_prefix(
-        workflow_id=workflow_id, executor_label=task_executor
-    )
-
-    # Verify match between new_task_executor and available executors
-    valid_executor_labels = data_flow_kernel.executors.keys()
-    if new_task_executor not in valid_executor_labels:
-        raise ValueError(
-            f"Executor label {new_task_executor} is not in "
-            f"{valid_executor_labels=}"
-        )
-
-    return new_task_executor
+    try:
+        yield dfk
+    finally:
+        dfk.cleanup()

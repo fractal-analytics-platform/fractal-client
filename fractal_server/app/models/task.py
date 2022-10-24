@@ -20,3 +20,7 @@ class Task(_TaskBase, table=True):  # type: ignore
             return self.default_args["parallelization_level"]
         except KeyError:
             return None
+
+    @property
+    def is_parallel(self):
+        return bool(self.parallelization_level)

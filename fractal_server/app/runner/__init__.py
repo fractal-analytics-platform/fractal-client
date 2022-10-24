@@ -7,22 +7,46 @@ from ... import __VERSION__
 from ...config_runner import settings
 from ..models import Dataset
 from ..models import Workflow
+from ._process import process_workflow as process_process_workflow
 from .common import auto_output_dataset  # noqa: F401
 from .common import close_job_logger
 from .common import set_job_logger
 from .common import validate_workflow_compatibility  # noqa: F401
 
+_backends = {}
+_backend_errors = {}
 
-if settings.RUNNER_BACKEND == "process":
-    from .process import process_workflow
-else:
+_backends["process"] = process_process_workflow
 
-    def no_function(*args, **kwarsg):
-        raise NotImplementedError(
-            f"Runner backend {settings.RUNNER_BACKEND} not implemented"
-        )
+try:
+    from ._parsl import process_workflow as parsl_process_workflow
 
-    process_workflow = no_function
+    _backends["parsl"] = parsl_process_workflow
+except ModuleNotFoundError as e:
+    _backend_errors["parsl"] = e
+
+
+try:
+    process_workflow = _backends[settings.RUNNER_BACKEND]
+except KeyError:
+    from ...config import DeploymentType
+    from ...config import settings
+
+    if settings.DEPLOYMENT_TYPE in [
+        DeploymentType.TESTING,
+        DeploymentType.DEVELOPMENT,
+    ]:
+        raise _backend_errors.get(settings.RUNNER_BACKEND)
+    else:
+
+        def no_function(*args, **kwarsg):
+            error = _backend_errors.get(settings.RUNNER_BACKEND)
+            raise NotImplementedError(
+                f"Runner backend {settings.RUNNER_BACKEND} not implemented"
+                f"\n{error}"
+            )
+
+        process_workflow = no_function
 
 
 async def submit_workflow(

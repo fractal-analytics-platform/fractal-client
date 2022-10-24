@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 from functools import partial
 from functools import wraps
@@ -152,3 +153,8 @@ def async_wrap(func: Callable) -> Callable:
         return await loop.run_in_executor(executor, pfunc)
 
     return run
+
+
+def write_args_file(args: Dict[str, Any], path: Path):
+    with path.open("w") as f:
+        json.dump(args, f, cls=TaskParameterEncoder)
