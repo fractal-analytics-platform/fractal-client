@@ -5,6 +5,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+from parsl.app.app import bash_app
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
@@ -12,6 +13,7 @@ from ...models import Workflow
 from ...models import WorkflowTask
 from ..common import async_wrap
 from ..common import TaskParameters
+from ..common import write_args_file
 from ._setup import load_parsl_config
 
 
@@ -44,7 +46,30 @@ def _serial_task_assembly(
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
 ) -> AppFuture:
-    raise NotImplementedError
+    if not workflow_dir:
+        raise RuntimeError
+
+    stdout_file = workflow_dir / f"{task.order}.out.json"
+    stderr_file = workflow_dir / f"{task.order}.err"
+
+    # assemble full args
+    @bash_app(data_flow_kernel=data_flow_kernel)
+    def _this_bash_app(inputs, stderr=stderr_file.as_posix()):
+
+        task_pars = inputs[0]
+
+        args_dict = task.assemble_args(
+            extra=task_pars.dict(exclude={"logger"})
+        )
+
+        # write args file
+        args_file_path = workflow_dir / f"{task.order}.args.json"
+        write_args_file(args=args_dict, path=args_file_path)
+
+        return f"{task.task.command} -j {args_file_path} -o {stdout_file}"
+
+    app_future = _this_bash_app(inputs=[task_pars_depend_future])
+    return app_future
 
 
 def recursive_task_assembly(
