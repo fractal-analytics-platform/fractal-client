@@ -32,6 +32,7 @@ class _TaskBase(SQLModel):
     """
 
     name: str
+    module: str
     command: str
     source: str
     input_type: str
