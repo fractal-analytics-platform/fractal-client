@@ -14,12 +14,11 @@ Zurich.
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict
-from typing import Optional
 
 from devtools import debug
-from pydantic import BaseModel
 
+from .fixtures_tasks import MockTask
+from .fixtures_tasks import MockWorkflowTask
 from fractal_server.app.runner import set_job_logger
 from fractal_server.app.runner._process import _call_command_wrapper
 from fractal_server.app.runner._process import call_single_task
@@ -27,29 +26,6 @@ from fractal_server.app.runner._process import recursive_task_submission
 from fractal_server.app.runner.common import TaskParameters
 from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_parallel as dummy_parallel_module
-
-
-class MockTask(BaseModel):
-    command: str
-    parallelization_level: Optional[str] = None
-
-
-class MockWorkflowTask(BaseModel):
-    order: int = 0
-    task: MockTask
-    arguments: Dict = {}
-
-
-class MockParallelTask(BaseModel):
-    name: str
-    command: str
-    parallelization_level: str
-
-
-class MockParallelWorkflowTask(BaseModel):
-    order: int = 0
-    task: MockParallelTask
-    arguments: Dict = {}
 
 
 async def test_command_wrapper():
@@ -64,7 +40,7 @@ async def test_command_wrapper():
 
 def test_call_single_task(tmp_path):
     task = MockWorkflowTask(
-        task=MockTask(command=f"python {dummy_module.__file__}"),
+        task=MockTask(name="task0", command=f"python {dummy_module.__file__}"),
         arguments=dict(message="test"),
         order=0,
     )
@@ -95,7 +71,9 @@ def test_recursive_task_submission_step0(tmp_path):
     INDEX = 666
     task_list = [
         MockWorkflowTask(
-            task=MockTask(command=f"python {dummy_module.__file__}"),
+            task=MockTask(
+                name="task0", command=f"python {dummy_module.__file__}"
+            ),
             arguments=dict(message="test", index=INDEX),
             order=0,
         )
@@ -133,8 +111,8 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
     MESSAGE = "test message"
     MOCKPARALLELTASK_NAME = "This is just a name"
     task_list = [
-        MockParallelWorkflowTask(
-            task=MockParallelTask(
+        MockWorkflowTask(
+            task=MockTask(
                 name=MOCKPARALLELTASK_NAME,
                 command=f"python {dummy_parallel_module.__file__}",
                 parallelization_level="index",
@@ -193,12 +171,16 @@ def test_recursive_task_submission_inductive_step(tmp_path):
 
     task_list = [
         MockWorkflowTask(
-            task=MockTask(command=f"python {dummy_module.__file__}"),
+            task=MockTask(
+                name="task0", command=f"python {dummy_module.__file__}"
+            ),
             arguments=dict(message="test 0", index=0),
             order=0,
         ),
         MockWorkflowTask(
-            task=MockTask(command=f"python {dummy_module.__file__}"),
+            task=MockTask(
+                name="task1", command=f"python {dummy_module.__file__}"
+            ),
             arguments=dict(message="test 1", index=1),
             order=1,
         ),
