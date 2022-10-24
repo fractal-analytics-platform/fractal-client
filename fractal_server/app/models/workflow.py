@@ -72,6 +72,14 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
         popget(out, "parallelization_level")
         return out
 
+    @property
+    def is_parallel(self) -> bool:
+        return self.task.is_parallel
+
+    @property
+    def parallelization_level(self) -> str:
+        return self.task.parallelization_level
+
     def assemble_args(self, extra: Dict[str, Any] = None):
         """
         Merge of `extra` arguments and `self.arguments`.
