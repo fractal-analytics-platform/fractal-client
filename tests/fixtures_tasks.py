@@ -16,6 +16,14 @@ class MockWorkflowTask(BaseModel):
     task: MockTask
     arguments: Dict = {}
 
+    @property
+    def is_parallel(self) -> bool:
+        return bool(self.task.parallelization_level)
+
+    @property
+    def parallelization_level(self) -> Optional[str]:
+        return self.task.parallelization_level
+
     def assemble_args(self, extra: Dict[str, Any] = None):
         """
         Merge of `extra` arguments and `self.arguments`.

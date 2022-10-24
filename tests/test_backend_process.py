@@ -20,7 +20,7 @@ from devtools import debug
 from .fixtures_tasks import MockTask
 from .fixtures_tasks import MockWorkflowTask
 from fractal_server.app.runner import set_job_logger
-from fractal_server.app.runner._process import _call_command_wrapper
+from fractal_server.app.runner._common import _call_command_wrapper
 from fractal_server.app.runner._process import call_single_task
 from fractal_server.app.runner._process import recursive_task_submission
 from fractal_server.app.runner.common import TaskParameters
