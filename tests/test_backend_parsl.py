@@ -37,7 +37,7 @@ def test_import_parsl_backend():
     del sys.modules["fractal_server.config"]
     del fractal_server.config
 
-    import fractal_server.app.runner.parsl
+    import fractal_server.app.runner._parsl
 
 
 @skipif_no_parsl
