@@ -1,13 +1,17 @@
 import logging
+from concurrent.futures import Future
 from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
 
+from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
 from ...models import Workflow
+from ...models import WorkflowTask
 from ..common import async_wrap
+from ..common import TaskParameters
 from ._setup import load_parsl_config
 
 
@@ -24,8 +28,67 @@ def get_app_future_result(app_future: AppFuture):
     return app_future.result()
 
 
-def recursive_task_assembly(*args, **kwargs):
+def _parallel_task_assembly(
+    data_flow_kernel: DataFlowKernel,
+    task: WorkflowTask,
+    task_pars_depend_future: AppFuture,
+    workflow_dir: Path,
+    parallelization_level: str,
+) -> AppFuture:
     raise NotImplementedError
+
+
+def _serial_task_assembly(
+    data_flow_kernel: DataFlowKernel,
+    task: WorkflowTask,
+    task_pars_depend_future: AppFuture,
+    workflow_dir: Path,
+) -> AppFuture:
+    raise NotImplementedError
+
+
+def recursive_task_assembly(
+    *,
+    data_flow_kernel: DataFlowKernel,
+    task_list: List[WorkflowTask],
+    task_pars: TaskParameters,
+    workflow_dir: Path,
+) -> AppFuture:
+
+    try:
+        *dependencies, this_task = task_list
+    except ValueError:
+        # step 0: return future containing original task_pars
+        pseudo_future: Future = Future()
+        pseudo_future.set_result(task_pars)
+        return pseudo_future
+    # step n => step n+1
+    task_pars.logger.debug(f"submitting task {this_task.order=}")
+    parallelization_level = this_task.task.parallelization_level
+
+    task_pars_depend_future = recursive_task_assembly(
+        data_flow_kernel=data_flow_kernel,
+        task_list=dependencies,
+        task_pars=task_pars,
+        workflow_dir=workflow_dir,
+    )
+
+    if parallelization_level:
+        this_future = _parallel_task_assembly(
+            data_flow_kernel=data_flow_kernel,
+            task=this_task,
+            task_pars_depend_future=task_pars_depend_future,
+            workflow_dir=workflow_dir,
+            parallelization_level=parallelization_level,
+        )
+    else:
+        this_future = _serial_task_assembly(
+            data_flow_kernel=data_flow_kernel,
+            task=this_task,
+            task_pars_depend_future=task_pars_depend_future.result(),
+            workflow_dir=workflow_dir,
+        )
+    return this_future
 
 
 async def process_workflow(
@@ -59,13 +122,16 @@ async def process_workflow(
         username=username,
         logger=logger,
     ) as dfk:
-        final_metadata_future, dfk = recursive_task_assembly(
+        final_metadata_future = recursive_task_assembly(
             data_flow_kernel=dfk,
-            task=workflow,
-            input_paths=input_paths,
-            output_path=output_path,
-            metadata=input_metadata,
-            username=username,
+            task_list=workflow.task_list,
+            task_pars=TaskParameters(
+                input_paths=input_paths,
+                output_path=output_path,
+                metadata=input_metadata,
+                logger=logger,
+            ),
+            workflow_dir=workflow_dir,
         )
         logger.info("Definition of app futures complete, now start execution.")
         final_metadata = await async_wrap(get_app_future_result)(
