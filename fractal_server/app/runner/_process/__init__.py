@@ -15,6 +15,7 @@ from ...models import Workflow
 from ...models import WorkflowTask
 from ..common import TaskParameterEncoder
 from ..common import TaskParameters
+from ..common import write_args_file
 
 
 """
@@ -168,13 +169,11 @@ def call_single_task(
         raise RuntimeError
 
     # assemble full args
-    args_dict = task_pars.dict(exclude={"logger"})
-    args_dict.update(task.arguments)
+    args_dict = task.assemble_args(extra=task_pars.dict(exclude={"logger"}))
 
     # write args file
     args_file_path = workflow_dir / f"{task.order}.args.json"
-    with open(args_file_path, "w") as f:
-        json.dump(args_dict, f, cls=TaskParameterEncoder)
+    write_args_file(args=args_dict, path=args_file_path)
 
     # assemble full command
     cmd = f"{task.task.command} -j {args_file_path}"
