@@ -5,15 +5,15 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from parsl.app.app import bash_app
+from parsl.app.app import python_app
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
 from ...models import Workflow
 from ...models import WorkflowTask
+from .._common import call_single_task
 from ..common import async_wrap
 from ..common import TaskParameters
-from ..common import write_args_file
 from ._setup import load_parsl_config
 
 
@@ -45,30 +45,20 @@ def _serial_task_assembly(
     task: WorkflowTask,
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
-) -> AppFuture:
+) -> AppFuture:  # AppFuture[TaskParameters]
     if not workflow_dir:
         raise RuntimeError
 
-    stdout_file = workflow_dir / f"{task.order}.out.json"
-    stderr_file = workflow_dir / f"{task.order}.err"
-
     # assemble full args
-    @bash_app(data_flow_kernel=data_flow_kernel)
-    def _this_bash_app(inputs, stderr=stderr_file.as_posix()):
-
-        task_pars = inputs[0]
-
-        args_dict = task.assemble_args(
-            extra=task_pars.dict(exclude={"logger"})
+    @python_app(data_flow_kernel=data_flow_kernel)
+    def _this_app(task_pars):
+        return call_single_task(
+            task=task,
+            task_pars=task_pars,
+            workflow_dir=workflow_dir,
         )
 
-        # write args file
-        args_file_path = workflow_dir / f"{task.order}.args.json"
-        write_args_file(args=args_dict, path=args_file_path)
-
-        return f"{task.task.command} -j {args_file_path} -o {stdout_file}"
-
-    app_future = _this_bash_app(inputs=[task_pars_depend_future])
+    app_future = _this_app(task_pars=task_pars_depend_future)
     return app_future
 
 
@@ -110,9 +100,10 @@ def recursive_task_assembly(
         this_future = _serial_task_assembly(
             data_flow_kernel=data_flow_kernel,
             task=this_task,
-            task_pars_depend_future=task_pars_depend_future.result(),
+            task_pars_depend_future=task_pars_depend_future,
             workflow_dir=workflow_dir,
         )
+
     return this_future
 
 

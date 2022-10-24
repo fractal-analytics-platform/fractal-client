@@ -28,14 +28,20 @@ from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_parallel as dummy_parallel_module
 
 
-async def test_command_wrapper():
+async def test_command_wrapper(tmp_path):
+    OUT_PATH = tmp_path / "out"
+    ERR_PATH = tmp_path / "err"
     with ThreadPoolExecutor() as executor:
         future = executor.submit(
-            _call_command_wrapper, f"ls -al {dummy_module.__file__}"
+            _call_command_wrapper,
+            f"ls -al {dummy_module.__file__}",
+            stdout=OUT_PATH,
+            stderr=ERR_PATH,
         )
-    result = future.result()
-    debug(result.stdout, result.stderr, result.returncode)
-    assert dummy_module.__file__ in result.stdout.decode("utf-8")
+    future.result()
+
+    with OUT_PATH.open("r") as fout:
+        assert dummy_module.__file__ in fout.read()
 
 
 def test_call_single_task(tmp_path):

@@ -12,11 +12,7 @@ class TaskExecutionError(RuntimeError):
     pass
 
 
-def _call_command_wrapper(
-    cmd: str,
-    stdout: Path,
-    stderr: Path,
-) -> None:
+def _call_command_wrapper(cmd: str, stdout: Path, stderr: Path) -> None:
     """
     Call command and return stdout, stderr, retcode
     """

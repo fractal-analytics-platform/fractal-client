@@ -78,7 +78,7 @@ def test_unit_serial_task_assembly(tmp_path):
         debug(out.result())
 
     # metadata file exists
-    output_file = tmp_path / "0.out.json"
+    output_file = tmp_path / "0.metadiff.json"
     with output_file.open("r") as fout:
         data = json.load(fout)
 

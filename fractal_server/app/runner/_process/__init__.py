@@ -1,6 +1,5 @@
 import json
 import logging
-import subprocess  # nosec
 from concurrent.futures import Executor
 from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor
@@ -35,27 +34,35 @@ def _call_single_parallel_task(
     task: WorkflowTask,
     task_pars: TaskParameters,
     workflow_dir: Path = None,
-) -> subprocess.CompletedProcess:
+) -> None:
     if not workflow_dir:
         raise RuntimeError
+    prefix = f"{task.order}_par_{component}"
+    stdout_file = workflow_dir / f"{prefix}.out"
+    stderr_file = workflow_dir / f"{prefix}.err"
+    metadata_diff_file = workflow_dir / f"{prefix}.metadiff.json"
 
     task_pars.logger.debug(f"calling task {task.order=} on {component=}")
+    # FIXME refactor with `write_args_file` and `task.assemble_args`
     # assemble full args
     args_dict = task_pars.dict(exclude={"logger"})
     args_dict.update(task.arguments)
     args_dict["component"] = component
 
     # write args file
-    args_file_path = workflow_dir / f"{task.order}_par_{component}.args.json"
+    args_file_path = workflow_dir / f"{prefix}.args.json"
     with open(args_file_path, "w") as f:
         json.dump(args_dict, f, cls=TaskParameterEncoder)
+    # FIXME: UP TO HERE
 
     # assemble full command
-    cmd = f"{task.task.command} -j {args_file_path}"
+    cmd = (
+        f"{task.task.command} -j {args_file_path} "
+        f"--metadata-out {metadata_diff_file}"
+    )
 
     task_pars.logger.debug(f"executing task {task.order=}")
-    completed_process = _call_command_wrapper(cmd)
-    return completed_process
+    _call_command_wrapper(cmd, stdout=stdout_file, stderr=stderr_file)
 
 
 def call_parallel_task(

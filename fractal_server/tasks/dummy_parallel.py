@@ -115,8 +115,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-j", "--json", help="Read parameters from json file")
     parser.add_argument(
-        "-o",
-        "--output",
+        "--metadata-out",
         help=(
             "Output file to redirect serialised returned data "
             "(default stdout)"
@@ -125,8 +124,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.output and Path(args.output).exists():
-        logger.error(f"Output file {args.output} already exists. Terminating")
+    if args.metadata_out and Path(args.metadata_out).exists():
+        logger.error(
+            f"Output file {args.metadata_out} already exists. Terminating"
+        )
         exit(1)
 
     pars = {}
@@ -137,8 +138,8 @@ if __name__ == "__main__":
     task_args = TaskArguments(**pars)
     metadata_update = dummy_parallel(**task_args.dict())
 
-    if args.output:
-        with open(args.output, "w") as fout:
+    if args.metadata_out:
+        with open(args.metadata_out, "w") as fout:
             json.dump(metadata_update, fout)
     else:
         stdout.write(json.dumps(metadata_update))
