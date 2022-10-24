@@ -17,18 +17,10 @@ from fractal_server.tasks import dummy as dummy_module
 
 try:
     import parsl  # noqa: F401
-
-    HAS_PARSL = True
 except ImportError:
-    HAS_PARSL = False
+    pytest.skip(allow_module_level=True)
 
 
-skipif_no_parsl = pytest.mark.skipif(
-    not HAS_PARSL, reason="Optional dependency `Parsl` is not installed"
-)
-
-
-@skipif_no_parsl
 def test_import_parsl_backend(unset_deployment_type):
     import fractal_server.config
 
@@ -38,10 +30,6 @@ def test_import_parsl_backend(unset_deployment_type):
     import fractal_server.app.runner._parsl
 
 
-@skipif_no_parsl
-@pytest.mark.skipif(
-    not HAS_PARSL, reason="Optional dependency `Parsl` is not installed"
-)
 def test_unit_serial_task_assembly(tmp_path):
 
     INDEX = 666
