@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import sys
 from concurrent.futures import Future
 
@@ -30,10 +29,9 @@ skipif_no_parsl = pytest.mark.skipif(
 
 
 @skipif_no_parsl
-def test_import_parsl_backend():
+def test_import_parsl_backend(unset_deployment_type):
     import fractal_server.config
 
-    os.environ.pop("DEPLOYMENT_TYPE")
     del sys.modules["fractal_server.config"]
     del fractal_server.config
 
