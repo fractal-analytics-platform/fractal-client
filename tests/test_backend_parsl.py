@@ -24,9 +24,12 @@ except ImportError:
     HAS_PARSL = False
 
 
-@pytest.mark.skipif(
+skipif_no_parsl = pytest.mark.skipif(
     not HAS_PARSL, reason="Optional dependency `Parsl` is not installed"
 )
+
+
+@skipif_no_parsl
 def test_import_parsl_backend():
     import fractal_server.config
 
@@ -37,6 +40,10 @@ def test_import_parsl_backend():
     import fractal_server.app.runner.parsl
 
 
+@skipif_no_parsl
+@pytest.mark.skipif(
+    not HAS_PARSL, reason="Optional dependency `Parsl` is not installed"
+)
 def test_unit_serial_task_assembly(tmp_path):
 
     INDEX = 666
