@@ -20,6 +20,8 @@ class _TaskBase(SQLModel):
     ----------
     name: str
         a human readable name for the task
+    module: str
+        module name of task
     command: str
         the command(s) that executes the task
     source: str
