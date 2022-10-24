@@ -1,4 +1,3 @@
-import json
 import logging
 from concurrent.futures import Executor
 from concurrent.futures import Future
@@ -11,9 +10,8 @@ from typing import List
 
 from ...models import Workflow
 from ...models import WorkflowTask
-from .._common import _call_command_wrapper
+from .._common import call_single_parallel_task
 from .._common import call_single_task
-from ..common import TaskParameterEncoder
 from ..common import TaskParameters
 
 
@@ -28,60 +26,22 @@ Incidentally, it represents the reference implementation for a backend.
 """
 
 
-def _call_single_parallel_task(
-    component: str,
-    *,
-    task: WorkflowTask,
-    task_pars: TaskParameters,
-    workflow_dir: Path = None,
-) -> None:
-    if not workflow_dir:
-        raise RuntimeError
-    prefix = f"{task.order}_par_{component}"
-    stdout_file = workflow_dir / f"{prefix}.out"
-    stderr_file = workflow_dir / f"{prefix}.err"
-    metadata_diff_file = workflow_dir / f"{prefix}.metadiff.json"
-
-    task_pars.logger.debug(f"calling task {task.order=} on {component=}")
-    # FIXME refactor with `write_args_file` and `task.assemble_args`
-    # assemble full args
-    args_dict = task_pars.dict(exclude={"logger"})
-    args_dict.update(task.arguments)
-    args_dict["component"] = component
-
-    # write args file
-    args_file_path = workflow_dir / f"{prefix}.args.json"
-    with open(args_file_path, "w") as f:
-        json.dump(args_dict, f, cls=TaskParameterEncoder)
-    # FIXME: UP TO HERE
-
-    # assemble full command
-    cmd = (
-        f"{task.task.command} -j {args_file_path} "
-        f"--metadata-out {metadata_diff_file}"
-    )
-
-    task_pars.logger.debug(f"executing task {task.order=}")
-    _call_command_wrapper(cmd, stdout=stdout_file, stderr=stderr_file)
-
-
 def call_parallel_task(
     *,
     executor: Executor,
     task: WorkflowTask,
     task_pars_depend_future: Future,  # py3.9 Future[TaskParameters],
     workflow_dir: Path,
-    parallelization_level: str,
 ) -> Future:  # py3.9 Future[TaskParameters]:
     """
     AKA collect results
     """
     task_pars_depend = task_pars_depend_future.result()
-    component_list = task_pars_depend.metadata[parallelization_level]
+    component_list = task_pars_depend.metadata[task.parallelization_level]
 
     # Submit all tasks (one per component)
     partial_call_task = partial(
-        _call_single_parallel_task,
+        call_single_parallel_task,
         task=task,
         task_pars=task_pars_depend,
         workflow_dir=workflow_dir,
@@ -147,7 +107,7 @@ def recursive_task_submission(
 
     # step n => step n+1
     task_pars.logger.debug(f"submitting task {this_task.order=}")
-    parallelization_level = this_task.task.parallelization_level
+    # parallelization_level = this_task.task.parallelization_level
 
     task_pars_depend_future = recursive_task_submission(
         executor=executor,
@@ -156,13 +116,12 @@ def recursive_task_submission(
         workflow_dir=workflow_dir,
     )
 
-    if parallelization_level:
+    if this_task.is_parallel:
         this_future = call_parallel_task(
             executor=executor,
             task=this_task,
             task_pars_depend_future=task_pars_depend_future,
             workflow_dir=workflow_dir,
-            parallelization_level=parallelization_level,
         )
     else:
         this_future = executor.submit(
