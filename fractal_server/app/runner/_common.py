@@ -9,32 +9,34 @@ from .common import write_args_file
 
 
 class TaskExecutionError(RuntimeError):
-    """
-    Indicate that the subprocess execution exited status != 0
-
-    The traceback is extracted from the subprocess stderr and used to
-    initialise the error. If the command is a Python executable, this gives
-    access to the full traceback.
-
-    Attributes
-    ----------
-    completed_process (subprocess.CompletedProcess):
-        the full object as returned by subprocess.run()
-    """
-
-    def __init__(self, completed_process: subprocess.CompletedProcess):
-        self.completed_process = completed_process
-        super().__init__(completed_process.stderr.decode("utf-8"))
+    pass
 
 
-def _call_command_wrapper(cmd: str) -> subprocess.CompletedProcess:
+def _call_command_wrapper(
+    cmd: str,
+    stdout: Path,
+    stderr: Path,
+) -> None:
     """
     Call command and return stdout, stderr, retcode
     """
-    result = subprocess.run(shlex_split(cmd), capture_output=True)  # nosec
+    fp_stdout = stdout.open("w")
+    fp_stderr = stderr.open("w")
+    try:
+        result = subprocess.run(  # nosec
+            shlex_split(cmd),
+            stderr=fp_stderr,
+            stdout=fp_stdout,
+        )
+    except Exception as e:
+        raise e
+    finally:
+        fp_stdout.close()
+        fp_stderr.close()
     if result.returncode != 0:
-        raise TaskExecutionError(result)
-    return result
+        with stderr.open("r") as fp_stderr:
+            err = fp_stderr.read()
+        raise TaskExecutionError(err)
 
 
 def call_single_task(
@@ -73,6 +75,10 @@ def call_single_task(
     if not workflow_dir:
         raise RuntimeError
 
+    stdout_file = workflow_dir / f"{task.order}.out"
+    stderr_file = workflow_dir / f"{task.order}.err"
+    metadata_diff_file = workflow_dir / f"{task.order}.metadiff.json"
+
     # assemble full args
     args_dict = task.assemble_args(extra=task_pars.dict(exclude={"logger"}))
 
@@ -81,15 +87,19 @@ def call_single_task(
     write_args_file(args=args_dict, path=args_file_path)
 
     # assemble full command
-    cmd = f"{task.task.command} -j {args_file_path}"
+    cmd = (
+        f"{task.task.command} -j {args_file_path} "
+        f"--metadata-out {metadata_diff_file}"
+    )
 
     task_pars.logger.debug(f"executing task {task.order=}")
-    completed_process = _call_command_wrapper(cmd)
+    _call_command_wrapper(cmd, stdout=stdout_file, stderr=stderr_file)
 
     # NOTE:
     # This assumes that the new metadata is printed to stdout
     # and nothing else outputs to stdout
-    diff_metadata = json.loads(completed_process.stdout)
+    with metadata_diff_file.open("r") as f_metadiff:
+        diff_metadata = json.load(f_metadiff)
     updated_metadata = task_pars.metadata.copy()
     updated_metadata.update(diff_metadata)
 
