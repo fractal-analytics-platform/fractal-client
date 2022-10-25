@@ -36,8 +36,8 @@ from parsl.providers import SlurmProvider
 from ....config_runner import settings
 
 
-def get_executor_label(*, workflow_id: int, executor_label: str):
-    return f"{workflow_id}__{executor_label}"
+# def get_executor_label(*, workflow_id: int, executor_label: str):
+#     return f"{workflow_id}__{executor_label}"
 
 
 class FractalLocalChannel(LocalChannel):
@@ -131,9 +131,10 @@ def generate_parsl_config(
         # Define executor
         executors = [
             HighThroughputExecutor(
-                label=get_executor_label(
-                    workflow_id=workflow_id, executor_label="cpu-low"
-                ),
+                # label=get_executor_label(
+                #     workflow_id=workflow_id, executor_label="cpu-low"
+                # ),
+                label="cpu-low",
                 provider=prov_local,
                 address=address_by_hostname(),
                 cpu_affinity="block",
@@ -157,9 +158,10 @@ def generate_parsl_config(
         executors = []
         for label in labels:
             htex = HighThroughputExecutor(
-                label=get_executor_label(
-                    workflow_id=workflow_id, executor_label=label
-                ),
+                # label=get_executor_label(
+                #     workflow_id=workflow_id, executor_label=label
+                # ),
+                label=label,
                 provider=prov_local,
                 address=address_by_hostname(),
                 cpu_affinity="block",
@@ -223,9 +225,10 @@ def generate_parsl_config(
         executors = []
         for provider, label in zip(providers, labels):
             htex = HighThroughputExecutor(
-                label=get_executor_label(
-                    workflow_id=workflow_id, executor_label=label
-                ),
+                label=label,
+                # label=get_executor_label(
+                #     workflow_id=workflow_id, executor_label=label
+                # ),
                 provider=provider,
                 mem_per_worker=provider.mem_per_node,
                 max_workers=100,
@@ -278,9 +281,10 @@ def generate_parsl_config(
         for provider, label in zip(providers, labels):
             executors.append(
                 HighThroughputExecutor(
-                    label=get_executor_label(
-                        workflow_id=workflow_id, executor_label=label
-                    ),
+                    label=label,
+                    # label=get_executor_label(
+                    #     workflow_id=workflow_id, executor_label=label
+                    # ),
                     provider=provider,
                     mem_per_worker=provider.mem_per_node,
                     max_workers=100,
