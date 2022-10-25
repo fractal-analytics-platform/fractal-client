@@ -27,29 +27,27 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
+from fractal_server.config import get_settings
+from fractal_server.config import Settings
+from fractal_server.dependency_injection import Inject
 
-@pytest.fixture(scope="session")
-def override_settings():
-    from fractal_server.config import Settings
-    from fractal_server.dependency_injection import Inject, InjectionError
 
+def get_patched_settings():
     settings = Settings()
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
     settings.DB_ENGINE = "sqlite"
     settings.SQLITE_PATH = "_test.db?mode=memory&cache=shared"
+    return settings
 
+
+@pytest.fixture(scope="session", autouse=True)
+def override_settings():
+    Inject.override(get_settings, get_patched_settings)
     try:
-        previous_settings = Inject(Settings)
-    except InjectionError:
-        Inject.register(Settings, settings)
         yield
-        Inject.pop(Settings)
-    else:
-        Inject.register(Settings, settings)
-        yield
-        # restore previous
-        Inject.register(Settings, previous_settings)
+    finally:
+        Inject.pop(get_settings)
 
 
 def override_environment(testdata_path):
@@ -91,13 +89,8 @@ def event_loop():
     yield _event_loop
 
 
-@pytest.fixture(autouse=True, scope="session")
-def patch_settings(testdata_path):
-    return override_environment(testdata_path)
-
-
 @pytest.fixture(scope="session")
-async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
+async def db_engine(override_settings) -> AsyncGenerator[AsyncEngine, None]:
     from fractal_server.app.db import engine
 
     yield engine
@@ -166,7 +159,7 @@ def db_sync(db_sync_engine):
 
 
 @pytest.fixture
-async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
+async def app(override_settings) -> AsyncGenerator[FastAPI, Any]:
     app = FastAPI()
     yield app
 
