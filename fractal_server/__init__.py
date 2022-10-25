@@ -26,9 +26,16 @@ def collect_routers(app: FastAPI) -> None:
     app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 
+def check_config():
+    from .config import settings
+
+    settings.check()
+
+
 async def __on_startup():
     from .app.api.v1.task import collect_tasks_headless
 
+    check_config()
     await collect_tasks_headless()
 
 

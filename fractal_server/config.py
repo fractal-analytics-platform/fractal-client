@@ -10,12 +10,14 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-from enum import Enum
 from os import environ
 from os import getenv
 from os.path import abspath
+from pathlib import Path
 from typing import List
+from typing import Literal
 from typing import Optional
+from typing import TypeVar
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -26,11 +28,7 @@ from pydantic import root_validator
 import fractal_server
 
 
-def fail_getenv(key):
-    value = getenv(key, None)
-    if value is None:
-        raise ValueError(f"Must provide environment variable {key}")
-    return value
+T = TypeVar("T")
 
 
 load_dotenv(".fractal_server.env")
@@ -47,19 +45,15 @@ class OAuthClient(BaseModel):
     REVOKE_TOKEN_ENDPOINT: Optional[str]
 
 
-class DeploymentType(str, Enum):
-    PRODUCTION = "production"
-    STAGING = "staging"
-    TESTING = "testing"
-    DEVELOPMENT = "development"
-
-
 class Settings(BaseSettings):
+    class Config:
+        case_sensitive = True
+
     PROJECT_NAME: str = "Fractal Server"
     PROJECT_VERSION: str = fractal_server.__VERSION__
-    DEPLOYMENT_TYPE: DeploymentType = DeploymentType(
-        fail_getenv("DEPLOYMENT_TYPE")
-    )
+    DEPLOYMENT_TYPE: Optional[
+        Literal["production", "staging", "testing", "development"]
+    ]
 
     ###########################################################################
     # AUTH
@@ -68,26 +62,24 @@ class Settings(BaseSettings):
     OAUTH_CLIENTS: List[OAuthClient] = Field(default_factory=list)
 
     # JWT TOKEN
-    JWT_EXPIRE_SECONDS: int = int(getenv("JWT_EXPIRE_SECONDS", default=180))
-    JWT_SECRET_KEY: str = fail_getenv("JWT_SECRET_KEY")
+    JWT_EXPIRE_SECONDS: int = 180
+    JWT_SECRET_KEY: Optional[str]
 
     # COOKIE TOKEN
-    COOKIE_EXPIRE_SECONDS: int = int(
-        getenv("COOKIE_EXPIRE_SECONDS", default=86400)
-    )
+    COOKIE_EXPIRE_SECONDS: int = 86400
 
     ###########################################################################
     # DATABASE
     ###########################################################################
-    DB_ENGINE: str = getenv("DB_ENGINE", "sqlite")
-    DB_ECHO: bool = bool(int(getenv("DB_ECHO", "0")))
+    DB_ENGINE: str = "sqlite"
+    DB_ECHO: bool = False
 
     if DB_ENGINE == "postgres":
-        POSTGRES_USER: str = fail_getenv("POSTGRES_USER")
-        POSTGRES_PASSWORD: str = fail_getenv("POSTGRES_PASSWORD")
-        POSTGRES_SERVER: str = getenv("POSTGRES_SERVER", "localhost")
-        POSTGRES_PORT: str = getenv("POSTGRES_PORT", "5432")
-        POSTGRES_DB: str = fail_getenv("POSTGRES_DB")
+        POSTGRES_USER: str = Field()
+        POSTGRES_PASSWORD: str = Field()
+        POSTGRES_SERVER: str = "localhost"
+        POSTGRES_PORT: str = "5432"
+        POSTGRES_DB: str = Field()
 
         DATABASE_URL = (
             f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
@@ -95,17 +87,23 @@ class Settings(BaseSettings):
         )
         DATABASE_SYNC_URL = DATABASE_URL.replace("asyncpg", "psycopg2")
     elif DB_ENGINE == "sqlite":
-        SQLITE_PATH: str = fail_getenv("SQLITE_PATH")
+        SQLITE_PATH: Path
 
-        DATABASE_URL = (
-            "sqlite+aiosqlite:///"
-            f"{abspath(SQLITE_PATH) if SQLITE_PATH else SQLITE_PATH}"
+    @property
+    def DATABASE_URL(self):
+        sqlite_path = (
+            abspath(self.SQLITE_PATH) if self.SQLITE_PATH else self.SQLITE_PATH
         )
-        DATABASE_SYNC_URL = DATABASE_URL.replace("aiosqlite", "pysqlite")
+        return f"sqlite+aiosqlite:///{sqlite_path}"
+
+    @property
+    def DATABASE_SYNC_URL(self):
+        return self.DATABASE_URL.replace("aiosqlite", "pysqlite")
 
     ###########################################################################
     # FRACTAL SPECIFIC
     ###########################################################################
+    # FRACTAL_ROOT: Path = Path(fail_getenv("FRACTAL_ROOT"))
 
     @root_validator(pre=True)
     def collect_oauth_clients(cls, values):
@@ -138,6 +136,30 @@ class Settings(BaseSettings):
             )
             values["OAUTH_CLIENTS"].append(oauth_client)
         return values
+
+    def check(self):
+        class StrictSettings(BaseSettings):
+            class Config:
+                extra = "allow"
+
+            DEPLOYMENT_TYPE: Literal[
+                "production", "staging", "testing", "development"
+            ]
+            JWT_SECRET_KEY: str
+            DB_ENGINE: str = "sqlite"
+
+            if DB_ENGINE == "postgres":
+                POSTGRES_USER: str
+                POSTGRES_PASSWORD: str
+                POSTGRES_DB: str
+            elif DB_ENGINE == "sqlite":
+                SQLITE_PATH: str
+
+        from devtools import debug
+
+        debug(self.dict())
+        settings = StrictSettings(**self.dict())
+        debug(settings)
 
 
 settings = Settings()
