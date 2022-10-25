@@ -156,23 +156,35 @@ async def test_post_newtask(
         assert workflow.task_list[0].task == t0
         assert workflow.task_list[1].task == t1
 
+        await db.refresh(workflow)
+
         t2 = await task_factory()
-        new_task = {
-            "task_id": t2.id,
-        }
+        last_task = {"task_id": t2.id}
 
         res = await client.post(
             f"api/v1/workflow/{wf_id}/add-task/",
-            json=new_task,
+            json=last_task,
         )
         assert res.status_code == 201
-        debug(res.json())
+
+        t0b = await task_factory()
+        second_task = {
+            "task_id": t0b.id,
+            "order": 1,
+        }
+        res = await client.post(
+            f"api/v1/workflow/{wf_id}/add-task/",
+            json=second_task,
+        )
+        assert res.status_code == 201
+
         workflow = WorkflowRead(**res.json())
 
-        assert len(workflow.task_list) == 3
-        assert workflow.task_list[0].task == TaskRead(**t0.__dict__)
-        assert workflow.task_list[1].task == TaskRead(**t1.__dict__)
-        assert workflow.task_list[2].task == TaskRead(**t2.__dict__)
+        assert len(workflow.task_list) == 4
+        assert workflow.task_list[0].task == TaskRead(**t0.dict())
+        assert workflow.task_list[1].task == TaskRead(**t0b.dict())
+        assert workflow.task_list[2].task == TaskRead(**t1.dict())
+        assert workflow.task_list[3].task == TaskRead(**t2.dict())
 
 
 async def test_delete_task(
@@ -202,6 +214,7 @@ async def test_delete_task(
         t0 = await task_factory()
         t1 = await task_factory()
         t2 = await task_factory()
+
         await workflow.insert_task(t0.id, db=db)
         await workflow.insert_task(t1.id, db=db)
         await workflow.insert_task(t2.id, db=db)

@@ -25,7 +25,6 @@ class _WorkflowTaskBase(SQLModel):
 
 
 class WorkflowTaskCreate(_WorkflowTaskBase):
-    workflow_id: Optional[int]
     task_id: int
 
 
