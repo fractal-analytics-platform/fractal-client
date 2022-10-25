@@ -4,16 +4,19 @@ from devtools import debug
 from fractal_server.dependency_injection import Inject
 
 
+THE_ANSWER = 42
+
+
+def foo():
+    debug("Calling foo()")
+    return THE_ANSWER
+
+
 def test_injection():
-    debug(Inject)
+    assert Inject(foo) == THE_ANSWER
 
-    INT_VALUE = 5
-    Inject.register(int, INT_VALUE)
 
-    debug(Inject._dependencies)
-
-    assert Inject(int) == INT_VALUE
-
+def test_singleton():
     with pytest.raises(RuntimeError):
         from fractal_server.dependency_injection import _Inject
 
@@ -21,9 +24,20 @@ def test_injection():
 
 
 def test_injection_override():
-    INT_VALUE = 5
-    Inject.register(int, 5)
-    assert Inject(int) == INT_VALUE
+    def bar(answer=Inject(foo)):
+        debug("calling bar()")
+        return answer
 
-    Inject.register(int, 2 * INT_VALUE)
-    assert Inject(int) == INT_VALUE * 2
+    assert bar() == THE_ANSWER
+
+    def oof():
+        debug("calling oof()")
+        return 24
+
+    Inject.override(foo, oof)
+
+    def baz(answer=Inject(foo)):
+        debug("calling baz()")
+        return answer
+
+    assert baz() == oof()

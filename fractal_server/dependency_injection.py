@@ -2,18 +2,10 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import TypeVar
-from typing import Union
+
 
 T = TypeVar("T")
-TT = TypeVar("TT")
-
-
 _instance_count = 0
-_UNDEFINED = "__UNDEFINED__"
-
-
-class InjectionError(KeyError):
-    pass
 
 
 class _Inject:
@@ -26,44 +18,24 @@ class _Inject:
         _instance_count += 1
 
     @classmethod
-    def __call__(
-        cls, Type: Callable[..., T], default: TT = _UNDEFINED  # type: ignore
-    ) -> Union[T, TT]:
-        """
-        Return the dependency corresponding to Type
-
-        If the dependency was never registered and `default` was provided,
-        return the defaul value, otherwise raise an InjectionError.
-        """
+    def __call__(cls, _callable: Callable[..., T]) -> T:
         try:
-            return cls._dependencies[Type]
+            return cls._dependencies[_callable]()
         except KeyError:
-            if default != _UNDEFINED:
-                return default
-            else:
-                raise InjectionError(f"No dependency for `{Type.__name__}`")
+            return _callable()
 
     @classmethod
-    def pop(
-        cls, Type: Callable[..., T], default: TT = _UNDEFINED  # type: ignore
-    ) -> Union[T, TT]:
-        """
-        Pop the dependency corresponding to Type
-        """
+    def pop(cls, _callable: Callable[..., T]) -> T:
         try:
-            return cls._dependencies.pop(Type)
+            return cls._dependencies.pop(_callable)()
         except KeyError:
-            if default != _UNDEFINED:
-                return default
-            else:
-                raise InjectionError(f"No dependency for `{Type.__name__}`")
+            raise RuntimeError(f"No dependency override for {_callable}")
 
     @classmethod
-    def register(cls, Type: Callable[..., T], value: T) -> None:
-        """
-        Register a dependency
-        """
-        cls._dependencies[Type] = value
+    def override(
+        cls, _callable: Callable[..., T], value: Callable[..., T]
+    ) -> None:
+        cls._dependencies[_callable] = value
 
 
 # NOTE: This is a singleton instance
