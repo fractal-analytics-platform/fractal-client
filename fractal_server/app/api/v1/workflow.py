@@ -93,7 +93,7 @@ async def get_workflow(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    workflow = db.get(Workflow, _id)
+    workflow = await db.get(Workflow, _id)
     if not workflow:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
