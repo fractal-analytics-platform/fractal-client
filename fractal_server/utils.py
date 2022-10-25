@@ -12,10 +12,11 @@ Zurich.
 """
 from warnings import warn as _warn
 
-from .config import settings
+from .config import Settings
+from .dependency_injection import Inject
 
 
-def warn(message):
+def warn(message, settings: Settings = Inject(Settings)):
     """
     Make sure that warnings do not make their way to staing and production
     """

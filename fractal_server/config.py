@@ -155,6 +155,3 @@ class Settings(BaseSettings):
                 SQLITE_PATH: str
 
         StrictSettings(**self.dict())
-
-
-settings = Settings()

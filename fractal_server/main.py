@@ -13,8 +13,6 @@ Zurich.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-__VERSION__ = "0.3.2"
-
 
 def collect_routers(app: FastAPI) -> None:
     from .app.api import router_default
@@ -26,17 +24,20 @@ def collect_routers(app: FastAPI) -> None:
     app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 
-def check_config():
-    from .config import settings
+def register_config():
+    """
+    Check and register the settings
+    """
+    from .config import Settings
+    from .dependency_injection import Inject
 
+    settings = Settings()
     settings.check()
+    Inject.register(Settings, settings)
 
 
 async def __on_startup():
-    from .app.api.v1.task import collect_tasks_headless
-
-    check_config()
-    await collect_tasks_headless()
+    register_config()
 
 
 def start_application() -> FastAPI:

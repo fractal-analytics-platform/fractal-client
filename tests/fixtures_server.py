@@ -28,6 +28,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 
+@pytest.fixture(scope="session")
+def override_settings():
+    from fractal_server.config import Settings
+    from fractal_server.dependency_injection import Inject, InjectionError
+
+    settings = Settings()
+    settings.JWT_SECRET_KEY = "secret_key"
+    settings.DEPLOYMENT_TYPE = "development"
+    settings.DB_ENGINE = "sqlite"
+    settings.SQLITE_PATH = "_test.db?mode=memory&cache=shared"
+
+    try:
+        previous_settings = Inject(Settings)
+    except InjectionError:
+        Inject.register(Settings, settings)
+        yield
+        Inject.pop(Settings)
+    else:
+        Inject.register(Settings, settings)
+        yield
+        # restore previous
+        Inject.register(Settings, previous_settings)
+
+
 def override_environment(testdata_path):
     """
     Override environment
@@ -47,9 +71,9 @@ def override_environment(testdata_path):
     # c.f., https://stackoverflow.com/a/38089822/283972
     environ["SQLITE_PATH"] = "_test.db?mode=memory&cache=shared"
 
-    from fractal_server.config import settings
+    from fractal_server.config import Settings
 
-    return settings
+    return Settings()
 
 
 @pytest.fixture
@@ -80,7 +104,7 @@ async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
 
 
 @pytest.fixture(scope="session")
-def db_sync_engine(patch_settings):
+def db_sync_engine(override_settings):
     from fractal_server.app.db import engine_sync
 
     yield engine_sync
@@ -149,7 +173,7 @@ async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
 
 @pytest.fixture
 async def register_routers(app):
-    from fractal_server import collect_routers
+    from fractal_server.main import collect_routers
 
     collect_routers(app)
 
