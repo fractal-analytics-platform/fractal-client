@@ -164,3 +164,7 @@ class Settings(BaseSettings):
                 SQLITE_PATH: str
 
         StrictSettings(**self.dict())
+
+
+def get_settings(settings=Settings()):
+    return settings
