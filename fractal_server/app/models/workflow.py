@@ -94,23 +94,3 @@ class Workflow(_WorkflowBase, table=True):
         if commit:
             await db.commit()
         return wf_task
-
-    async def remove_task(
-        self,
-        task_id: int,
-        *,
-        args: Dict[str, Any] = None,
-        db: AsyncSession,
-        commit: bool = True,
-    ) -> WorkflowTask:
-
-        for i, wftask in enumerate(self.task_list):
-            if wftask.task_id == task_id:
-                j = i + 1
-                for _wftask in self.task_list[j:]:
-                    _wftask.order -= 1
-                    await db.merge(_wftask)
-                self.task_list.remove(wftask)
-                await db.commit()
-                break
-        return

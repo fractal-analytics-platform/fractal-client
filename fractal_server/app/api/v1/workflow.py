@@ -166,11 +166,11 @@ async def delete_task_from_workflow(
         db=db,
     )
     to_delete = await db.get(WorkflowTask, workflow_task_id)
-    # remove from task_list and fix order
-    await workflow.remove_task(to_delete.task_id, db=db)
-    # remove from db
     await db.delete(to_delete)
+    await db.commit()
 
+    await db.refresh(workflow)
+    workflow.task_list.reorder()
     await db.commit()
     return
 
