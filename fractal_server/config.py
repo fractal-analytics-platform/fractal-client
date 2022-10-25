@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     ###########################################################################
     # DATABASE
     ###########################################################################
-    DB_ENGINE: str = "sqlite"
+    DB_ENGINE: Literal["sqlite", "postgres"] = "sqlite"
     DB_ECHO: bool = False
 
     if DB_ENGINE == "postgres":
@@ -80,24 +80,33 @@ class Settings(BaseSettings):
         POSTGRES_PORT: str = "5432"
         POSTGRES_DB: str = Field()
 
-        DATABASE_URL = (
-            f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-            f"@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-        )
-        DATABASE_SYNC_URL = DATABASE_URL.replace("asyncpg", "psycopg2")
     elif DB_ENGINE == "sqlite":
         SQLITE_PATH: Optional[str]
 
     @property
     def DATABASE_URL(self):
-        sqlite_path = (
-            abspath(self.SQLITE_PATH) if self.SQLITE_PATH else self.SQLITE_PATH
-        )
-        return f"sqlite+aiosqlite:///{sqlite_path}"
+        if self.DB_ENGINE == "sqlite":
+            sqlite_path = (
+                abspath(self.SQLITE_PATH)
+                if self.SQLITE_PATH
+                else self.SQLITE_PATH
+            )
+            return f"sqlite+aiosqlite:///{sqlite_path}"
+        elif "postgres":
+            pg_uri = (
+                "postgresql+asyncpg://"
+                f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+                f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}"
+                f"/{self.POSTGRES_DB}"
+            )
+            return pg_uri
 
     @property
     def DATABASE_SYNC_URL(self):
-        return self.DATABASE_URL.replace("aiosqlite", "pysqlite")
+        if self.DB_ENGINE == "sqlite":
+            return self.DATABASE_URL.replace("aiosqlite", "pysqlite")
+        elif self.DB_ENGINE == "postgres":
+            return self.DATABASE_URL.replace("asyncpg", "psycopg2")
 
     ###########################################################################
     # FRACTAL SPECIFIC
