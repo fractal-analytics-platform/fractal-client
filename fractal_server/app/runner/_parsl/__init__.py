@@ -40,20 +40,23 @@ def _parallel_task_assembly(
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
     parallelization_level: str,
+    executors,
 ) -> AppFuture:  # AppFuture[TaskParameters]
 
-    # TODO: add executor
+    # Define PythonApp for execution of sigle instance of parallel task
     _this_parallel_component_app = PythonApp(
-        _this_parallel_component, data_flow_kernel=data_flow_kernel
+        _this_parallel_component,
+        data_flow_kernel=data_flow_kernel,
+        executors=executors,
     )
 
-    # TODO: add executor?
+    # Define PythonApp for execution of sigle instance of parallel task
     _collect_results_and_assemble_history_app = PythonApp(
         _collect_results_and_assemble_history,
         data_flow_kernel=data_flow_kernel,
+        executors=executors,
     )
 
-    # TODO: add executor?
     @join_app(data_flow_kernel=data_flow_kernel)
     def _parallel_task_app_future_app(task_pars) -> AppFuture:
         component_list = task_pars.metadata[task.parallelization_level]
@@ -83,13 +86,13 @@ def _serial_task_assembly(
     task: WorkflowTask,
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
+    executors,
 ) -> AppFuture:  # AppFuture[TaskParameters]
     if not workflow_dir:
         raise RuntimeError
 
-    # TODO: add executor?
     # assemble full args
-    @python_app(data_flow_kernel=data_flow_kernel)
+    @python_app(data_flow_kernel=data_flow_kernel, executors=executors)
     def _this_app(task_pars):
         return call_single_task(
             task=task,
@@ -131,6 +134,8 @@ def recursive_task_assembly(
         workflow_dir=workflow_dir,
     )
 
+    executors = [this_task.executor] if this_task.executor else "all"
+
     if parallelization_level:
         this_future = _parallel_task_assembly(
             data_flow_kernel=data_flow_kernel,
@@ -138,6 +143,7 @@ def recursive_task_assembly(
             task_pars_depend_future=task_pars_depend_future,
             workflow_dir=workflow_dir,
             parallelization_level=parallelization_level,
+            executors=executors,
         )
     else:
         this_future = _serial_task_assembly(
@@ -145,6 +151,7 @@ def recursive_task_assembly(
             task=this_task,
             task_pars_depend_future=task_pars_depend_future,
             workflow_dir=workflow_dir,
+            executors=executors,
         )
 
     return this_future
