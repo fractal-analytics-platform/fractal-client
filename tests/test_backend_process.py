@@ -50,11 +50,13 @@ def test_call_single_task(tmp_path):
         arguments=dict(message="test"),
         order=0,
     )
+    logger_name = "test_logger"
+    logging.getLogger(logger_name)
     task_pars = TaskParameters(
         input_paths=[tmp_path],
         output_path=tmp_path,
         metadata={},
-        logger=logging.getLogger(),
+        logger_name=logger_name,
     )
 
     debug(task)

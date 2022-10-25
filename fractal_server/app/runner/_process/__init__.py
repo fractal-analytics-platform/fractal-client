@@ -64,7 +64,7 @@ def call_parallel_task(
         input_paths=[task_pars_depend.output_path],
         output_path=task_pars_depend.output_path,
         metadata=task_pars_depend.metadata,
-        logger=task_pars_depend.logger,
+        logger_name=task_pars_depend.logger_name,
     )
     this_future.set_result(out_task_parameters)
     return this_future
@@ -105,8 +105,10 @@ def recursive_task_submission(
         pseudo_future.set_result(task_pars)
         return pseudo_future
 
+    logger = logging.getLogger(task_pars.logger_name)
+
     # step n => step n+1
-    task_pars.logger.debug(f"submitting task {this_task.order=}")
+    logger.debug(f"submitting task {this_task.order=}")
     # parallelization_level = this_task.task.parallelization_level
 
     task_pars_depend_future = recursive_task_submission(
@@ -139,7 +141,7 @@ async def process_workflow(
     input_paths: List[Path],
     output_path: Path,
     input_metadata: Dict[str, Any],
-    logger: logging.Logger,
+    logger_name: str,
     workflow_dir: Path,
     username: str = None,
 ) -> Dict[str, Any]:
@@ -160,7 +162,7 @@ async def process_workflow(
                 input_paths=input_paths,
                 output_path=output_path,
                 metadata=input_metadata,
-                logger=logger,
+                logger_name=logger_name,
             ),
             workflow_dir=workflow_dir,
         )

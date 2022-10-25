@@ -114,6 +114,8 @@ def recursive_task_assembly(
     workflow_dir: Path,
 ) -> AppFuture:
 
+    logger = logging.getLogger(task_pars.logger_name)
+
     try:
         *dependencies, this_task = task_list
     except ValueError:
@@ -122,7 +124,7 @@ def recursive_task_assembly(
         pseudo_future.set_result(task_pars)
         return pseudo_future
     # step n => step n+1
-    task_pars.logger.debug(f"submitting task {this_task.order=}")
+    logger.debug(f"submitting task {this_task.order=}")
     parallelization_level = this_task.task.parallelization_level
 
     task_pars_depend_future = recursive_task_assembly(
@@ -189,7 +191,7 @@ async def process_workflow(
                 input_paths=input_paths,
                 output_path=output_path,
                 metadata=input_metadata,
-                logger=logger,
+                logger=None,  # logger,
             ),
             workflow_dir=workflow_dir,
         )
