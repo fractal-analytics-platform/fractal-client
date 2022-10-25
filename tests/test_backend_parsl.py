@@ -8,8 +8,6 @@ from devtools import debug
 
 from .fixtures_tasks import MockTask
 from .fixtures_tasks import MockWorkflowTask
-from fractal_server.app.runner._parsl import _serial_task_assembly
-from fractal_server.app.runner._parsl._setup import load_parsl_config
 from fractal_server.app.runner.common import set_job_logger
 from fractal_server.app.runner.common import TaskParameters
 from fractal_server.tasks import dummy as dummy_module
@@ -17,6 +15,8 @@ from fractal_server.tasks import dummy as dummy_module
 
 try:
     import parsl  # noqa: F401
+    from fractal_server.app.runner._parsl import _serial_task_assembly
+    from fractal_server.app.runner._parsl._setup import load_parsl_config
 except ImportError:
     pytest.skip(allow_module_level=True)
 
