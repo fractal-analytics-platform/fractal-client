@@ -70,6 +70,7 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
         out = self.task.default_args.copy()
         out.update(self.args)
         popget(out, "parallelization_level")
+        popget(out, "executor")
         return out
 
     @property
@@ -79,6 +80,10 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
     @property
     def parallelization_level(self) -> str:
         return self.task.parallelization_level
+
+    @property
+    def executor(self) -> str:
+        return self.task.executor
 
     def assemble_args(self, extra: Dict[str, Any] = None):
         """
