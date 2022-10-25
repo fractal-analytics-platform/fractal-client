@@ -34,6 +34,7 @@ def test_unit_serial_task_assembly(tmp_path):
 
     INDEX = 666
     MESSAGE = "this message"
+    EXECUTORS = "all"
 
     workflow_task = MockWorkflowTask(
         task=MockTask(name="task0", command=f"python {dummy_module.__file__}"),
@@ -68,6 +69,7 @@ def test_unit_serial_task_assembly(tmp_path):
             task=workflow_task,
             task_pars_depend_future=task_pars_depend_future,
             workflow_dir=tmp_path,
+            executors=EXECUTORS,
         )
         debug(out.result())
 
