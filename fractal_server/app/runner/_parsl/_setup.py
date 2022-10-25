@@ -18,6 +18,9 @@ import os
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
@@ -39,7 +42,7 @@ def get_executor_label(*, workflow_id: int, executor_label: str):
 
 class FractalLocalChannel(LocalChannel):
     def __init__(self, *args, username: str = None, **kwargs):
-        self.username: str = username
+        self.username: Optional[str] = username
         super().__init__(*args, **kwargs)
 
     def makedirs(self, path, mode=0o777, exist_ok=False):
@@ -106,7 +109,7 @@ def generate_parsl_config(
     script_dir.mkdir(exist_ok=True, parents=True)
     worker_logdir_root.mkdir(exist_ok=True, parents=True)
 
-    channel_args = dict(script_dir=script_dir)
+    channel_args: Dict[str, Any] = dict(script_dir=script_dir)
 
     # Set additional parameters for channel/provider
     if username is not None:
@@ -134,7 +137,7 @@ def generate_parsl_config(
                 provider=prov_local,
                 address=address_by_hostname(),
                 cpu_affinity="block",
-                worker_logdir_root=worker_logdir_root,
+                worker_logdir_root=worker_logdir_root.as_posix(),
             )
         ]
 
@@ -166,7 +169,7 @@ def generate_parsl_config(
 
     elif config == "pelkmanslab":
         # Define providers
-        common_args = dict(
+        common_args: Dict[str, Any] = dict(
             partition="main",
             nodes_per_block=1,
             init_blocks=1,
@@ -228,7 +231,7 @@ def generate_parsl_config(
                 max_workers=100,
                 address=address_by_hostname(),
                 cpu_affinity="block",
-                worker_logdir_root=worker_logdir_root,
+                worker_logdir_root=worker_logdir_root.as_posix(),
             )
             executors.append(htex)
 
@@ -283,7 +286,7 @@ def generate_parsl_config(
                     max_workers=100,
                     address=address_by_hostname(),
                     cpu_affinity="block",
-                    worker_logdir_root=worker_logdir_root,
+                    worker_logdir_root=worker_logdir_root.as_posix(),
                 )
             )
 
@@ -296,10 +299,10 @@ def generate_parsl_config(
     else:
         monitoring = None
 
-    config = ParslConfig(
+    parsl_config = ParslConfig(
         executors=executors, monitoring=monitoring, max_idletime=20.0
     )
-    return config
+    return parsl_config
 
 
 @contextmanager
