@@ -103,6 +103,13 @@ def call_single_task(
     updated_metadata = task_pars.metadata.copy()
     updated_metadata.update(diff_metadata)
 
+    # Assemble a Future[TaskParameter]
+    history = f"{task.task.name}"
+    try:
+        updated_metadata["history"].append(history)
+    except KeyError:
+        updated_metadata["history"] = [history]
+
     out_task_parameters = TaskParameters(
         input_paths=[task_pars.output_path],
         output_path=task_pars.output_path,
