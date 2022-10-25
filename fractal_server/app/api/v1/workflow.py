@@ -22,6 +22,7 @@ from ...db import get_db
 from ...models import Workflow
 from ...models import WorkflowCreate
 from ...models import WorkflowRead
+from ...models import WorkflowTask
 from ...models import WorkflowTaskCreate
 from ...models import WorkflowUpdate
 from ...security import current_active_user
@@ -65,7 +66,7 @@ async def create_workflow(
     return db_workflow
 
 
-@router.delete("/{_id}/", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_workflow(
     _id: int,
     user: User = Depends(current_active_user),
@@ -87,7 +88,7 @@ async def delete_workflow(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/{_id}/", response_model=WorkflowRead)
+@router.get("/{_id}", response_model=WorkflowRead)
 async def get_workflow(
     _id: int,
     user: User = Depends(current_active_user),
@@ -131,9 +132,12 @@ async def add_task_to_workflow(
         user_id=user.id,
         db=db,
     )
-    await workflow.insert_task(new_task.task_id, db=db)
+    await workflow.insert_task(
+        task_id=new_task.task_id,
+        order=new_task.order,
+        db=db,
+    )
 
-    db.merge(workflow)
     db.commit()
     await db.refresh(workflow)
 
@@ -141,11 +145,11 @@ async def add_task_to_workflow(
 
 
 @router.delete(
-    "/{_id}/rm-task/{task_id}/", status_code=status.HTTP_204_NO_CONTENT
+    "/{_id}/rm-task/{workflow_task_id}", status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_task_from_workflow(
     _id: int,
-    task_id: int,
+    workflow_task_id: int,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -161,13 +165,17 @@ async def delete_task_from_workflow(
         user_id=user.id,
         db=db,
     )
-    await workflow.remove_task(task_id, db=db)
-    await db.merge(workflow)
+    to_delete = await db.get(WorkflowTask, workflow_task_id)
+    # remove from task_list and fix order
+    await workflow.remove_task(to_delete.task_id, db=db)
+    # remove from db
+    await db.delete(to_delete)
+
     await db.commit()
     return
 
 
-@router.patch("/{_id}/", response_model=WorkflowRead)
+@router.patch("/{_id}", response_model=WorkflowRead)
 async def patch_workflow(
     _id: int,
     patch: WorkflowUpdate,

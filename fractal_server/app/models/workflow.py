@@ -105,12 +105,11 @@ class Workflow(_WorkflowBase, table=True):
     ) -> WorkflowTask:
 
         for i, wftask in enumerate(self.task_list):
-            if wftask.task.id == task_id:
+            if wftask.task_id == task_id:
                 j = i + 1
                 for _wftask in self.task_list[j:]:
                     _wftask.order -= 1
                     await db.merge(_wftask)
-                await db.delete(wftask)
                 self.task_list.remove(wftask)
                 await db.commit()
                 break

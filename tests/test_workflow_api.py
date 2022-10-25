@@ -69,7 +69,7 @@ async def test_delete_workflow(
 ):
     """
     GIVEN a Workflow with two Tasks
-    WHEN the delete endpoint is called
+    WHEN the endpoint that DELETE a Workflow is called
     THEN the Workflow and its associated WorkflowTasks
         are removed from the db
     """
@@ -82,12 +82,12 @@ async def test_delete_workflow(
         }
 
         res = await client.post(
-            "/api/v1/workflow/",
+            "api/v1/workflow/",
             json=workflow,
         )
         wf_id = res.json()["id"]
 
-        res = await client.delete(f"/api/v1/workflow/{wf_id}/")
+        res = await client.delete(f"api/v1/workflow/{wf_id}")
         assert res.status_code == 204
 
         # TODO add tasks with API and test cascade delete
@@ -100,26 +100,26 @@ async def test_get_workflow(
 ):
     """
     GIVEN a Workflow in the db
-    WHEN the get endpoint is called
+    WHEN the endpoint to GET a Workflow by its id is called
     THEN the Workflow is returned
     """
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
         p_id = project.id
-        WF_ID = 1
         workflow = {
-            "id": WF_ID,
             "name": "My Workflow",
             "project_id": p_id,
             "task_list": [],
         }
         res = await client.post(
-            "/api/v1/workflow/",
+            "api/v1/workflow/",
             json=workflow,
         )
+        wf_id = res.json()["id"]
+        res = await client.get(f"/api/v1/workflow/{wf_id}")
 
-        res = await client.get(f"/api/v1/workflow/{WF_ID}/")
         assert res.status_code == 200
+        workflow["id"] = wf_id
         assert res.json() == workflow
 
 
@@ -127,15 +127,14 @@ async def test_post_newtask(
     db, client, MockCurrentUser, project_factory, task_factory
 ):
     """
-    GIVEN a Workflow with a list of Tasks
-    WHEN the POST endpoint is called
-    THEN the new Task is inserted in Workflow.task_list
+    GIVEN a Workflow with a list of WorkflowTasks
+    WHEN the endpoint to POST a new WorkflowTask inside
+        the Workflow.task_list is called
+    THEN the new WorkflowTask is inserted in Workflow.task_list
     """
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
-        WF_ID = 1
         workflow = {
-            "id": WF_ID,
             "name": "My Workflow",
             "project_id": project.id,
         }
@@ -144,8 +143,9 @@ async def test_post_newtask(
             json=workflow,
         )
         assert res.status_code == 201
+        wf_id = res.json()["id"]
 
-        workflow = await db.get(Workflow, WF_ID)
+        workflow = await db.get(Workflow, wf_id)
         t0 = await task_factory()
         t1 = await task_factory()
         await workflow.insert_task(t0.id, db=db)
@@ -162,7 +162,7 @@ async def test_post_newtask(
         }
 
         res = await client.post(
-            f"api/v1/workflow/{WF_ID}/add-task/",
+            f"api/v1/workflow/{wf_id}/add-task/",
             json=new_task,
         )
         assert res.status_code == 201
@@ -179,16 +179,15 @@ async def test_delete_task(
     db, client, MockCurrentUser, project_factory, task_factory
 ):
     """
-    GIVEN a Workflow with a list of Tasks
-    WHEN the DELETE endpoint is called
-    THEN the selected Task is properly removed
-         from Workflow.task_list
+    GIVEN a Workflow with a list of WorkflowTasks
+    WHEN the endpoint to DELETE a WorkflowTask in the
+        Workflow.task_list is called
+    THEN the selected WorkflowTask is properly removed
+        from Workflow.task_list
     """
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
-        WF_ID = 1
         workflow = {
-            "id": WF_ID,
             "name": "My Workflow",
             "project_id": project.id,
         }
@@ -197,8 +196,9 @@ async def test_delete_task(
             json=workflow,
         )
         assert res.status_code == 201
+        wf_id = res.json()["id"]
 
-        workflow = await db.get(Workflow, WF_ID)
+        workflow = await db.get(Workflow, wf_id)
         t0 = await task_factory()
         t1 = await task_factory()
         t2 = await task_factory()
@@ -214,7 +214,7 @@ async def test_delete_task(
         for i, task in enumerate(workflow.task_list):
             assert task.order == i
 
-        res = await client.delete(f"api/v1/workflow/{WF_ID}/rm-task/{t1.id}/")
+        res = await client.delete(f"api/v1/workflow/{wf_id}/rm-task/{t1.id}")
         assert res.status_code == 204
 
         await db.refresh(workflow)
@@ -231,29 +231,27 @@ async def test_get_project_workflows(
 ):
     """
     GIVEN a Project containing three Workflows
-    WHEN the GET endpoint is called
+    WHEN the endpoint to GET all the Workflows associated
+        to that Project is called
     THEN the list of all its Workflows is returned
     """
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
         other_project = await project_factory(user)
-        workflow1 = {"id": 1, "name": "WF1", "project_id": project.id}
-        workflow2 = {"id": 2, "name": "WF2", "project_id": project.id}
-        workflow3 = {"id": 3, "name": "WF3", "project_id": other_project.id}
-        workflow4 = {"id": 4, "name": "WF4", "project_id": project.id}
+        workflow1 = {"name": "WF1", "project_id": project.id}
+        workflow2 = {"name": "WF2", "project_id": project.id}
+        workflow3 = {"name": "WF3", "project_id": other_project.id}
+        workflow4 = {"name": "WF4", "project_id": project.id}
         res = await client.post("api/v1/workflow/", json=workflow1)
         res = await client.post("api/v1/workflow/", json=workflow2)
         res = await client.post("api/v1/workflow/", json=workflow3)
         res = await client.post("api/v1/workflow/", json=workflow4)
 
         res = await client.get(f"api/v1/project/{project.id}/workflows/")
-        workflow_list = res.json()
 
-        assert len((await db.execute(select(Workflow))).scalars().all()) == 4
+        workflow_list = res.json()
         assert len(workflow_list) == 3
-        assert set([1, 2, 4]) == set(
-            [workflow["id"] for workflow in workflow_list]
-        )
+        assert len((await db.execute(select(Workflow))).scalars().all()) == 4
 
 
 async def test_patch_workflow(
@@ -261,25 +259,25 @@ async def test_patch_workflow(
 ):
     """
     GIVEN a Workflow
-    WHEN the PATCH endpoint is called
+    WHEN the endpoint to PATCH a Workflow is called
     THEN the Workflow is updated
     """
     async with MockCurrentUser(persist=True) as user:
         project = await project_factory(user)
         other_project = await project_factory(user)
-        WF_ID = 1
-        workflow = {"id": WF_ID, "name": "WF", "project_id": project.id}
+        workflow = {"name": "WF", "project_id": project.id}
         res = await client.post("api/v1/workflow/", json=workflow)
+        wf_id = res.json()["id"]
+        assert res.json()["name"] == "WF"
 
-        workflow = await db.get(Workflow, WF_ID)
-        assert workflow.name == "WF"
+        workflow = await db.get(Workflow, wf_id)
         res = await client.get(f"api/v1/project/{project.id}/workflows/")
         assert len(res.json()) == 1
         res = await client.get(f"api/v1/project/{other_project.id}/workflows/")
         assert len(res.json()) == 0
 
         patch = {"name": "FW", "project_id": other_project.id}
-        res = await client.patch(f"api/v1/workflow/{WF_ID}/", json=patch)
+        res = await client.patch(f"api/v1/workflow/{wf_id}", json=patch)
 
         await db.refresh(workflow)
         assert workflow.name == "FW"
