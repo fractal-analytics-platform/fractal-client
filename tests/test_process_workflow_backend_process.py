@@ -72,6 +72,7 @@ async def test_process_workflow(workflow: Workflow, tmp_path: Path):
     # Make all folders workflow-specific:
     WORKFLOW_PATH = tmp_path / f"workflow_dir_{workflow.id}"
     INPUT_PATH = tmp_path / f"input_{workflow.id}"
+    # FIXME: what should go in OUTPUT_PATH? a folder or a file?
     OUTPUT_PATH = tmp_path / f"output_{workflow.id}"
 
     INPUT_PATH.mkdir(exist_ok=True, parents=True)
