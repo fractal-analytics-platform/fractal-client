@@ -41,15 +41,19 @@ def _parallel_task_assembly(
     workflow_dir: Path,
     parallelization_level: str,
 ) -> AppFuture:  # AppFuture[TaskParameters]
+
+    # TODO: add executor
     _this_parallel_component_app = PythonApp(
         _this_parallel_component, data_flow_kernel=data_flow_kernel
     )
 
+    # TODO: add executor?
     _collect_results_and_assemble_history_app = PythonApp(
         _collect_results_and_assemble_history,
         data_flow_kernel=data_flow_kernel,
     )
 
+    # TODO: add executor?
     @join_app(data_flow_kernel=data_flow_kernel)
     def _parallel_task_app_future_app(task_pars) -> AppFuture:
         component_list = task_pars.metadata[task.parallelization_level]
@@ -83,6 +87,7 @@ def _serial_task_assembly(
     if not workflow_dir:
         raise RuntimeError
 
+    # TODO: add executor?
     # assemble full args
     @python_app(data_flow_kernel=data_flow_kernel)
     def _this_app(task_pars):
@@ -105,6 +110,8 @@ def recursive_task_assembly(
 ) -> AppFuture:
 
     logger = logging.getLogger(task_pars.logger_name)
+
+    # TODO: use executor
 
     try:
         *dependencies, this_task = task_list
