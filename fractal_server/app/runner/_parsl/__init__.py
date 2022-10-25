@@ -64,7 +64,7 @@ def _parallel_task_assembly(
             input_paths=[task_pars.output_path],
             output_path=task_pars.output_path,
             metadata=task_pars.metadata,
-            logger=task_pars.logger,
+            logger_name=task_pars.logger_name,
         )
         return out_task_parameters
 
@@ -159,7 +159,7 @@ async def process_workflow(
     input_paths: List[Path],
     output_path: Path,
     input_metadata: Dict[str, Any],
-    logger: logging.Logger,
+    logger_name: str,
     workflow_dir: Path,
     username: str = None,
 ) -> Dict[str, Any]:
@@ -171,6 +171,7 @@ async def process_workflow(
     final_metadata: Dict[str, Any]
         mapping representing the final state of the output dataset metadata
     """
+    logger = logging.getLogger(logger_name)
     logger.info(f"{input_paths=}")
     logger.info(f"{output_path=}")
 
@@ -182,7 +183,7 @@ async def process_workflow(
         workflow_name=workflow.name,  # here
         workflow_dir=workflow_dir,
         username=username,
-        logger=logger,
+        logger_name=logger_name,
     ) as dfk:
         final_metadata_future = recursive_task_assembly(
             data_flow_kernel=dfk,
@@ -191,7 +192,7 @@ async def process_workflow(
                 input_paths=input_paths,
                 output_path=output_path,
                 metadata=input_metadata,
-                logger=None,  # logger,
+                logger_name=logger_name,
             ),
             workflow_dir=workflow_dir,
         )

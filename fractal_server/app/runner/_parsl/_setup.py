@@ -306,7 +306,7 @@ def generate_parsl_config(
 def load_parsl_config(
     *,
     workflow_id: int,
-    logger: logging.Logger,
+    logger_name: str,
     workflow_name: str,
     workflow_dir: Path,
     parsl_config: ParslConfig = None,
@@ -314,6 +314,7 @@ def load_parsl_config(
     username: str = None,
     worker_init: str = None,
 ):
+    logger = logging.getLogger(logger_name)
 
     if enable_monitoring is None:
         enable_monitoring = settings.RUNNER_MONITORING

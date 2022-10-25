@@ -76,8 +76,9 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
     debug(wf)
 
     # process workflow
-    job_logger = set_job_logger(
-        logger_name="job_logger",
+    logger_name = "job_logger"
+    set_job_logger(
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -86,7 +87,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         input_paths=[tmp_path / "*.txt"],
         output_path=tmp_path / "out.json",
         input_metadata={},
-        logger=job_logger,
+        logger_name=logger_name,
         workflow_dir=tmp_path,
     )
     debug(out)
