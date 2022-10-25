@@ -133,6 +133,7 @@ class Workflow(_WorkflowBase, table=True):
         wf_task = WorkflowTask(task_id=task_id, args=args)
         db.add(wf_task)
         self.task_list.insert(order, wf_task)
+        self.task_list.reorder()
         if commit:
             await db.commit()
         return wf_task
