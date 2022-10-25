@@ -41,8 +41,9 @@ def test_unit_serial_task_assembly(tmp_path):
         order=0,
     )
 
-    logger = set_job_logger(
-        logger_name="test_logger",
+    logger_name = "test_logger"
+    set_job_logger(
+        logger_name=logger_name,
         log_file_path=tmp_path / "task.log",
         level=logging.DEBUG,
     )
@@ -60,7 +61,7 @@ def test_unit_serial_task_assembly(tmp_path):
         workflow_name="workflow_name",  # here
         workflow_dir=tmp_path,
         username=None,
-        logger=logger,
+        logger_name=logger_name,
     ) as dfk:
         out = _serial_task_assembly(
             data_flow_kernel=dfk,

@@ -7,15 +7,17 @@ from typing import List
 
 from parsl.app.app import join_app
 from parsl.app.app import python_app
+from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
 from ...models import Workflow
 from ...models import WorkflowTask
-from .._common import call_single_parallel_task
 from .._common import call_single_task
 from ..common import async_wrap
 from ..common import TaskParameters
+from ._functions import _collect_results_and_assemble_history
+from ._functions import _this_parallel_component
 from ._setup import load_parsl_config
 
 
@@ -39,49 +41,37 @@ def _parallel_task_assembly(
     workflow_dir: Path,
     parallelization_level: str,
 ) -> AppFuture:  # AppFuture[TaskParameters]
-    @python_app(data_flow_kernel=data_flow_kernel)
-    def _this_parallel_component_app(
-        task_pars, component
-    ) -> AppFuture:  # AppFuture[None]
-        return call_single_parallel_task(
-            component,
-            task=task,
-            task_pars=task_pars,
-            workflow_dir=workflow_dir,
-        )
+    _this_parallel_component_app = PythonApp(
+        _this_parallel_component, data_flow_kernel=data_flow_kernel
+    )
 
-    @python_app(data_flow_kernel=data_flow_kernel)
-    def _collect_results_and_assemble_history(
-        task_pars, component_list, dependencies
-    ) -> AppFuture:  # AppFuture[TaskParameters]
-        history = f"{task.task.name}: {component_list}"
-        try:
-            task_pars.metadata["history"].append(history)
-        except KeyError:
-            task_pars.metadata["history"] = [history]
-
-        out_task_parameters = TaskParameters(
-            input_paths=[task_pars.output_path],
-            output_path=task_pars.output_path,
-            metadata=task_pars.metadata,
-            logger_name=task_pars.logger_name,
-        )
-        return out_task_parameters
+    _collect_results_and_assemble_history_app = PythonApp(
+        _collect_results_and_assemble_history,
+        data_flow_kernel=data_flow_kernel,
+    )
 
     @join_app(data_flow_kernel=data_flow_kernel)
-    def _parallel_task_app_future(task_pars) -> AppFuture:
+    def _parallel_task_app_future_app(task_pars) -> AppFuture:
         component_list = task_pars.metadata[task.parallelization_level]
         # app che colleziona i risultati
         dependency_futures = [
-            _this_parallel_component_app(task_pars, component=c)
+            _this_parallel_component_app(
+                task_pars=task_pars,
+                component=c,
+                task=task,
+                workflow_dir=workflow_dir,
+            )
             for c in component_list
         ]
 
-        return _collect_results_and_assemble_history(
-            task_pars, component_list, dependency_futures
+        return _collect_results_and_assemble_history_app(
+            task_pars=task_pars,
+            component_list=component_list,
+            inputs=dependency_futures,
+            task=task,
         )
 
-    return _parallel_task_app_future(task_pars_depend_future)
+    return _parallel_task_app_future_app(task_pars_depend_future)
 
 
 def _serial_task_assembly(
