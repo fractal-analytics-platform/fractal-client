@@ -13,7 +13,6 @@ Zurich.
 from os import environ
 from os import getenv
 from os.path import abspath
-from pathlib import Path
 from typing import List
 from typing import Literal
 from typing import Optional
@@ -87,7 +86,7 @@ class Settings(BaseSettings):
         )
         DATABASE_SYNC_URL = DATABASE_URL.replace("asyncpg", "psycopg2")
     elif DB_ENGINE == "sqlite":
-        SQLITE_PATH: Path
+        SQLITE_PATH: Optional[str]
 
     @property
     def DATABASE_URL(self):
