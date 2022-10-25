@@ -173,7 +173,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
     THEN it is correctly executed, i.e., n => n+1
     """
     METADATA_0 = {}
-    METADATA_1 = dict(dummy="dummy 0")  # for how dummy task works
+    METADATA_1 = dict(dummy="dummy 0", index=[0, 1, 2])  # dummy task output
 
     task_list = [
         MockWorkflowTask(
