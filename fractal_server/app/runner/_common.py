@@ -1,4 +1,5 @@
 import json
+import logging
 import subprocess  # nosec
 from pathlib import Path
 from shlex import split as shlex_split
@@ -72,12 +73,14 @@ def call_single_task(
     if not workflow_dir:
         raise RuntimeError
 
+    logger = logging.getLogger(task_pars.logger_name)
+
     stdout_file = workflow_dir / f"{task.order}.out"
     stderr_file = workflow_dir / f"{task.order}.err"
     metadata_diff_file = workflow_dir / f"{task.order}.metadiff.json"
 
     # assemble full args
-    args_dict = task.assemble_args(extra=task_pars.dict(exclude={"logger"}))
+    args_dict = task.assemble_args(extra=task_pars.dict())
 
     # write args file
     args_file_path = workflow_dir / f"{task.order}.args.json"
@@ -89,7 +92,7 @@ def call_single_task(
         f"--metadata-out {metadata_diff_file}"
     )
 
-    task_pars.logger.debug(f"executing task {task.order=}")
+    logger.debug(f"executing task {task.order=}")
     _call_command_wrapper(cmd, stdout=stdout_file, stderr=stderr_file)
 
     # NOTE:
@@ -104,7 +107,7 @@ def call_single_task(
         input_paths=[task_pars.output_path],
         output_path=task_pars.output_path,
         metadata=updated_metadata,
-        logger=task_pars.logger,
+        logger_name=task_pars.logger_name,
     )
     return out_task_parameters
 
@@ -118,15 +121,17 @@ def call_single_parallel_task(
 ) -> None:
     if not workflow_dir:
         raise RuntimeError
+    logger = logging.getLogger(task_pars.logger_name)
+
     prefix = f"{task.order}_par_{component}"
     stdout_file = workflow_dir / f"{prefix}.out"
     stderr_file = workflow_dir / f"{prefix}.err"
     metadata_diff_file = workflow_dir / f"{prefix}.metadiff.json"
 
-    task_pars.logger.debug(f"calling task {task.order=} on {component=}")
+    logger.debug(f"calling task {task.order=} on {component=}")
     # FIXME refactor with `write_args_file` and `task.assemble_args`
     # assemble full args
-    args_dict = task_pars.dict(exclude={"logger"})
+    args_dict = task_pars.dict()
     args_dict.update(task.arguments)
     args_dict["component"] = component
 
@@ -142,5 +147,5 @@ def call_single_parallel_task(
         f"--metadata-out {metadata_diff_file}"
     )
 
-    task_pars.logger.debug(f"executing task {task.order=}")
+    logger.debug(f"executing task {task.order=}")
     _call_command_wrapper(cmd, stdout=stdout_file, stderr=stderr_file)

@@ -50,11 +50,13 @@ def test_call_single_task(tmp_path):
         arguments=dict(message="test"),
         order=0,
     )
+    logger_name = "test_logger"
+    logging.getLogger(logger_name)
     task_pars = TaskParameters(
         input_paths=[tmp_path],
         output_path=tmp_path,
         metadata={},
-        logger=logging.getLogger(),
+        logger_name=logger_name,
     )
 
     debug(task)
@@ -173,7 +175,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
     THEN it is correctly executed, i.e., n => n+1
     """
     METADATA_0 = {}
-    METADATA_1 = dict(dummy="dummy 0")  # for how dummy task works
+    METADATA_1 = dict(dummy="dummy 0", index=[0, 1, 2])  # dummy task output
 
     task_list = [
         MockWorkflowTask(

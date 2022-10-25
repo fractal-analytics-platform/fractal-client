@@ -16,11 +16,12 @@ import logging
 import pytest
 from devtools import debug
 
-import fractal_server.tasks.dummy as dummy
 from fractal_server.app.models import Task
 from fractal_server.app.models import Workflow
 from fractal_server.app.runner import _backends
 from fractal_server.app.runner import set_job_logger
+from fractal_server.tasks import dummy
+from fractal_server.tasks import dummy_parallel
 
 
 @pytest.mark.parametrize(
@@ -48,24 +49,36 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         output_type="Any",
     )
 
+    tp = Task(
+        name="dummy_parallel",
+        command=f"python {dummy_parallel.__file__}",
+        source=dummy.__file__,
+        input_type="Any",
+        output_type="Any",
+        default_args=dict(parallelization_level="index"),
+    )
+
     # Create a workflow with the dummy task as member
     wf = Workflow(name="wf", project_id=prj.id)
 
-    db.add_all([tk, wf])
+    db.add_all([tk, tp, wf])
     await db.commit()
     await db.refresh(tk)
+    await db.refresh(tp)
     await db.refresh(wf)
 
     await wf.insert_task(tk.id, db=db, args=dict(message="task 0"))
     await wf.insert_task(tk.id, db=db, args=dict(message="task 1"))
+    await wf.insert_task(tp.id, db=db, args=dict(message="task 2"))
     await db.refresh(wf)
 
     debug(tk)
     debug(wf)
 
     # process workflow
-    job_logger = set_job_logger(
-        logger_name="job_logger",
+    logger_name = "job_logger"
+    set_job_logger(
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -74,7 +87,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         input_paths=[tmp_path / "*.txt"],
         output_path=tmp_path / "out.json",
         input_metadata={},
-        logger=job_logger,
+        logger_name=logger_name,
         workflow_dir=tmp_path,
     )
     debug(out)

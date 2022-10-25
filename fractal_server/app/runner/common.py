@@ -29,7 +29,7 @@ class TaskParameters(BaseModel):
     input_paths: List[Path]
     output_path: Path
     metadata: Dict[str, Any]
-    logger: logging.Logger
+    logger_name: Optional[str] = None
     username: Optional[str] = None
 
     class Config:
