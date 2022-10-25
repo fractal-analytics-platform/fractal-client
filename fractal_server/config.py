@@ -154,11 +154,7 @@ class Settings(BaseSettings):
             elif DB_ENGINE == "sqlite":
                 SQLITE_PATH: str
 
-        from devtools import debug
-
-        debug(self.dict())
-        settings = StrictSettings(**self.dict())
-        debug(settings)
+        StrictSettings(**self.dict())
 
 
 settings = Settings()
