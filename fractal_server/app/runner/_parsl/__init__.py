@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Literal
+from typing import Union
 
 from parsl.app.app import join_app
 from parsl.app.app import python_app
@@ -40,7 +42,7 @@ def _parallel_task_assembly(
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
     parallelization_level: str,
-    executors,
+    executors: Union[List[str], Literal["all"]],
 ) -> AppFuture:  # AppFuture[TaskParameters]
 
     # Define PythonApp for execution of sigle instance of parallel task
@@ -86,7 +88,7 @@ def _serial_task_assembly(
     task: WorkflowTask,
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
-    executors,
+    executors: Union[List[str], Literal["all"]],
 ) -> AppFuture:  # AppFuture[TaskParameters]
     if not workflow_dir:
         raise RuntimeError
@@ -123,8 +125,22 @@ def recursive_task_assembly(
         pseudo_future: Future = Future()
         pseudo_future.set_result(task_pars)
         return pseudo_future
+
+    # Extract and validate task executor
+    executors: Union[List[str], Literal["all"]]
+    if this_task.executor:
+        # Verify match between new_task_executor and available executors
+        if this_task.executor not in data_flow_kernel.executors.keys():
+            raise ValueError(
+                f"{this_task.executor=} is not in "
+                f"{data_flow_kernel.executors.keys()=}"
+            )
+        executors = [this_task.executor] if this_task.executor else "all"
+    else:
+        executors = "all"
+
     # step n => step n+1
-    logger.debug(f"submitting task {this_task.order=}")
+    logger.debug(f"submitting task {this_task.order=} to {executors=}")
     parallelization_level = this_task.task.parallelization_level
 
     task_pars_depend_future = recursive_task_assembly(
@@ -133,8 +149,6 @@ def recursive_task_assembly(
         task_pars=task_pars,
         workflow_dir=workflow_dir,
     )
-
-    executors = [this_task.executor] if this_task.executor else "all"
 
     if parallelization_level:
         this_future = _parallel_task_assembly(
