@@ -1,10 +1,7 @@
-from pathlib import Path
-
 import pytest
 from devtools import debug
 from pydantic import ValidationError
 
-from .fixtures_server import override_environment
 from fractal_server.config import Settings
 from fractal_server.dependency_injection import Inject
 
@@ -22,7 +19,17 @@ def test_settings_injection(override_settings):
 
 @pytest.mark.parametrize(
     ("settings", "raises"),
-    [(Settings(), True), (override_environment(Path("/tmp")), False)],
+    [
+        (Settings(), True),
+        (
+            Settings(
+                DEPLOYMENT_TYPE="development",
+                JWT_SECRET_KEY="secret",
+                SQLITE_PATH="path",
+            ),
+            False,
+        ),
+    ],
 )
 def test_settings_check(settings: Settings, raises: bool):
     debug(settings)
