@@ -13,6 +13,7 @@ Zurich.
 import asyncio
 from dataclasses import dataclass
 from dataclasses import field
+from pathlib import Path
 from typing import Any
 from typing import AsyncGenerator
 from typing import List
@@ -33,19 +34,25 @@ from fractal_server.config import Settings
 from fractal_server.syringe import Inject
 
 
-def get_patched_settings():
+def get_patched_settings(temp_path: Path):
     settings = Settings()
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
     settings.DB_ENGINE = "sqlite"
-    settings.SQLITE_PATH = "_test.db?mode=memory&cache=shared"
+    settings.SQLITE_PATH = (
+        f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
+    )
+    settings.FRACTAL_ROOT = temp_path
     return settings
 
 
-@pytest.fixture(scope="session")
-def override_settings():
+@pytest.fixture(scope="session", autouse=True)
+def override_settings(tmp_path_factory):
+    def _get_settings():
+        return get_patched_settings(tmp_path_factory.mktemp("fractal_root"))
+
     debug(f"overriding {get_settings} with {get_patched_settings}")
-    Inject.override(get_settings, get_patched_settings)
+    Inject.override(get_settings, _get_settings)
     try:
         yield
     finally:
@@ -88,16 +95,16 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 async def db_engine(override_settings) -> AsyncGenerator[AsyncEngine, None]:
-    from fractal_server.app.db import engine
+    from fractal_server.app.db import DB
 
-    yield engine
+    yield DB.engine_async()
 
 
 @pytest.fixture(scope="session")
 def db_sync_engine(override_settings):
-    from fractal_server.app.db import engine_sync
+    from fractal_server.app.db import DB
 
-    yield engine_sync
+    yield DB.engine_sync()
 
 
 @pytest.fixture

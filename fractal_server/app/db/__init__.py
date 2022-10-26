@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import Session as DBSyncSession
 from sqlalchemy.orm import sessionmaker
 
-from ...config import Settings
+from ...config import get_settings
 from ...syringe import Inject
 
 """
@@ -15,41 +15,55 @@ Losely adapted from https://testdriven.io/blog/fastapi-sqlmodel/#async-sqlmodel
 """
 
 
-def get_async_engine():
-    settings: Settings = Inject(Settings)
-    return create_async_engine(
-        settings.DATABASE_URL, echo=settings.DB_ECHO, future=True
-    )
+class DB:
+    @classmethod
+    def engine_async(cls):
+        try:
+            return cls._engine_async
+        except AttributeError:
+            cls.set_db()
+            return cls._engine_async
+
+    @classmethod
+    def engine_sync(cls):
+        try:
+            return cls._engine_sync
+        except AttributeError:
+            cls.set_db()
+            return cls._engine_sync
+
+    @classmethod
+    def set_db(cls):
+        settings = Inject(get_settings)
+
+        cls._engine_async = create_async_engine(
+            settings.DATABASE_URL, echo=settings.DB_ECHO, future=True
+        )
+        cls._engine_sync = create_engine(
+            settings.DATABASE_SYNC_URL,
+            echo=settings.DB_ECHO,
+            future=True,
+            connect_args={"check_same_thread": False},
+        )
+
+        cls._async_session_maker = sessionmaker(
+            cls._engine_async, class_=AsyncSession, expire_on_commit=False
+        )
+
+        cls._sync_session_maker = sessionmaker(
+            bind=cls._engine_sync, autocommit=False, autoflush=False
+        )
+
+    @classmethod
+    async def get_db(cls) -> AsyncGenerator[AsyncSession, None]:
+        async with cls._async_session_maker() as async_session:
+            yield async_session
+
+    @classmethod
+    def get_sync_db(cls) -> Generator[DBSyncSession, None, None]:
+        with cls._sync_session_maker() as sync_session:
+            yield sync_session
 
 
-def get_sync_engine():
-    settings: Settings = Inject(Settings)
-    return create_engine(
-        settings.DATABASE_SYNC_URL,
-        echo=settings.DB_ECHO,
-        future=True,
-        connect_args={"check_same_thread": False},
-    )
-
-
-engine = get_async_engine()
-engine_sync = get_sync_engine()
-
-async_session_maker = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
-
-
-sync_session_maker = sessionmaker(
-    bind=engine_sync, autocommit=False, autoflush=False
-)
-
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as async_session:
-        yield async_session
-
-
-def get_sync_db() -> Generator[DBSyncSession, None, None]:
-    with sync_session_maker() as sync_session:
-        yield sync_session
+get_db = DB.get_db
+get_sync_db = DB.get_sync_db
