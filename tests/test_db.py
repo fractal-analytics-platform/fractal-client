@@ -6,6 +6,8 @@ async def test_db_connection(db):
     assert db.is_active
     # test bound
     assert db.get_bind()
+    debug(db.get_bind().url.database)
+    assert db.get_bind().url.database is not None
 
     from sqlmodel import select
     from fractal_server.app.models.security import UserOAuth
