@@ -13,7 +13,8 @@ from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
-from ....config_runner import settings
+from ....config import get_settings
+from ....syringe import Inject
 from ...models import Workflow
 from ...models import WorkflowTask
 from .._common import call_single_task
@@ -113,6 +114,8 @@ def recursive_task_assembly(
     task_pars: TaskParameters,
     workflow_dir: Path,
 ) -> AppFuture:
+
+    settings = Inject(get_settings)
 
     logger = logging.getLogger(task_pars.logger_name)
 
