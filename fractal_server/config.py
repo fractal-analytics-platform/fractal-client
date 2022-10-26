@@ -121,6 +121,8 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL(self):
         if self.DB_ENGINE == "sqlite":
+            if not self.SQLITE_PATH:
+                raise ValueError("SQLITE_PATH path cannot be None")
             sqlite_path = (
                 abspath(self.SQLITE_PATH)
                 if self.SQLITE_PATH
@@ -139,6 +141,8 @@ class Settings(BaseSettings):
     @property
     def DATABASE_SYNC_URL(self):
         if self.DB_ENGINE == "sqlite":
+            if not self.SQLITE_PATH:
+                raise ValueError("SQLITE_PATH path cannot be None")
             return self.DATABASE_URL.replace("aiosqlite", "pysqlite")
         elif self.DB_ENGINE == "postgres":
             return self.DATABASE_URL.replace("asyncpg", "psycopg2")
