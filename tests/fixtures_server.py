@@ -42,7 +42,7 @@ def get_patched_settings():
     return settings
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def override_settings():
     debug(f"overriding {get_settings} with {get_patched_settings}")
     Inject.override(get_settings, get_patched_settings)
@@ -54,11 +54,30 @@ def override_settings():
 
 @pytest.fixture
 def unset_deployment_type():
-    from os import environ
+    """
+    Temporarily override the seetings with a version that would fail
+    `settings.check()`
 
-    depl_type = environ.pop("DEPLOYMENT_TYPE")
-    yield
-    environ["DEPLOYMENT_TYPE"] = depl_type
+    Afterwards, restore any previous injection, if any.
+    """
+    settings = Settings()
+    settings.DEPLOYMENT_TYPE = None
+
+    def _get_settings():
+        return settings
+
+    try:
+        previous = Inject.pop(get_settings)
+    except RuntimeError:
+        previous = None
+
+    Inject.override(get_settings, _get_settings)
+    try:
+        yield
+    finally:
+        Inject.pop(get_settings)
+        if previous:
+            Inject.override(get_settings, previous)
 
 
 @pytest.fixture(scope="session")

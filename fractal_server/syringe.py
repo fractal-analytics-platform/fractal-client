@@ -37,7 +37,7 @@ class _Inject:
     @classmethod
     def pop(cls, _callable: Callable[..., T]) -> T:
         try:
-            return cls._dependencies.pop(_callable)()
+            return cls._dependencies.pop(_callable)
         except KeyError:
             raise RuntimeError(f"No dependency override for {_callable}")
 

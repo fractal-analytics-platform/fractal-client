@@ -27,10 +27,11 @@ def collect_routers(app: FastAPI) -> None:
     app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 
-def check_settings(settings=Inject(get_settings)):
+def check_settings():
     """
     Check and register the settings
     """
+    settings = Inject(get_settings)
     settings.check()
 
 
