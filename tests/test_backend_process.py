@@ -19,10 +19,11 @@ from devtools import debug
 
 from .fixtures_tasks import MockTask
 from .fixtures_tasks import MockWorkflowTask
-from fractal_server.app.runner import set_job_logger
 from fractal_server.app.runner._common import _call_command_wrapper
 from fractal_server.app.runner._process import call_single_task
 from fractal_server.app.runner._process import recursive_task_submission
+from fractal_server.app.runner.common import close_job_logger
+from fractal_server.app.runner.common import set_job_logger
 from fractal_server.app.runner.common import TaskParameters
 from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_parallel as dummy_parallel_module
@@ -50,8 +51,12 @@ def test_call_single_task(tmp_path):
         arguments=dict(message="test"),
         order=0,
     )
-    logger_name = "test_logger"
-    logging.getLogger(logger_name)
+    logger_name = "test_logger_call_single_task"
+    job_logger = set_job_logger(
+        logger_name=logger_name,
+        log_file_path=tmp_path / "job.log",
+        level=logging.DEBUG,
+    )
     task_pars = TaskParameters(
         input_paths=[tmp_path],
         output_path=tmp_path,
@@ -64,6 +69,7 @@ def test_call_single_task(tmp_path):
     out = call_single_task(
         task=task, task_pars=task_pars, workflow_dir=tmp_path
     )
+    close_job_logger(job_logger)
     debug(out)
     assert isinstance(out, TaskParameters)
     # check specific of the dummy task
@@ -86,8 +92,9 @@ def test_recursive_task_submission_step0(tmp_path):
             order=0,
         )
     ]
+    logger_name = "job_logger_recursive_task_submission_step0"
     job_logger = set_job_logger(
-        logger_name="job_logger",
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -95,7 +102,7 @@ def test_recursive_task_submission_step0(tmp_path):
         input_paths=[tmp_path],
         output_path=tmp_path,
         metadata={},
-        logger=job_logger,
+        logger_name=logger_name,
     )
 
     with ThreadPoolExecutor() as executor:
@@ -107,6 +114,7 @@ def test_recursive_task_submission_step0(tmp_path):
         )
         debug(res.result())
         assert res.result().metadata["dummy"] == f"dummy {INDEX}"
+    close_job_logger(job_logger)
 
 
 def test_recursive_parallel_task_submission_step0(tmp_path):
@@ -129,8 +137,9 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
             order=0,
         )
     ]
+    logger_name = "job_logger_recursive_parallel_task_submission_step0"
     job_logger = set_job_logger(
-        logger_name="job_logger",
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -139,7 +148,7 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
         input_paths=[tmp_path],
         output_path=output_path,
         metadata={"index": LIST_INDICES},
-        logger=job_logger,
+        logger_name=logger_name,
     )
 
     debug(task_list)
@@ -154,6 +163,7 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
         )
         debug(res.result())
         assert MOCKPARALLELTASK_NAME in res.result().metadata["history"][0]
+    close_job_logger(job_logger)
 
     # Validate results
     assert output_path.parent.exists()
@@ -196,8 +206,9 @@ def test_recursive_task_submission_inductive_step(tmp_path):
             order=1,
         ),
     ]
+    logger_name = "job_logger_recursive_task_submission_inductive_step"
     job_logger = set_job_logger(
-        logger_name="job_logger",
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -205,7 +216,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
         input_paths=[tmp_path],
         output_path=tmp_path / "output.json",
         metadata=METADATA_0,
-        logger=job_logger,
+        logger_name=logger_name,
     )
 
     with ThreadPoolExecutor() as executor:
@@ -215,6 +226,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
             task_pars=task_pars,
             workflow_dir=tmp_path,
         )
+    close_job_logger(job_logger)
 
     output = res.result()
     debug(output)

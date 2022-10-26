@@ -7,6 +7,7 @@ from devtools import debug
 
 from .fixtures_tasks import MockTask
 from .fixtures_tasks import MockWorkflowTask
+from fractal_server.app.runner.common import close_job_logger
 from fractal_server.app.runner.common import set_job_logger
 from fractal_server.app.runner.common import TaskParameters
 from fractal_server.tasks import dummy as dummy_module
@@ -32,6 +33,7 @@ def test_unit_serial_task_assembly(tmp_path):
 
     INDEX = 666
     MESSAGE = "this message"
+    EXECUTORS = "all"
 
     workflow_task = MockWorkflowTask(
         task=MockTask(name="task0", command=f"python {dummy_module.__file__}"),
@@ -40,7 +42,7 @@ def test_unit_serial_task_assembly(tmp_path):
     )
 
     logger_name = "test_logger"
-    set_job_logger(
+    logger = set_job_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "task.log",
         level=logging.DEBUG,
@@ -66,8 +68,10 @@ def test_unit_serial_task_assembly(tmp_path):
             task=workflow_task,
             task_pars_depend_future=task_pars_depend_future,
             workflow_dir=tmp_path,
+            executors=EXECUTORS,
         )
         debug(out.result())
+    close_job_logger(logger)
 
     # metadata file exists
     output_file = tmp_path / "0.metadiff.json"
