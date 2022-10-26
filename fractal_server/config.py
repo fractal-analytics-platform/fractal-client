@@ -24,11 +24,13 @@ from pydantic import BaseModel
 from pydantic import BaseSettings
 from pydantic import Field
 from pydantic import root_validator
+from pydantic import validator
 
 import fractal_server
 
 
 T = TypeVar("T")
+_DEVNULL = Path("/dev/null")
 
 
 load_dotenv(".fractal_server.env")
@@ -144,7 +146,7 @@ class Settings(BaseSettings):
     ###########################################################################
     # FRACTAL SPECIFIC
     ###########################################################################
-    # FRACTAL_ROOT: Path = Path("FRACTAL_ROOT")
+    FRACTAL_ROOT: Path = _DEVNULL
     RUNNER_BACKEND: str = "process"
     RUNNER_ROOT_DIR: Path = Path("artifacts")
 
@@ -184,8 +186,15 @@ class Settings(BaseSettings):
             elif DB_ENGINE == "sqlite":
                 SQLITE_PATH: str
 
+            FRACTAL_ROOT: Path
+
+        @validator("FRACTAL_ROOT")
+        def validate_not_devnull(cls, value):
+            if value == _DEVNULL:
+                raise ValueError("Must define `FRACTAL_ROOT` in environment")
+
         StrictSettings(**self.dict())
 
 
-def get_settings(settings=Settings()):
+def get_settings(settings=Settings()) -> Settings:
     return settings
