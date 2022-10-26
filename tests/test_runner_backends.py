@@ -92,3 +92,9 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
     )
     debug(out)
     assert "dummy" in out.metadata
+    assert "dummy" in out.metadata
+    assert out.metadata["history"] == [
+        tk.name,
+        tk.name,
+        f"{tp.name}: [0, 1, 2]",
+    ]
