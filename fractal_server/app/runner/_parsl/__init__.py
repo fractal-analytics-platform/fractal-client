@@ -13,6 +13,7 @@ from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
+from ....config_runner import settings
 from ...models import Workflow
 from ...models import WorkflowTask
 from .._common import call_single_task
@@ -62,7 +63,6 @@ def _parallel_task_assembly(
     @join_app(data_flow_kernel=data_flow_kernel)
     def _parallel_task_app_future_app(task_pars) -> AppFuture:
         component_list = task_pars.metadata[task.parallelization_level]
-        # app che colleziona i risultati
         dependency_futures = [
             _this_parallel_component_app(
                 task_pars=task_pars,
@@ -116,8 +116,6 @@ def recursive_task_assembly(
 
     logger = logging.getLogger(task_pars.logger_name)
 
-    # TODO: use executor
-
     try:
         *dependencies, this_task = task_list
     except ValueError:
@@ -131,13 +129,15 @@ def recursive_task_assembly(
     if this_task.executor:
         # Verify match between new_task_executor and available executors
         if this_task.executor not in data_flow_kernel.executors.keys():
-            raise ValueError(
+            msg = (
                 f"{this_task.executor=} is not in "
                 f"{data_flow_kernel.executors.keys()=}"
             )
+            logger.error(msg)
+            raise ValueError(msg)
         executors = [this_task.executor] if this_task.executor else "all"
     else:
-        executors = "all"
+        executors = [settings.RUNNER_DEFAULT_EXECUTOR]
 
     # step n => step n+1
     logger.debug(f"submitting task {this_task.order=} to {executors=}")
@@ -203,6 +203,7 @@ async def process_workflow(
         username=username,
         logger_name=logger_name,
     ) as dfk:
+        logger.info("Start definition of app futures (from last to first)")
         final_metadata_future = recursive_task_assembly(
             data_flow_kernel=dfk,
             task_list=workflow.task_list,
@@ -214,9 +215,11 @@ async def process_workflow(
             ),
             workflow_dir=workflow_dir,
         )
-        logger.info("Definition of app futures complete, now start execution.")
+        logger.info("Definition of app futures complete")
+        logger.info("Start execution")
         final_metadata = await async_wrap(get_app_future_result)(
             app_future=final_metadata_future
         )
+        logger.info("Execution complete")
 
     return final_metadata
