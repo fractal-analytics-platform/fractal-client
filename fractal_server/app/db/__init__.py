@@ -15,13 +15,15 @@ Losely adapted from https://testdriven.io/blog/fastapi-sqlmodel/#async-sqlmodel
 """
 
 
-def get_async_engine(settings: Settings = Inject(Settings)):
+def get_async_engine():
+    settings: Settings = Inject(Settings)
     return create_async_engine(
         settings.DATABASE_URL, echo=settings.DB_ECHO, future=True
     )
 
 
-def get_sync_engine(settings: Settings = Inject(Settings)):
+def get_sync_engine():
+    settings: Settings = Inject(Settings)
     return create_engine(
         settings.DATABASE_SYNC_URL,
         echo=settings.DB_ECHO,
