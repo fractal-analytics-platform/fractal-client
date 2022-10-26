@@ -51,8 +51,12 @@ def test_call_single_task(tmp_path):
         arguments=dict(message="test"),
         order=0,
     )
-    logger_name = "test_logger"
-    logging.getLogger(logger_name)
+    logger_name = "test_logger_call_single_task"
+    job_logger = set_job_logger(
+        logger_name=logger_name,
+        log_file_path=tmp_path / "job.log",
+        level=logging.DEBUG,
+    )
     task_pars = TaskParameters(
         input_paths=[tmp_path],
         output_path=tmp_path,
@@ -65,6 +69,7 @@ def test_call_single_task(tmp_path):
     out = call_single_task(
         task=task, task_pars=task_pars, workflow_dir=tmp_path
     )
+    close_job_logger(job_logger)
     debug(out)
     assert isinstance(out, TaskParameters)
     # check specific of the dummy task
@@ -87,8 +92,9 @@ def test_recursive_task_submission_step0(tmp_path):
             order=0,
         )
     ]
+    logger_name = "job_logger_recursive_task_submission_step0"
     job_logger = set_job_logger(
-        logger_name="job_logger",
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -96,7 +102,7 @@ def test_recursive_task_submission_step0(tmp_path):
         input_paths=[tmp_path],
         output_path=tmp_path,
         metadata={},
-        logger=job_logger,
+        logger_name=logger_name,
     )
 
     with ThreadPoolExecutor() as executor:
@@ -131,8 +137,9 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
             order=0,
         )
     ]
+    logger_name = "job_logger_recursive_parallel_task_submission_step0"
     job_logger = set_job_logger(
-        logger_name="job_logger",
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -141,7 +148,7 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
         input_paths=[tmp_path],
         output_path=output_path,
         metadata={"index": LIST_INDICES},
-        logger=job_logger,
+        logger_name=logger_name,
     )
 
     debug(task_list)
@@ -199,8 +206,9 @@ def test_recursive_task_submission_inductive_step(tmp_path):
             order=1,
         ),
     ]
+    logger_name = "job_logger_recursive_task_submission_inductive_step"
     job_logger = set_job_logger(
-        logger_name="job_logger",
+        logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
@@ -208,7 +216,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
         input_paths=[tmp_path],
         output_path=tmp_path / "output.json",
         metadata=METADATA_0,
-        logger=job_logger,
+        logger_name=logger_name,
     )
 
     with ThreadPoolExecutor() as executor:
