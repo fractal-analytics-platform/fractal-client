@@ -1,6 +1,5 @@
 import json
 import logging
-import sys
 from concurrent.futures import Future
 
 import pytest
@@ -22,12 +21,11 @@ except ImportError:
 
 
 def test_import_parsl_backend(unset_deployment_type):
-    import fractal_server.config
-
-    del sys.modules["fractal_server.config"]
-    del fractal_server.config
-
-    import fractal_server.app.runner._parsl
+    """
+    Test that we can import _parsl even though the settings would fail the
+    check
+    """
+    import fractal_server.app.runner._parsl  # noqa: F401
 
 
 def test_unit_serial_task_assembly(tmp_path):
