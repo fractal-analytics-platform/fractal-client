@@ -174,13 +174,16 @@ def test_recursive_task_submission_inductive_step(tmp_path):
     WHEN it is passed to the recursive task submission
     THEN it is correctly executed, i.e., n => n+1
     """
+    TASK_NAME = "task0"
     METADATA_0 = {}
-    METADATA_1 = dict(dummy="dummy 0", index=[0, 1, 2])  # dummy task output
+    METADATA_1 = dict(
+        dummy="dummy 0", index=[0, 1, 2], history=[TASK_NAME]
+    )  # dummy task output
 
     task_list = [
         MockWorkflowTask(
             task=MockTask(
-                name="task0", command=f"python {dummy_module.__file__}"
+                name=TASK_NAME, command=f"python {dummy_module.__file__}"
             ),
             arguments=dict(message="test 0", index=0),
             order=0,
