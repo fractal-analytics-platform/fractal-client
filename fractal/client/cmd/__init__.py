@@ -93,21 +93,38 @@ async def dataset(
 
 
 async def register(
-    client: AsyncClient, email: str, slurm_user: str, **kwargs
+    client: AsyncClient,
+    email: str,
+    slurm_user: str,
+    password: str = None,
+    **kwargs,
 ) -> BaseInterface:
     from getpass import getpass
 
-    password = getpass()
-    confirm_password = getpass("Confirm password: ")
-    if password == confirm_password:
-        res = await client.post(
-            f"{settings.FRACTAL_SERVER}/auth/register",
-            json=dict(email=email, slurm_user=slurm_user, password=password),
-        )
-        data = check_response(res, expected_status_code=201)
-        iface = RichJsonInterface(retcode=0, data=data)
-    else:
-        iface = PrintInterface(retcode=1, data="Passwords do not match.")
+    if password is None:
+        password = getpass()
+        confirm_password = getpass("Confirm password: ")
+        if password == confirm_password:
+            res = await client.post(
+                f"{settings.FRACTAL_SERVER}/auth/register",
+                json=dict(
+                    email=email, slurm_user=slurm_user, password=password
+                ),
+            )
+
+            data = check_response(res, expected_status_code=201)
+            iface = RichJsonInterface(retcode=0, data=data)
+        else:
+            iface = PrintInterface(retcode=1, data="Passwords do not match.")
+        return iface
+
+    res = await client.post(
+        f"{settings.FRACTAL_SERVER}/auth/register",
+        json=dict(email=email, slurm_user=slurm_user, password=password),
+    )
+    data = check_response(res, expected_status_code=201)
+    iface = RichJsonInterface(retcode=0, data=data)
+
     return iface
 
 
