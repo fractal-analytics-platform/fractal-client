@@ -21,6 +21,7 @@ from uuid import uuid4
 
 import pytest
 from asgi_lifespan import LifespanManager
+from devtools import debug
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -29,7 +30,7 @@ from sqlalchemy.orm import sessionmaker
 
 from fractal_server.config import get_settings
 from fractal_server.config import Settings
-from fractal_server.dependency_injection import Inject
+from fractal_server.syringe import Inject
 
 
 def get_patched_settings():
@@ -43,35 +44,12 @@ def get_patched_settings():
 
 @pytest.fixture(scope="session", autouse=True)
 def override_settings():
+    debug(f"overriding {get_settings} with {get_patched_settings}")
     Inject.override(get_settings, get_patched_settings)
     try:
         yield
     finally:
         Inject.pop(get_settings)
-
-
-def override_environment(testdata_path):
-    """
-    Override environment
-
-    NOTE: this function is called once at the beginning of the test suite. It
-    introduces a stateful resource, which is certainly not optimal but allows
-    to have a single session-long instance of the server.
-    """
-    from os import environ
-
-    environ["JWT_SECRET_KEY"] = "secret_key"
-    environ["DEPLOYMENT_TYPE"] = "development"
-    environ["DATA_DIR_ROOT"] = testdata_path.as_posix()
-
-    environ["DB_ENGINE"] = "sqlite"
-    # Shared in memory database,
-    # c.f., https://stackoverflow.com/a/38089822/283972
-    environ["SQLITE_PATH"] = "_test.db?mode=memory&cache=shared"
-
-    from fractal_server.config import Settings
-
-    return Settings()
 
 
 @pytest.fixture
@@ -152,7 +130,6 @@ def db_sync(db_sync_engine):
     from sqlmodel import Session
 
     with Session(db_sync_engine) as session:
-        from devtools import debug
 
         debug(f"yielding session {id(session)}")
         yield session
@@ -165,7 +142,7 @@ async def app(override_settings) -> AsyncGenerator[FastAPI, Any]:
 
 
 @pytest.fixture
-async def register_routers(app):
+async def register_routers(app, override_settings):
     from fractal_server.main import collect_routers
 
     collect_routers(app)

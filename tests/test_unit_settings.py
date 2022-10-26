@@ -3,7 +3,7 @@ from devtools import debug
 from pydantic import ValidationError
 
 from fractal_server.config import Settings
-from fractal_server.dependency_injection import Inject
+from fractal_server.syringe import Inject
 
 
 def test_settings_injection(override_settings):

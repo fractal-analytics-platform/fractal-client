@@ -13,7 +13,7 @@ Zurich.
 from warnings import warn as _warn
 
 from .config import Settings
-from .dependency_injection import Inject
+from .syringe import Inject
 
 
 def warn(message, settings: Settings = Inject(Settings)):

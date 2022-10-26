@@ -1,3 +1,13 @@
+"""
+Copyright 2022 (C) eXact lab S.r.l.
+
+Original author:
+Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+
+This file is part of `Syringe`, a simple Python module for dependency
+injection. Redistribution and use must comply with the 3-clause BSD License
+(see `LICENSE` file).
+"""
 from typing import Any
 from typing import Callable
 from typing import Dict

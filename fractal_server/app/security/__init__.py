@@ -15,7 +15,8 @@ from fastapi_users.authentication import JWTStrategy
 from fastapi_users_db_sqlmodel import SQLModelUserDatabaseAsync
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...config import settings
+from ...config import get_settings
+from ...syringe import Inject
 from ..db import get_db
 from ..models.security import OAuthAccount
 from ..models.security import UserCreate
@@ -44,14 +45,14 @@ bearer_transport = BearerTransport(tokenUrl="/auth/token/login")
 cookie_transport = CookieTransport(cookie_samesite="none")
 
 
-def get_jwt_strategy() -> JWTStrategy:
+def get_jwt_strategy(settings=Inject(get_settings)) -> JWTStrategy:
     return JWTStrategy(
         secret=settings.JWT_SECRET_KEY,
         lifetime_seconds=settings.JWT_EXPIRE_SECONDS,
     )
 
 
-def get_jwt_cookie_strategy() -> JWTStrategy:
+def get_jwt_cookie_strategy(settings=Inject(get_settings)) -> JWTStrategy:
     return JWTStrategy(
         secret=settings.JWT_SECRET_KEY,
         lifetime_seconds=settings.COOKIE_EXPIRE_SECONDS,
@@ -106,6 +107,7 @@ auth_router.include_router(
 
 
 # OAUTH CLIENTS
+settings = Inject(get_settings)
 for client in settings.OAUTH_CLIENTS:
     # INIT CLIENTS
     client_name = client.CLIENT_NAME.lower()

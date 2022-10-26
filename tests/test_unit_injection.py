@@ -1,7 +1,7 @@
 import pytest
 from devtools import debug
 
-from fractal_server.dependency_injection import Inject
+from fractal_server.syringe import Inject
 
 
 THE_ANSWER = 42
@@ -18,7 +18,7 @@ def test_injection():
 
 def test_singleton():
     with pytest.raises(RuntimeError):
-        from fractal_server.dependency_injection import _Inject
+        from fractal_server.syringe import _Inject
 
         _Inject()
 

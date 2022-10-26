@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session as DBSyncSession
 from sqlalchemy.orm import sessionmaker
 
 from ...config import Settings
-from ...dependency_injection import Inject
+from ...syringe import Inject
 
 """
 Losely adapted from https://testdriven.io/blog/fastapi-sqlmodel/#async-sqlmodel
