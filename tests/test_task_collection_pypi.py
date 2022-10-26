@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -6,6 +7,7 @@ from devtools import debug
 from fractal_server.tasks.collection import _execute_command
 from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
+from fractal_server.tasks.collection import load_manifest
 
 
 async def test_execute_command(tmp_path):
@@ -66,3 +68,41 @@ async def test_pip_install(tmp_path):
     )
     debug(location)
     assert PACKAGE in location.as_posix()
+
+
+def test_load_manifest(tmp_path):
+    __FRACTAL_MANIFEST__ = dict(
+        manifest_version=1,
+        task_list=[
+            dict(
+                name="task0",
+                executable="task0.py",
+                input_type="Any",
+                output_type="Any",
+                default_args=dict(a=1, b="c"),
+                meta=dict(
+                    min_memory="2G", requires_gpu=True, version="custom"
+                ),
+            )
+        ],
+    )
+
+    package_root = tmp_path
+    manifest_path = package_root / "__FRACTAL__MANIFEST__.json"
+    python_bin = package_root / "my/custon/python_bin"
+    PACKAGE = "my-task-package"
+    VERSION = "6.6.6"
+
+    with manifest_path.open("w") as f:
+        json.dump(__FRACTAL_MANIFEST__, f)
+
+    task_list = load_manifest(
+        package_root=package_root,
+        python_bin=python_bin,
+        package=PACKAGE,
+        version=VERSION,
+    )
+
+    debug(task_list)
+
+    assert len(task_list) == 1

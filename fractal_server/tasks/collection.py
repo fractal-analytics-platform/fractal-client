@@ -2,14 +2,13 @@ import asyncio
 import json
 from pathlib import Path
 from shlex import split as shlex_split
-from typing import Any
-from typing import Dict
 from typing import List
 from typing import Literal
 from typing import Optional
 from typing import Tuple
 
-from ..app.models import TaskCreate
+from ..app.schemas import ManifestV1
+from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
 
@@ -38,7 +37,7 @@ async def create_package_environment(
     user: str = ".fractal",
     python_version: str = "3.8",
     env_type: Literal["venv"] = "venv",
-):
+) -> List[TaskCreate]:
     """
     Create environment and install package
     """
@@ -49,7 +48,7 @@ async def create_package_environment(
     env_path.mkdir(exist_ok=True, parents=True)
 
     if env_type == "venv":
-        location = await _create_venv_install_package(
+        python_bin, package_root = await _create_venv_install_package(
             path=env_path,
             package=package,
             version=version,
@@ -58,13 +57,41 @@ async def create_package_environment(
     else:
         raise ValueError(f"Environment type {env_type} not supported")
 
-    manifest_file = location / "__MANIFEST__.json"
+    task_list = load_manifest(
+        package_root=package_root,
+        python_bin=python_bin,
+        package=package,
+        version=version,
+    )
+    return task_list
+
+
+def load_manifest(
+    package_root: Path,
+    python_bin: Path,
+    package: str,
+    version: Optional[str],
+) -> List[TaskCreate]:
+
+    source = f"pypi:{package}=={version}"
+    manifest_file = package_root / "__FRACTAL__MANIFEST__.json"
     with manifest_file.open("r") as f:
-        json.load(f)
+        manifest_dict = json.load(f)
 
+    from devtools import debug
 
-def load_manifest(manifest: Dict[str, Any]) -> List[TaskCreate]:
-    raise NotImplementedError
+    debug(manifest_dict)
+    task_list = []
+    if str(manifest_dict["manifest_version"]) == "1":
+        manifest = ManifestV1(**manifest_dict)
+        debug(manifest)
+
+        for t in manifest.task_list:
+            task_executable = package_root / t.executable
+            cmd = f"{python_bin.as_posix()} {task_executable.as_posix()}"
+            this_task = TaskCreate(**t.dict(), command=cmd, source=source)
+            task_list.append(this_task)
+    return task_list
 
 
 async def _create_venv_install_package(
