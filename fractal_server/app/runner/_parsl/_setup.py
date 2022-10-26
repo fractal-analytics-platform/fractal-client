@@ -33,7 +33,8 @@ from parsl.monitoring.monitoring import MonitoringHub
 from parsl.providers import LocalProvider
 from parsl.providers import SlurmProvider
 
-from ....config_runner import settings
+from ....config import get_settings
+from ....syringe import Inject
 
 
 def get_executor_label(*, workflow_id: int, executor_label: str):
@@ -96,6 +97,7 @@ def generate_parsl_config(
         raise NotImplementedError(msg)
 
     allowed_configs = ["minimal", "local", "pelkmanslab", "fmi", "custom"]
+    settings = Inject(get_settings)
     config = settings.RUNNER_CONFIG
     if config not in allowed_configs:
         raise ValueError(f"{config=} not in {allowed_configs=}")
@@ -317,6 +319,7 @@ def load_parsl_config(
     username: str = None,
     worker_init: str = None,
 ):
+    settings = Inject(get_settings)
     logger = logging.getLogger(logger_name)
 
     if enable_monitoring is None:

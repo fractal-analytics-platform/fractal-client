@@ -4,7 +4,8 @@ import os
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ... import __VERSION__
-from ...config_runner import settings
+from ...config import get_settings
+from ...syringe import Inject
 from ..models import Dataset
 from ..models import Workflow
 from ._process import process_workflow as process_process_workflow
@@ -25,6 +26,10 @@ try:
 except ModuleNotFoundError as e:
     _backend_errors["parsl"] = e
 
+# FIXME
+# We need to wrap the use of Inject so as to make it lazy, otherwise the import
+# will likely happen before any dependency override
+settings = Inject(get_settings)
 
 try:
     process_workflow = _backends[settings.RUNNER_BACKEND]

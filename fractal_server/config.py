@@ -13,6 +13,7 @@ Zurich.
 from os import environ
 from os import getenv
 from os.path import abspath
+from pathlib import Path
 from typing import List
 from typing import Literal
 from typing import Optional
@@ -67,6 +68,38 @@ class Settings(BaseSettings):
     # COOKIE TOKEN
     COOKIE_EXPIRE_SECONDS: int = 86400
 
+    @root_validator(pre=True)
+    def collect_oauth_clients(cls, values):
+        oauth_env_variable_keys = [
+            key for key in environ.keys() if "OAUTH" in key
+        ]
+        clients_available = {
+            var.split("_")[1] for var in oauth_env_variable_keys
+        }
+
+        values["OAUTH_CLIENTS"] = []
+        for client in clients_available:
+            prefix = f"OAUTH_{client}"
+            oauth_client = OAuthClient(
+                CLIENT_NAME=client,
+                CLIENT_ID=getenv(f"{prefix}_CLIENT_ID", None),
+                CLIENT_SECRET=getenv(f"{prefix}_CLIENT_SECRET", None),
+                AUTHORIZE_ENDPOINT=getenv(
+                    f"{prefix}_AUTHORIZE_ENDPOINT", None
+                ),
+                ACCESS_TOKEN_ENDPOINT=getenv(
+                    f"{prefix}_ACCESS_TOKEN_ENDPOINT", None
+                ),
+                REFRESH_TOKEN_ENDPOINT=getenv(
+                    f"{prefix}_REFRESH_TOKEN_ENDPOINT", None
+                ),
+                REVOKE_TOKEN_ENDPOINT=getenv(
+                    f"{prefix}_REVOKE_TOKEN_ENDPOINT", None
+                ),
+            )
+            values["OAUTH_CLIENTS"].append(oauth_client)
+        return values
+
     ###########################################################################
     # DATABASE
     ###########################################################################
@@ -111,41 +144,29 @@ class Settings(BaseSettings):
     ###########################################################################
     # FRACTAL SPECIFIC
     ###########################################################################
-    # FRACTAL_ROOT: Path = Path(fail_getenv("FRACTAL_ROOT"))
+    # FRACTAL_ROOT: Path = Path("FRACTAL_ROOT")
+    RUNNER_BACKEND: str = "process"
+    RUNNER_ROOT_DIR: Path = Path("artifacts")
 
-    @root_validator(pre=True)
-    def collect_oauth_clients(cls, values):
-        oauth_env_variable_keys = [
-            key for key in environ.keys() if "OAUTH" in key
-        ]
-        clients_available = {
-            var.split("_")[1] for var in oauth_env_variable_keys
-        }
+    RUNNER_CONFIG: str = "local"
+    RUNNER_DEFAULT_EXECUTOR: str = "cpu-low"
 
-        values["OAUTH_CLIENTS"] = []
-        for client in clients_available:
-            prefix = f"OAUTH_{client}"
-            oauth_client = OAuthClient(
-                CLIENT_NAME=client,
-                CLIENT_ID=getenv(f"{prefix}_CLIENT_ID", None),
-                CLIENT_SECRET=getenv(f"{prefix}_CLIENT_SECRET", None),
-                AUTHORIZE_ENDPOINT=getenv(
-                    f"{prefix}_AUTHORIZE_ENDPOINT", None
-                ),
-                ACCESS_TOKEN_ENDPOINT=getenv(
-                    f"{prefix}_ACCESS_TOKEN_ENDPOINT", None
-                ),
-                REFRESH_TOKEN_ENDPOINT=getenv(
-                    f"{prefix}_REFRESH_TOKEN_ENDPOINT", None
-                ),
-                REVOKE_TOKEN_ENDPOINT=getenv(
-                    f"{prefix}_REVOKE_TOKEN_ENDPOINT", None
-                ),
-            )
-            values["OAUTH_CLIENTS"].append(oauth_client)
-        return values
+    # NOTE: we currently set RUNNER_MONITORING to False, due to
+    # https://github.com/fractal-analytics-platform/fractal-server/issues/148
+    # RUNNER_MONITORING: bool = int(getenv("RUNNER_MONITORING", 1))
+    RUNNER_MONITORING: bool = False
+
+    ###########################################################################
+    # BUSINESS LOGIC
+    ###########################################################################
 
     def check(self):
+        """
+        Make sure that mandatory variables are set
+
+        This method must be called before the server starts
+        """
+
         class StrictSettings(BaseSettings):
             class Config:
                 extra = "allow"
