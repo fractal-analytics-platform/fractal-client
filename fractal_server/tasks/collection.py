@@ -7,6 +7,7 @@ from typing import Dict
 from typing import List
 from typing import Literal
 from typing import Optional
+from typing import Tuple
 
 from ..app.models import TaskCreate
 from ..config import get_settings
@@ -72,7 +73,7 @@ async def _create_venv_install_package(
     package: str,
     version: Optional[str],
     python_version: str,
-) -> Path:
+) -> Tuple[Path, Path]:
     """
     Create venv and install package
 
@@ -91,14 +92,14 @@ async def _create_venv_install_package(
     ------
     python_bin: Path
         path to venv's python interpreter
-    manifest_path : Path
+    package_root : Path
         the location of the package manifest
     """
     python_bin = await _init_venv(path=path, python_version=python_version)
-    manifest_path = await _pip_install(
+    package_root = await _pip_install(
         venv_path=path, package=package, version=version
     )
-    return python_bin, manifest_path
+    return python_bin, package_root
 
 
 async def _init_venv(*, path: Path, python_version: str) -> None:
