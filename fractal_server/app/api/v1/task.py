@@ -1,17 +1,13 @@
 import asyncio
 from copy import deepcopy
-from typing import Any
-from typing import Dict
 from typing import List
 
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-from sqlalchemy.exc import NoResultFound
 from sqlmodel import select
 
-from ...db import async_session_maker
 from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
@@ -24,29 +20,6 @@ from ...security import current_active_user
 from ...security import User
 
 router = APIRouter()
-
-
-async def upsert_task(
-    task: Dict[str, Any],
-) -> str:
-    async with async_session_maker() as db:
-        task_obj = TaskCreate(**task)
-        try:
-            # task already present, update
-            stm = select(Task).where(Task.module == task["module"])
-            res = await db.execute(stm)
-            this_task = res.scalars().one()
-            for key, value in task_obj.dict(exclude={"subtask_list"}).items():
-                setattr(this_task, key, value)
-            db.add(this_task)
-            await db.commit()
-            return "updated"
-        except NoResultFound:
-            # task not present, insert
-            task_orm = Task.from_orm(task_obj)
-            db.add(task_orm)
-            await db.commit()
-            return "inserted"
 
 
 @router.post("/collect/", status_code=status.HTTP_201_CREATED)
