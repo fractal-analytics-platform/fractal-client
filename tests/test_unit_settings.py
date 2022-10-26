@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from devtools import debug
 from pydantic import ValidationError
@@ -26,6 +28,7 @@ def test_settings_injection(override_settings):
                 DEPLOYMENT_TYPE="development",
                 JWT_SECRET_KEY="secret",
                 SQLITE_PATH="path",
+                FRACTAL_ROOT=Path("/tmp"),
             ),
             False,
         ),

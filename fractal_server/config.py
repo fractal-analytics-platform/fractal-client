@@ -188,7 +188,7 @@ class Settings(BaseSettings):
 
             FRACTAL_ROOT: Path
 
-        @validator("FRACTAL_ROOT")
+        @validator("FRACTAL_ROOT", allow_reuse=True)
         def validate_not_devnull(cls, value):
             if value == _DEVNULL:
                 raise ValueError("Must define `FRACTAL_ROOT` in environment")
