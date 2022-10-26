@@ -24,3 +24,10 @@ class Task(_TaskBase, table=True):  # type: ignore
     @property
     def is_parallel(self):
         return bool(self.parallelization_level)
+
+    @property
+    def executor(self) -> Optional[str]:
+        try:
+            return self.default_args["executor"]
+        except KeyError:
+            return None
