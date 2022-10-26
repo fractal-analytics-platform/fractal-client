@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 from functools import partial
 from functools import wraps
@@ -28,7 +29,7 @@ class TaskParameters(BaseModel):
     input_paths: List[Path]
     output_path: Path
     metadata: Dict[str, Any]
-    logger: logging.Logger
+    logger_name: Optional[str] = None
     username: Optional[str] = None
 
     class Config:
@@ -152,3 +153,8 @@ def async_wrap(func: Callable) -> Callable:
         return await loop.run_in_executor(executor, pfunc)
 
     return run
+
+
+def write_args_file(args: Dict[str, Any], path: Path):
+    with path.open("w") as f:
+        json.dump(args, f, cls=TaskParameterEncoder)

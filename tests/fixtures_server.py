@@ -29,6 +29,13 @@ from sqlalchemy.orm import sessionmaker
 
 
 def override_environment(testdata_path):
+    """
+    Override environment
+
+    NOTE: this function is called once at the beginning of the test suite. It
+    introduces a stateful resource, which is certainly not optimal but allows
+    to have a single session-long instance of the server.
+    """
     from os import environ
 
     environ["JWT_SECRET_KEY"] = "secret_key"
@@ -43,6 +50,15 @@ def override_environment(testdata_path):
     from fractal_server.config import settings
 
     return settings
+
+
+@pytest.fixture
+def unset_deployment_type():
+    from os import environ
+
+    depl_type = environ.pop("DEPLOYMENT_TYPE")
+    yield
+    environ["DEPLOYMENT_TYPE"] = depl_type
 
 
 @pytest.fixture(scope="session")

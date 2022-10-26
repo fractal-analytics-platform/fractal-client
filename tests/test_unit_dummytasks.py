@@ -24,7 +24,7 @@ def test_dummy_direct_call(tmp_path):
         index=0,
     )
     assert out_path.exists()
-    assert metadata_update == {"dummy": "dummy 0"}
+    assert metadata_update == {"dummy": "dummy 0", "index": [0, 1, 2]}
     with open(out_path, "r") as f:
         data = json.load(f)
     debug(data)
@@ -40,7 +40,7 @@ def test_dummy_direct_call(tmp_path):
         message=SECOND_TEST_MESSAGE,
         index=1,
     )
-    assert metadata_update == {"dummy": "dummy 1"}
+    assert metadata_update == {"dummy": "dummy 1", "index": [0, 1, 2]}
     with open(out_path, "r") as f:
         data = json.load(f)
     debug(data)
@@ -76,7 +76,7 @@ async def test_dummy_process_call(tmp_path):
     assert proc.returncode == 0
 
     assert out_path.exists()
-    assert metadata_update == {"dummy": "dummy 0"}
+    assert metadata_update == {"dummy": "dummy 0", "index": [0, 1, 2]}
     with open(out_path, "r") as f:
         data = json.load(f)
     debug(data)

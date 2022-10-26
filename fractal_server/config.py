@@ -80,6 +80,7 @@ class Settings(BaseSettings):
     # DATABASE
     ###########################################################################
     DB_ENGINE: str = getenv("DB_ENGINE", "sqlite")
+    DB_ECHO: bool = bool(int(getenv("DB_ECHO", "0")))
 
     if DB_ENGINE == "postgres":
         POSTGRES_USER: str = fail_getenv("POSTGRES_USER")
@@ -101,18 +102,6 @@ class Settings(BaseSettings):
             f"{abspath(SQLITE_PATH) if SQLITE_PATH else SQLITE_PATH}"
         )
         DATABASE_SYNC_URL = DATABASE_URL.replace("aiosqlite", "pysqlite")
-
-    @property
-    def DB_ECHO(self):
-        db_echo = bool(
-            int(
-                getenv(
-                    "DB_ECHO",
-                    self.DEPLOYMENT_TYPE != DeploymentType.PRODUCTION,
-                )
-            )
-        )
-        return db_echo
 
     ###########################################################################
     # FRACTAL SPECIFIC
