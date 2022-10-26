@@ -1,5 +1,4 @@
 import asyncio
-from collections import Counter
 from copy import deepcopy
 from typing import Any
 from typing import Dict
@@ -12,7 +11,6 @@ from fastapi import status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import select
 
-from ....tasks import collect_tasks
 from ...db import async_session_maker
 from ...db import AsyncSession
 from ...db import DBSyncSession
@@ -51,21 +49,11 @@ async def upsert_task(
             return "inserted"
 
 
-async def collect_tasks_headless() -> Dict[str, int]:
-    out = dict(inserted=0, updated=0)
-    results = await asyncio.gather(
-        *[upsert_task(task) for task in collect_tasks()]
-    )
-    results = sorted(results)
-    out.update(dict(Counter(results)))
-    return out
-
-
 @router.post("/collect/", status_code=status.HTTP_201_CREATED)
 async def collect_core_tasks(
     user: User = Depends(current_active_user),
 ):
-    return await collect_tasks_headless()
+    raise NotImplementedError
 
 
 @router.get("/", response_model=List[TaskRead])
