@@ -29,7 +29,7 @@ pytest = "^7.1.2"
 bumpver = "^2022.1118"
 pytest-asyncio = "^0.19.0"
 fractal-server = "<1.0.0"
-coverage = "^6.4.4"
+coverage = {extras = ["toml"], version = "^6.5.0"}
 
 [build-system]
 requires = ["poetry-core"]
@@ -58,3 +58,8 @@ push = true
 fractal = "fractal.__main__:run"
 fractal_old = "fractal.old:run"
 fractal_new = "fractal.new:run"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+omit = ["tests/*"]
