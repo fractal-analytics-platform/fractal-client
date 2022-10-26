@@ -6,7 +6,8 @@ from typing import Optional
 from sqlmodel import Field
 from sqlmodel import Relationship
 
-from ...config_runner import settings
+from ...config import get_settings
+from ...syringe import Inject
 from ..schemas import ApplyWorkflowBase
 from .models_utils import get_timestamp
 from .project import Dataset
@@ -49,6 +50,7 @@ class ApplyWorkflow(ApplyWorkflowBase, table=True):  # type: ignore
 
     @property
     def job_root_path(self) -> Path:
+        settings = Inject(get_settings)
         return settings.RUNNER_ROOT_DIR / f"job_{self.id:06d}"
 
     @property

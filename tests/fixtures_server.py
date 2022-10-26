@@ -21,44 +21,63 @@ from uuid import uuid4
 
 import pytest
 from asgi_lifespan import LifespanManager
+from devtools import debug
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
+from fractal_server.config import get_settings
+from fractal_server.config import Settings
+from fractal_server.syringe import Inject
 
-def override_environment(testdata_path):
-    """
-    Override environment
 
-    NOTE: this function is called once at the beginning of the test suite. It
-    introduces a stateful resource, which is certainly not optimal but allows
-    to have a single session-long instance of the server.
-    """
-    from os import environ
-
-    environ["JWT_SECRET_KEY"] = "secret_key"
-    environ["DEPLOYMENT_TYPE"] = "development"
-    environ["DATA_DIR_ROOT"] = testdata_path.as_posix()
-
-    environ["DB_ENGINE"] = "sqlite"
-    # Shared in memory database,
-    # c.f., https://stackoverflow.com/a/38089822/283972
-    environ["SQLITE_PATH"] = "_test.db?mode=memory&cache=shared"
-
-    from fractal_server.config import settings
-
+def get_patched_settings():
+    settings = Settings()
+    settings.JWT_SECRET_KEY = "secret_key"
+    settings.DEPLOYMENT_TYPE = "development"
+    settings.DB_ENGINE = "sqlite"
+    settings.SQLITE_PATH = "_test.db?mode=memory&cache=shared"
     return settings
+
+
+@pytest.fixture(scope="session")
+def override_settings():
+    debug(f"overriding {get_settings} with {get_patched_settings}")
+    Inject.override(get_settings, get_patched_settings)
+    try:
+        yield
+    finally:
+        Inject.pop(get_settings)
 
 
 @pytest.fixture
 def unset_deployment_type():
-    from os import environ
+    """
+    Temporarily override the seetings with a version that would fail
+    `settings.check()`
 
-    depl_type = environ.pop("DEPLOYMENT_TYPE")
-    yield
-    environ["DEPLOYMENT_TYPE"] = depl_type
+    Afterwards, restore any previous injection, if any.
+    """
+    settings = Settings()
+    settings.DEPLOYMENT_TYPE = None
+
+    def _get_settings():
+        return settings
+
+    try:
+        previous = Inject.pop(get_settings)
+    except RuntimeError:
+        previous = None
+
+    Inject.override(get_settings, _get_settings)
+    try:
+        yield
+    finally:
+        Inject.pop(get_settings)
+        if previous:
+            Inject.override(get_settings, previous)
 
 
 @pytest.fixture(scope="session")
@@ -67,20 +86,15 @@ def event_loop():
     yield _event_loop
 
 
-@pytest.fixture(autouse=True, scope="session")
-def patch_settings(testdata_path):
-    return override_environment(testdata_path)
-
-
 @pytest.fixture(scope="session")
-async def db_engine(patch_settings) -> AsyncGenerator[AsyncEngine, None]:
+async def db_engine(override_settings) -> AsyncGenerator[AsyncEngine, None]:
     from fractal_server.app.db import engine
 
     yield engine
 
 
 @pytest.fixture(scope="session")
-def db_sync_engine(patch_settings):
+def db_sync_engine(override_settings):
     from fractal_server.app.db import engine_sync
 
     yield engine_sync
@@ -135,21 +149,20 @@ def db_sync(db_sync_engine):
     from sqlmodel import Session
 
     with Session(db_sync_engine) as session:
-        from devtools import debug
 
         debug(f"yielding session {id(session)}")
         yield session
 
 
 @pytest.fixture
-async def app(patch_settings) -> AsyncGenerator[FastAPI, Any]:
+async def app(override_settings) -> AsyncGenerator[FastAPI, Any]:
     app = FastAPI()
     yield app
 
 
 @pytest.fixture
-async def register_routers(app):
-    from fractal_server import collect_routers
+async def register_routers(app, override_settings):
+    from fractal_server.main import collect_routers
 
     collect_routers(app)
 
