@@ -23,7 +23,7 @@ parser_main.add_argument(
     help="User email address for login (overrides configuration file)",
 )
 parser_main.add_argument(
-    "-p", "--password", help="User password (overrides cnofiguration file)"
+    "-p", "--password", help="User password (overrides configuration file)"
 )
 parser_main.add_argument("-s", "--slurm_user", help="Slurm user")
 parser_main.add_argument(
@@ -59,7 +59,11 @@ register_parser.add_argument("email", help="Email to be used as username")
 register_parser.add_argument(
     "slurm_user", help="Username to login into Slurm cluster"
 )
-
+register_parser.add_argument(
+    "-p",
+    "--password",
+    help=("Password for the new user"),
+)
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser("project", help="project commands")
 project_subparsers = project_parser.add_subparsers(
