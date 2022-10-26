@@ -19,7 +19,8 @@ from devtools import debug
 from fractal_server.app.models import Task
 from fractal_server.app.models import Workflow
 from fractal_server.app.runner import _backends
-from fractal_server.app.runner import set_job_logger
+from fractal_server.app.runner.common import close_job_logger
+from fractal_server.app.runner.common import set_job_logger
 from fractal_server.tasks import dummy
 from fractal_server.tasks import dummy_parallel
 
@@ -77,7 +78,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
 
     # process workflow
     logger_name = "job_logger"
-    set_job_logger(
+    logger = set_job_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
@@ -90,6 +91,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         logger_name=logger_name,
         workflow_dir=tmp_path,
     )
+    close_job_logger(logger)
     debug(out)
     assert "dummy" in out.metadata
     assert "dummy" in out.metadata

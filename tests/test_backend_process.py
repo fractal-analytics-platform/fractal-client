@@ -19,10 +19,11 @@ from devtools import debug
 
 from .fixtures_tasks import MockTask
 from .fixtures_tasks import MockWorkflowTask
-from fractal_server.app.runner import set_job_logger
 from fractal_server.app.runner._common import _call_command_wrapper
 from fractal_server.app.runner._process import call_single_task
 from fractal_server.app.runner._process import recursive_task_submission
+from fractal_server.app.runner.common import close_job_logger
+from fractal_server.app.runner.common import set_job_logger
 from fractal_server.app.runner.common import TaskParameters
 from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_parallel as dummy_parallel_module
@@ -107,6 +108,7 @@ def test_recursive_task_submission_step0(tmp_path):
         )
         debug(res.result())
         assert res.result().metadata["dummy"] == f"dummy {INDEX}"
+    close_job_logger(job_logger)
 
 
 def test_recursive_parallel_task_submission_step0(tmp_path):
@@ -154,6 +156,7 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
         )
         debug(res.result())
         assert MOCKPARALLELTASK_NAME in res.result().metadata["history"][0]
+    close_job_logger(job_logger)
 
     # Validate results
     assert output_path.parent.exists()
@@ -215,6 +218,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
             task_pars=task_pars,
             workflow_dir=tmp_path,
         )
+    close_job_logger(job_logger)
 
     output = res.result()
     debug(output)
