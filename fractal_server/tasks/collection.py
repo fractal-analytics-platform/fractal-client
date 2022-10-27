@@ -1,7 +1,17 @@
-import asyncio
+"""
+Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+University of Zurich
+
+Original authors:
+Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+
+This file is part of Fractal and was originally developed by eXact lab S.r.l.
+<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+Institute for Biomedical Research and Pelkmans Lab from the University of
+Zurich.
+"""
 import json
 from pathlib import Path
-from shlex import split as shlex_split
 from typing import List
 from typing import Literal
 from typing import Optional
@@ -11,23 +21,7 @@ from ..app.schemas import ManifestV1
 from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
-
-
-async def _execute_command(*, cwd: Path, command: str) -> str:
-    command_split = shlex_split(command)
-    cmd, *args = command_split
-
-    proc = await asyncio.create_subprocess_exec(
-        cmd,
-        *args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        cwd=cwd,
-    )
-    stdout, stderr = await proc.communicate()
-    if proc.returncode != 0:
-        raise RuntimeError(stderr.decode("utf-8"))
-    return stdout.decode("utf-8")
+from ..utils import execute_command
 
 
 async def create_package_environment(
@@ -147,7 +141,7 @@ async def _init_venv(*, path: Path, python_version: str) -> Path:
         path to python interpreter
     """
     interpreter = f"python{python_version}"
-    await _execute_command(cwd=path, command=f"{interpreter} -m venv venv")
+    await execute_command(cwd=path, command=f"{interpreter} -m venv venv")
     return path / "venv/bin/python"
 
 
@@ -168,8 +162,8 @@ async def _pip_install(
     cmd_install = f"{pip} install {package}{version_string}"
     cmd_inspect = f"{pip} show -f {package}"
 
-    await _execute_command(cwd=venv_path, command=cmd_install)
-    stdout_inspect = await _execute_command(cwd=venv_path, command=cmd_inspect)
+    await execute_command(cwd=venv_path, command=cmd_install)
+    stdout_inspect = await execute_command(cwd=venv_path, command=cmd_inspect)
 
     location = Path(
         next(

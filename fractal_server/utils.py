@@ -10,6 +10,9 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import asyncio
+from pathlib import Path
+from shlex import split as shlex_split
 from warnings import warn as _warn
 
 from .config import Settings
@@ -28,3 +31,20 @@ def warn(message, settings: Settings = Inject(Settings)):
 
 def slugify(value: str):
     return value.lower().replace(" ", "_")
+
+
+async def execute_command(*, cwd: Path, command: str) -> str:
+    command_split = shlex_split(command)
+    cmd, *args = command_split
+
+    proc = await asyncio.create_subprocess_exec(
+        cmd,
+        *args,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        cwd=cwd,
+    )
+    stdout, stderr = await proc.communicate()
+    if proc.returncode != 0:
+        raise RuntimeError(stderr.decode("utf-8"))
+    return stdout.decode("utf-8")
