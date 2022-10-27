@@ -137,7 +137,7 @@ async def add_task_to_workflow(
         db=db,
     )
 
-    db.commit()
+    await db.commit()
     await db.refresh(workflow)
 
     return workflow
