@@ -80,6 +80,7 @@ async def test_task_create(db, client, MockCurrentUser):
         name="mytask",
         command="cmd",
         source="/source",
+        module="module",
         input_type="Any",
         output_type="Any",
     )
