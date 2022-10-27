@@ -24,24 +24,36 @@ from ..syringe import Inject
 from ..utils import execute_command
 
 
-async def create_package_environment(
+def create_package_dir_pypi(
     *,
     package: str,
     version: Optional[str],
     user: str = ".fractal",
-    python_version: str = "3.8",
-    env_type: Literal["venv"] = "venv",
-) -> List[TaskCreate]:
-    """
-    Create environment and install package
-    """
+    **_,
+) -> Path:
     settings = Inject(get_settings)
     # assemble installation path
     package_dir = f"{package}{version or ''}"
     if settings.FRACTAL_ROOT:
         env_path = settings.FRACTAL_ROOT / user / package_dir
     # TODO check the access right of the env_path and subdirs
-    env_path.mkdir(exist_ok=True, parents=True)
+    env_path.mkdir(exist_ok=False, parents=True)
+    return env_path
+
+
+async def create_package_environment_pypi(
+    *,
+    env_path: Path,
+    package: str,
+    version: Optional[str],
+    user: str = ".fractal",
+    python_version: str = "3.8",
+    env_type: Literal["venv"] = "venv",
+    package_extras: str = "",
+) -> List[TaskCreate]:
+    """
+    Create environment and install package
+    """
 
     if env_type == "venv":
         python_bin, package_root = await _create_venv_install_package(
@@ -49,6 +61,7 @@ async def create_package_environment(
             package=package,
             version=version,
             python_version=python_version,
+            package_extras=package_extras,
         )
     else:
         raise ValueError(f"Environment type {env_type} not supported")
@@ -95,6 +108,7 @@ async def _create_venv_install_package(
     package: str,
     version: Optional[str],
     python_version: str,
+    package_extras: Optional[str],
 ) -> Tuple[Path, Path]:
     """
     Create venv and install package
@@ -119,7 +133,10 @@ async def _create_venv_install_package(
     """
     python_bin = await _init_venv(path=path, python_version=python_version)
     package_root = await _pip_install(
-        venv_path=path, package=package, version=version
+        venv_path=path,
+        package=package,
+        version=version,
+        package_extras=package_extras,
     )
     return python_bin, package_root
 
@@ -146,7 +163,10 @@ async def _init_venv(*, path: Path, python_version: str) -> Path:
 
 
 async def _pip_install(
-    venv_path: Path, package: str, version: Optional[str]
+    venv_path: Path,
+    package: str,
+    version: Optional[str],
+    package_extras: Optional[str],
 ) -> Path:
     """
     Install package in venv
@@ -158,8 +178,9 @@ async def _pip_install(
     """
     pip = venv_path / "venv/bin/pip"
     version_string = f"=={version}" if version else ""
+    extras = f"[{package_extras}]" if package_extras else ""
 
-    cmd_install = f"{pip} install {package}{version_string}"
+    cmd_install = f"{pip} install {package}{extras}{version_string}"
     cmd_inspect = f"{pip} show -f {package}"
 
     await execute_command(cwd=venv_path, command=cmd_install)
