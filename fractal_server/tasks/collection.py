@@ -49,7 +49,7 @@ async def create_package_environment_pypi(
     user: str = ".fractal",
     python_version: str = "3.8",
     env_type: Literal["venv"] = "venv",
-    package_extras: str = "",
+    package_extras: Optional[str] = None,
 ) -> List[TaskCreate]:
     """
     Create environment and install package
@@ -166,7 +166,7 @@ async def _pip_install(
     venv_path: Path,
     package: str,
     version: Optional[str],
-    package_extras: Optional[str],
+    package_extras: Optional[str] = None,
 ) -> Path:
     """
     Install package in venv
