@@ -1,12 +1,14 @@
 from typing import Any
 from typing import Dict
+from typing import Literal
 from typing import Optional
 
-from sqlmodel import Field
+from pydantic import BaseModel
+from sqlmodel import Field  # type: ignore
 from sqlmodel import SQLModel
 
 
-__all__ = ("TaskCreate", "TaskUpdate", "TaskRead")
+__all__ = ("TaskCreate", "TaskUpdate", "TaskRead", "TaskCollectPypi")
 
 
 class _TaskBase(SQLModel):
@@ -52,6 +54,18 @@ class TaskUpdate(_TaskBase):
 
 class TaskCreate(_TaskBase):
     pass
+
+
+class _TaskCollectBase(BaseModel):
+    pass
+
+
+class TaskCollectPypi(_TaskCollectBase):
+    collection_type: Literal["pypi", "git"] = "pypi"
+    package: str
+    version: Optional[str]
+    python_version: Optional[str]
+    package_extras: str
 
 
 class TaskRead(_TaskBase):

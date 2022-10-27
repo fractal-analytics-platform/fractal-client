@@ -4,29 +4,24 @@ from typing import List
 
 from fastapi import APIRouter
 from fastapi import Depends
-from fastapi import HTTPException
 from fastapi import status
 from sqlmodel import select
 
+from ....tasks.collection import create_package_dir_pypi
+from ....tasks.collection import create_package_environment_pypi
 from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
 from ...db import get_sync_db
 from ...models import Task
-from ...models import TaskCreate
-from ...models import TaskRead
-from ...models import TaskUpdate
+from ...schemas import TaskCollectPypi
+from ...schemas import TaskCreate
+from ...schemas import TaskRead
+from ...schemas import TaskUpdate
 from ...security import current_active_user
 from ...security import User
 
 router = APIRouter()
-
-
-@router.post("/collect/", status_code=status.HTTP_201_CREATED)
-async def collect_core_tasks(
-    user: User = Depends(current_active_user),
-):
-    raise NotImplementedError
 
 
 @router.get("/", response_model=List[TaskRead])
@@ -51,27 +46,42 @@ def get_task(
     return task
 
 
-@router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
-async def create_task(
-    task: TaskCreate,
+async def create_task_headless(
+    task_list: List[TaskCreate],
+    db: AsyncSession,
+    global_task: bool = True,
+) -> List[Task]:
+    task_db_list = [Task.from_orm(t) for t in task_list]
+    db.add_all(task_db_list)
+    await db.commit()
+    await asyncio.gather(*[db.refresh(t) for t in task_db_list])
+    return task_db_list
+
+
+@router.post(
+    "/pypi/",
+    response_model=List[TaskRead],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_task_pypi(
+    task_collect: TaskCollectPypi,
+    collection_type: str = "pypi",
+    global_task: bool = True,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
-):
+) -> Task:
 
-    # Check that there is no task with the same user and name
-    stm = select(Task).where(Task.name == task.name)
-    res = await db.execute(stm)
-    if res.scalars().all():
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Task name ({task.name}) already in use",
-        )
+    env_path = create_package_dir_pypi(**task_collect.dict())
+    task_list = await create_package_environment_pypi(
+        env_path=env_path, **task_collect.dict()
+    )
+    task_db_list = await create_task_headless(
+        task_list=task_list,
+        db=db,
+        global_task=global_task,
+    )
 
-    db_task = Task.from_orm(task)
-    db.add(db_task)
-    await db.commit()
-    await db.refresh(db_task)
-    return db_task
+    return task_db_list
 
 
 @router.patch("/{task_id}", response_model=TaskRead)
