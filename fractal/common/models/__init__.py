@@ -41,36 +41,6 @@ __all__ = (
 )
 
 
-class WorkflowTaskBase(SQLModel):
-    workflow_id: Optional[int]
-    task_id: Optional[int]
-    order: Optional[int]
-    args: Dict[str, Any]
-
-
-class WorkflowTaskCreate(WorkflowTaskBase):
-    workflow_id: Optional[int]
-    task_id: int
-
-
-class WorkflowTaskRead(WorkflowTaskBase):
-    pass
-
-
-class WorkflowBase(SQLModel):
-    name: str
-    project_id: int
-
-
-class WorkflowCreate(WorkflowBase):
-    pass
-
-
-class WorkflowRead(WorkflowBase):
-    id: int
-    task_list: List[WorkflowTaskRead]
-
-
 class ApplyWorkflowBase(SQLModel):
     project_id: int
     input_dataset_id: int
@@ -251,9 +221,44 @@ class TaskCreate(TaskBase):
 
 
 class TaskRead(TaskBase):
-    pass
-    # id: int
+    id: int
     # subtask_list: List[SubtaskRead]
+
+
+class WorkflowTaskBase(SQLModel):
+    workflow_id: Optional[int]
+    task_id: Optional[int]
+    order: Optional[int]
+    args: Optional[Dict[str, Any]]
+
+
+class WorkflowTaskCreate(WorkflowTaskBase):
+    task_id: int
+
+
+class WorkflowTaskRead(WorkflowTaskBase):
+    id: int
+    workflow_id: int
+    task: TaskRead
+
+
+class WorkflowBase(SQLModel):
+    name: str
+    project_id: int
+
+
+class WorkflowCreate(WorkflowBase):
+    pass
+
+
+class WorkflowRead(WorkflowBase):
+    id: int
+    task_list: List[WorkflowTaskRead]
+
+
+class WorkflowUpdate(WorkflowBase):
+    name: Optional[str]
+    project_id: Optional[int]
 
 
 # SubtaskRead.update_forward_refs()
