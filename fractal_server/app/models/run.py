@@ -8,8 +8,8 @@ from sqlmodel import Relationship
 
 from ...config import get_settings
 from ...syringe import Inject
+from ...utils import get_timestamp
 from ..schemas import ApplyWorkflowBase
-from .models_utils import get_timestamp
 from .project import Dataset
 from .project import Project
 from .workflow import Workflow

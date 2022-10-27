@@ -1,19 +1,13 @@
 import asyncio
-from collections import Counter
 from copy import deepcopy
-from typing import Any
-from typing import Dict
 from typing import List
 
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-from sqlalchemy.exc import NoResultFound
 from sqlmodel import select
 
-from ....tasks import collect_tasks
-from ...db import async_session_maker
 from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
@@ -28,44 +22,11 @@ from ...security import User
 router = APIRouter()
 
 
-async def upsert_task(
-    task: Dict[str, Any],
-) -> str:
-    async with async_session_maker() as db:
-        task_obj = TaskCreate(**task)
-        try:
-            # task already present, update
-            stm = select(Task).where(Task.module == task["module"])
-            res = await db.execute(stm)
-            this_task = res.scalars().one()
-            for key, value in task_obj.dict(exclude={"subtask_list"}).items():
-                setattr(this_task, key, value)
-            db.add(this_task)
-            await db.commit()
-            return "updated"
-        except NoResultFound:
-            # task not present, insert
-            task_orm = Task.from_orm(task_obj)
-            db.add(task_orm)
-            await db.commit()
-            return "inserted"
-
-
-async def collect_tasks_headless() -> Dict[str, int]:
-    out = dict(inserted=0, updated=0)
-    results = await asyncio.gather(
-        *[upsert_task(task) for task in collect_tasks()]
-    )
-    results = sorted(results)
-    out.update(dict(Counter(results)))
-    return out
-
-
 @router.post("/collect/", status_code=status.HTTP_201_CREATED)
 async def collect_core_tasks(
     user: User = Depends(current_active_user),
 ):
-    return await collect_tasks_headless()
+    raise NotImplementedError
 
 
 @router.get("/", response_model=List[TaskRead])

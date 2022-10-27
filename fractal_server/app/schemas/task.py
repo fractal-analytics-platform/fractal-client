@@ -37,6 +37,7 @@ class _TaskBase(SQLModel):
     input_type: str
     output_type: str
     default_args: Dict[str, Any] = Field(default={})
+    meta: Dict[str, Any] = Field(default={})
 
     class Config:
         arbitrary_types_allowed = True
