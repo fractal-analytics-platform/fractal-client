@@ -84,6 +84,11 @@ def load_manifest(
 
         for t in manifest.task_list:
             task_executable = package_root / t.executable
+            if not task_executable.exists():
+                raise FileNotFoundError(
+                    f"Cannot find executable `{task_executable}` "
+                    f"for task `{t.name}`"
+                )
             cmd = f"{python_bin.as_posix()} {task_executable.as_posix()}"
             this_task = TaskCreate(**t.dict(), command=cmd, source=source)
             task_list.append(this_task)

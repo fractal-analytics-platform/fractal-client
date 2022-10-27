@@ -71,12 +71,13 @@ async def test_pip_install(tmp_path):
 
 
 def test_load_manifest(tmp_path):
+    TASK_EXECUTABLE = "task0.py"
     __FRACTAL_MANIFEST__ = dict(
         manifest_version=1,
         task_list=[
             dict(
                 name="task0",
-                executable="task0.py",
+                executable=TASK_EXECUTABLE,
                 input_type="Any",
                 output_type="Any",
                 default_args=dict(a=1, b="c"),
@@ -87,11 +88,15 @@ def test_load_manifest(tmp_path):
         ],
     )
 
-    package_root = tmp_path
+    package_root = tmp_path / "package"
+    package_root.mkdir(exist_ok=True, parents=True)
     manifest_path = package_root / "__FRACTAL__MANIFEST__.json"
+    executable_path = package_root / TASK_EXECUTABLE
     python_bin = package_root / "my/custon/python_bin"
-    PACKAGE = "my-task-package"
-    VERSION = "6.6.6"
+    SOURCE = "my:source==123"
+
+    with executable_path.open("w") as f:
+        f.write("test_executable")
 
     with manifest_path.open("w") as f:
         json.dump(__FRACTAL_MANIFEST__, f)
@@ -99,10 +104,11 @@ def test_load_manifest(tmp_path):
     task_list = load_manifest(
         package_root=package_root,
         python_bin=python_bin,
-        package=PACKAGE,
-        version=VERSION,
+        source=SOURCE,
     )
 
     debug(task_list)
 
     assert len(task_list) == 1
+    for t in task_list:
+        assert t.source == SOURCE
