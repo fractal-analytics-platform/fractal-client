@@ -34,6 +34,24 @@ def slugify(value: str):
 
 
 async def execute_command(*, cwd: Path, command: str) -> str:
+    """
+    Execute arbitrary command
+
+    If the command returns a return code different from zero, a RuntimeError
+    containing the stderr is raised.
+
+    Parameters
+    ----------
+    cwd : Path
+        the working directory for the command execution
+    command : str
+        the command to execute
+
+    Return
+    ------
+    stdout : str
+        the stdout from the command execution
+    """
     command_split = shlex_split(command)
     cmd, *args = command_split
 
