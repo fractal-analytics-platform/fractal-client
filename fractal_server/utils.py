@@ -11,18 +11,37 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import asyncio
+from collections.abc import MutableMapping
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from shlex import split as shlex_split
+from typing import Any
 from warnings import warn as _warn
 
 from .config import Settings
 from .syringe import Inject
 
 
-def warn(message, settings: Settings = Inject(Settings)):
+def get_timestamp() -> datetime:
+    return datetime.now(tz=timezone.utc)
+
+
+def popget(d: MutableMapping, key: str, default: Any = None) -> Any:
+    """
+    Pop and return mapping item if possible or return default
+    """
+    try:
+        return d.pop(key)
+    except KeyError:
+        return default
+
+
+def warn(message):
     """
     Make sure that warnings do not make their way to staing and production
     """
+    settings = Inject(Settings)
     if settings.DEPLOYMENT_TYPE in ["testing", "development"]:
         _warn(message, RuntimeWarning)
     else:

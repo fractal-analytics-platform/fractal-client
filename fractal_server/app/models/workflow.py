@@ -10,10 +10,10 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
+from ...utils import popget
 from ..db import AsyncSession
 from ..schemas.workflow import _WorkflowBase
 from ..schemas.workflow import _WorkflowTaskBase
-from .models_utils import popget
 from .task import Task
 
 

@@ -1,34 +1,10 @@
 import json
-from pathlib import Path
 
-import pytest
 from devtools import debug
 
-from fractal_server.tasks.collection import _execute_command
 from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
 from fractal_server.tasks.collection import load_manifest
-
-
-async def test_execute_command(tmp_path):
-    """
-    GIVEN the `pwd` command and a path
-    WHEN executed via _execute_command with the path as working directory
-    THEN the command returns the full path
-    """
-    res = await _execute_command(cwd=tmp_path, command="pwd")
-    assert res.strip() == tmp_path.as_posix()
-
-
-async def test_execute_command_fail():
-    """
-    GIVEN a unix command that fails
-    WHEN the command is executed via _execute_command
-    THEN an error is raised
-    """
-    with pytest.raises(RuntimeError) as e:
-        await _execute_command(cwd=Path("/tmp"), command="ls __NOEXIST__")
-    debug(e.value)
 
 
 async def test_init_venv(tmp_path):
