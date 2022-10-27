@@ -44,7 +44,9 @@ async def create_package_environment(
     settings = Inject(get_settings)
     # assemble installation path
     package_dir = f"{package}{version or ''}"
-    env_path = settings.FRACTAL_ROOT / user / package_dir
+    if settings.FRACTAL_ROOT:
+        env_path = settings.FRACTAL_ROOT / user / package_dir
+    # TODO check the access right of the env_path and subdirs
     env_path.mkdir(exist_ok=True, parents=True)
 
     if env_type == "venv":
@@ -57,11 +59,11 @@ async def create_package_environment(
     else:
         raise ValueError(f"Environment type {env_type} not supported")
 
+    source = f"pypi:{package}=={version}"
     task_list = load_manifest(
         package_root=package_root,
         python_bin=python_bin,
-        package=package,
-        version=version,
+        source=source,
     )
     return task_list
 
@@ -69,22 +71,16 @@ async def create_package_environment(
 def load_manifest(
     package_root: Path,
     python_bin: Path,
-    package: str,
-    version: Optional[str],
+    source: str,
 ) -> List[TaskCreate]:
 
-    source = f"pypi:{package}=={version}"
     manifest_file = package_root / "__FRACTAL__MANIFEST__.json"
     with manifest_file.open("r") as f:
         manifest_dict = json.load(f)
 
-    from devtools import debug
-
-    debug(manifest_dict)
     task_list = []
     if str(manifest_dict["manifest_version"]) == "1":
         manifest = ManifestV1(**manifest_dict)
-        debug(manifest)
 
         for t in manifest.task_list:
             task_executable = package_root / t.executable
@@ -129,7 +125,7 @@ async def _create_venv_install_package(
     return python_bin, package_root
 
 
-async def _init_venv(*, path: Path, python_version: str) -> None:
+async def _init_venv(*, path: Path, python_version: str) -> Path:
     """
     Set a virtual environment at `path/venv`
 
