@@ -34,7 +34,6 @@ class _TaskBase(SQLModel):
     """
 
     name: str
-    module: str
     command: str
     source: str
     input_type: str
@@ -50,7 +49,6 @@ class TaskUpdate(_TaskBase):
     name: Optional[str]  # type:ignore
     input_type: Optional[str]  # type:ignore
     output_type: Optional[str]  # type:ignore
-    module: Optional[str]  # type:ignore
     command: Optional[str]  # type:ignore
     source: Optional[str]  # type:ignore
     default_args: Optional[Dict[str, Any]] = None  # type:ignore
