@@ -344,6 +344,7 @@ workflow_new_parser.add_argument(
     "id",
     help="Workflow id",
 )
+
 # workflow show
 workflow_new_parser = workflow_subparsers.add_parser(
     "show", help="Show a workflow"
@@ -352,6 +353,49 @@ workflow_new_parser.add_argument(
     "id",
     help="Workflow id",
 )
+
+# workflow add task
+workflow_add_task_parser = workflow_subparsers.add_parser(
+    "add-task", help="Add a new task to a specific workflow"
+)
+workflow_add_task_parser.add_argument(
+    "id",
+    help="Workflow id",
+)
+workflow_add_task_parser.add_argument(
+    "task_id",
+    help="Task id",
+)
+workflow_add_task_parser.add_argument("--order", help="")
+
+# workflow remove task
+workflow_remove_task_parser = workflow_subparsers.add_parser(
+    "rm-task", help="Remove a task in a specific workflow"
+)
+workflow_remove_task_parser.add_argument(
+    "id",
+    help="Workflow id",
+)
+workflow_remove_task_parser.add_argument(
+    "workflow_task_id",
+    help="Workflow task Id, the Id of a task inside the list of tasks",
+)
+
+# workflow edit
+workflow_edit_parser = workflow_subparsers.add_parser(
+    "edit", help="Edit workflow", argument_default=ap.SUPPRESS
+)
+workflow_edit_parser.add_argument(
+    "id",
+    help="Workflow id",
+)
+workflow_edit_parser.add_argument("--name", help="New workflow name")
+
+workflow_edit_parser.add_argument(
+    "--project-id",
+    help="Change the project associated with the current workflow",
+)
+
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
