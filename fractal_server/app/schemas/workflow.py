@@ -49,4 +49,5 @@ class WorkflowCreate(_WorkflowBase):
 
 
 class WorkflowUpdate(_WorkflowBase):
-    pass
+    name: Optional[str]
+    project_id: Optional[int]
