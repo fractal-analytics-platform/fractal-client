@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Literal
+from typing import Union
 
 from parsl.app.app import join_app
 from parsl.app.app import python_app
@@ -11,6 +13,8 @@ from parsl.app.python import PythonApp
 from parsl.dataflow.dflow import DataFlowKernel
 from parsl.dataflow.futures import AppFuture
 
+from ....config import get_settings
+from ....syringe import Inject
 from ...models import Workflow
 from ...models import WorkflowTask
 from .._common import call_single_task
@@ -40,20 +44,26 @@ def _parallel_task_assembly(
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
     parallelization_level: str,
+    executors: Union[List[str], Literal["all"]],
 ) -> AppFuture:  # AppFuture[TaskParameters]
+
+    # Define PythonApp for execution of sigle instance of parallel task
     _this_parallel_component_app = PythonApp(
-        _this_parallel_component, data_flow_kernel=data_flow_kernel
+        _this_parallel_component,
+        data_flow_kernel=data_flow_kernel,
+        executors=executors,
     )
 
+    # Define PythonApp for execution of sigle instance of parallel task
     _collect_results_and_assemble_history_app = PythonApp(
         _collect_results_and_assemble_history,
         data_flow_kernel=data_flow_kernel,
+        executors=executors,
     )
 
     @join_app(data_flow_kernel=data_flow_kernel)
     def _parallel_task_app_future_app(task_pars) -> AppFuture:
         component_list = task_pars.metadata[task.parallelization_level]
-        # app che colleziona i risultati
         dependency_futures = [
             _this_parallel_component_app(
                 task_pars=task_pars,
@@ -79,12 +89,13 @@ def _serial_task_assembly(
     task: WorkflowTask,
     task_pars_depend_future: AppFuture,
     workflow_dir: Path,
+    executors: Union[List[str], Literal["all"]],
 ) -> AppFuture:  # AppFuture[TaskParameters]
     if not workflow_dir:
         raise RuntimeError
 
     # assemble full args
-    @python_app(data_flow_kernel=data_flow_kernel)
+    @python_app(data_flow_kernel=data_flow_kernel, executors=executors)
     def _this_app(task_pars):
         return call_single_task(
             task=task,
@@ -104,6 +115,8 @@ def recursive_task_assembly(
     workflow_dir: Path,
 ) -> AppFuture:
 
+    settings = Inject(get_settings)
+
     logger = logging.getLogger(task_pars.logger_name)
 
     try:
@@ -113,8 +126,24 @@ def recursive_task_assembly(
         pseudo_future: Future = Future()
         pseudo_future.set_result(task_pars)
         return pseudo_future
+
+    # Extract and validate task executor
+    executors: Union[List[str], Literal["all"]]
+    if this_task.executor:
+        # Verify match between new_task_executor and available executors
+        if this_task.executor not in data_flow_kernel.executors.keys():
+            msg = (
+                f"{this_task.executor=} is not in "
+                f"{data_flow_kernel.executors.keys()=}"
+            )
+            logger.error(msg)
+            raise ValueError(msg)
+        executors = [this_task.executor] if this_task.executor else "all"
+    else:
+        executors = [settings.RUNNER_DEFAULT_EXECUTOR]
+
     # step n => step n+1
-    logger.debug(f"submitting task {this_task.order=}")
+    logger.debug(f"submitting task {this_task.order=} to {executors=}")
     parallelization_level = this_task.task.parallelization_level
 
     task_pars_depend_future = recursive_task_assembly(
@@ -131,6 +160,7 @@ def recursive_task_assembly(
             task_pars_depend_future=task_pars_depend_future,
             workflow_dir=workflow_dir,
             parallelization_level=parallelization_level,
+            executors=executors,
         )
     else:
         this_future = _serial_task_assembly(
@@ -138,6 +168,7 @@ def recursive_task_assembly(
             task=this_task,
             task_pars_depend_future=task_pars_depend_future,
             workflow_dir=workflow_dir,
+            executors=executors,
         )
 
     return this_future
@@ -175,6 +206,7 @@ async def process_workflow(
         username=username,
         logger_name=logger_name,
     ) as dfk:
+        logger.info("Start definition of app futures (from last to first)")
         final_metadata_future = recursive_task_assembly(
             data_flow_kernel=dfk,
             task_list=workflow.task_list,
@@ -186,9 +218,11 @@ async def process_workflow(
             ),
             workflow_dir=workflow_dir,
         )
-        logger.info("Definition of app futures complete, now start execution.")
+        logger.info("Definition of app futures complete")
+        logger.info("Start execution")
         final_metadata = await async_wrap(get_app_future_result)(
             app_future=final_metadata_future
         )
+        logger.info("Execution complete")
 
     return final_metadata

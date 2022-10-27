@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from ...config import settings
+from ...config import get_settings
+from ...syringe import Inject
 from .v1.dataset import router as dataset_router
 from .v1.project import router as project_router
 from .v1.task import router as task_router
@@ -20,6 +21,7 @@ router_v1.include_router(
 
 @router_default.get("/alive/")
 async def alive():
+    settings = Inject(get_settings)
     return dict(
         alive=True,
         deployment_type=settings.DEPLOYMENT_TYPE,
