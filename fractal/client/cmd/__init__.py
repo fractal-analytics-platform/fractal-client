@@ -18,10 +18,11 @@ from ._project import project_show
 from ._task import task_edit
 from ._task import task_list
 from ._task import task_new
+from ._workflow import workflow_add_task
 from ._workflow import workflow_delete
 from ._workflow import workflow_edit
-from ._workflow import workflow_list
 from ._workflow import workflow_new
+from ._workflow import workflow_remove_task
 from ._workflow import workflow_show
 
 # from ._task import task_add_subtask
@@ -147,9 +148,7 @@ async def task(
 async def workflow(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
-    if subcmd == "list":
-        iface = await workflow_list(client, **kwargs)
-    elif subcmd == "show":
+    if subcmd == "show":
         iface = await workflow_show(client, **kwargs)
     elif subcmd == "new":
         iface = await workflow_new(client, batch=batch, **kwargs)
@@ -157,10 +156,10 @@ async def workflow(
         iface = await workflow_edit(client, **kwargs)
     elif subcmd == "delete":
         iface = await workflow_delete(client, **kwargs)
-    # elif subcmd == "add-subtask":
-    #     iface = await task_add_subtask(client, batch=batch, **kwargs)
-    # elif subcmd == "apply":
-    #     iface = await task_apply(client, **kwargs)
+    elif subcmd == "add-task":
+        iface = await workflow_add_task(client, **kwargs)
+    elif subcmd == "rm-task":
+        iface = await workflow_remove_task(client, **kwargs)
     return iface
 
 
