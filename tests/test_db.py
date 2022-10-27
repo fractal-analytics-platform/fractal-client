@@ -34,6 +34,7 @@ async def test_sync_db(db_sync, db):
             output_type="zarr",
             command="cmd",
             source="/source",
+            module="module",
         )
     )
     await db.commit()
