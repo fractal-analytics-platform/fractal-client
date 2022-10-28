@@ -20,9 +20,9 @@ from fractal_server.app.models import Task
 from fractal_server.app.models import Workflow
 from fractal_server.app.runner import _backends
 from fractal_server.app.runner.common import close_job_logger
-from fractal_server.app.runner.common import set_job_logger
 from fractal_server.tasks import dummy
 from fractal_server.tasks import dummy_parallel
+from fractal_server.utils import set_logger
 
 
 @pytest.mark.parametrize(
@@ -78,7 +78,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
 
     # process workflow
     logger_name = "job_logger"
-    logger = set_job_logger(
+    logger = set_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,

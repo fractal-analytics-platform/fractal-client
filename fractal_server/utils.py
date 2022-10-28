@@ -11,12 +11,14 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import asyncio
+import logging
 from collections.abc import MutableMapping
 from datetime import datetime
 from datetime import timezone
 from pathlib import Path
 from shlex import split as shlex_split
 from typing import Any
+from typing import Optional
 from warnings import warn as _warn
 
 from .config import Settings
@@ -52,7 +54,28 @@ def slugify(value: str):
     return value.lower().replace(" ", "_")
 
 
-async def execute_command(*, cwd: Path, command: str) -> str:
+def set_logger(
+    *,
+    logger_name: str,
+    level: int = logging.WARNING,
+    log_file_path: Optional[Path] = None,
+    formatter: Optional[logging.Formatter] = None,
+) -> logging.Logger:
+    """
+    Set up and return a logger
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    if log_file_path:
+        file_handler = logging.FileHandler(log_file_path, mode="a")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    return logger
+
+
+async def execute_command(
+    *, cwd: Path, command: str, logger_name: Optional[str] = None
+) -> str:
     """
     Execute arbitrary command
 
@@ -82,6 +105,8 @@ async def execute_command(*, cwd: Path, command: str) -> str:
         cwd=cwd,
     )
     stdout, stderr = await proc.communicate()
+    logger = logging.getLogger(logger_name)
+    logger.debug(f"Subprocess call to: {command}")
     if proc.returncode != 0:
         raise RuntimeError(stderr.decode("utf-8"))
     return stdout.decode("utf-8")
