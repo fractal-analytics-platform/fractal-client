@@ -46,7 +46,6 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         name="dummy",
         command=f"python {dummy.__file__}",
         source=dummy.__file__,
-        module="module",
         input_type="Any",
         output_type="Any",
     )
@@ -55,7 +54,6 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         name="dummy_parallel",
         command=f"python {dummy_parallel.__file__}",
         source=dummy.__file__,
-        module="module",
         input_type="Any",
         output_type="Any",
         default_args=dict(parallelization_level="index"),

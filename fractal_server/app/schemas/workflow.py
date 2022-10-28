@@ -49,5 +49,5 @@ class WorkflowCreate(_WorkflowBase):
 
 
 class WorkflowUpdate(_WorkflowBase):
-    name: Optional[str]
-    project_id: Optional[int]
+    name: Optional[str]  # type: ignore
+    project_id: Optional[int]  # type: ignore

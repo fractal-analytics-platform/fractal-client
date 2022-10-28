@@ -326,7 +326,6 @@ async def task_factory(db: AsyncSession):
             output_type="zarr",
             command="cmd",
             source="source",
-            module="module",
         )
         args = dict(**defaults)
         args.update(kwargs)
