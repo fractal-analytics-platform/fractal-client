@@ -94,7 +94,6 @@ async def get_workflow(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # TODO move check autorization as first thing (issue #171)
     workflow = await db.get(Workflow, _id)
     if not workflow:
         raise HTTPException(
