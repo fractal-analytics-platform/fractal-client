@@ -88,3 +88,8 @@ def test_load_manifest(tmp_path):
     assert len(task_list) == 1
     for t in task_list:
         assert t.source == SOURCE
+
+
+async def test_collection_api(dummy_task_package):
+    debug(dummy_task_package)
+    raise NotImplementedError
