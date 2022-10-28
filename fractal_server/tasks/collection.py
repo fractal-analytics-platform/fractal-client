@@ -33,8 +33,20 @@ def create_package_dir_pypi(
 ) -> Path:
     settings = Inject(get_settings)
     # assemble installation path
+    package_path = Path(package)
+    if package_path.exists():
+        # The package is a local package in the filesystem rather than a
+        # remote PyPI package. Extract package and version from basename
+        wheel_filename = package_path.name
+        from devtools import debug
+
+        debug(wheel_filename)
+        package, version, *_rest = wheel_filename.split("-")
+
     package_dir = f"{package}{version or ''}"
     if settings.FRACTAL_ROOT:
+        # It should be always true, we are only checking that the system is
+        # fully configured
         env_path = settings.FRACTAL_ROOT / user / package_dir
     # TODO check the access right of the env_path and subdirs
     env_path.mkdir(exist_ok=False, parents=True)
@@ -141,7 +153,7 @@ async def _create_venv_install_package(
     return python_bin, package_root
 
 
-async def _init_venv(*, path: Path, python_version: str) -> Path:
+async def _init_venv(*, path: Path, python_version: str = "3.8") -> Path:
     """
     Set a virtual environment at `path/venv`
 
