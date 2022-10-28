@@ -90,6 +90,22 @@ def test_load_manifest(tmp_path):
         assert t.source == SOURCE
 
 
-async def test_collection_api(dummy_task_package):
-    debug(dummy_task_package)
+async def test_collection_api(client, dummy_task_package, MockCurrentUser):
+    """
+    GIVEN a package in a format that `pip` understands
+    WHEN the api to collect tasks from that package is called
+    THEN an environment is created, the package is installed and the task
+         collected
+    """
+    PREFIX = "/api/v1/task"
+
+    task_collection = dict(
+        collection_type="pypi", package=dummy_task_package.as_posix()
+    )
+
+    async with MockCurrentUser(persist=True):
+        res = await client.post(f"{PREFIX}/pypi/", json=task_collection)
+        debug(res.json())
+        assert res.status_code == 201
+
     raise NotImplementedError

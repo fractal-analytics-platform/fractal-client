@@ -1,6 +1,5 @@
 from typing import Any
 from typing import Dict
-from typing import Literal
 from typing import Optional
 
 from pydantic import BaseModel
@@ -63,11 +62,10 @@ class _TaskCollectBase(BaseModel):
 
 
 class TaskCollectPypi(_TaskCollectBase):
-    collection_type: Literal["pypi", "git"] = "pypi"
     package: str
     version: Optional[str]
-    python_version: Optional[str]
-    package_extras: str
+    python_version: Optional[str] = "3.8"
+    package_extras: Optional[str]
 
 
 class TaskRead(_TaskBase):
