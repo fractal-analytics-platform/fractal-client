@@ -10,6 +10,7 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import logging
 from os import environ
 from os import getenv
 from os.path import abspath
@@ -151,6 +152,7 @@ class Settings(BaseSettings):
     FRACTAL_ROOT: Optional[Path]  # Path = _DEVNULL
     RUNNER_BACKEND: str = "process"
     RUNNER_ROOT_DIR: Path = Path("artifacts")
+    FRACTAL_LOGGING_LEVEL: int = logging.WARNING
 
     RUNNER_CONFIG: str = "local"
     RUNNER_DEFAULT_EXECUTOR: str = "cpu-low"

@@ -21,7 +21,7 @@ from typing import Any
 from typing import Optional
 from warnings import warn as _warn
 
-from .config import Settings
+from .config import get_settings
 from .syringe import Inject
 
 
@@ -43,7 +43,7 @@ def warn(message):
     """
     Make sure that warnings do not make their way to staing and production
     """
-    settings = Inject(Settings)
+    settings = Inject(get_settings)
     if settings.DEPLOYMENT_TYPE in ["testing", "development"]:
         _warn(message, RuntimeWarning)
     else:
@@ -57,13 +57,16 @@ def slugify(value: str):
 def set_logger(
     *,
     logger_name: str,
-    level: int = logging.WARNING,
     log_file_path: Optional[Path] = None,
+    level: Optional[int] = None,
     formatter: Optional[logging.Formatter] = None,
 ) -> logging.Logger:
     """
     Set up and return a logger
     """
+    if not level:
+        settings = Inject(get_settings)
+        level = settings.FRACTAL_LOGGING_LEVEL
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
     if log_file_path:
@@ -97,6 +100,8 @@ async def execute_command(
     command_split = shlex_split(command)
     cmd, *args = command_split
 
+    logger = set_logger(logger_name=logger_name)
+    logger.debug(command)
     proc = await asyncio.create_subprocess_exec(
         cmd,
         *args,
