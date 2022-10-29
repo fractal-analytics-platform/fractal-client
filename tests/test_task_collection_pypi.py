@@ -2,6 +2,7 @@ import json
 
 from devtools import debug
 
+from fractal_server.app.schemas import TaskCollectPip
 from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
 from fractal_server.tasks.collection import load_manifest
@@ -40,7 +41,8 @@ async def test_pip_install(tmp_path):
 
     await _init_venv(path=venv_path, python_version="3.8")
     location = await _pip_install(
-        venv_path=venv_path, package=PACKAGE, version=VERSION
+        venv_path=venv_path,
+        task_pkg=TaskCollectPip(package=PACKAGE, version=VERSION),
     )
     debug(location)
     assert PACKAGE in location.as_posix()
@@ -104,7 +106,7 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
     )
 
     async with MockCurrentUser(persist=True):
-        res = await client.post(f"{PREFIX}/pypi/", json=task_collection)
+        res = await client.post(f"{PREFIX}/pip/", json=task_collection)
         debug(res.json())
         assert res.status_code == 201
 

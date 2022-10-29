@@ -7,7 +7,7 @@ from sqlmodel import Field  # type: ignore
 from sqlmodel import SQLModel
 
 
-__all__ = ("TaskCreate", "TaskUpdate", "TaskRead", "TaskCollectPypi")
+__all__ = ("TaskCreate", "TaskUpdate", "TaskRead", "TaskCollectPip")
 
 
 class _TaskBase(SQLModel):
@@ -61,11 +61,15 @@ class _TaskCollectBase(BaseModel):
     pass
 
 
-class TaskCollectPypi(_TaskCollectBase):
+class TaskCollectPip(_TaskCollectBase):
     package: str
     version: Optional[str]
-    python_version: Optional[str] = "3.8"
+    python_version: str = "3.8"
     package_extras: Optional[str]
+
+    @property
+    def source(self):
+        return f"pypi:{self.package}=={self.version}"
 
 
 class TaskRead(_TaskBase):

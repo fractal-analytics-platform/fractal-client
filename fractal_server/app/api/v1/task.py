@@ -7,14 +7,14 @@ from fastapi import Depends
 from fastapi import status
 from sqlmodel import select
 
-from ....tasks.collection import create_package_dir_pypi
-from ....tasks.collection import create_package_environment_pypi
+from ....tasks.collection import create_package_dir_pip
+from ....tasks.collection import create_package_environment_pip
 from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
 from ...db import get_sync_db
 from ...models import Task
-from ...schemas import TaskCollectPypi
+from ...schemas import TaskCollectPip
 from ...schemas import TaskCreate
 from ...schemas import TaskRead
 from ...schemas import TaskUpdate
@@ -59,27 +59,32 @@ async def create_task_headless(
 
 
 @router.post(
-    "/pypi/",
+    "/pip/",
     response_model=List[TaskRead],
     status_code=status.HTTP_201_CREATED,
 )
-async def create_task_pypi(
-    task_collect: TaskCollectPypi,
-    collection_type: str = "pypi",
+async def create_task_pip(
+    task_collect: TaskCollectPip,
+    collection_type: str = "pip",
     global_task: bool = True,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> Task:
 
-    env_path = create_package_dir_pypi(**task_collect.dict())
-    task_list = await create_package_environment_pypi(
-        env_path=env_path, **task_collect.dict()
+    env_path = create_package_dir_pip(task_pkg=task_collect)
+    task_list = await create_package_environment_pip(
+        env_path=env_path, task_pkg=task_collect
     )
     task_db_list = await create_task_headless(
         task_list=task_list,
         db=db,
         global_task=global_task,
     )
+
+    from devtools import debug
+
+    debug(task_db_list)
+    raise NotImplementedError
 
     return task_db_list
 

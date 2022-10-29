@@ -14,34 +14,38 @@ import json
 from pathlib import Path
 from typing import List
 from typing import Literal
-from typing import Optional
 from typing import Tuple
 
 from ..app.schemas import ManifestV1
+from ..app.schemas import TaskCollectPip
 from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
 from ..utils import execute_command
 
 
-def create_package_dir_pypi(
+def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
+    """
+    Extract package name and version from package files such as wheel files.
+    """
+    wheel_filename = wheel_path.name
+    package, version, *_rest = wheel_filename.split("-")
+    return package, version
+
+
+def create_package_dir_pip(
     *,
-    package: str,
-    version: Optional[str],
+    task_pkg: TaskCollectPip,
     user: str = ".fractal",
     **_,
 ) -> Path:
     settings = Inject(get_settings)
     # assemble installation path
-    package_path = Path(package)
+    package_path = Path(task_pkg.package)
     if package_path.exists():
         # The package is a local package in the filesystem rather than a
         # remote PyPI package. Extract package and version from basename
-        wheel_filename = package_path.name
-        from devtools import debug
-
-        debug(wheel_filename)
-        package, version, *_rest = wheel_filename.split("-")
+        package, version = _package_from_path(package_path)
 
     package_dir = f"{package}{version or ''}"
     if settings.FRACTAL_ROOT:
@@ -53,15 +57,12 @@ def create_package_dir_pypi(
     return env_path
 
 
-async def create_package_environment_pypi(
+async def create_package_environment_pip(
     *,
+    task_pkg: TaskCollectPip,
     env_path: Path,
-    package: str,
-    version: Optional[str],
     user: str = ".fractal",
-    python_version: str = "3.8",
     env_type: Literal["venv"] = "venv",
-    package_extras: Optional[str] = None,
 ) -> List[TaskCreate]:
     """
     Create environment and install package
@@ -70,19 +71,15 @@ async def create_package_environment_pypi(
     if env_type == "venv":
         python_bin, package_root = await _create_venv_install_package(
             path=env_path,
-            package=package,
-            version=version,
-            python_version=python_version,
-            package_extras=package_extras,
+            task_pkg=task_pkg,
         )
     else:
         raise ValueError(f"Environment type {env_type} not supported")
 
-    source = f"pypi:{package}=={version}"
     task_list = load_manifest(
         package_root=package_root,
         python_bin=python_bin,
-        source=source,
+        source=task_pkg.source,
     )
     return task_list
 
@@ -116,11 +113,8 @@ def load_manifest(
 
 async def _create_venv_install_package(
     *,
+    task_pkg: TaskCollectPip,
     path: Path,
-    package: str,
-    version: Optional[str],
-    python_version: str,
-    package_extras: Optional[str],
 ) -> Tuple[Path, Path]:
     """
     Create venv and install package
@@ -129,12 +123,9 @@ async def _create_venv_install_package(
     ----------
     path : Path
         the directory in which to create the environment
-    package : str
-        package name
-    version : str, optional
-        package version
-    python_version : str
-        version of the Python interpreter
+    task_pkg : TaskCollectPip
+        object containing the different metadata required to install the
+        package
 
     Return
     ------
@@ -143,13 +134,10 @@ async def _create_venv_install_package(
     package_root : Path
         the location of the package manifest
     """
-    python_bin = await _init_venv(path=path, python_version=python_version)
-    package_root = await _pip_install(
-        venv_path=path,
-        package=package,
-        version=version,
-        package_extras=package_extras,
+    python_bin = await _init_venv(
+        path=path, python_version=task_pkg.python_version
     )
+    package_root = await _pip_install(venv_path=path, task_pkg=task_pkg)
     return python_bin, package_root
 
 
@@ -170,15 +158,15 @@ async def _init_venv(*, path: Path, python_version: str = "3.8") -> Path:
         path to python interpreter
     """
     interpreter = f"python{python_version}"
-    await execute_command(cwd=path, command=f"{interpreter} -m venv venv")
+    await execute_command(
+        cwd=path, command=f"{interpreter} -m venv venv", logger_name="fractal"
+    )
     return path / "venv/bin/python"
 
 
 async def _pip_install(
     venv_path: Path,
-    package: str,
-    version: Optional[str],
-    package_extras: Optional[str] = None,
+    task_pkg: TaskCollectPip,
 ) -> Path:
     """
     Install package in venv
@@ -189,14 +177,18 @@ async def _pip_install(
         the location of the package manifest
     """
     pip = venv_path / "venv/bin/pip"
-    version_string = f"=={version}" if version else ""
-    extras = f"[{package_extras}]" if package_extras else ""
+    version_string = f"=={task_pkg.version}" if task_pkg.version else ""
+    extras = f"[{task_pkg.package_extras}]" if task_pkg.package_extras else ""
 
-    cmd_install = f"{pip} install {package}{extras}{version_string}"
-    cmd_inspect = f"{pip} show -f {package}"
+    cmd_install = f"{pip} install {task_pkg.package}{extras}{version_string}"
+    cmd_inspect = f"{pip} show -f {task_pkg.package}"
 
-    await execute_command(cwd=venv_path, command=cmd_install)
-    stdout_inspect = await execute_command(cwd=venv_path, command=cmd_inspect)
+    await execute_command(
+        cwd=venv_path, command=cmd_install, logger_name="fractal"
+    )
+    stdout_inspect = await execute_command(
+        cwd=venv_path, command=cmd_inspect, logger_name="fractal"
+    )
 
     location = Path(
         next(
@@ -205,7 +197,7 @@ async def _pip_install(
             if line.startswith("Location:")
         )
     )
-    package_root = location / package.replace("-", "_")
+    package_root = location / task_pkg.package.replace("-", "_")
     if not package_root.exists():
         raise RuntimeError(
             "Could not determine package installation location."
