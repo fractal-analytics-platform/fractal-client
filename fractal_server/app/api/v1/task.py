@@ -7,6 +7,7 @@ from fastapi import Depends
 from fastapi import status
 from sqlmodel import select
 
+from ....tasks.collection import _TaskCollectPip
 from ....tasks.collection import create_package_dir_pip
 from ....tasks.collection import create_package_environment_pip
 from ...db import AsyncSession
@@ -71,21 +72,16 @@ async def create_task_pip(
     db: AsyncSession = Depends(get_db),
 ) -> Task:
 
-    env_path = create_package_dir_pip(task_pkg=task_collect)
+    task_pkg = _TaskCollectPip(**task_collect.dict())
+    env_path = create_package_dir_pip(task_pkg=task_pkg)
     task_list = await create_package_environment_pip(
-        env_path=env_path, task_pkg=task_collect
+        env_path=env_path, task_pkg=task_pkg
     )
     task_db_list = await create_task_headless(
         task_list=task_list,
         db=db,
         global_task=global_task,
     )
-
-    from devtools import debug
-
-    debug(task_db_list)
-    raise NotImplementedError
-
     return task_db_list
 
 

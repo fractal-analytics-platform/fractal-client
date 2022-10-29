@@ -2,9 +2,9 @@ import json
 
 from devtools import debug
 
-from fractal_server.app.schemas import TaskCollectPip
 from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
+from fractal_server.tasks.collection import _TaskCollectPip
 from fractal_server.tasks.collection import load_manifest
 
 
@@ -42,7 +42,7 @@ async def test_pip_install(tmp_path):
     await _init_venv(path=venv_path, python_version="3.8")
     location = await _pip_install(
         venv_path=venv_path,
-        task_pkg=TaskCollectPip(package=PACKAGE, version=VERSION),
+        task_pkg=_TaskCollectPip(package=PACKAGE, version=VERSION),
     )
     debug(location)
     assert PACKAGE in location.as_posix()
@@ -68,7 +68,7 @@ def test_load_manifest(tmp_path):
 
     package_root = tmp_path / "package"
     package_root.mkdir(exist_ok=True, parents=True)
-    manifest_path = package_root / "__FRACTAL__MANIFEST__.json"
+    manifest_path = package_root / "__FRACTAL_MANIFEST__.json"
     executable_path = package_root / TASK_EXECUTABLE
     python_bin = package_root / "my/custon/python_bin"
     SOURCE = "my:source==123"
@@ -90,24 +90,3 @@ def test_load_manifest(tmp_path):
     assert len(task_list) == 1
     for t in task_list:
         assert t.source == SOURCE
-
-
-async def test_collection_api(client, dummy_task_package, MockCurrentUser):
-    """
-    GIVEN a package in a format that `pip` understands
-    WHEN the api to collect tasks from that package is called
-    THEN an environment is created, the package is installed and the task
-         collected
-    """
-    PREFIX = "/api/v1/task"
-
-    task_collection = dict(
-        collection_type="pypi", package=dummy_task_package.as_posix()
-    )
-
-    async with MockCurrentUser(persist=True):
-        res = await client.post(f"{PREFIX}/pip/", json=task_collection)
-        debug(res.json())
-        assert res.status_code == 201
-
-    raise NotImplementedError

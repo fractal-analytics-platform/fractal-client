@@ -14,7 +14,10 @@ import json
 from pathlib import Path
 from typing import List
 from typing import Literal
+from typing import Optional
 from typing import Tuple
+
+from pydantic import root_validator
 
 from ..app.schemas import ManifestV1
 from ..app.schemas import TaskCollectPip
@@ -22,6 +25,45 @@ from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
 from ..utils import execute_command
+
+
+class _TaskCollectPip(TaskCollectPip):
+    """
+    Internal TaskCollectPip schema
+
+    The difference with its parent class is that we check if the package
+    corresponds to a path in the filesystem.
+    """
+
+    package_path: Optional[Path] = None
+
+    @property
+    def is_local_package(self) -> bool:
+        return bool(self.package_path)
+
+    @root_validator(pre=True)
+    def check_local_package(cls, values):
+        """
+        Checks if package corresponds to an existing path on the filesystem
+
+        In this case, the user is providing directly a package file, rather
+        than a remote one from PyPI. We set the `package_path` attribute and
+        get the actual package name and version from the package file name.
+        """
+        package_path = Path(values["package"])
+        if package_path.exists():
+            values["package_path"] = package_path
+            values["package"], values["version"], *_ = package_path.name.split(
+                "-"
+            )
+        return values
+
+    @property
+    def source(self):
+        if self.is_local_package:
+            return f"pip-local:{self.package_path.name}"
+        else:
+            return f"pip:{self.package}=={self.version}"
 
 
 def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
@@ -35,7 +77,7 @@ def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
 
 def create_package_dir_pip(
     *,
-    task_pkg: TaskCollectPip,
+    task_pkg: _TaskCollectPip,
     user: str = ".fractal",
     **_,
 ) -> Path:
@@ -47,7 +89,7 @@ def create_package_dir_pip(
         # remote PyPI package. Extract package and version from basename
         package, version = _package_from_path(package_path)
 
-    package_dir = f"{package}{version or ''}"
+    package_dir = f"{task_pkg.package}{task_pkg.version or ''}"
     if settings.FRACTAL_ROOT:
         # It should be always true, we are only checking that the system is
         # fully configured
@@ -59,7 +101,7 @@ def create_package_dir_pip(
 
 async def create_package_environment_pip(
     *,
-    task_pkg: TaskCollectPip,
+    task_pkg: _TaskCollectPip,
     env_path: Path,
     user: str = ".fractal",
     env_type: Literal["venv"] = "venv",
@@ -90,7 +132,7 @@ def load_manifest(
     source: str,
 ) -> List[TaskCreate]:
 
-    manifest_file = package_root / "__FRACTAL__MANIFEST__.json"
+    manifest_file = package_root / "__FRACTAL_MANIFEST__.json"
     with manifest_file.open("r") as f:
         manifest_dict = json.load(f)
 
@@ -113,7 +155,7 @@ def load_manifest(
 
 async def _create_venv_install_package(
     *,
-    task_pkg: TaskCollectPip,
+    task_pkg: _TaskCollectPip,
     path: Path,
 ) -> Tuple[Path, Path]:
     """
@@ -123,7 +165,7 @@ async def _create_venv_install_package(
     ----------
     path : Path
         the directory in which to create the environment
-    task_pkg : TaskCollectPip
+    task_pkg : _TaskCollectPip
         object containing the different metadata required to install the
         package
 
@@ -166,7 +208,7 @@ async def _init_venv(*, path: Path, python_version: str = "3.8") -> Path:
 
 async def _pip_install(
     venv_path: Path,
-    task_pkg: TaskCollectPip,
+    task_pkg: _TaskCollectPip,
 ) -> Path:
     """
     Install package in venv
@@ -177,10 +219,17 @@ async def _pip_install(
         the location of the package manifest
     """
     pip = venv_path / "venv/bin/pip"
-    version_string = f"=={task_pkg.version}" if task_pkg.version else ""
-    extras = f"[{task_pkg.package_extras}]" if task_pkg.package_extras else ""
 
-    cmd_install = f"{pip} install {task_pkg.package}{extras}{version_string}"
+    if task_pkg.is_local_package:
+        pip_install_str = task_pkg.package_path.as_posix()  # type: ignore
+    else:
+        version_string = f"=={task_pkg.version}" if task_pkg.version else ""
+        extras = (
+            f"[{task_pkg.package_extras}]" if task_pkg.package_extras else ""
+        )
+        pip_install_str = f"{task_pkg.package}{extras}{version_string}"
+
+    cmd_install = f"{pip} install {pip_install_str}"
     cmd_inspect = f"{pip} show -f {task_pkg.package}"
 
     await execute_command(

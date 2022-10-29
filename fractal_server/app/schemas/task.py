@@ -38,7 +38,7 @@ class _TaskBase(SQLModel):
     input_type: str
     output_type: str
     default_args: Dict[str, Any] = Field(default={})
-    meta: Dict[str, Any] = Field(default={})
+    meta: Optional[Dict[str, Any]] = Field(default={})
 
     class Config:
         arbitrary_types_allowed = True
@@ -66,10 +66,6 @@ class TaskCollectPip(_TaskCollectBase):
     version: Optional[str]
     python_version: str = "3.8"
     package_extras: Optional[str]
-
-    @property
-    def source(self):
-        return f"pypi:{self.package}=={self.version}"
 
 
 class TaskRead(_TaskBase):

@@ -15,12 +15,26 @@ async def test_task_get_list(db, client, task_factory, MockCurrentUser):
         assert data[2]["id"] == t2.id
 
 
-async def test_task_create(db, client, MockCurrentUser):
+async def test_collection_api(client, dummy_task_package, MockCurrentUser):
     """
-    GIVEN a task package with a valid __FRACTAL_MANIFEST__
-    WHEN it is passed to `POST /task/pypi/`
-    THEN
-        * the task collection is started in the background
-        * at its end the tasks are correctly registered in the database
+    GIVEN a package in a format that `pip` understands
+    WHEN the api to collect tasks from that package is called
+    THEN an environment is created, the package is installed and the task
+         collected
     """
-    raise NotImplementedError
+    PREFIX = "/api/v1/task"
+
+    task_collection = dict(
+        collection_type="pypi", package=dummy_task_package.as_posix()
+    )
+
+    async with MockCurrentUser(persist=True):
+        res = await client.post(f"{PREFIX}/pip/", json=task_collection)
+        debug(res.json())
+        assert res.status_code == 201
+
+    task_list = res.json()
+    task_names = (t["name"] for t in task_list)
+    assert len(task_list) == 2
+    assert "dummy" in task_names
+    assert "dummy parallel" in task_names
