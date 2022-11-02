@@ -47,7 +47,7 @@ def get_task(
     return task
 
 
-async def create_task_headless(
+async def collect_tasks_headless(
     task_list: List[TaskCreate],
     db: AsyncSession,
     global_task: bool = True,
@@ -64,7 +64,7 @@ async def create_task_headless(
     response_model=List[TaskRead],
     status_code=status.HTTP_201_CREATED,
 )
-async def create_task_pip(
+async def collect_tasks_pip(
     task_collect: TaskCollectPip,
     collection_type: str = "pip",
     global_task: bool = True,
@@ -77,7 +77,7 @@ async def create_task_pip(
     task_list = await create_package_environment_pip(
         venv_path=venv_path, task_pkg=task_pkg
     )
-    task_db_list = await create_task_headless(
+    task_db_list = await collect_tasks_headless(
         task_list=task_list,
         db=db,
         global_task=global_task,
