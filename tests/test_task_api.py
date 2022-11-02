@@ -24,9 +24,7 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
     """
     PREFIX = "/api/v1/task"
 
-    task_collection = dict(
-        collection_type="pypi", package=dummy_task_package.as_posix()
-    )
+    task_collection = dict(package=dummy_task_package.as_posix())
 
     async with MockCurrentUser(persist=True):
         res = await client.post(f"{PREFIX}/pip/", json=task_collection)
