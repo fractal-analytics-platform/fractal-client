@@ -18,11 +18,15 @@ from devtools import debug
 
 from fractal_server.app.models import Task
 from fractal_server.app.models import Workflow
-from fractal_server.app.runner._parsl import process_workflow
 from fractal_server.app.runner.common import close_job_logger
 from fractal_server.tasks import dummy
 from fractal_server.tasks import dummy_parallel
 from fractal_server.utils import set_logger
+
+try:
+    from fractal_server.app.runner._parsl import process_workflow
+except ModuleNotFoundError:
+    pytest.skip(allow_module_level=True)
 
 
 async def test_valid_executors(db, project_factory, MockCurrentUser, tmp_path):
