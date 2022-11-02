@@ -1,15 +1,13 @@
-"""
-Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
-University of Zurich
-
-Original authors:
-Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
-
-This file is part of Fractal and was originally developed by eXact lab S.r.l.
-<exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
-Institute for Biomedical Research and Pelkmans Lab from the University of
-Zurich.
-"""
+# Copyright 2022 (C) Friedrich Miescher Institute for Biomedical Research and
+# University of Zurich
+#
+# Original authors:
+# Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+#
+# This file is part of Fractal and was originally developed by eXact lab S.r.l.
+# <exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
+# Institute for Biomedical Research and Pelkmans Lab from the University of
+# Zurich.
 import json
 from pathlib import Path
 from typing import List
@@ -82,12 +80,6 @@ def create_package_dir_pip(
     **_,
 ) -> Path:
     settings = Inject(get_settings)
-    # assemble installation path
-    package_path = Path(task_pkg.package)
-    if package_path.exists():
-        # The package is a local package in the filesystem rather than a
-        # remote PyPI package. Extract package and version from basename
-        package, version = _package_from_path(package_path)
 
     package_dir = f"{task_pkg.package}{task_pkg.version or ''}"
     if settings.FRACTAL_ROOT:
