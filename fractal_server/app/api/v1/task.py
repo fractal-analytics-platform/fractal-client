@@ -66,7 +66,6 @@ async def collect_tasks_headless(
 )
 async def collect_tasks_pip(
     task_collect: TaskCollectPip,
-    collection_type: str = "pip",
     global_task: bool = True,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
