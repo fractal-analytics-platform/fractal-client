@@ -73,9 +73,9 @@ async def create_task_pip(
 ) -> Task:
 
     task_pkg = _TaskCollectPip(**task_collect.dict())
-    env_path = create_package_dir_pip(task_pkg=task_pkg)
+    venv_path = create_package_dir_pip(task_pkg=task_pkg)
     task_list = await create_package_environment_pip(
-        env_path=env_path, task_pkg=task_pkg
+        venv_path=venv_path, task_pkg=task_pkg
     )
     task_db_list = await create_task_headless(
         task_list=task_list,

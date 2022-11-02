@@ -85,16 +85,16 @@ def create_package_dir_pip(
     if settings.FRACTAL_ROOT:
         # It should be always true, we are only checking that the system is
         # fully configured
-        env_path = settings.FRACTAL_ROOT / user / package_dir
-    # TODO check the access right of the env_path and subdirs
-    env_path.mkdir(exist_ok=False, parents=True)
-    return env_path
+        venv_path = settings.FRACTAL_ROOT / user / package_dir
+    # TODO check the access right of the venv_path and subdirs
+    venv_path.mkdir(exist_ok=False, parents=True)
+    return venv_path
 
 
 async def create_package_environment_pip(
     *,
     task_pkg: _TaskCollectPip,
-    env_path: Path,
+    venv_path: Path,
     user: str = ".fractal",
     env_type: Literal["venv"] = "venv",
 ) -> List[TaskCreate]:
@@ -104,7 +104,7 @@ async def create_package_environment_pip(
 
     if env_type == "venv":
         python_bin, package_root = await _create_venv_install_package(
-            path=env_path,
+            path=venv_path,
             task_pkg=task_pkg,
         )
     else:
