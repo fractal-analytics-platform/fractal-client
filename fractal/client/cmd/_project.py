@@ -4,10 +4,6 @@ from typing import Optional
 
 from rich.table import Table
 
-from ...common.models import DatasetCreate
-from ...common.models import DatasetRead
-from ...common.models import ProjectCreate
-from ...common.models import ProjectRead
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import BaseInterface
@@ -15,6 +11,10 @@ from ..interface import PrintInterface
 from ..interface import RichConsoleInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from ..schemas import DatasetCreate
+from ..schemas import DatasetRead
+from ..schemas import ProjectCreate
+from ..schemas import ProjectRead
 
 
 async def project_create(
