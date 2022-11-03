@@ -40,7 +40,8 @@ async def test_user_override(clear_db, testserver, user_factory, invoke):
     """
     EMAIL = "other_user@exact-lab.it"
     PASSWORD = "other_password"
-    await user_factory(email=EMAIL, password=PASSWORD)
+    SLURM_USER = "slurm_user"
+    await user_factory(email=EMAIL, password=PASSWORD, slurm_user=SLURM_USER)
 
     res = await invoke(f"-u {EMAIL} -p {PASSWORD} project list")
     assert res.retcode == 0
