@@ -11,15 +11,17 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import asyncio
+import logging
 from collections.abc import MutableMapping
 from datetime import datetime
 from datetime import timezone
 from pathlib import Path
 from shlex import split as shlex_split
 from typing import Any
+from typing import Optional
 from warnings import warn as _warn
 
-from .config import Settings
+from .config import get_settings
 from .syringe import Inject
 
 
@@ -41,7 +43,7 @@ def warn(message):
     """
     Make sure that warnings do not make their way to staing and production
     """
-    settings = Inject(Settings)
+    settings = Inject(get_settings)
     if settings.DEPLOYMENT_TYPE in ["testing", "development"]:
         _warn(message, RuntimeWarning)
     else:
@@ -52,7 +54,31 @@ def slugify(value: str):
     return value.lower().replace(" ", "_")
 
 
-async def execute_command(*, cwd: Path, command: str) -> str:
+def set_logger(
+    *,
+    logger_name: str,
+    log_file_path: Optional[Path] = None,
+    level: Optional[int] = None,
+    formatter: Optional[logging.Formatter] = None,
+) -> logging.Logger:
+    """
+    Set up and return a logger
+    """
+    if not level:
+        settings = Inject(get_settings)
+        level = settings.FRACTAL_LOGGING_LEVEL
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    if log_file_path:
+        file_handler = logging.FileHandler(log_file_path, mode="a")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    return logger
+
+
+async def execute_command(
+    *, cwd: Path, command: str, logger_name: Optional[str] = None
+) -> str:
     """
     Execute arbitrary command
 
@@ -74,6 +100,8 @@ async def execute_command(*, cwd: Path, command: str) -> str:
     command_split = shlex_split(command)
     cmd, *args = command_split
 
+    logger = set_logger(logger_name=logger_name)
+    logger.debug(command)
     proc = await asyncio.create_subprocess_exec(
         cmd,
         *args,
@@ -82,6 +110,7 @@ async def execute_command(*, cwd: Path, command: str) -> str:
         cwd=cwd,
     )
     stdout, stderr = await proc.communicate()
+    logger.debug(f"Subprocess call to: {command}")
     if proc.returncode != 0:
         raise RuntimeError(stderr.decode("utf-8"))
     return stdout.decode("utf-8")

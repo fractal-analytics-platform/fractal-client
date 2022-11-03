@@ -1,9 +1,12 @@
 import asyncio
 import json
+from pathlib import Path
 
 import pytest
 from devtools import debug
 
+from fractal_server import tasks as tasks_package
+from fractal_server.app.schemas.manifest import ManifestV1
 from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks.dummy import dummy
 from fractal_server.tasks.dummy_parallel import dummy_parallel
@@ -161,3 +164,15 @@ def test_dummy_parallel_fail_direct_call(tmp_path):
                 message=ERROR_MESSAGE,
                 raise_error=True,
             )
+
+
+def test_manifest_validation():
+    manifest_path = (
+        Path(tasks_package.__file__).parent / "__FRACTAL_MANIFEST__.json"
+    )
+    with manifest_path.open("r") as f:
+        manifest_dict = json.load(f)
+
+    if manifest_dict["manifest_version"] == 1:
+        manifest_obj = ManifestV1(**manifest_dict)
+    debug(manifest_obj)

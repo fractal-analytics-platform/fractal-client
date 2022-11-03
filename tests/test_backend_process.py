@@ -23,10 +23,10 @@ from fractal_server.app.runner._common import _call_command_wrapper
 from fractal_server.app.runner._process import call_single_task
 from fractal_server.app.runner._process import recursive_task_submission
 from fractal_server.app.runner.common import close_job_logger
-from fractal_server.app.runner.common import set_job_logger
 from fractal_server.app.runner.common import TaskParameters
 from fractal_server.tasks import dummy as dummy_module
 from fractal_server.tasks import dummy_parallel as dummy_parallel_module
+from fractal_server.utils import set_logger
 
 
 async def test_command_wrapper(tmp_path):
@@ -52,7 +52,7 @@ def test_call_single_task(tmp_path):
         order=0,
     )
     logger_name = "test_logger_call_single_task"
-    job_logger = set_job_logger(
+    job_logger = set_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
@@ -93,7 +93,7 @@ def test_recursive_task_submission_step0(tmp_path):
         )
     ]
     logger_name = "job_logger_recursive_task_submission_step0"
-    job_logger = set_job_logger(
+    job_logger = set_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
@@ -138,7 +138,7 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
         )
     ]
     logger_name = "job_logger_recursive_parallel_task_submission_step0"
-    job_logger = set_job_logger(
+    job_logger = set_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
@@ -207,7 +207,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
         ),
     ]
     logger_name = "job_logger_recursive_task_submission_inductive_step"
-    job_logger = set_job_logger(
+    job_logger = set_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,

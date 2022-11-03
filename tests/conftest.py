@@ -10,3 +10,4 @@ async def testdata_path() -> Path:
 
 
 from .fixtures_server import *  # noqa F403
+from .fixtures_tasks import *  # noqa F403

@@ -6,12 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ... import __VERSION__
 from ...config import get_settings
 from ...syringe import Inject
+from ...utils import set_logger
 from ..models import Dataset
 from ..models import Workflow
 from ._process import process_workflow as process_process_workflow
 from .common import auto_output_dataset  # noqa: F401
 from .common import close_job_logger
-from .common import set_job_logger
 from .common import validate_workflow_compatibility  # noqa: F401
 
 _backends = {}
@@ -88,7 +88,7 @@ async def submit_workflow(
     if not os.path.isdir(WORKFLOW_DIR):
         os.mkdir(WORKFLOW_DIR)
 
-    logger = set_job_logger(
+    logger = set_logger(
         logger_name=f"WF{workflow_id}",
         log_file_path=WORKFLOW_DIR / "workflow.log",
         level=logging.INFO,

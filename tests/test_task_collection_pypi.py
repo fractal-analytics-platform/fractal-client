@@ -4,6 +4,7 @@ from devtools import debug
 
 from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
+from fractal_server.tasks.collection import _TaskCollectPip
 from fractal_server.tasks.collection import load_manifest
 
 
@@ -40,7 +41,8 @@ async def test_pip_install(tmp_path):
 
     await _init_venv(path=venv_path, python_version="3.8")
     location = await _pip_install(
-        venv_path=venv_path, package=PACKAGE, version=VERSION
+        venv_path=venv_path,
+        task_pkg=_TaskCollectPip(package=PACKAGE, version=VERSION),
     )
     debug(location)
     assert PACKAGE in location.as_posix()
@@ -66,7 +68,7 @@ def test_load_manifest(tmp_path):
 
     package_root = tmp_path / "package"
     package_root.mkdir(exist_ok=True, parents=True)
-    manifest_path = package_root / "__FRACTAL__MANIFEST__.json"
+    manifest_path = package_root / "__FRACTAL_MANIFEST__.json"
     executable_path = package_root / TASK_EXECUTABLE
     python_bin = package_root / "my/custon/python_bin"
     SOURCE = "my:source==123"

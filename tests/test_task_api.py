@@ -1,7 +1,5 @@
 from devtools import debug
 
-from fractal_server.app.models import TaskCreate
-
 
 async def test_task_get_list(db, client, task_factory, MockCurrentUser):
     t0 = await task_factory(name="task0")
@@ -17,22 +15,24 @@ async def test_task_get_list(db, client, task_factory, MockCurrentUser):
         assert data[2]["id"] == t2.id
 
 
-async def test_task_create(db, client, MockCurrentUser):
+async def test_collection_api(client, dummy_task_package, MockCurrentUser):
     """
-    GIVEN a CreateTask object
-    WHEN it is fed to the `POST task` endpoint
-    THEN a new task is correctly created
+    GIVEN a package in a format that `pip` understands
+    WHEN the api to collect tasks from that package is called
+    THEN an environment is created, the package is installed and the task
+         collected
     """
-    task = TaskCreate(
-        name="mytask",
-        command="cmd",
-        source="/source",
-        input_type="Any",
-        output_type="Any",
-    )
+    PREFIX = "/api/v1/task"
+
+    task_collection = dict(package=dummy_task_package.as_posix())
+
     async with MockCurrentUser(persist=True):
-        res = await client.post("api/v1/task/", json=task.dict())
+        res = await client.post(f"{PREFIX}/pip/", json=task_collection)
         debug(res.json())
-        data = res.json()
-        for key, item in task.dict().items():
-            assert data[key] == item
+        assert res.status_code == 201
+
+    task_list = res.json()
+    task_names = (t["name"] for t in task_list)
+    assert len(task_list) == 2
+    assert "dummy" in task_names
+    assert "dummy parallel" in task_names

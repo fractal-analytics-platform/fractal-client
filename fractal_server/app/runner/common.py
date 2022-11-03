@@ -107,24 +107,6 @@ def validate_workflow_compatibility(
     return output_path
 
 
-def set_job_logger(
-    *,
-    logger_name: str,
-    log_file_path: Path,
-    level: int = logging.WARNING,
-    formatter: Optional[logging.Formatter] = None,
-) -> logging.Logger:
-    """
-    Return a dedicated per-job logger
-    """
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    file_handler = logging.FileHandler(log_file_path, mode="a")
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-    return logger
-
-
 def close_job_logger(logger: logging.Logger) -> None:
     """
     Close all FileHandles of `logger`

@@ -18,11 +18,15 @@ from devtools import debug
 
 from fractal_server.app.models import Task
 from fractal_server.app.models import Workflow
-from fractal_server.app.runner._parsl import process_workflow
 from fractal_server.app.runner.common import close_job_logger
-from fractal_server.app.runner.common import set_job_logger
 from fractal_server.tasks import dummy
 from fractal_server.tasks import dummy_parallel
+from fractal_server.utils import set_logger
+
+try:
+    from fractal_server.app.runner._parsl import process_workflow
+except ModuleNotFoundError:
+    pytest.skip(allow_module_level=True)
 
 
 async def test_valid_executors(db, project_factory, MockCurrentUser, tmp_path):
@@ -74,7 +78,7 @@ async def test_valid_executors(db, project_factory, MockCurrentUser, tmp_path):
     # process workflow
     logger_name = "job_logger_valid_exec"
     debug(logger_name)
-    logger = set_job_logger(
+    logger = set_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
@@ -137,7 +141,7 @@ async def test_invalid_executors(
 
     # process workflow
     logger_name = "job_logger_invalid_exec"
-    logger = set_job_logger(
+    logger = set_logger(
         logger_name=logger_name,
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,

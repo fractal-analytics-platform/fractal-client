@@ -11,6 +11,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import asyncio
+import logging
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
@@ -43,6 +44,7 @@ def get_patched_settings(temp_path: Path):
         f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
     )
     settings.FRACTAL_ROOT = temp_path
+    settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
     return settings
 
 
