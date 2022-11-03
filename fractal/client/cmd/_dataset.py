@@ -88,7 +88,7 @@ async def dataset_edit(
 
     res = await client.patch(
         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
-        json=dataset_update.dict(exclude_unset=True),
+        json=payload,
     )
     new_dataset = check_response(
         res, expected_status_code=200, coerce=DatasetRead

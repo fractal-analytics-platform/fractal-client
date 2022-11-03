@@ -53,7 +53,8 @@ async def testserver(temp_data_dir, temp_db_path):
     # INIT DB
     from fractal_server.app.db import engine_sync
     from sqlmodel import SQLModel
-    import fractal_server.app.models  # noqa: F401
+
+    # import fractal_server.app.models  # noqa: F401
 
     SQLModel.metadata.create_all(engine_sync)
 
@@ -89,5 +90,7 @@ async def user_factory(client, testserver):
 @pytest.fixture
 async def register_user(user_factory):
     return await user_factory(
-        email=environ["FRACTAL_USER"], password=environ["FRACTAL_PASSWORD"]
+        email=environ["FRACTAL_USER"],
+        password=environ["FRACTAL_PASSWORD"],
+        slurm_user=environ["SLURM_USER"],
     )

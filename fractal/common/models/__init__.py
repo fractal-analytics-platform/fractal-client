@@ -175,8 +175,10 @@ class ResourceTypeEnum(str, Enum):
 
 class TaskBase(SQLModel):
     name: str
-    resource_type: ResourceTypeEnum
-    module: Optional[str]
+    # resource_type: ResourceTypeEnum
+    command: str
+    source: str
+    module: str
     input_type: str
     output_type: str
     default_args: Dict[str, Any] = Field(default={})
@@ -187,38 +189,77 @@ class TaskBase(SQLModel):
 
 class TaskUpdate(TaskBase):
     name: Optional[str]  # type:ignore
-    resource_type: Optional[ResourceTypeEnum]  # type:ignore
+    # resource_type: Optional[ResourceTypeEnum]  # type:ignore
+    module: Optional[str]
+    source: Optional[str]
+    command: Optional[str]
     input_type: Optional[str]  # type:ignore
     output_type: Optional[str]  # type:ignore
     default_args: Optional[Dict[str, Any]] = None  # type:ignore
-    subtask_list: Optional[List["TaskBase"]] = Field(default=[])
+    # subtask_list: Optional[List["TaskBase"]] = Field(default=[])
 
 
 class TaskCreate(TaskBase):
     pass
 
 
-class SubtaskBase(SQLModel):
-    parent_task_id: Optional[int] = None
-    subtask_id: Optional[int] = None
-    order: Optional[int] = None
-    args: Dict[str, Any] = Field(default={})
+# class SubtaskBase(SQLModel):
+#     parent_task_id: Optional[int] = None
+#     subtask_id: Optional[int] = None
+#     order: Optional[int] = None
+#     args: Dict[str, Any] = Field(default={})
 
 
-class SubtaskCreate(SubtaskBase):
-    subtask_id: int
+# class SubtaskCreate(SubtaskBase):
+#     subtask_id: int
 
 
-class SubtaskRead(SubtaskBase):
-    parent_task_id: int
-    subtask_id: int
-    subtask: "TaskRead"
+# class SubtaskRead(SubtaskBase):
+#     parent_task_id: int
+#     subtask_id: int
+#     subtask: "TaskRead"
 
 
 class TaskRead(TaskBase):
     id: int
-    subtask_list: List[SubtaskRead]
+    # subtask_list: List[SubtaskRead]
 
 
-SubtaskRead.update_forward_refs()
+class WorkflowTaskBase(SQLModel):
+    workflow_id: Optional[int]
+    task_id: Optional[int]
+    order: Optional[int]
+    args: Optional[Dict[str, Any]]
+
+
+class WorkflowTaskCreate(WorkflowTaskBase):
+    task_id: int
+
+
+class WorkflowTaskRead(WorkflowTaskBase):
+    id: int
+    workflow_id: int
+    task: TaskRead
+
+
+class WorkflowBase(SQLModel):
+    name: str
+    project_id: int
+
+
+class WorkflowCreate(WorkflowBase):
+    pass
+
+
+class WorkflowRead(WorkflowBase):
+    id: int
+    task_list: List[WorkflowTaskRead]
+
+
+class WorkflowUpdate(WorkflowBase):
+    name: Optional[str]
+    project_id: Optional[int]
+
+
+# SubtaskRead.update_forward_refs()
 DatasetRead.update_forward_refs()
