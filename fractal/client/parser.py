@@ -213,9 +213,6 @@ task_new_parser.add_argument(
     "name",
     help="Task name (must be unique, and not only made of numbers only)",
 )
-# task_new_parser.add_argument(
-#     "resource_type", choices=["task", "workflow"], help="Resource type"
-# )
 task_new_parser.add_argument("input_type", help="Dataset input type")
 task_new_parser.add_argument("output_type", help="Dataset output type")
 task_new_parser.add_argument(
@@ -260,60 +257,6 @@ task_edit_parser.add_argument(
 task_edit_parser.add_argument(
     "--default-args", help="Filename containing JSON encoded default arguments"
 )
-
-# # task add-subtask
-# task_add_subtask_parser = task_subparsers.add_parser(
-#     "add-subtask", help="Edit task", argument_default=ap.SUPPRESS
-# )
-# task_add_subtask_parser.add_argument(
-#     "parent_task_id_or_name",
-#     help="ID or name of task to which the subtask will be added",
-#     type=str,
-# )
-# task_add_subtask_parser.add_argument(
-#     "subtask_id_or_name",
-#     help="ID or name of task to add as a subtask",
-#     type=str,
-# )
-# task_add_subtask_parser.add_argument(
-#     "--args-file",
-#     help="Path to file containing JSON serialised task arguments",
-# )
-
-
-# # task apply
-# task_apply_parser = task_subparsers.add_parser(
-#     "apply", help="Apply task to a dataset"
-# )
-# task_apply_parser.add_argument(
-#     "project_id", help="ID of project on which to apply task"
-# )
-# task_apply_parser.add_argument("input_dataset_id",
-# help="ID of input dataset")
-# task_apply_parser.add_argument(
-#     "output_dataset_id", help="ID of output dataset"
-# )
-# task_apply_parser.add_argument(
-#     "workflow_id_or_name",
-#     help="ID or name of taks/workflow to apply",
-#     type=str,
-# )
-# task_apply_parser.add_argument(
-#     "--overwrite_input",
-#     action="store_true",
-#     default=False,
-#     help="Overwrite the input dataset",
-# )
-# task_apply_parser.add_argument(
-#     "-wi",
-#     "--worker_init",
-#     help=(
-#         "Commands to be executed at the beginning of SLURM scripts "
-#         "(e.g. conda activate env)"
-#     ),
-#     type=str,
-#     default=None,
-# )
 
 # WORKFLOW GROUP
 
