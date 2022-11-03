@@ -207,30 +207,28 @@ task_subparsers = task_parser.add_subparsers(
 # task list
 task_list_parser = task_subparsers.add_parser("list", help="List tasks")
 
-# task new
-task_new_parser = task_subparsers.add_parser("new", help="Create new task")
-task_new_parser.add_argument(
-    "name",
-    help="Task name (must be unique, and not only made of numbers only)",
+# task collect
+task_collect_parser = task_subparsers.add_parser(
+    "collect",
+    help="Install and collect all tasks a pip installable package exposes",
 )
-task_new_parser.add_argument("input_type", help="Dataset input type")
-task_new_parser.add_argument("output_type", help="Dataset output type")
-task_new_parser.add_argument(
-    "command",
-    help="The command(s) that executes the task",
+task_collect_parser.add_argument(
+    "package",
+    help="Package name or path to local package",
 )
-task_new_parser.add_argument(
-    "source",
-    help="Path or url to task source.",
+task_collect_parser.add_argument(
+    "--python-version",
+    help="Select the python version to use for this package",
 )
-task_new_parser.add_argument(
-    "module",
-    help="Module path, e.g., `module.submodule:task_function`",
+task_collect_parser.add_argument(
+    "--package-extras",
+    help=(
+        "Comma separated list of extra components for the package to be "
+        "installed, e.g., `collect fractal-tasks-core "
+        "--package-extras=torch,tensorflow` will trigger the installation of "
+        "`fractal-tasks-core[torch,tensorflow]`"
+    ),
 )
-task_new_parser.add_argument(
-    "--default_args", help="Default arguments, as a JSON-encoded string"
-)
-task_new_parser.add_argument("--subtask-list", help="Subtask list")
 
 
 # task edit

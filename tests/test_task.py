@@ -1,4 +1,12 @@
 import pytest
+from devtools import debug
+
+
+async def test_task_collect(clear_db, testserver, register_user, invoke):
+    PACKAGE_NAME = "devtools"
+    res = await invoke(f"task collect {PACKAGE_NAME}")
+    debug(res)
+    res.show()
 
 
 async def test_task_list(clear_db, testserver, register_user, invoke):

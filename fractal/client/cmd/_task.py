@@ -9,6 +9,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from ..schemas import TaskCollectPip
 from ..schemas import TaskCreate
 from ..schemas import TaskRead
 from ..schemas import TaskUpdate
@@ -74,6 +75,34 @@ async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
 async def task_list(client: AuthClient, **kwargs) -> RichJsonInterface:
     task_list = await refresh_task_cache(client=client, **kwargs)
     return RichJsonInterface(retcode=0, data=task_list)
+
+
+async def task_collect_pip(
+    client: AuthClient,
+    *,
+    package: str,
+    version: Optional[str] = None,
+    python_version: Optional[str],
+    package_extras: Optional[str] = None,
+    **kwargs,
+) -> BaseInterface:
+
+    task_collect = TaskCollectPip(
+        package=package,
+        version=version,
+        python_version=python_version or "3.8",
+        package_extras=package_extras,
+    )
+
+    res = await client.post(
+        f"{settings.BASE_URL}/task/pip/",
+        json=task_collect.dict(),
+    )
+    # TODO check response
+    if res.status_code == 201:
+        return RichJsonInterface(retcode=0, data=res.json())
+    else:
+        raise RuntimeError(res.json())
 
 
 async def task_new(
