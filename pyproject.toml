@@ -59,3 +59,8 @@ push = true
 fractal = "fractal.__main__:run"
 fractal_old = "fractal.old:run"
 fractal_new = "fractal.new:run"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+omit = ["tests/*"]
