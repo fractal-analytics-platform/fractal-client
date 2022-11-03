@@ -9,12 +9,9 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from fractal.common.models import TaskCreate
-from fractal.common.models import TaskRead
-from fractal.common.models import TaskUpdate
-
-# from fractal.common.models import ApplyWorkflowCreate
-# from fractal.common.models import SubtaskCreate
+from ..schemas import TaskCreate
+from ..schemas import TaskRead
+from ..schemas import TaskUpdate
 
 
 async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
@@ -84,7 +81,6 @@ async def task_new(
     *,
     batch: bool = False,
     name: str,
-    # resource_type: str,
     input_type: str,
     output_type: str,
     module: str,
@@ -113,10 +109,8 @@ async def task_new(
             "numbers only)"
         )
 
-    # resource_type = resource_type.replace("_", " ")
     task = TaskCreate(
         name=name,
-        # resource_type=resource_type,
         command=command,
         source=source,
         input_type=input_type,
@@ -160,90 +154,3 @@ async def task_edit(
     )
     new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
     return RichJsonInterface(retcode=0, data=new_task.dict())
-
-
-# async def task_add_subtask(
-#     client: AuthClient,
-#     *,
-#     batch: bool = False,
-#     parent_task_id_or_name: str,
-#     subtask_id_or_name: str,
-#     args_file: Optional[str] = None,
-#     order: Optional[int] = None,
-#     **kwargs,
-# ):
-
-#     if args_file:
-#         with open(args_file, "r") as fin:
-#             args = json.load(fin)
-#     else:
-#         args = {}
-
-#     try:
-#         parent_task_id = int(parent_task_id_or_name)
-#     except ValueError:
-#         parent_task_id = await get_cached_task_by_name(
-#             name=parent_task_id_or_name, client=client
-#         )
-
-#     try:
-#         subtask_id = int(subtask_id_or_name)
-#     except ValueError:
-#         subtask_id = await get_cached_task_by_name(
-#             name=subtask_id_or_name, client=client
-#         )
-
-#     subtask_create = SubtaskCreate(
-#         parent_task_id=parent_task_id,
-#         subtask_id=subtask_id,
-#         order=order,
-#         args=args,
-#     )
-
-#     res = await client.post(
-#         f"{settings.BASE_URL}/task/{parent_task_id}/subtask/",
-#         json=subtask_create.dict(exclude_unset=True),
-#     )
-#     new_subtask = check_response(
-#         res, expected_status_code=201, coerce=TaskRead
-#     )
-#     if batch:
-#         return PrintInterface(retcode=0, data=new_subtask.id)
-#     else:
-#         return RichJsonInterface(retcode=0, data=new_subtask.dict())
-
-
-# async def task_apply(
-#     client: AuthClient,
-#     *,
-#     project_id: int,
-#     input_dataset_id: int,
-#     output_dataset_id: int,
-#     workflow_id_or_name: str,
-#     overwrite_input: bool,
-#     worker_init: str,
-#     **kwargs,
-# ) -> RichJsonInterface:
-
-#     try:
-#         workflow_id = int(workflow_id_or_name)
-#     except ValueError:
-#         workflow_id = await get_cached_task_by_name(
-#             name=workflow_id_or_name, client=client
-#         )
-
-#     workflow = ApplyWorkflowCreate(
-#         project_id=project_id,
-#         input_dataset_id=input_dataset_id,
-#         output_dataset_id=output_dataset_id,
-#         workflow_id=workflow_id,
-#         overwrite_input=overwrite_input,
-#         worker_init=worker_init,
-#     )
-
-#     res = await client.post(
-#         f"{settings.BASE_URL}/project/apply/",
-#         json=workflow.dict(),
-#     )
-#     wf_submitted = check_response(res, expected_status_code=202)
-#     return RichJsonInterface(retcode=0, data=wf_submitted)

@@ -1,15 +1,15 @@
 import logging
 
-from ...common.models import WorkflowCreate
-from ...common.models import WorkflowRead
-from ...common.models import WorkflowTaskCreate
-from ...common.models import WorkflowUpdate
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from ..schemas import WorkflowCreate
+from ..schemas import WorkflowRead
+from ..schemas import WorkflowTaskCreate
+from ..schemas import WorkflowUpdate
 
 
 async def workflow_new(

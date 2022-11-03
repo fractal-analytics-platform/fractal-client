@@ -13,10 +13,10 @@ from ..interface import PrintInterface
 from ..interface import RichConsoleInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from fractal.common.models import DatasetRead
-from fractal.common.models import DatasetUpdate
-from fractal.common.models import ResourceCreate
-from fractal.common.models import ResourceRead
+from ..schemas import DatasetRead
+from ..schemas import DatasetUpdate
+from ..schemas import ResourceCreate
+from ..schemas import ResourceRead
 
 
 async def dataset_add_resource(
