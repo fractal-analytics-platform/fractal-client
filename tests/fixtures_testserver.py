@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from os import environ
 
 import pytest
@@ -41,6 +42,7 @@ async def testserver(temp_data_dir, temp_db_path):
     environ["DEPLOYMENT_TYPE"] = "development"
     environ["DATA_DIR_ROOT"] = temp_data_dir.as_posix()
     environ["FRACTAL_ROOT"] = temp_data_dir.as_posix()
+    environ["FRACTAL_LOGGING_LEVEL"] = str(logging.DEBUG)
 
     environ["DB_ENGINE"] = "sqlite"
 
