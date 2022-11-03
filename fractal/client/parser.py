@@ -23,8 +23,9 @@ parser_main.add_argument(
     help="User email address for login (overrides configuration file)",
 )
 parser_main.add_argument(
-    "-p", "--password", help="User password (overrides cnofiguration file)"
+    "-p", "--password", help="User password (overrides configuration file)"
 )
+parser_main.add_argument("-s", "--slurm_user", help="Slurm user")
 parser_main.add_argument(
     "-v",
     action="count",
@@ -55,7 +56,14 @@ register_parser = subparsers_main.add_parser(
     "register", help="Register with the Fractal server"
 )
 register_parser.add_argument("email", help="Email to be used as username")
-
+register_parser.add_argument(
+    "slurm_user", help="Username to login into Slurm cluster"
+)
+register_parser.add_argument(
+    "-p",
+    "--password",
+    help=("Password for the new user"),
+)
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser("project", help="project commands")
 project_subparsers = project_parser.add_subparsers(
@@ -141,7 +149,7 @@ dataset_add_resource_parser.add_argument(
 
 # dataset add-resource
 dataset_rm_resource_parser = dataset_subparsers.add_parser(
-    "rm-resource", help="Add resource to existing dataset"
+    "rm-resource", help="Remove resource to existing dataset"
 )
 dataset_rm_resource_parser.add_argument(
     "project_id", type=int, help="Project id"
@@ -205,13 +213,18 @@ task_new_parser.add_argument(
     "name",
     help="Task name (must be unique, and not only made of numbers only)",
 )
-task_new_parser.add_argument(
-    "resource_type", choices=["task", "workflow"], help="Resource type"
-)
 task_new_parser.add_argument("input_type", help="Dataset input type")
 task_new_parser.add_argument("output_type", help="Dataset output type")
 task_new_parser.add_argument(
-    "--module",
+    "command",
+    help="The command(s) that executes the task",
+)
+task_new_parser.add_argument(
+    "source",
+    help="Path or url to task source.",
+)
+task_new_parser.add_argument(
+    "module",
     help="Module path, e.g., `module.submodule:task_function`",
 )
 task_new_parser.add_argument(
@@ -245,57 +258,85 @@ task_edit_parser.add_argument(
     "--default-args", help="Filename containing JSON encoded default arguments"
 )
 
-# task add-subtask
-task_add_subtask_parser = task_subparsers.add_parser(
-    "add-subtask", help="Edit task", argument_default=ap.SUPPRESS
+# WORKFLOW GROUP
+
+# workflow new
+workflow_parser = subparsers_main.add_parser(
+    "workflow", help="workflow commands"
 )
-task_add_subtask_parser.add_argument(
-    "parent_task_id_or_name",
-    help="ID or name of task to which the subtask will be added",
-    type=str,
+workflow_subparsers = workflow_parser.add_subparsers(
+    title="Valid subcommand", dest="subcmd", required=True
 )
-task_add_subtask_parser.add_argument(
-    "subtask_id_or_name",
-    help="ID or name of task to add as a subtask",
-    type=str,
+workflow_new_parser = workflow_subparsers.add_parser(
+    "new", help="Create new workflow"
 )
-task_add_subtask_parser.add_argument(
-    "--args-file",
-    help="Path to file containing JSON serialised task arguments",
+workflow_new_parser.add_argument(
+    "name",
+    help="Workflow name (must be unique, and not only made of numbers only)",
+)
+workflow_new_parser.add_argument(
+    "project_id",
+    help="Project ID",
 )
 
+# workflow delete
+workflow_new_parser = workflow_subparsers.add_parser(
+    "delete", help="Delete workflow"
+)
+workflow_new_parser.add_argument(
+    "id",
+    help="Workflow id",
+)
 
-# task apply
-task_apply_parser = task_subparsers.add_parser(
-    "apply", help="Apply task to a dataset"
+# workflow show
+workflow_new_parser = workflow_subparsers.add_parser(
+    "show", help="Show a workflow"
 )
-task_apply_parser.add_argument(
-    "project_id", help="ID of project on which to apply task"
+workflow_new_parser.add_argument(
+    "id",
+    help="Workflow id",
 )
-task_apply_parser.add_argument("input_dataset_id", help="ID of input dataset")
-task_apply_parser.add_argument(
-    "output_dataset_id", help="ID of output dataset"
+
+# workflow add task
+workflow_add_task_parser = workflow_subparsers.add_parser(
+    "add-task", help="Add a new task to a specific workflow"
 )
-task_apply_parser.add_argument(
-    "workflow_id_or_name",
-    help="ID or name of taks/workflow to apply",
-    type=str,
+workflow_add_task_parser.add_argument(
+    "id",
+    help="Workflow id",
 )
-task_apply_parser.add_argument(
-    "--overwrite_input",
-    action="store_true",
-    default=False,
-    help="Overwrite the input dataset",
+workflow_add_task_parser.add_argument(
+    "task_id",
+    help="Task id",
 )
-task_apply_parser.add_argument(
-    "-wi",
-    "--worker_init",
-    help=(
-        "Commands to be executed at the beginning of SLURM scripts "
-        "(e.g. conda activate env)"
-    ),
-    type=str,
-    default=None,
+workflow_add_task_parser.add_argument("--order", help="")
+
+# workflow remove task
+workflow_remove_task_parser = workflow_subparsers.add_parser(
+    "rm-task", help="Remove a task in a specific workflow"
+)
+workflow_remove_task_parser.add_argument(
+    "id",
+    help="Workflow id",
+)
+workflow_remove_task_parser.add_argument(
+    "workflow_task_id",
+    help="Workflow task Id, the Id of a task inside the list of tasks",
+)
+
+# workflow edit
+workflow_edit_parser = workflow_subparsers.add_parser(
+    "edit", help="Edit workflow", argument_default=ap.SUPPRESS
+)
+workflow_edit_parser.add_argument(
+    "id",
+    help="Workflow id",
+)
+workflow_edit_parser.add_argument("--name", help="New workflow name")
+
+workflow_edit_parser.add_argument(
+    "--project-id",
+    help="Change the project associated with the current workflow",
 )
 
 

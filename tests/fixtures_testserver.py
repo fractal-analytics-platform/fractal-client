@@ -1,5 +1,6 @@
 import asyncio
 from os import environ
+from typing import Optional
 
 import pytest
 
@@ -23,11 +24,11 @@ def clear_db():
     ref: https://stackoverflow.com/a/5003705/283972
     """
     import contextlib
-    from fractal_server.app.db import engine_sync
+    from fractal_server.app.db import DB
     from sqlmodel import SQLModel
 
     meta = SQLModel.metadata
-    with contextlib.closing(engine_sync.connect()) as conn:
+    with contextlib.closing(DB.engine_sync().connect()) as conn:
         trans = conn.begin()
         for table in reversed(meta.sorted_tables):
             conn.execute(table.delete())
@@ -37,10 +38,6 @@ def clear_db():
 @pytest.fixture(scope="session")
 async def testserver(temp_data_dir, temp_db_path):
     # cf. https://stackoverflow.com/a/57816608/283972
-    import uvicorn
-    from fractal_server import start_application
-    from multiprocessing import Process
-
     environ["JWT_SECRET_KEY"] = "secret_key"
     environ["DEPLOYMENT_TYPE"] = "development"
     environ["DATA_DIR_ROOT"] = temp_data_dir.as_posix()
@@ -50,12 +47,17 @@ async def testserver(temp_data_dir, temp_db_path):
     tmp_db_path = temp_db_path
     environ["SQLITE_PATH"] = tmp_db_path.as_posix()
 
-    # INIT DB
-    from fractal_server.app.db import engine_sync
-    from sqlmodel import SQLModel
-    import fractal_server.app.models  # noqa: F401
+    import uvicorn
+    from fractal_server.main import start_application
+    from multiprocessing import Process
 
-    SQLModel.metadata.create_all(engine_sync)
+    # INIT DB
+    from fractal_server.app.db import DB
+    from sqlmodel import SQLModel
+
+    # import fractal_server.app.models  # noqa: F401
+
+    SQLModel.metadata.create_all(DB.engine_sync())
 
     # We are explicitly calling start_application() to bypass the task
     # collection routine
@@ -75,11 +77,13 @@ async def testserver(temp_data_dir, temp_db_path):
 
 @pytest.fixture()
 async def user_factory(client, testserver):
-    async def __register_user(email: str, password: str):
+    async def __register_user(email: str, password: str, slurm_user: str):
         res = await client.post(
             f"{testserver}/auth/register",
-            json=dict(email=email, password=password),
+            json=dict(email=email, password=password, slurm_user=slurm_user),
         )
+        from devtools import debug
+        debug(res.json())
         assert res.status_code == 201
         return res.json()
 
@@ -89,5 +93,7 @@ async def user_factory(client, testserver):
 @pytest.fixture
 async def register_user(user_factory):
     return await user_factory(
-        email=environ["FRACTAL_USER"], password=environ["FRACTAL_PASSWORD"]
+        email=environ["FRACTAL_USER"],
+        password=environ["FRACTAL_PASSWORD"],
+        slurm_user=environ["SLURM_USER"],
     )

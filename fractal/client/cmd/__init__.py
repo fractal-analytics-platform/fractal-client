@@ -15,11 +15,18 @@ from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_list
 from ._project import project_show
-from ._task import task_add_subtask
-from ._task import task_apply
 from ._task import task_edit
 from ._task import task_list
 from ._task import task_new
+from ._workflow import workflow_add_task
+from ._workflow import workflow_delete
+from ._workflow import workflow_edit
+from ._workflow import workflow_new
+from ._workflow import workflow_remove_task
+from ._workflow import workflow_show
+
+# from ._task import task_add_subtask
+# from ._task import task_apply
 
 
 class NoCommandError(ValueError):
@@ -86,20 +93,39 @@ async def dataset(
     return iface
 
 
-async def register(client: AsyncClient, email: str, **kwargs) -> BaseInterface:
+async def register(
+    client: AsyncClient,
+    email: str,
+    slurm_user: str,
+    password: str = None,
+    **kwargs,
+) -> BaseInterface:
     from getpass import getpass
 
-    password = getpass()
-    confirm_password = getpass("Confirm password: ")
-    if password == confirm_password:
-        res = await client.post(
-            f"{settings.FRACTAL_SERVER}/auth/register",
-            json=dict(email=email, password=password),
-        )
-        data = check_response(res, expected_status_code=201)
-        iface = RichJsonInterface(retcode=0, data=data)
-    else:
-        iface = PrintInterface(retcode=1, data="Passwords do not match.")
+    if password is None:
+        password = getpass()
+        confirm_password = getpass("Confirm password: ")
+        if password == confirm_password:
+            res = await client.post(
+                f"{settings.FRACTAL_SERVER}/auth/register",
+                json=dict(
+                    email=email, slurm_user=slurm_user, password=password
+                ),
+            )
+
+            data = check_response(res, expected_status_code=201)
+            iface = RichJsonInterface(retcode=0, data=data)
+        else:
+            iface = PrintInterface(retcode=1, data="Passwords do not match.")
+        return iface
+
+    res = await client.post(
+        f"{settings.FRACTAL_SERVER}/auth/register",
+        json=dict(email=email, slurm_user=slurm_user, password=password),
+    )
+    data = check_response(res, expected_status_code=201)
+    iface = RichJsonInterface(retcode=0, data=data)
+
     return iface
 
 
@@ -112,10 +138,28 @@ async def task(
         iface = await task_new(client, batch=batch, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
-    elif subcmd == "add-subtask":
-        iface = await task_add_subtask(client, batch=batch, **kwargs)
-    elif subcmd == "apply":
-        iface = await task_apply(client, **kwargs)
+    # elif subcmd == "add-subtask":
+    #     iface = await task_add_subtask(client, batch=batch, **kwargs)
+    # elif subcmd == "apply":
+    #     iface = await task_apply(client, **kwargs)
+    return iface
+
+
+async def workflow(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> BaseInterface:
+    if subcmd == "show":
+        iface = await workflow_show(client, **kwargs)
+    elif subcmd == "new":
+        iface = await workflow_new(client, batch=batch, **kwargs)
+    elif subcmd == "edit":
+        iface = await workflow_edit(client, **kwargs)
+    elif subcmd == "delete":
+        iface = await workflow_delete(client, **kwargs)
+    elif subcmd == "add-task":
+        iface = await workflow_add_task(client, **kwargs)
+    elif subcmd == "rm-task":
+        iface = await workflow_remove_task(client, **kwargs)
     return iface
 
 
