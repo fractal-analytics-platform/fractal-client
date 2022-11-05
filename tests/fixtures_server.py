@@ -50,8 +50,10 @@ def get_patched_settings(temp_path: Path):
 
 @pytest.fixture(scope="session", autouse=True)
 def override_settings(tmp_path_factory):
+    tmp_path = tmp_path_factory.mktemp("fractal_root")
+
     def _get_settings():
-        return get_patched_settings(tmp_path_factory.mktemp("fractal_root"))
+        return get_patched_settings(tmp_path)
 
     debug(f"overriding {get_settings} with {get_patched_settings}")
     Inject.override(get_settings, _get_settings)
