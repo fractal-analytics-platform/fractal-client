@@ -11,7 +11,6 @@
 import json
 from pathlib import Path
 from typing import List
-from typing import Literal
 from typing import Optional
 from typing import Tuple
 
@@ -96,8 +95,6 @@ async def create_package_environment_pip(
     *,
     task_pkg: _TaskCollectPip,
     venv_path: Path,
-    user: str = ".fractal",
-    env_type: Literal["venv"] = "venv",
 ) -> List[TaskCreate]:
     """
     Create environment and install package
@@ -105,13 +102,10 @@ async def create_package_environment_pip(
     logger = set_logger(logger_name="fractal")
     logger.debug("Creating venv and installing package")
 
-    if env_type == "venv":
-        python_bin, package_root = await _create_venv_install_package(
-            path=venv_path,
-            task_pkg=task_pkg,
-        )
-    else:
-        raise ValueError(f"Environment type {env_type} not supported")
+    python_bin, package_root = await _create_venv_install_package(
+        path=venv_path,
+        task_pkg=task_pkg,
+    )
 
     logger.debug("loading manifest")
 
