@@ -1,12 +1,16 @@
 import asyncio
 from copy import deepcopy
+from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter
+from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import status
 from sqlmodel import select
 
+from ....config import get_settings
+from ....syringe import Inject
 from ....tasks.collection import _TaskCollectPip
 from ....tasks.collection import create_package_dir_pip
 from ....tasks.collection import create_package_environment_pip
@@ -47,11 +51,23 @@ def get_task(
     return task
 
 
-async def collect_tasks_headless(
+async def _background_collect_pip(
+    venv_path: Path, task_pkg: _TaskCollectPip, db: AsyncSession
+) -> List[Task]:
+    task_list = await create_package_environment_pip(
+        venv_path=venv_path, task_pkg=task_pkg
+    )
+    tasks = await _insert_tasks(task_list=task_list, db=db)
+    return tasks
+
+
+async def _insert_tasks(
     task_list: List[TaskCreate],
     db: AsyncSession,
-    global_task: bool = True,
 ) -> List[Task]:
+    """
+    Insert tasks into database
+    """
     task_db_list = [Task.from_orm(t) for t in task_list]
     db.add_all(task_db_list)
     await db.commit()
@@ -61,11 +77,11 @@ async def collect_tasks_headless(
 
 @router.post(
     "/pip/",
-    response_model=List[TaskRead],
     status_code=status.HTTP_201_CREATED,
 )
 async def collect_tasks_pip(
     task_collect: TaskCollectPip,
+    background_tasks: BackgroundTasks,
     global_task: bool = True,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
@@ -73,15 +89,15 @@ async def collect_tasks_pip(
 
     task_pkg = _TaskCollectPip(**task_collect.dict())
     venv_path = create_package_dir_pip(task_pkg=task_pkg)
-    task_list = await create_package_environment_pip(
-        venv_path=venv_path, task_pkg=task_pkg
+
+    background_tasks.add_task(
+        _background_collect_pip, venv_path=venv_path, task_pkg=task_pkg, db=db
     )
-    task_db_list = await collect_tasks_headless(
-        task_list=task_list,
-        db=db,
-        global_task=global_task,
+    settings = Inject(get_settings)
+    return dict(
+        venv_path=venv_path.relative_to(settings.FRACTAL_ROOT),
+        message=f"Installing {task_pkg.package} in the background",
     )
-    return task_db_list
 
 
 @router.patch("/{task_id}", response_model=TaskRead)
