@@ -23,6 +23,7 @@ from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
 from ..utils import execute_command
+from ..utils import set_logger
 
 
 class _TaskCollectPip(TaskCollectPip):
@@ -101,6 +102,8 @@ async def create_package_environment_pip(
     """
     Create environment and install package
     """
+    logger = set_logger(logger_name="fractal")
+    logger.debug("Creating venv and installing package")
 
     if env_type == "venv":
         python_bin, package_root = await _create_venv_install_package(
@@ -110,11 +113,14 @@ async def create_package_environment_pip(
     else:
         raise ValueError(f"Environment type {env_type} not supported")
 
+    logger.debug("loading manifest")
+
     task_list = load_manifest(
         package_root=package_root,
         python_bin=python_bin,
         source=task_pkg.source,
     )
+    logger.debug("manifest loaded")
     return task_list
 
 
