@@ -25,6 +25,14 @@ from ..utils import execute_command
 from ..utils import set_logger
 
 
+def get_collection_path(base: Path) -> Path:
+    return base / "collection.json"
+
+
+def get_log_path(base: Path) -> Path:
+    return base / "collection.log"
+
+
 class _TaskCollectPip(TaskCollectPip):
     """
     Internal TaskCollectPip schema
