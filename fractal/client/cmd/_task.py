@@ -10,7 +10,6 @@ from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
 from ..schemas import TaskCollectPip
-from ..schemas import TaskCreate
 from ..schemas import TaskRead
 from ..schemas import TaskUpdate
 
@@ -86,7 +85,6 @@ async def task_collect_pip(
     package_extras: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
-
     task_collect = TaskCollectPip(
         package=package,
         version=version,
@@ -95,7 +93,7 @@ async def task_collect_pip(
     )
 
     res = await client.post(
-        f"{settings.BASE_URL}/task/pip/",
+        f"{settings.BASE_URL}/task/collect/pip/",
         json=task_collect.dict(),
     )
     # TODO check response
@@ -105,59 +103,16 @@ async def task_collect_pip(
         raise RuntimeError(res.json())
 
 
-async def task_new(
-    client: AuthClient,
-    *,
-    batch: bool = False,
-    name: str,
-    input_type: str,
-    output_type: str,
-    module: str,
-    source: str,
-    command: str,
-    default_args: Optional[str] = None,
-    subtask_list: Optional[str] = None,
-    **kwargs,
-) -> RichJsonInterface:
-
-    if not default_args:
-        default_args_dict = {}
-    else:
-        default_args_dict = json.loads(default_args)
-    if not subtask_list:
-        subtask_list_list = []
-    else:
-        subtask_list_list = json.loads(subtask_list)
-
-    # Check the task name is not made of numbers only. This prevents
-    # ambiguities for functions that take arguments like task_id_or_name, and
-    # then use casting to check wheter task_id_or_name is an ID or a name.
-    if name.isdecimal():
-        raise ValueError(
-            f"Invalid task name {name} (name cannot be made of "
-            "numbers only)"
-        )
-
-    task = TaskCreate(
-        name=name,
-        command=command,
-        source=source,
-        input_type=input_type,
-        output_type=output_type,
-        default_args=default_args_dict,
-        module=module,
-        subtask_list=subtask_list_list,
+async def task_collection_check(
+    client: AuthClient, *, installation_path: Path, **kwargs
+) -> BaseInterface:
+    res = await client.get(
+        f"{settings.BASE_URL}/task/collect/{installation_path}"
     )
-
-    res = await client.post(
-        f"{settings.BASE_URL}/task/",
-        json=task.dict(),
-    )
-    new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
-    if batch:
-        return PrintInterface(retcode=0, data=new_task.id)
+    if res.status_code == 200:
+        return RichJsonInterface(retcode=0, data=res.json())
     else:
-        return RichJsonInterface(retcode=0, data=new_task.dict())
+        raise RuntimeError(res.json())
 
 
 async def task_edit(

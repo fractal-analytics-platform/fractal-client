@@ -230,6 +230,15 @@ task_collect_parser.add_argument(
     ),
 )
 
+# task check-collection
+task_check_collection_parser = task_subparsers.add_parser(
+    "check-collection",
+    help="Check status of background task collection processes",
+)
+task_check_collection_parser.add_argument(
+    "installation_path",
+    help="Check collection status of tasks installed at this path",
+)
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(

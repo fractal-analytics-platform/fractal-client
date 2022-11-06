@@ -16,6 +16,7 @@ from ._project import project_create
 from ._project import project_list
 from ._project import project_show
 from ._task import task_collect_pip
+from ._task import task_collection_check
 from ._task import task_edit
 from ._task import task_list
 from ._workflow import workflow_add_task
@@ -133,6 +134,8 @@ async def task(
         iface = await task_list(client, **kwargs)
     elif subcmd == "collect":
         iface = await task_collect_pip(client, batch=batch, **kwargs)
+    elif subcmd == "check-collection":
+        iface = await task_collection_check(client, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
     return iface
