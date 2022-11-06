@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from devtools import debug
 
@@ -7,9 +9,22 @@ async def test_task_collect(
 ):
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res = await invoke(f"task collect {PACKAGE_NAME}")
-    debug(res)
-    res.show()
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    debug(res0)
+    res0.show()
+    venv_path = res0.data["venv_path"]
+
+    res1 = await invoke(f"task check-collection {venv_path}")
+    debug(res1)
+    res1.show()
+    assert res1.data["status"] == "pending"
+
+    await asyncio.sleep(3)
+
+    res2 = await invoke(f"task check-collection {venv_path}")
+    debug(res2)
+    res2.show()
+    assert res2.data["status"] == "OK"
 
 
 async def test_task_list(clear_db, testserver, register_user, invoke):
