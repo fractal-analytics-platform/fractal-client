@@ -93,6 +93,10 @@ async def collect_tasks_pip(
     return TaskCollectResult(
         **task_pkg.dict(),
         venv_path=venv_path.relative_to(settings.FRACTAL_ROOT),
+        info=(
+            "Collecting tasks in the background. "
+            "GET /task/collect/{venv_path} to query collection status"
+        ),
     )
 
 
@@ -116,13 +120,16 @@ async def check_collection_status(
     else:
         log = None
 
-    with collection_path.open("r") as f:
-        collection_data = json.load(f)
-    task_list = collection_data["task_list"]
-    collection_status = collection_data["status"]
-    return TaskCollectStatus(
-        status=collection_status, log=log, task_list=task_list
-    )
+    try:
+        with collection_path.open("r") as f:
+            collection_data = json.load(f)
+        task_list = collection_data["task_list"]
+        collection_status = collection_data["status"]
+        return TaskCollectStatus(
+            status=collection_status, log=log, task_list=task_list
+        )
+    except FileNotFoundError:
+        return TaskCollectStatus(status="pending")
 
 
 @router.get("/", response_model=List[TaskRead])
