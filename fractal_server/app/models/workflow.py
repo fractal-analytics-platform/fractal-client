@@ -40,7 +40,7 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
     task_id: Optional[int] = Field(foreign_key="task.id")
 
     order: Optional[int]
-    args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
+    args: Dict[str, Any] = Field(sa_column=Column(JSON))
 
     task: Task = Relationship(sa_relationship_kwargs=dict(lazy="selectin"))
 
@@ -68,7 +68,7 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
         parallelization_level)
         """
         out = self.task.default_args.copy()
-        out.update(self.args)
+        out.update(self.args or {})
         popget(out, "parallelization_level")
         popget(out, "executor")
         return out
@@ -142,3 +142,7 @@ class Workflow(_WorkflowBase, table=True):
         if commit:
             await db.commit()
         return wf_task
+
+    @property
+    def input_type(self):
+        return self.task_list[0].task.input_type
