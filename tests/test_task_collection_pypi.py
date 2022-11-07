@@ -10,7 +10,7 @@ from fractal_server.tasks.collection import load_manifest
 
 def test_task_collect_model(dummy_task_package):
     debug(dummy_task_package)
-    tc = _TaskCollectPip(package=dummy_task_package)
+    tc = _TaskCollectPip(package=dummy_task_package.as_posix())
 
     assert tc.package == "fractal_tasks_dummy"
     assert tc.package_path == dummy_task_package
