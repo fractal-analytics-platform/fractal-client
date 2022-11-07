@@ -112,12 +112,16 @@ async def create_package_environment_pip(
     """
     Create environment and install package
     """
-    logger = set_logger(logger_name="fractal")
+    logger_name = task_pkg.package
+    logger = set_logger(
+        logger_name=logger_name, log_file_path=get_log_path(venv_path)
+    )
     logger.debug("Creating venv and installing package")
 
     python_bin, package_root = await _create_venv_install_package(
         path=venv_path,
         task_pkg=task_pkg,
+        logger_name=logger_name,
     )
 
     logger.debug("loading manifest")
@@ -162,6 +166,7 @@ async def _create_venv_install_package(
     *,
     task_pkg: _TaskCollectPip,
     path: Path,
+    logger_name: str,
 ) -> Tuple[Path, Path]:
     """
     Create venv and install package
@@ -182,13 +187,22 @@ async def _create_venv_install_package(
         the location of the package manifest
     """
     python_bin = await _init_venv(
-        path=path, python_version=task_pkg.python_version
+        path=path,
+        python_version=task_pkg.python_version,
+        logger_name=logger_name,
     )
-    package_root = await _pip_install(venv_path=path, task_pkg=task_pkg)
+    package_root = await _pip_install(
+        venv_path=path, task_pkg=task_pkg, logger_name=logger_name
+    )
     return python_bin, package_root
 
 
-async def _init_venv(*, path: Path, python_version: str = "3.8") -> Path:
+async def _init_venv(
+    *,
+    path: Path,
+    python_version: str = "3.8",
+    logger_name: str,
+) -> Path:
     """
     Set a virtual environment at `path/venv`
 
@@ -214,6 +228,7 @@ async def _init_venv(*, path: Path, python_version: str = "3.8") -> Path:
 async def _pip_install(
     venv_path: Path,
     task_pkg: _TaskCollectPip,
+    logger_name: str,
 ) -> Path:
     """
     Install package in venv
@@ -240,15 +255,15 @@ async def _pip_install(
     await execute_command(
         cwd=venv_path,
         command=f"{pip} install --upgrade pip",
-        logger_name="fractal",
+        logger_name=logger_name,
     )
     await execute_command(
-        cwd=venv_path, command=cmd_install, logger_name="fractal"
+        cwd=venv_path, command=cmd_install, logger_name=logger_name
     )
 
     # Extract package installation path from `pip show`
     stdout_inspect = await execute_command(
-        cwd=venv_path, command=cmd_inspect, logger_name="fractal"
+        cwd=venv_path, command=cmd_inspect, logger_name=logger_name
     )
 
     location = Path(

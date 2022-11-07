@@ -77,7 +77,10 @@ def set_logger(
 
 
 async def execute_command(
-    *, cwd: Path, command: str, logger_name: Optional[str] = None
+    *,
+    cwd: Path,
+    command: str,
+    logger_name: Optional[str] = None,
 ) -> str:
     """
     Execute arbitrary command
@@ -101,7 +104,6 @@ async def execute_command(
     cmd, *args = command_split
 
     logger = set_logger(logger_name=logger_name)
-    logger.debug(command)
     proc = await asyncio.create_subprocess_exec(
         cmd,
         *args,
@@ -111,6 +113,8 @@ async def execute_command(
     )
     stdout, stderr = await proc.communicate()
     logger.debug(f"Subprocess call to: {command}")
+    logger.info(stdout.decode("utf-8"))
+    logger.info(stderr.decode("utf-8"))
     if proc.returncode != 0:
         raise RuntimeError(stderr.decode("utf-8"))
     return stdout.decode("utf-8")
