@@ -54,11 +54,20 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
 
         assert data["status"] == "OK"
         task_list = data["task_list"]
+        assert data["log"] is None
 
         task_names = (t["name"] for t in task_list)
         assert len(task_list) == 2
         assert "dummy" in task_names
         assert "dummy parallel" in task_names
+
+        # using verbose option
+        res = await client.get(f"{PREFIX}/collect/{venv_path}?verbose=true")
+        debug(res.json())
+        assert res.status_code == 200
+        data = res.json()
+        assert data["log"] is not None
+        debug(data["log"])
 
         settings = Inject(get_settings)
         full_path = settings.FRACTAL_ROOT / venv_path

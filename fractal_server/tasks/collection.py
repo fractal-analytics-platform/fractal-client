@@ -250,7 +250,7 @@ async def _pip_install(
         pip_install_str = f"{task_pkg.package}{extras}{version_string}"
 
     cmd_install = f"{pip} install {pip_install_str}"
-    cmd_inspect = f"{pip} show -f {task_pkg.package}"
+    cmd_inspect = f"{pip} show {task_pkg.package}"
 
     await execute_command(
         cwd=venv_path,
