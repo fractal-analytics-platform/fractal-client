@@ -8,7 +8,7 @@ packages = [{include = "fractal_tasks_dummy"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-
+pydantic = "^1.10.1"
 
 [build-system]
 requires = ["poetry-core"]
