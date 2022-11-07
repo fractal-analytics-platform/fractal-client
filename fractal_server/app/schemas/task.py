@@ -1,13 +1,24 @@
+from pathlib import Path
 from typing import Any
 from typing import Dict
+from typing import List
+from typing import Literal
 from typing import Optional
 
 from pydantic import BaseModel
+from pydantic import validator
 from sqlmodel import Field  # type: ignore
 from sqlmodel import SQLModel
 
 
-__all__ = ("TaskCreate", "TaskUpdate", "TaskRead", "TaskCollectPip")
+__all__ = (
+    "TaskCreate",
+    "TaskUpdate",
+    "TaskRead",
+    "TaskCollectPip",
+    "TaskCollectResult",
+    "TaskCollectStatus",
+)
 
 
 class _TaskBase(SQLModel):
@@ -53,6 +64,10 @@ class TaskUpdate(_TaskBase):
     default_args: Optional[Dict[str, Any]] = None  # type:ignore
 
 
+class TaskRead(_TaskBase):
+    id: int
+
+
 class TaskCreate(_TaskBase):
     pass
 
@@ -67,6 +82,43 @@ class TaskCollectPip(_TaskCollectBase):
     python_version: str = "3.8"
     package_extras: Optional[str]
 
+    @validator("package")
+    def package_path_absolute(cls, value):
+        if "/" in value:
+            package_path = Path(value)
+            if not package_path.is_absolute():
+                raise ValueError(
+                    f"Package path must be absolute: {package_path}"
+                )
+            if not package_path.exists():
+                raise ValueError(
+                    f"Package file does not exist: {package_path}"
+                )
+        return value
 
-class TaskRead(_TaskBase):
-    id: int
+
+class TaskCollectResult(_TaskCollectBase):
+    """
+    Temporary result of the collection process
+
+    This schema represents the partial result returned when collection is
+    initiated but it is continuing in the background.
+
+    Attributes:
+        package (str):
+            the package name
+        venv_path (Path):
+            the installation path relative to `FRACTAL_ROOT`
+        info (str):
+            arbitrary information
+    """
+
+    package: str
+    venv_path: Path
+    info: Optional[str]
+
+
+class TaskCollectStatus(_TaskCollectBase):
+    status: Literal["OK", "pending", "fail"]
+    task_list: Optional[List[TaskRead]] = Field(default=[])
+    log: Optional[str]

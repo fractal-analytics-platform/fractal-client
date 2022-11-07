@@ -6,7 +6,8 @@ from sqlalchemy.engine import Connection
 from sqlmodel import SQLModel
 
 from fractal_server.app import models  # noqa
-from fractal_server.config import settings
+from fractal_server.config import get_settings
+from fractal_server.syringe import Inject
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -41,6 +42,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    settings = Inject(get_settings)
     context.configure(
         url=settings.DATABASE_URL,
         target_metadata=target_metadata,
@@ -66,8 +68,9 @@ async def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    from fractal_server.app.db import engine
+    from fractal_server.app.db import DB
 
+    engine = DB.engine_async()
     async with engine.connect() as connection:
         await connection.run_sync(do_run_migrations)
 

@@ -56,7 +56,12 @@ class DB:
 
     @classmethod
     async def get_db(cls) -> AsyncGenerator[AsyncSession, None]:
-        async with cls._async_session_maker() as async_session:
+        try:
+            session_maker = cls._async_session_maker()
+        except AttributeError:
+            cls.set_db()
+            session_maker = cls._async_session_maker()
+        async with session_maker as async_session:
             yield async_session
 
     @classmethod

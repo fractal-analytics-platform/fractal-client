@@ -11,7 +11,6 @@
 import json
 from pathlib import Path
 from typing import List
-from typing import Literal
 from typing import Optional
 from typing import Tuple
 
@@ -23,6 +22,15 @@ from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
 from ..utils import execute_command
+from ..utils import set_logger
+
+
+def get_collection_path(base: Path) -> Path:
+    return base / "collection.json"
+
+
+def get_log_path(base: Path) -> Path:
+    return base / "collection.log"
 
 
 class _TaskCollectPip(TaskCollectPip):
@@ -48,12 +56,17 @@ class _TaskCollectPip(TaskCollectPip):
         than a remote one from PyPI. We set the `package_path` attribute and
         get the actual package name and version from the package file name.
         """
-        package_path = Path(values["package"])
-        if package_path.exists():
-            values["package_path"] = package_path
-            values["package"], values["version"], *_ = package_path.name.split(
-                "-"
-            )
+        if "/" in values["package"]:
+            package_path = Path(values["package"])
+            if not package_path.is_absolute():
+                raise ValueError("Package path must be absolute")
+            if package_path.exists():
+                values["package_path"] = package_path
+                (
+                    values["package"],
+                    values["version"],
+                    *_,
+                ) = package_path.name.split("-")
         return values
 
     @property
@@ -95,26 +108,26 @@ async def create_package_environment_pip(
     *,
     task_pkg: _TaskCollectPip,
     venv_path: Path,
-    user: str = ".fractal",
-    env_type: Literal["venv"] = "venv",
 ) -> List[TaskCreate]:
     """
     Create environment and install package
     """
+    logger = set_logger(logger_name="fractal")
+    logger.debug("Creating venv and installing package")
 
-    if env_type == "venv":
-        python_bin, package_root = await _create_venv_install_package(
-            path=venv_path,
-            task_pkg=task_pkg,
-        )
-    else:
-        raise ValueError(f"Environment type {env_type} not supported")
+    python_bin, package_root = await _create_venv_install_package(
+        path=venv_path,
+        task_pkg=task_pkg,
+    )
+
+    logger.debug("loading manifest")
 
     task_list = load_manifest(
         package_root=package_root,
         python_bin=python_bin,
         source=task_pkg.source,
     )
+    logger.debug("manifest loaded")
     return task_list
 
 
@@ -225,8 +238,15 @@ async def _pip_install(
     cmd_inspect = f"{pip} show -f {task_pkg.package}"
 
     await execute_command(
+        cwd=venv_path,
+        command=f"{pip} install --upgrade pip",
+        logger_name="fractal",
+    )
+    await execute_command(
         cwd=venv_path, command=cmd_install, logger_name="fractal"
     )
+
+    # Extract package installation path from `pip show`
     stdout_inspect = await execute_command(
         cwd=venv_path, command=cmd_inspect, logger_name="fractal"
     )
