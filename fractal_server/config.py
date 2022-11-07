@@ -153,6 +153,7 @@ class Settings(BaseSettings):
     RUNNER_BACKEND: str = "process"
     RUNNER_ROOT_DIR: Path = Path("artifacts")
     FRACTAL_LOGGING_LEVEL: int = logging.WARNING
+    FRACTAL_PUBLIC_TASK_SUBDIR: str = ".fractal"
 
     RUNNER_CONFIG: str = "local"
     RUNNER_DEFAULT_EXECUTOR: str = "cpu-low"
