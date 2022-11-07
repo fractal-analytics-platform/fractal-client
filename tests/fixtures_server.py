@@ -214,6 +214,7 @@ async def MockCurrentUser(app, db):
                 name=self.name,
                 email=self.email,
                 hashed_password="fake_hashed_password",
+                slurm_user="slurm_user",
             )
 
         def current_active_user_override(self):
