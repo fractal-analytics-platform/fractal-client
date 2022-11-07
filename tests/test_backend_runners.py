@@ -83,7 +83,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         log_file_path=tmp_path / "job.log",
         level=logging.DEBUG,
     )
-    out = await process_workflow(
+    metadata = await process_workflow(
         workflow=wf,
         input_paths=[tmp_path / "*.txt"],
         output_path=tmp_path / "out.json",
@@ -92,10 +92,10 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         workflow_dir=tmp_path,
     )
     close_job_logger(logger)
-    debug(out)
-    assert "dummy" in out.metadata
-    assert "dummy" in out.metadata
-    assert out.metadata["history"] == [
+    debug(metadata)
+    assert "dummy" in metadata
+    assert "dummy" in metadata
+    assert metadata["history"] == [
         tk.name,
         tk.name,
         f"{tp.name}: [0, 1, 2]",
