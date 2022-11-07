@@ -44,6 +44,7 @@ def get_patched_settings(temp_path: Path):
         f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
     )
     settings.FRACTAL_ROOT = temp_path
+    settings.RUNNER_ROOT_DIR = temp_path / "artifacts"
     settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
     return settings
 
@@ -176,13 +177,6 @@ async def register_routers(app, override_settings):
     from fractal_server.main import collect_routers
 
     collect_routers(app)
-
-
-@pytest.fixture
-async def collect_tasks(db):
-    from fractal_server.app.api.v1.task import collect_tasks_headless
-
-    await collect_tasks_headless()
 
 
 @pytest.fixture
