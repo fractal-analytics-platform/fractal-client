@@ -83,7 +83,14 @@ async def collect_tasks_pip(
 ) -> Task:
 
     task_pkg = _TaskCollectPip(**task_collect.dict())
-    venv_path = create_package_dir_pip(task_pkg=task_pkg)
+
+    try:
+        venv_path = create_package_dir_pip(task_pkg=task_pkg)
+    except FileExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"The package is already installed. Original error: {e}",
+        )
 
     background_tasks.add_task(
         _background_collect_pip, venv_path=venv_path, task_pkg=task_pkg, db=db
