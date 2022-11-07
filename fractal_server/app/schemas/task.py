@@ -6,6 +6,7 @@ from typing import Literal
 from typing import Optional
 
 from pydantic import BaseModel
+from pydantic import validator
 from sqlmodel import Field  # type: ignore
 from sqlmodel import SQLModel
 
@@ -80,6 +81,20 @@ class TaskCollectPip(_TaskCollectBase):
     version: Optional[str]
     python_version: str = "3.8"
     package_extras: Optional[str]
+
+    @validator("package")
+    def package_path_absolute(cls, value):
+        if "/" in value:
+            package_path = Path(value)
+            if not package_path.is_absolute():
+                raise ValueError(
+                    f"Package path must be absolute: {package_path}"
+                )
+            if not package_path.exists():
+                raise ValueError(
+                    f"Package file does not exist: {package_path}"
+                )
+        return value
 
 
 class TaskCollectResult(_TaskCollectBase):
