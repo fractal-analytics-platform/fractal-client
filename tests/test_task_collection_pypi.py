@@ -24,8 +24,11 @@ async def test_init_venv(tmp_path):
     """
     venv_path = tmp_path / "fractal_test"
     venv_path.mkdir(exist_ok=True, parents=True)
+    logger_name = "fractal"
 
-    python_bin = await _init_venv(path=venv_path, python_version="3.8")
+    python_bin = await _init_venv(
+        path=venv_path, python_version="3.8", logger_name=logger_name
+    )
 
     assert venv_path.exists()
     assert (venv_path / "venv").exists()
@@ -46,11 +49,15 @@ async def test_pip_install(tmp_path):
     VERSION = "0.8.0"
     venv_path = tmp_path / "fractal_test" / f"{PACKAGE}{VERSION}"
     venv_path.mkdir(exist_ok=True, parents=True)
+    logger_name = "fractal"
 
-    await _init_venv(path=venv_path, python_version="3.8")
+    await _init_venv(
+        path=venv_path, python_version="3.8", logger_name=logger_name
+    )
     location = await _pip_install(
         venv_path=venv_path,
         task_pkg=_TaskCollectPip(package=PACKAGE, version=VERSION),
+        logger_name=logger_name,
     )
     debug(location)
     assert PACKAGE in location.as_posix()
