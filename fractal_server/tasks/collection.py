@@ -56,12 +56,17 @@ class _TaskCollectPip(TaskCollectPip):
         than a remote one from PyPI. We set the `package_path` attribute and
         get the actual package name and version from the package file name.
         """
-        package_path = Path(values["package"])
-        if package_path.exists():
-            values["package_path"] = package_path
-            values["package"], values["version"], *_ = package_path.name.split(
-                "-"
-            )
+        if "/" in values["package"]:
+            package_path = Path(values["package"])
+            if not package_path.is_absolute():
+                raise ValueError("Package path must be absolute")
+            if package_path.exists():
+                values["package_path"] = package_path
+                (
+                    values["package"],
+                    values["version"],
+                    *_,
+                ) = package_path.name.split("-")
         return values
 
     @property
