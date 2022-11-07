@@ -238,8 +238,15 @@ async def _pip_install(
     cmd_inspect = f"{pip} show -f {task_pkg.package}"
 
     await execute_command(
+        cwd=venv_path,
+        command=f"{pip} install --upgrade pip",
+        logger_name="fractal",
+    )
+    await execute_command(
         cwd=venv_path, command=cmd_install, logger_name="fractal"
     )
+
+    # Extract package installation path from `pip show`
     stdout_inspect = await execute_command(
         cwd=venv_path, command=cmd_inspect, logger_name="fractal"
     )
