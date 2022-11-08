@@ -44,8 +44,8 @@ class _TaskManifestBase(BaseModel):
     executable: Path
     input_type: str
     output_type: str
-    default_args: Dict[str, Any]
-    meta: Optional[Dict[str, Any]]
+    default_args: Optional[Dict[str, Any]] = {}
+    meta: Optional[Dict[str, Any]] = {}
 
 
 TaskManifestType = TypeVar("TaskManifestType", bound=_TaskManifestBase)
