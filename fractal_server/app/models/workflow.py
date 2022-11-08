@@ -46,6 +46,11 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
 
     @validator("args")
     def validate_args(cls, value):
+        """
+        Prevent fractal task reserved parameter names from entering args
+        """
+        if value is None:
+            return
         forbidden_args_keys = {
             "input_paths",
             "output_path",
