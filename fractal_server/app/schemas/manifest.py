@@ -7,6 +7,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 from pydantic import validator
+from sqlmodel import Field
 
 
 __all__ = ("TaskManifestV1", "ManifestV1")
@@ -44,8 +45,8 @@ class _TaskManifestBase(BaseModel):
     executable: Path
     input_type: str
     output_type: str
-    default_args: Optional[Dict[str, Any]] = {}
-    meta: Optional[Dict[str, Any]] = {}
+    default_args: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    meta: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
 
 TaskManifestType = TypeVar("TaskManifestType", bound=_TaskManifestBase)
