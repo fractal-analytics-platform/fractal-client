@@ -109,7 +109,8 @@ async def test_task_apply(
     res = await invoke(cmd)
     debug(res.data)
     assert res.retcode == 0
-    raise NotImplementedError
+
+    # TODO: verify outout
 
 
 @pytest.mark.xfail
