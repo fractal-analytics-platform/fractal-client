@@ -7,6 +7,7 @@ from typing import Optional
 from pydantic import validator
 from sqlmodel import SQLModel
 
+
 __all__ = (
     "ProjectCreate",
     "ProjectRead",
@@ -37,7 +38,6 @@ class ProjectCreate(_ProjectBase):
 
 class ProjectRead(_ProjectBase):
     id: int
-    slug: str
     dataset_list: List["DatasetRead"] = []
 
 

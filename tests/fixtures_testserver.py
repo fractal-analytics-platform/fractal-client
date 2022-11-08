@@ -1,6 +1,6 @@
 import asyncio
+import logging
 from os import environ
-from typing import Optional
 
 import pytest
 
@@ -41,6 +41,8 @@ async def testserver(temp_data_dir, temp_db_path):
     environ["JWT_SECRET_KEY"] = "secret_key"
     environ["DEPLOYMENT_TYPE"] = "development"
     environ["DATA_DIR_ROOT"] = temp_data_dir.as_posix()
+    environ["FRACTAL_ROOT"] = temp_data_dir.as_posix()
+    environ["FRACTAL_LOGGING_LEVEL"] = str(logging.DEBUG)
 
     environ["DB_ENGINE"] = "sqlite"
 
@@ -82,8 +84,6 @@ async def user_factory(client, testserver):
             f"{testserver}/auth/register",
             json=dict(email=email, password=password, slurm_user=slurm_user),
         )
-        from devtools import debug
-        debug(res.json())
         assert res.status_code == 201
         return res.json()
 

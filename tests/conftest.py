@@ -15,6 +15,11 @@ environ["SLURM_USER"] = "slurm_user"
 
 
 @pytest.fixture(scope="session")
+def testdata_path() -> Path:
+    return Path(__file__).parent / "data"
+
+
+@pytest.fixture(scope="session")
 def event_loop():
     import asyncio
 
