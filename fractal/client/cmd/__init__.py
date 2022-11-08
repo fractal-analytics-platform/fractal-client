@@ -20,6 +20,7 @@ from ._task import task_collection_check
 from ._task import task_edit
 from ._task import task_list
 from ._workflow import workflow_add_task
+from ._workflow import workflow_apply
 from ._workflow import workflow_delete
 from ._workflow import workflow_edit
 from ._workflow import workflow_new
@@ -156,6 +157,8 @@ async def workflow(
         iface = await workflow_add_task(client, **kwargs)
     elif subcmd == "rm-task":
         iface = await workflow_remove_task(client, **kwargs)
+    elif subcmd == "apply":
+        iface = await workflow_apply(client, **kwargs)
     return iface
 
 

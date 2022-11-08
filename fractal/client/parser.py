@@ -346,6 +346,26 @@ workflow_edit_parser.add_argument(
     help="Change the project associated with the current workflow",
 )
 
+workflow_apply_parser = workflow_subparsers.add_parser(
+    "apply", help="Apply workflow to dataset", argument_default=ap.SUPPRESS
+)
+workflow_apply_parser.add_argument("workflow_id")
+workflow_apply_parser.add_argument("input_dataset_id")
+workflow_apply_parser.add_argument(
+    "-o", "--output_dataset_id", help="Output dataset id"
+)
+workflow_apply_parser.add_argument(
+    "--overwrite-input",
+    default=False,
+    action="store_true",
+    help="Allow overwriting the content of the input dataset",
+)
+workflow_apply_parser.add_argument(
+    "-p",
+    "--project-id",
+    help="Id of project the workflow and dataset belong to",
+)
+
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
