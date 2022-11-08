@@ -39,7 +39,7 @@ class _TaskBase(SQLModel):
         tasks across fractal installations when a workflow is imported.
     input_type, output_type: str
         the type of data the task expects as input, output, respectively.
-    default_args: Dict[str, Any]
+    default_args: Optional[Dict[str, Any]]
         dictionary (saved as JSON) of the default parameters of the task
     """
 
@@ -48,7 +48,7 @@ class _TaskBase(SQLModel):
     source: str
     input_type: str
     output_type: str
-    default_args: Dict[str, Any] = Field(default={})
+    default_args: Optional[Dict[str, Any]] = Field(default={})
     meta: Optional[Dict[str, Any]] = Field(default={})
 
     class Config:
@@ -61,7 +61,8 @@ class TaskUpdate(_TaskBase):
     output_type: Optional[str]  # type:ignore
     command: Optional[str]  # type:ignore
     source: Optional[str]  # type:ignore
-    default_args: Optional[Dict[str, Any]] = None  # type:ignore
+    default_args: Optional[Dict[str, Any]]  # type:ignore
+    meta: Optional[Dict[str, Any]]  # type:ignore
 
 
 class TaskRead(_TaskBase):

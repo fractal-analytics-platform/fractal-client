@@ -2,6 +2,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Union
 
 from pydantic import validator
 from sqlalchemy import Column
@@ -10,7 +11,6 @@ from sqlalchemy.types import JSON
 from sqlmodel import Field
 from sqlmodel import Relationship
 
-from ...utils import popget
 from ..db import AsyncSession
 from ..schemas.workflow import _WorkflowBase
 from ..schemas.workflow import _WorkflowTaskBase
@@ -69,13 +69,10 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
     @property
     def arguments(self):
         """
-        Override default arguments and strip specific arguments (executor and
-        parallelization_level)
+        Override default arguments
         """
         out = self.task.default_args.copy()
         out.update(self.args or {})
-        popget(out, "parallelization_level")
-        popget(out, "executor")
         return out
 
     @property
@@ -83,11 +80,11 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
         return self.task.is_parallel
 
     @property
-    def parallelization_level(self) -> str:
+    def parallelization_level(self) -> Union[str, None]:
         return self.task.parallelization_level
 
     @property
-    def executor(self) -> str:
+    def executor(self) -> Union[str, None]:
         return self.task.executor
 
     def assemble_args(self, extra: Dict[str, Any] = None):
@@ -143,7 +140,7 @@ class Workflow(_WorkflowBase, table=True):
         wf_task = WorkflowTask(task_id=task_id, args=args)
         db.add(wf_task)
         self.task_list.insert(order, wf_task)
-        self.task_list.reorder()
+        self.task_list.reorder()  # type: ignore
         if commit:
             await db.commit()
         return wf_task

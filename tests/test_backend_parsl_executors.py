@@ -55,7 +55,7 @@ async def test_valid_executors(db, project_factory, MockCurrentUser, tmp_path):
         source=dummy.__file__,
         input_type="Any",
         output_type="Any",
-        default_args=dict(parallelization_level="index", executor="cpu-mid"),
+        meta=dict(parallelization_level="index", executor="cpu-mid"),
     )
 
     # Create a workflow with the dummy task as member
@@ -122,7 +122,7 @@ async def test_invalid_executors(
         source=dummy.__file__,
         input_type="Any",
         output_type="Any",
-        default_args=dict(executor="invalid executor name"),
+        meta=dict(executor="invalid executor name"),
     )
 
     # Create a workflow with the dummy task as member

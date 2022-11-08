@@ -56,7 +56,7 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
         source=dummy.__file__,
         input_type="Any",
         output_type="Any",
-        default_args=dict(parallelization_level="index"),
+        meta=dict(parallelization_level="index"),
     )
 
     # Create a workflow with the dummy task as member
