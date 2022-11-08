@@ -229,6 +229,12 @@ task_collect_parser.add_argument(
         "`fractal-tasks-core[torch,tensorflow]`"
     ),
 )
+task_collect_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Intall tasks as private to the user (as opposed to global)",
+)
 
 # task check-collection
 task_check_collection_parser = task_subparsers.add_parser(
@@ -344,6 +350,26 @@ workflow_edit_parser.add_argument("--name", help="New workflow name")
 workflow_edit_parser.add_argument(
     "--project-id",
     help="Change the project associated with the current workflow",
+)
+
+workflow_apply_parser = workflow_subparsers.add_parser(
+    "apply", help="Apply workflow to dataset", argument_default=ap.SUPPRESS
+)
+workflow_apply_parser.add_argument("workflow_id")
+workflow_apply_parser.add_argument("input_dataset_id")
+workflow_apply_parser.add_argument(
+    "-o", "--output_dataset_id", help="Output dataset id"
+)
+workflow_apply_parser.add_argument(
+    "--overwrite-input",
+    default=False,
+    action="store_true",
+    help="Allow overwriting the content of the input dataset",
+)
+workflow_apply_parser.add_argument(
+    "-p",
+    "--project-id",
+    help="Id of project the workflow and dataset belong to",
 )
 
 

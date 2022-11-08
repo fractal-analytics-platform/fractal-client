@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -6,6 +7,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from ..schemas import ApplyWorkflowCreate
 from ..schemas import WorkflowCreate
 from ..schemas import WorkflowRead
 from ..schemas import WorkflowTaskCreate
@@ -113,3 +115,30 @@ async def workflow_edit(
         res, expected_status_code=200, coerce=WorkflowRead
     )
     return RichJsonInterface(retcode=0, data=new_workflow.dict())
+
+
+async def workflow_apply(
+    client: AuthClient,
+    *,
+    workflow_id: int,
+    input_dataset_id: int,
+    output_dataset_id: int,
+    # output_dataset_id: Optional[int] = None,
+    overwrite_input: bool = False,
+    project_id: Optional[int] = None,
+    **kwargs,
+) -> BaseInterface:
+    apply_wf_create = ApplyWorkflowCreate(
+        workflow_id=workflow_id,
+        input_dataset_id=input_dataset_id,
+        output_dataset_id=output_dataset_id,
+        overwrite_input=overwrite_input,
+        project_id=project_id,
+    )
+
+    res = await client.post(
+        f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()
+    )
+    # TODO check output
+
+    return RichJsonInterface(retcode=0, data=res.json())
