@@ -128,9 +128,6 @@ async def workflow_apply(
     project_id: Optional[int] = None,
     **kwargs,
 ) -> BaseInterface:
-    from devtools import debug
-
-    debug(kwargs)
     apply_wf_create = ApplyWorkflowCreate(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
@@ -138,7 +135,6 @@ async def workflow_apply(
         overwrite_input=overwrite_input,
         project_id=project_id,
     )
-    debug(apply_wf_create)
 
     res = await client.post(
         f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()
