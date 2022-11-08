@@ -34,7 +34,6 @@ from ...models import ResourceRead
 from ...models import ResourceUpdate
 from ...models import Workflow
 from ...models import WorkflowRead
-from ...models.task import Task
 from ...runner import auto_output_dataset
 from ...runner import submit_workflow
 from ...runner import validate_workflow_compatibility
@@ -174,7 +173,8 @@ async def apply_workflow(
     stm = (
         select(Project, Dataset)
         .join(Dataset)
-        .where(Project.user_owner_id == user.id)
+        .join(LinkUserProject)
+        .where(LinkUserProject.user_id == user.id)
         .where(Project.id == apply_workflow.project_id)
         .where(Dataset.id == apply_workflow.input_dataset_id)
     )
@@ -182,7 +182,8 @@ async def apply_workflow(
 
     # TODO check that user is allowed to use this task
 
-    workflow = db_sync.get(Task, apply_workflow.workflow_id)
+    workflow = db_sync.get(Workflow, apply_workflow.workflow_id)
+
     if not workflow:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -230,9 +231,12 @@ async def apply_workflow(
 
     background_tasks.add_task(
         submit_workflow,
-        job=job,
-        user=user,
         db=db,
+        workflow=workflow,
+        input_dataset=input_dataset,
+        output_dataset=output_dataset,
+        job_id=job.id,
+        username=user.slurm_user,
     )
 
     return job

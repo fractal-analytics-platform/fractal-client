@@ -38,7 +38,12 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
     task_collection = dict(package=dummy_task_package.as_posix())
 
     async with MockCurrentUser(persist=True):
-        res = await client.post(f"{PREFIX}/collect/pip/", json=task_collection)
+        # NOTE: collecting private tasks so that they are assigned to user and
+        # written in a non-default folder. Bypass for non stateless
+        # FRACTAL_ROOT in test suite.
+        res = await client.post(
+            f"{PREFIX}/collect/pip/?public=false", json=task_collection
+        )
         debug(res.json())
         assert res.status_code == 201
 

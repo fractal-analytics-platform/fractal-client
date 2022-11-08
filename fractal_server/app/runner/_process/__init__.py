@@ -155,7 +155,7 @@ async def process_workflow(
     """
 
     with ThreadPoolExecutor() as executor:
-        output_dataset_metadata = recursive_task_submission(
+        output_task_pars_fut = recursive_task_submission(
             executor=executor,
             task_list=workflow.task_list,
             task_pars=TaskParameters(
@@ -166,4 +166,6 @@ async def process_workflow(
             ),
             workflow_dir=workflow_dir,
         )
-    return output_dataset_metadata.result()
+    output_task_pars = output_task_pars_fut.result()
+    output_dataset_metadata = output_task_pars.metadata
+    return output_dataset_metadata

@@ -44,6 +44,7 @@ def get_patched_settings(temp_path: Path):
         f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
     )
     settings.FRACTAL_ROOT = temp_path
+    settings.RUNNER_ROOT_DIR = temp_path / "artifacts"
     settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
     return settings
 
@@ -179,13 +180,6 @@ async def register_routers(app, override_settings):
 
 
 @pytest.fixture
-async def collect_tasks(db):
-    from fractal_server.app.api.v1.task import collect_tasks_headless
-
-    await collect_tasks_headless()
-
-
-@pytest.fixture
 async def client(
     app: FastAPI, register_routers, db, db_sync
 ) -> AsyncGenerator[AsyncClient, Any]:
@@ -220,6 +214,7 @@ async def MockCurrentUser(app, db):
                 name=self.name,
                 email=self.email,
                 hashed_password="fake_hashed_password",
+                slurm_user="slurm_user",
             )
 
         def current_active_user_override(self):

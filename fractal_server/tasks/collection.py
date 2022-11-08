@@ -89,10 +89,11 @@ def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
 def create_package_dir_pip(
     *,
     task_pkg: _TaskCollectPip,
-    user: str = ".fractal",
+    user: Optional[str] = None,
     **_,
 ) -> Path:
     settings = Inject(get_settings)
+    user = user or settings.FRACTAL_PUBLIC_TASK_SUBDIR
 
     package_dir = f"{task_pkg.package}{task_pkg.version or ''}"
     if settings.FRACTAL_ROOT:

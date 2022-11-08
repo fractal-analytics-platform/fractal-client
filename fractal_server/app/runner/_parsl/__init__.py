@@ -113,7 +113,7 @@ def recursive_task_assembly(
     task_list: List[WorkflowTask],
     task_pars: TaskParameters,
     workflow_dir: Path,
-) -> AppFuture:
+) -> AppFuture:  # AppFuture[TaskParameters]
 
     settings = Inject(get_settings)
 
@@ -207,7 +207,7 @@ async def process_workflow(
         logger_name=logger_name,
     ) as dfk:
         logger.info("Start definition of app futures (from last to first)")
-        final_metadata_future = recursive_task_assembly(
+        final_task_pars_future = recursive_task_assembly(
             data_flow_kernel=dfk,
             task_list=workflow.task_list,
             task_pars=TaskParameters(
@@ -220,9 +220,9 @@ async def process_workflow(
         )
         logger.info("Definition of app futures complete")
         logger.info("Start execution")
-        final_metadata = await async_wrap(get_app_future_result)(
-            app_future=final_metadata_future
+        final_task_pars = await async_wrap(get_app_future_result)(
+            app_future=final_task_pars_future
         )
         logger.info("Execution complete")
 
-    return final_metadata
+    return final_task_pars.metadata

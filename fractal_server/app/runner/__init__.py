@@ -1,5 +1,5 @@
 import logging
-import os
+from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,25 +29,24 @@ except ModuleNotFoundError as e:
 # FIXME
 # We need to wrap the use of Inject so as to make it lazy, otherwise the import
 # will likely happen before any dependency override
-settings = Inject(get_settings)
+_settings = Inject(get_settings)
 
 try:
-    process_workflow = _backends[settings.RUNNER_BACKEND]
+    process_workflow = _backends[_settings.RUNNER_BACKEND]
 except KeyError:
     from ...config import DeploymentType
-    from ...config import settings
 
-    if settings.DEPLOYMENT_TYPE in [
+    if _settings.DEPLOYMENT_TYPE in [
         DeploymentType.TESTING,
         DeploymentType.DEVELOPMENT,
     ]:
-        raise _backend_errors.get(settings.RUNNER_BACKEND)
+        raise _backend_errors.get(_settings.RUNNER_BACKEND)
     else:
 
         def no_function(*args, **kwarsg):
-            error = _backend_errors.get(settings.RUNNER_BACKEND)
+            error = _backend_errors.get(_settings.RUNNER_BACKEND)
             raise NotImplementedError(
-                f"Runner backend {settings.RUNNER_BACKEND} not implemented"
+                f"Runner backend {_settings.RUNNER_BACKEND} not implemented"
                 f"\n{error}"
             )
 
@@ -61,8 +60,8 @@ async def submit_workflow(
     input_dataset: Dataset,
     output_dataset: Dataset,
     job_id: int,
-    username: str = None,
-    worker_init: str = None,
+    username: Optional[str] = None,
+    worker_init: Optional[str] = None,
 ):
     """
     Prepares a workflow and applies it to a dataset
@@ -84,12 +83,14 @@ async def submit_workflow(
 
     workflow_id = workflow.id
 
-    WORKFLOW_DIR = settings.RUNNER_ROOT_DIR / "workflow_{workflow_id:06d}"
-    if not os.path.isdir(WORKFLOW_DIR):
-        os.mkdir(WORKFLOW_DIR)
+    settings = Inject(get_settings)
+    WORKFLOW_DIR = settings.RUNNER_ROOT_DIR / f"workflow_{workflow_id:06d}"
+    if not WORKFLOW_DIR.exists():
+        WORKFLOW_DIR.mkdir(parents=True)
 
+    logger_name = f"WF{workflow_id}"
     logger = set_logger(
-        logger_name=f"WF{workflow_id}",
+        logger_name=logger_name,
         log_file_path=WORKFLOW_DIR / "workflow.log",
         level=logging.INFO,
         formatter=logging.Formatter("%(asctime)s; %(levelname)s; %(message)s"),
@@ -103,8 +104,8 @@ async def submit_workflow(
         output_path=output_path,
         input_metadata=input_dataset.meta,
         username=username,
-        logger=logger,
         workflow_dir=WORKFLOW_DIR,
+        logger_name=logger_name,
     )
 
     logger.info(f'END workflow "{workflow.name}"')

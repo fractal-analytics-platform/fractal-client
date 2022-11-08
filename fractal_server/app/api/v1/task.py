@@ -80,12 +80,14 @@ async def collect_tasks_pip(
     background_tasks: BackgroundTasks,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
+    public: bool = True,
 ) -> Task:
 
     task_pkg = _TaskCollectPip(**task_collect.dict())
 
     try:
-        venv_path = create_package_dir_pip(task_pkg=task_pkg)
+        pkg_user = None if public else user.slurm_user
+        venv_path = create_package_dir_pip(task_pkg=task_pkg, user=pkg_user)
     except FileExistsError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

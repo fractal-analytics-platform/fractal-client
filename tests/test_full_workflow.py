@@ -11,49 +11,52 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 from os import environ
-from typing import Any
-from typing import Dict
-from typing import List
+from pathlib import Path
 
 import pytest
 from devtools import debug
-
-pytest.skip(allow_module_level=True)
 
 PREFIX = "/api/v1"
 
 environ["RUNNER_MONITORING"] = "0"
 
 
-def task_id_by_name(name: str, task_list: List[Dict[str, Any]]) -> int:
-    for task in task_list:
-        if task["name"] == name:
-            return task["id"]
-    raise ValueError("No task `{name}`")
+@pytest.fixture
+async def collect_tasks(MockCurrentUser, client, dummy_task_package):
+    async with MockCurrentUser(persist=True):
+        # COLLECT DUMMY TASKS
+        res = await client.post(
+            f"{PREFIX}/task/collect/pip/",
+            json=dict(package=dummy_task_package.as_posix()),
+        )
+        data = res.json()
+        venv_path = Path(data["venv_path"])
+
+        res = await client.get(f"{PREFIX}/task/collect/{venv_path}")
+        assert res.status_code == 200
+        data = res.json()
+        task_list = data["task_list"]
+    return task_list
 
 
 async def test_full_workflow(
     client,
     MockCurrentUser,
     testdata_path,
-    collect_tasks,
     tmp_path,
+    collect_tasks,
+    project_factory,
+    dataset_factory,
 ):
 
-    async with MockCurrentUser(persist=True):
-
-        # CREATE PROJECT
-        res = await client.post(
-            f"{PREFIX}/project/",
-            json=dict(
-                name="test project",
-                project_dir=tmp_path.as_posix(),
-            ),
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        debug(project)
+        project_id = project.id
+        input_dataset = await dataset_factory(
+            project, name="input", type="image", read_only=True
         )
-        assert res.status_code == 201
-        project = res.json()
-        project_id = project["id"]
-        input_dataset_id = project["dataset_list"][0]["id"]
+        input_dataset_id = input_dataset.id
 
         # EDIT DEFAULT DATASET TO SET TYPE IMAGE
 
@@ -82,7 +85,7 @@ async def test_full_workflow(
             f"{PREFIX}/project/{project_id}/",
             json=dict(
                 name="output dataset",
-                type="zarr",
+                type="json",
             ),
         )
         debug(res.json())
@@ -92,7 +95,7 @@ async def test_full_workflow(
 
         res = await client.post(
             f"{PREFIX}/project/{project_id}/{output_dataset['id']}",
-            json=dict(path=tmp_path.as_posix(), glob_pattern="*.zarr"),
+            json=dict(path=tmp_path.as_posix(), glob_pattern="out.json"),
         )
         out_resource = res.json()
         debug(out_resource)
@@ -101,52 +104,24 @@ async def test_full_workflow(
         # CHECK WHERE WE ARE AT
         res = await client.get(f"{PREFIX}/project/{project_id}")
         debug(res.json())
+        project_dict = res.json()
 
         # CREATE WORKFLOW
-
         res = await client.post(
-            f"{PREFIX}/task/",
-            json=dict(
-                name="my workflow",
-                resource_type="workflow",
-                input_type="image",
-                output_type="zarr",
-            ),
+            f"{PREFIX}/workflow/",
+            json=dict(name="test workflow", project_id=project_dict["id"]),
         )
-        wf = res.json()
-        workflow_id = wf["id"]
-        debug(wf)
-        assert res.status_code == 201
-
-        res = await client.get(f"{PREFIX}/task/")
-        assert res.status_code == 200
-        task_list = res.json()
-
-        task_id_create_zarr = task_id_by_name(
-            name="Create OME-ZARR structure", task_list=task_list
-        )
-        task_id_yokogawa = task_id_by_name(
-            name="Yokogawa to Zarr", task_list=task_list
-        )
-
-        # add subtasks
-        res = await client.post(
-            f"{PREFIX}/task/{workflow_id}/subtask/",
-            json=dict(
-                subtask_id=task_id_create_zarr,
-                args=dict(channel_parameters={"A01_C01": {}}),
-            ),
-        )
-        assert res.status_code == 201
-        res = await client.post(
-            f"{PREFIX}/task/{workflow_id}/subtask/",
-            json=dict(
-                subtask_id=task_id_yokogawa,
-                args=dict(parallelization_level="well"),
-            ),
-        )
-        assert res.status_code == 201
         debug(res.json())
+        assert res.status_code == 201
+        workflow_dict = res.json()
+        workflow_id = workflow_dict["id"]
+
+        res = await client.post(
+            f"{PREFIX}/workflow/{workflow_id}/add-task/",
+            json=dict(task_id=collect_tasks[0]["id"]),
+        )
+        debug(res.json())
+        assert res.status_code == 201
 
         # EXECUTE WORKFLOW
 
@@ -166,116 +141,9 @@ async def test_full_workflow(
         assert res.status_code == 202
 
         # Verify output
-        res = await client.get(f"{PREFIX}/project/{project_id}")
-        debug(res.json())
-
-        out_ds = [
-            ds
-            for ds in res.json()["dataset_list"]
-            if ds["name"] == "output dataset"
-        ][0]
-
-        output_path = out_ds["resource_list"][0]["path"]
-        component = out_ds["meta"]["well"][0]
-
-        debug(output_path)
-        zarrurl = output_path + "/" + component + "0"
-        debug(zarrurl)
-        try:
-            import dask.array as da
-
-            data_czyx = da.from_zarr(zarrurl)
-            assert data_czyx.shape == (1, 2, 2160, 2 * 2560)
-            assert data_czyx[0, 0, 0, 0].compute() == 0
-        except ImportError:
-            pass
-
-
-async def test_full_workflow_repeated_tasks(
-    app,
-    client,
-    MockCurrentUser,
-    collect_tasks,
-    tmp_path,
-):
-
-    num_subtasks = 3
-
-    async with MockCurrentUser(persist=True):
-
-        # CREATE PROJECT
-        res = await client.post(
-            f"{PREFIX}/project/",
-            json=dict(
-                name="test project",
-                project_dir=tmp_path.as_posix(),
-            ),
+        res = await client.get(
+            f"{PREFIX}/dataset/{project_id}/{output_dataset_id}"
         )
-        assert res.status_code == 201
-        project = res.json()
-        project_id = project["id"]
-
-        # ADD A RESOURCE TO THE INPUT/OUTPUT DATASET
-        input_dataset_id = project["dataset_list"][0]["id"]
-        res = await client.post(
-            f"{PREFIX}/project/{project_id}/{input_dataset_id}",
-            json={
-                "path": tmp_path.as_posix(),
-                "glob_pattern": "*.json",
-            },
-        )
-        debug(res.json())
-        assert res.status_code == 201
-
-        # CHECK WHERE WE ARE AT
-        res = await client.get(f"{PREFIX}/project/{project_id}")
-        debug(res.json())
-
-        # CREATE WORKFLOW
-        res = await client.post(
-            f"{PREFIX}/task/",
-            json=dict(
-                name="my workflow",
-                resource_type="workflow",
-                input_type="Any",
-                output_type="None",
-            ),
-        )
-        wf = res.json()
-        workflow_id = wf["id"]
-        debug(wf)
-        assert res.status_code == 201
-
-        # Extract ID of task "dummy"
-        res = await client.get(f"{PREFIX}/task/")
-        assert res.status_code == 200
-        task_list = res.json()
-        task_id = task_id_by_name(name="dummy", task_list=task_list)
-
-        # add subtasks
-        for ind_task in range(num_subtasks):
-            res = await client.post(
-                f"{PREFIX}/task/{workflow_id}/subtask/",
-                json=dict(
-                    subtask_id=task_id,
-                    args=dict(iteration=ind_task),
-                ),
-            )
-            assert res.status_code == 201
-
-        # EXECUTE WORKFLOW
-
-        payload = dict(
-            project_id=project_id,
-            input_dataset_id=input_dataset_id,
-            output_dataset_id=input_dataset_id,
-            workflow_id=workflow_id,
-            overwrite_input=False,
-        )
-        debug(payload)
-        res = await client.post(
-            f"{PREFIX}/project/apply/",
-            json=payload,
-        )
-        debug(res.json())
-        assert res.status_code == 202
+        data = res.json()
+        debug(data)
+        assert "dummy" in data["meta"]
