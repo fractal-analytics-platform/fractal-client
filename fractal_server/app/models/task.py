@@ -19,9 +19,8 @@ class Task(_TaskBase, table=True):  # type: ignore
 
     @property
     def parallelization_level(self) -> Optional[str]:
-        meta = self.meta
         try:
-            return meta["parallelization_level"]
+            return self.meta["parallelization_level"]
         except KeyError:
             return None
 
@@ -31,8 +30,7 @@ class Task(_TaskBase, table=True):  # type: ignore
 
     @property
     def executor(self) -> Optional[str]:
-        meta = self.meta
         try:
-            return meta["executor"]
+            return self.meta["executor"]
         except KeyError:
             return None
