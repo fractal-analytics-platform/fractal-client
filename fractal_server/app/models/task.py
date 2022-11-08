@@ -12,13 +12,15 @@ from ..schemas.task import _TaskBase
 class Task(_TaskBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     project_id: Optional[int] = Field(foreign_key="project.id")
+    # FIXME: is default={} needed for default_args and meta?
     default_args: Dict[str, Any] = Field(sa_column=Column(JSON), default={})
     meta: Optional[Dict[str, Any]] = Field(sa_column=Column(JSON), default={})
 
     @property
     def parallelization_level(self) -> Optional[str]:
+        meta = self.meta or {}
         try:
-            return self.default_args["parallelization_level"]
+            return meta["parallelization_level"]
         except KeyError:
             return None
 
@@ -28,7 +30,8 @@ class Task(_TaskBase, table=True):  # type: ignore
 
     @property
     def executor(self) -> Optional[str]:
+        meta = self.meta or {}
         try:
-            return self.default_args["executor"]
+            return meta["executor"]
         except KeyError:
             return None
