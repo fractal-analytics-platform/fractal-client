@@ -83,6 +83,7 @@ async def task_collect_pip(
     version: Optional[str] = None,
     python_version: Optional[str],
     package_extras: Optional[str] = None,
+    private: Optional[bool] = False,
     **kwargs,
 ) -> BaseInterface:
     task_collect = TaskCollectPip(
@@ -93,7 +94,7 @@ async def task_collect_pip(
     )
 
     res = await client.post(
-        f"{settings.BASE_URL}/task/collect/pip/",
+        f"{settings.BASE_URL}/task/collect/pip/?public={not private}",
         json=task_collect.dict(),
     )
     # TODO check response

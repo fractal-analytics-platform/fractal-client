@@ -229,6 +229,12 @@ task_collect_parser.add_argument(
         "`fractal-tasks-core[torch,tensorflow]`"
     ),
 )
+task_collect_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Intall tasks as private to the user (as opposed to global)",
+)
 
 # task check-collection
 task_check_collection_parser = task_subparsers.add_parser(

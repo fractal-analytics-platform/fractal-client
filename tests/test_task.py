@@ -19,7 +19,9 @@ async def test_task_collection_and_list(
     """
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    # Install as private task so that it does not interfere with the common
+    # FRACTAL_ROOT
+    res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
     debug(res0)
     res0.show()
     venv_path = res0.data["venv_path"]
