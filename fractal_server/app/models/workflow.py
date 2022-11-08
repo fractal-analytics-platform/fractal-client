@@ -40,7 +40,7 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
     task_id: Optional[int] = Field(foreign_key="task.id")
 
     order: Optional[int]
-    args: Dict[str, Any] = Field(sa_column=Column(JSON))
+    args: Optional[Dict[str, Any]] = Field(sa_column=Column(JSON))
 
     task: Task = Relationship(sa_relationship_kwargs=dict(lazy="selectin"))
 
