@@ -77,6 +77,30 @@ async def testserver(temp_data_dir, temp_db_path):
     proc.kill()
 
 
+@pytest.fixture
+async def task_factory(testserver):
+    from fractal_server.app.models.task import Task
+    from fractal_server.app.db import get_db
+
+    async def _task_factory(**task_args_override):
+        task_args = dict(
+            name="test_task",
+            command="cmd",
+            source="source",
+            input_type="Any",
+            output_type="Any",
+        )
+        task_args.update(task_args_override)
+        t = Task(**task_args)
+        async for db in get_db():
+            db.add(t)
+            await db.commit()
+            await db.refresh(t)
+        return t
+
+    return _task_factory
+
+
 @pytest.fixture()
 async def user_factory(client, testserver):
     async def __register_user(email: str, password: str, slurm_user: str):
