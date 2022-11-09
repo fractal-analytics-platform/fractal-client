@@ -114,10 +114,15 @@ async def task_factory(db):
 async def project_factory(db):
     from fractal_server.app.models.project import Project
 
-    async def _project_factory(**project_args_override):
+    async def _project_factory(user_id=None, **project_args_override):
         project_args = dict(name="name", project_dir="project/dir")
         project_args.update(project_args_override)
         p = Project(**project_args)
+        if user_id:
+            from fractal_server.app.security import User
+
+            user = await db.get(User, user_id)
+            p.user_member_list.append(user)
         db.add(p)
         await db.commit()
         await db.refresh(p)
@@ -127,12 +132,12 @@ async def project_factory(db):
 
 
 @pytest.fixture
-async def workflow_factory(db, project_factory):
+async def workflow_factory(db, project_factory, register_user):
     from fractal_server.app.models.workflow import Workflow
 
     async def _workflow_factory(**wf_args_override):
         if "project_id" not in wf_args_override:
-            p = await project_factory()
+            p = await project_factory(user_id=register_user["id"])
             wf_args_override["project_id"] = p.id
 
         wf_args = dict(
