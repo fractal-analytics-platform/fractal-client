@@ -299,7 +299,7 @@ sqlmodel = "*"
 
 [[package]]
 name = "fractal-server"
-version = "1.0.0a0"
+version = "1.0.0a1"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -322,7 +322,7 @@ tasks-core = ["fractal-tasks-core (<1.0.0)"]
 
 [package.source]
 type = "url"
-url = "https://github.com/fractal-analytics-platform/fractal-server/releases/download/1.0.0a0/fractal_server-1.0.0a0-py3-none-any.whl"
+url = "https://github.com/fractal-analytics-platform/fractal-server/releases/download/1.0.0a1/fractal_server-1.0.0a1-py3-none-any.whl"
 [[package]]
 name = "greenlet"
 version = "2.0.1"
@@ -860,7 +860,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "48e3d3fe0c5350fb2006177cc37632e3f076bc41b18a160b4b217830df23b18c"
+content-hash = "a2580360718035285399b15817b3ecaa25fe5a6c02a0ce54608b7b95bdc385c8"
 
 [metadata.files]
 aiosqlite = [

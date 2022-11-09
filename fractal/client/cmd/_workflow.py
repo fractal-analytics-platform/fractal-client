@@ -1,4 +1,6 @@
+import json
 import logging
+from pathlib import Path
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -67,14 +69,19 @@ async def workflow_add_task(
     id: int,
     task_id: int,
     order: int = None,
+    args_file: Optional[str] = None,
     **kwargs,
 ) -> RichJsonInterface:
     workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
+    if args_file:
+        with Path(args_file).open("r") as f:
+            args = json.load(f)
+            workflow_task.args = args
+
     res = await client.post(
         f"{settings.BASE_URL}/workflow/{id}/add-task/",
         json=workflow_task.dict(),
     )
-
     workflow_task = check_response(
         res, expected_status_code=201, coerce=WorkflowRead
     )

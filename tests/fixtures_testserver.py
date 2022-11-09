@@ -77,6 +77,82 @@ async def testserver(temp_data_dir, temp_db_path):
     proc.kill()
 
 
+@pytest.fixture
+async def db(testserver):
+    """
+    NOTE: Only use this fixture within other fixtures!!!
+    """
+    from fractal_server.app.db import get_db
+
+    async for db in get_db():
+        yield db
+
+
+@pytest.fixture
+async def task_factory(db):
+    from fractal_server.app.models.task import Task
+
+    async def _task_factory(**task_args_override):
+        task_args = dict(
+            name="test_task",
+            command="cmd",
+            source="source",
+            input_type="Any",
+            output_type="Any",
+        )
+        task_args.update(task_args_override)
+        t = Task(**task_args)
+        db.add(t)
+        await db.commit()
+        await db.refresh(t)
+        return t
+
+    return _task_factory
+
+
+@pytest.fixture
+async def project_factory(db):
+    from fractal_server.app.models.project import Project
+
+    async def _project_factory(user_id=None, **project_args_override):
+        project_args = dict(name="name", project_dir="project/dir")
+        project_args.update(project_args_override)
+        p = Project(**project_args)
+        if user_id:
+            from fractal_server.app.security import User
+
+            user = await db.get(User, user_id)
+            p.user_member_list.append(user)
+        db.add(p)
+        await db.commit()
+        await db.refresh(p)
+        return p
+
+    return _project_factory
+
+
+@pytest.fixture
+async def workflow_factory(db, project_factory, register_user):
+    from fractal_server.app.models.workflow import Workflow
+
+    async def _workflow_factory(**wf_args_override):
+        if "project_id" not in wf_args_override:
+            p = await project_factory(user_id=register_user["id"])
+            wf_args_override["project_id"] = p.id
+
+        wf_args = dict(
+            name="name",
+        )
+        wf_args.update(wf_args_override)
+        wf = Workflow(**wf_args)
+        db.add(wf)
+        await db.commit()
+        await db.refresh(wf)
+        return wf
+
+    return _workflow_factory
+
+
 @pytest.fixture()
 async def user_factory(client, testserver):
     async def __register_user(email: str, password: str, slurm_user: str):

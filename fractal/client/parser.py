@@ -322,7 +322,16 @@ workflow_add_task_parser.add_argument(
     "task_id",
     help="Task id",
 )
-workflow_add_task_parser.add_argument("--order", help="")
+workflow_add_task_parser.add_argument(
+    "--order", help="Order of this task within the workflow's task list"
+)
+workflow_add_task_parser.add_argument(
+    "--args-file",
+    help=(
+        "Path to a json serialised file containing the arguments "
+        "ovverrides of the task"
+    ),
+)
 
 # workflow remove task
 workflow_remove_task_parser = workflow_subparsers.add_parser(
