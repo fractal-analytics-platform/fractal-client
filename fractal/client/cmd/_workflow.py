@@ -73,6 +73,7 @@ async def workflow_add_task(
     **kwargs,
 ) -> RichJsonInterface:
     workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
+    workflow_task.workflow_id = id
     if args_file:
         with Path(args_file).open("r") as f:
             args = json.load(f)
