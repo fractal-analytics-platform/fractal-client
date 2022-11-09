@@ -132,8 +132,7 @@ async def add_task_to_workflow(
         db=db,
     )
     await workflow.insert_task(
-        task_id=new_task.task_id,
-        order=new_task.order,
+        **new_task.dict(exclude={"workflow_id"}),
         db=db,
     )
 

@@ -20,7 +20,8 @@
       "default_args": {
         "message": "default message",
         "raise_error": false
-      }
+      },
+      "meta": {"parallelization_level": "index"}
     }
   ]
 }

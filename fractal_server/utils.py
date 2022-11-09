@@ -12,12 +12,10 @@ Zurich.
 """
 import asyncio
 import logging
-from collections.abc import MutableMapping
 from datetime import datetime
 from datetime import timezone
 from pathlib import Path
 from shlex import split as shlex_split
-from typing import Any
 from typing import Optional
 from warnings import warn as _warn
 
@@ -27,16 +25,6 @@ from .syringe import Inject
 
 def get_timestamp() -> datetime:
     return datetime.now(tz=timezone.utc)
-
-
-def popget(d: MutableMapping, key: str, default: Any = None) -> Any:
-    """
-    Pop and return mapping item if possible or return default
-    """
-    try:
-        return d.pop(key)
-    except KeyError:
-        return default
 
 
 def warn(message):
@@ -56,7 +44,7 @@ def slugify(value: str):
 
 def set_logger(
     *,
-    logger_name: str,
+    logger_name: Optional[str] = None,
     log_file_path: Optional[Path] = None,
     level: Optional[int] = None,
     formatter: Optional[logging.Formatter] = None,
