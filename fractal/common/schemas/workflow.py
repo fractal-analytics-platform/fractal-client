@@ -26,6 +26,7 @@ class _WorkflowTaskBase(SQLModel):
 
 class WorkflowTaskCreate(_WorkflowTaskBase):
     task_id: int
+    # FIXME: should there be also workflow_id here?
 
 
 class WorkflowTaskRead(_WorkflowTaskBase):
