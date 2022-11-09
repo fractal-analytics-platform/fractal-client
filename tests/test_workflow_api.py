@@ -159,7 +159,7 @@ async def test_post_newtask(
         await db.refresh(workflow)
 
         t2 = await task_factory()
-        last_task = {"task_id": t2.id}
+        last_task = {"task_id": t2.id, "args": {"a": 0, "b": 1}}
 
         res = await client.post(
             f"api/v1/workflow/{wf_id}/add-task/",
@@ -185,6 +185,7 @@ async def test_post_newtask(
         assert workflow.task_list[1].task == TaskRead(**t0b.dict())
         assert workflow.task_list[2].task == TaskRead(**t1.dict())
         assert workflow.task_list[3].task == TaskRead(**t2.dict())
+        assert workflow.task_list[3].args == last_task["args"]
 
 
 async def test_delete_task(
