@@ -187,7 +187,7 @@ def test_recursive_task_submission_inductive_step(tmp_path):
     TASK_NAME = "task0"
     METADATA_0 = {}
     METADATA_1 = dict(
-        dummy="dummy 0", index=[0, 1, 2], history=[TASK_NAME]
+        dummy="dummy 0", index=["0", "1", "2"], history=[TASK_NAME]
     )  # dummy task output
 
     task_list = [
