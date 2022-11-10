@@ -149,7 +149,7 @@ async def add_task_to_workflow(
 @router.patch(
     "/{_id}/edit-task/{workflow_task_id}", response_model=WorkflowTaskRead
 )
-async def patch_task(
+async def patch_workflow_task(
     _id: int,
     workflow_task_id: int,
     workflow_task_update: WorkflowTaskUpdate,
@@ -171,6 +171,12 @@ async def patch_task(
         db=db,
     )
     db_workflow_task = await db.get(WorkflowTask, workflow_task_id)
+
+    if not db_workflow_task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workflow Task not found",
+        )
 
     for key, value in workflow_task_update.dict(exclude_unset=True).items():
         if key == "args":
