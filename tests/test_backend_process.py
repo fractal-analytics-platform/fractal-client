@@ -123,7 +123,7 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
     WHEN it is passed to the recursive task submission
     THEN it is correctly executed, i.e., step 0 of the induction
     """
-    LIST_INDICES = ["0", "1"]
+    LIST_INDICES = ["something/0", "something/1"]
     MESSAGE = "test message"
     MOCKPARALLELTASK_NAME = "This is just a name"
     task_list = [
@@ -174,7 +174,9 @@ def test_recursive_parallel_task_submission_step0(tmp_path):
     for output_file in output_files:
         with output_file.open("r") as fin:
             data = json.load(fin)
-        assert output_file.name == f'{data["component"]}.json'
+        safe_component = data["component"].replace(" ", "_")
+        safe_component = safe_component.replace(".", "_").replace("/", "_")
+        assert output_file.name == f"{safe_component}.json"
         assert data["message"] == MESSAGE
 
 
