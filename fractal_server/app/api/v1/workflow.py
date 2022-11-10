@@ -184,7 +184,7 @@ async def patch_workflow_task(
             current_args = value
             setattr(db_workflow_task, key, current_args)
         else:
-            raise Exception("patch_task endpoint cannot set {key=}")
+            raise Exception("patch_workflow_task endpoint cannot set {key=}")
 
     await db.commit()
     await db.refresh(db_workflow_task)
