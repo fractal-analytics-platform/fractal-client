@@ -109,16 +109,16 @@ async def workflow_edit_task(
     *,
     id: int,
     workflow_task_id: int,
-    args_file: str,
+    json_file: str,
     **kwargs,
 ) -> RichJsonInterface:
 
-    with Path(args_file).open("r") as f:
-        args = json.load(f)
+    with Path(json_file).open("r") as f:
+        payload = json.load(f)
 
     res = await client.patch(
         f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
-        json=args,
+        json=payload,
     )
     workflow_task = check_response(
         res, expected_status_code=200, coerce=WorkflowTaskRead
