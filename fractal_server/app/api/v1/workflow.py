@@ -147,7 +147,7 @@ async def add_task_to_workflow(
 
 
 @router.patch(
-    "/{_id}/edit-wftask/{workflow_task_id}", response_model=WorkflowTaskRead
+    "/{_id}/edit-task/{workflow_task_id}", response_model=WorkflowTaskRead
 )
 async def patch_task(
     _id: int,

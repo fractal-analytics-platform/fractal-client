@@ -324,7 +324,7 @@ async def test_patch_workflow_task(
         payload = dict(args={"a": 123})
         res = await client.patch(
             f"api/v1/workflow/{workflow.id}/"
-            f"edit-wftask/{workflow.task_list[0].id}",
+            f"edit-task/{workflow.task_list[0].id}",
             json=payload,
         )
 
