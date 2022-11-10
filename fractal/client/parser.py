@@ -221,6 +221,10 @@ task_collect_parser.add_argument(
     help="Select the python version to use for this package",
 )
 task_collect_parser.add_argument(
+    "--package-version",
+    help="Select the package version",
+)
+task_collect_parser.add_argument(
     "--package-extras",
     help=(
         "Comma separated list of extra components for the package to be "
