@@ -13,6 +13,7 @@ from ..schemas import ApplyWorkflowCreate
 from ..schemas import WorkflowCreate
 from ..schemas import WorkflowRead
 from ..schemas import WorkflowTaskCreate
+from ..schemas import WorkflowTaskRead
 from ..schemas import WorkflowUpdate
 
 
@@ -98,6 +99,29 @@ async def workflow_add_task(
     )
     workflow_task = check_response(
         res, expected_status_code=201, coerce=WorkflowRead
+    )
+
+    return RichJsonInterface(retcode=0, data=workflow_task.dict())
+
+
+async def workflow_edit_task(
+    client: AuthClient,
+    *,
+    id: int,
+    workflow_task_id: int,
+    json_file: str,
+    **kwargs,
+) -> RichJsonInterface:
+
+    with Path(json_file).open("r") as f:
+        payload = json.load(f)
+
+    res = await client.patch(
+        f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
+        json=payload,
+    )
+    workflow_task = check_response(
+        res, expected_status_code=200, coerce=WorkflowTaskRead
     )
 
     return RichJsonInterface(retcode=0, data=workflow_task.dict())

@@ -99,3 +99,53 @@ async def test_add_task(
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task_list"][0]["args"] == custom_args
+
+
+async def test_edit_workflow_task(
+    clear_db,
+    testserver,
+    invoke,
+    register_user,
+    task_factory,
+    workflow_factory,
+    tmp_path,
+):
+    """
+    GIVEN a workflow
+    WHEN the client is invoked to add a task, including custom args
+    THEN
+        the WorkflowTask is correctly registered in the db, including custom
+        gargs
+    """
+    wf = await workflow_factory()
+    t = await task_factory()
+
+    # Create task, without overriding arguments
+    cmd = f"workflow add-task {wf.id} {t.id}"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+
+    # New arguments to be used
+    payload = dict(args={"some_arg": "some_value"})
+
+    json_file = tmp_path / "payload.json"
+    with json_file.open("w") as f:
+        json.dump(payload, f)
+
+    # Edit workflow task
+    debug(res.data)
+    workflow_task_id = res.data["task_list"][0]["id"]
+    cmd = (
+        f"workflow edit-task {wf.id} {workflow_task_id} "
+        f"--json-file {json_file}"
+    )
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    assert res.data["args"] == payload["args"]
+
+    # Check that also the workflow in the db was correctly updated
+    res = await invoke(f"workflow show {wf.id}")
+    assert res.retcode == 0
+    debug(res.data)
+    assert res.data["task_list"][0]["args"] == payload["args"]

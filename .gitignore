@@ -1,4 +1,5 @@
 .pytest_cache/
+artifacts
 __pycache__
 *.cpython-*.pyc
 *.env

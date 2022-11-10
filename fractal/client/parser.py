@@ -342,6 +342,27 @@ workflow_add_task_parser.add_argument(
     ),
 )
 
+# workflow edit task
+workflow_edit_task_parser = workflow_subparsers.add_parser(
+    "edit-task", help="Edit a task within a specific workflow"
+)
+workflow_edit_task_parser.add_argument(
+    "id",
+    help="Workflow id",
+)
+workflow_edit_task_parser.add_argument(
+    "workflow_task_id",
+    help="Workflow task Id, the Id of a task inside the list of tasks",
+)
+workflow_edit_task_parser.add_argument(
+    "--json-file",
+    help=(
+        "Path to a json serialised file containing the attribute "
+        "ovverrides of the task"
+    ),
+)
+
+
 # workflow remove task
 workflow_remove_task_parser = workflow_subparsers.add_parser(
     "rm-task", help="Remove a task in a specific workflow"
