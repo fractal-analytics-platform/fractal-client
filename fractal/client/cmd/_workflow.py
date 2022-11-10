@@ -115,8 +115,6 @@ async def workflow_edit_task(
     with Path(args_file).open("r") as f:
         args = json.load(f)
 
-    raise NotImplementedError("Endpoint not yet available in the server")
-
     res = await client.post(
         f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
         json=args,
