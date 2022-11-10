@@ -51,7 +51,7 @@ def test_unit_serial_task_assembly(tmp_path):
         input_paths=[tmp_path],
         output_path=tmp_path,
         metadata={},
-        logger=logging.getLogger(),
+        logger_name=logger_name,
     )
     task_pars_depend_future = Future()
     task_pars_depend_future.set_result(task_pars)
