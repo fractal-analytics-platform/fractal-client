@@ -132,7 +132,7 @@ async def test_edit_workflow_task(
         json.dump(custom_args, f)
 
     # Edit workflow task
-    workflow_task_id = res.data["task_list"][0]["args"]
+    workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
         f"--args-file {args_file}"
