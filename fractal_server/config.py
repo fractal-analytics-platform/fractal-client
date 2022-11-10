@@ -107,15 +107,13 @@ class Settings(BaseSettings):
     DB_ENGINE: Literal["sqlite", "postgres"] = "sqlite"
     DB_ECHO: bool = False
 
-    if DB_ENGINE == "postgres":
-        POSTGRES_USER: str = Field()
-        POSTGRES_PASSWORD: str = Field()
-        POSTGRES_SERVER: str = "localhost"
-        POSTGRES_PORT: str = "5432"
-        POSTGRES_DB: str = Field()
+    POSTGRES_USER: Optional[str]
+    POSTGRES_PASSWORD: Optional[str]
+    POSTGRES_SERVER: Optional[str] = "localhost"
+    POSTGRES_PORT: Optional[str] = "5432"
+    POSTGRES_DB: Optional[str]
 
-    elif DB_ENGINE == "sqlite":
-        SQLITE_PATH: Optional[str]
+    SQLITE_PATH: Optional[str]
 
     @property
     def DATABASE_URL(self):
@@ -182,7 +180,7 @@ class Settings(BaseSettings):
                 "production", "staging", "testing", "development"
             ]
             JWT_SECRET_KEY: str
-            DB_ENGINE: str = "sqlite"
+            DB_ENGINE: str = Field()
 
             if DB_ENGINE == "postgres":
                 POSTGRES_USER: str
