@@ -98,6 +98,22 @@ async def test_task_workflow_association(
         assert link.task_id == t1.id
 
 
+async def test_task_foreign_key(
+    db, MockCurrentUser, task_factory, project_factory
+):
+    """
+    GIVEN the WorkflowTask table
+    WHEN trying to add non-existent task_id / workflow_id
+    THEN the operation fails with a foreign key violation
+    """
+
+    ltw = WorkflowTask(task_id=666, workflow_id=999)
+    db.add(ltw)
+    with pytest.raises(IntegrityError) as e:
+        await db.commit()
+    debug(e)
+
+
 async def test_cascade_delete_workflow(
     db, client, MockCurrentUser, project_factory, task_factory
 ):
