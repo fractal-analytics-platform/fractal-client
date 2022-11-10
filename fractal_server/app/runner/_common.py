@@ -10,6 +10,14 @@ from .common import TaskParameters
 from .common import write_args_file
 
 
+def sanitize_component(value: str) -> str:
+    """
+    Remove {" ", "/", "."} form a string, e.g. going from
+    'plate.zarr/B/03/0' to 'plate_zarr_B_03_0'.
+    """
+    return value.replace(" ", "_").replace("/", "_").replace(".", "_")
+
+
 class TaskExecutionError(RuntimeError):
     pass
 
@@ -130,7 +138,8 @@ def call_single_parallel_task(
         raise RuntimeError
     logger = logging.getLogger(task_pars.logger_name)
 
-    prefix = f"{task.order}_par_{component}"
+    component_safe = sanitize_component(component)
+    prefix = f"{task.order}_par_{component_safe}"
     stdout_file = workflow_dir / f"{prefix}.out"
     stderr_file = workflow_dir / f"{prefix}.err"
     metadata_diff_file = workflow_dir / f"{prefix}.metadiff.json"

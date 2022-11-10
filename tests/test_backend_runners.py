@@ -98,5 +98,5 @@ async def test_runner(db, project_factory, MockCurrentUser, tmp_path, backend):
     assert metadata["history"] == [
         tk.name,
         tk.name,
-        f"{tp.name}: [0, 1, 2]",
+        f"{tp.name}: ['0', '1', '2']",
     ]
