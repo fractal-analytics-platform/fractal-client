@@ -3,7 +3,6 @@ import logging
 import subprocess  # nosec
 from pathlib import Path
 from shlex import split as shlex_split
-from typing import Union
 
 from ..models import WorkflowTask
 from .common import TaskParameterEncoder
@@ -11,7 +10,7 @@ from .common import TaskParameters
 from .common import write_args_file
 
 
-def sanitize_component(value: Union[int, str]) -> str:
+def sanitize_component(value: str) -> str:
     """
     Remove {" ", "/", "."} form a string, e.g. going from
     'plate.zarr/B/03/0' to 'plate_zarr_B_03_0'.
