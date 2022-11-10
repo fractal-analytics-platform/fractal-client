@@ -103,6 +103,31 @@ async def workflow_add_task(
     return RichJsonInterface(retcode=0, data=workflow_task.dict())
 
 
+async def workflow_edit_task(
+    client: AuthClient,
+    *,
+    id: int,
+    workflow_task_id: int,
+    args_file: str,
+    **kwargs,
+) -> RichJsonInterface:
+
+    with Path(args_file).open("r") as f:
+        args = json.load(f)
+
+    raise NotImplementedError("Endpoint not yet available in the server")
+
+    res = await client.post(
+        f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
+        json=args,
+    )
+    workflow_task = check_response(
+        res, expected_status_code=200, coerce=WorkflowRead
+    )
+
+    return RichJsonInterface(retcode=0, data=workflow_task.dict())
+
+
 async def workflow_remove_task(
     client: AuthClient,
     *,

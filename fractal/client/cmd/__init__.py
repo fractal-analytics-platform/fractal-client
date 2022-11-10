@@ -23,6 +23,7 @@ from ._workflow import workflow_add_task
 from ._workflow import workflow_apply
 from ._workflow import workflow_delete
 from ._workflow import workflow_edit
+from ._workflow import workflow_edit_task
 from ._workflow import workflow_list
 from ._workflow import workflow_new
 from ._workflow import workflow_remove_task
@@ -158,6 +159,8 @@ async def workflow(
         iface = await workflow_delete(client, **kwargs)
     elif subcmd == "add-task":
         iface = await workflow_add_task(client, **kwargs)
+    elif subcmd == "edit-task":
+        iface = await workflow_edit_task(client, **kwargs)
     elif subcmd == "rm-task":
         iface = await workflow_remove_task(client, **kwargs)
     elif subcmd == "apply":
