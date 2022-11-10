@@ -23,6 +23,7 @@ from ._workflow import workflow_add_task
 from ._workflow import workflow_apply
 from ._workflow import workflow_delete
 from ._workflow import workflow_edit
+from ._workflow import workflow_list
 from ._workflow import workflow_new
 from ._workflow import workflow_remove_task
 from ._workflow import workflow_show
@@ -149,6 +150,8 @@ async def workflow(
         iface = await workflow_show(client, **kwargs)
     elif subcmd == "new":
         iface = await workflow_new(client, batch=batch, **kwargs)
+    elif subcmd == "list":
+        iface = await workflow_list(client, batch=batch, **kwargs)
     elif subcmd == "edit":
         iface = await workflow_edit(client, **kwargs)
     elif subcmd == "delete":

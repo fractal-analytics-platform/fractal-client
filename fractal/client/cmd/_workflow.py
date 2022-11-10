@@ -41,6 +41,20 @@ async def workflow_new(
         return RichJsonInterface(retcode=0, data=workflow.dict())
 
 
+async def workflow_list(
+    client: AuthClient,
+    project_id: int,
+    batch: bool = False,
+    **kwargs,
+) -> RichJsonInterface:
+
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}/workflows/"
+    )
+    workflow_list = check_response(res, expected_status_code=200)
+    return RichJsonInterface(retcode=0, data=workflow_list)
+
+
 async def workflow_delete(
     client: AuthClient,
     *,

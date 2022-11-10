@@ -292,6 +292,15 @@ workflow_new_parser.add_argument(
     help="Project ID",
 )
 
+# workflow list
+workflow_list_parser = workflow_subparsers.add_parser(
+    "list", help="List workflows for given project"
+)
+workflow_list_parser.add_argument(
+    "project_id",
+    help="Project ID",
+)
+
 # workflow delete
 workflow_new_parser = workflow_subparsers.add_parser(
     "delete", help="Delete workflow"
