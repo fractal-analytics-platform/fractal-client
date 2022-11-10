@@ -126,12 +126,14 @@ async def test_edit_workflow_task(
     assert res.retcode == 0
 
     # New arguments to be used
-    custom_args = dict(custom="args")
+    payload = dict(args={"some_arg": "some_value"})
+
     args_file = tmp_path / "args_file.json"
     with args_file.open("w") as f:
-        json.dump(custom_args, f)
+        json.dump(payload, f)
 
     # Edit workflow task
+    debug(res.data)
     workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
@@ -140,4 +142,10 @@ async def test_edit_workflow_task(
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
-    assert res.data["task_list"][0]["args"] == custom_args
+    assert res.data["args"] == payload["args"]
+
+    # Check that also the workflow in the db was correctly updated
+    res = await invoke(f"workflow show {wf.id}")
+    assert res.retcode == 0
+    debug(res.data)
+    assert res.data["task_list"][0]["args"] == payload["args"]
