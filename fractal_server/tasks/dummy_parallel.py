@@ -83,7 +83,9 @@ def dummy_parallel(
     output_path.parent.mkdir(exist_ok=True)
 
     # Write output to out_fullpath
-    out_fullpath = output_path.parent / f"{component}.json"
+    safe_component = component.replace(" ", "_").replace("/", "_")
+    safe_component = safe_component.replace(".", "_")
+    out_fullpath = output_path.parent / f"{safe_component}.json"
     with open(out_fullpath, "w") as fout:
         json.dump(payload, fout, indent=2, sort_keys=True)
 
