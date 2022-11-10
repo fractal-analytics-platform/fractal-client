@@ -23,7 +23,6 @@ from uuid import uuid4
 
 import pytest
 from asgi_lifespan import LifespanManager
-from devtools import debug
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,7 +60,6 @@ def override_settings(tmp_path_factory):
     def _get_settings():
         return get_patched_settings(tmp_path)
 
-    debug(f"overriding {get_settings} with {get_patched_settings}")
     Inject.override(get_settings, _get_settings)
     try:
         yield
@@ -121,9 +119,7 @@ async def db(db_create_tables):
     from fractal_server.app.db import get_db
 
     async for session in get_db():
-        debug("yielding session")
         yield session
-        debug("retrieving session")
 
 
 @pytest.fixture
