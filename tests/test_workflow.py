@@ -128,8 +128,8 @@ async def test_edit_workflow_task(
     # New arguments to be used
     payload = dict(args={"some_arg": "some_value"})
 
-    args_file = tmp_path / "args_file.json"
-    with args_file.open("w") as f:
+    json_file = tmp_path / "payload.json"
+    with json_file.open("w") as f:
         json.dump(payload, f)
 
     # Edit workflow task
@@ -137,7 +137,7 @@ async def test_edit_workflow_task(
     workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
-        f"--args-file {args_file}"
+        f"--json-file {json_file}"
     )
     debug(cmd)
     res = await invoke(cmd)

@@ -355,7 +355,7 @@ workflow_edit_task_parser.add_argument(
     help="Workflow task Id, the Id of a task inside the list of tasks",
 )
 workflow_edit_task_parser.add_argument(
-    "--args-file",
+    "--json-file",
     help=(
         "Path to a json serialised file containing the attribute "
         "ovverrides of the task"
