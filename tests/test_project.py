@@ -16,7 +16,9 @@ async def test_project_create_batch(
     res = await invoke("--batch project new project_name project_path")
     debug(res)
     debug(res.data)
-    assert res.data == 1
+    project_id, dataset_id = map(int, res.data.split())
+    assert project_id == 1
+    assert dataset_id == 1
 
 
 async def test_project_list(clear_db, testserver, register_user, invoke):
@@ -42,8 +44,9 @@ async def test_add_dataset(clear_db, testserver, register_user, invoke):
 
     res = await invoke("--batch project new prj0 prj_path0")
     assert res.retcode == 0
+    debug(res.data)
+    project_id, dataset_id = map(int, res.data.split())
 
-    project_id = int(res.data)
     res = await invoke(f"project add-dataset {project_id} {DATASET_NAME}")
     assert res.retcode == 0
     res.show()
