@@ -17,6 +17,21 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
 
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fractal
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -47,7 +62,7 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
-        run: poetry install --with dev -E parsl --no-interaction
+        run: poetry install --with dev --all-extras --no-interaction
 
       - name: Test with pytest
         run: poetry run coverage run -m pytest
