@@ -26,9 +26,7 @@ from asgi_lifespan import LifespanManager
 from devtools import debug
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import sessionmaker
 
 from fractal_server.config import get_settings
 from fractal_server.config import Settings
@@ -105,72 +103,35 @@ def event_loop():
     yield _event_loop
 
 
-@pytest.fixture(scope="session")
-async def db_engine(override_settings) -> AsyncGenerator[AsyncEngine, None]:
-    from fractal_server.app.db import DB
-
-    yield DB.engine_async()
-
-
-@pytest.fixture(scope="session")
-def db_sync_engine(override_settings):
-    from fractal_server.app.db import DB
-
-    yield DB.engine_sync()
-
-
 @pytest.fixture
-async def db_session_maker(
-    db_engine, app
-) -> AsyncGenerator[AsyncSession, None]:
-    import fractal_server.app.models  # noqa F401 make sure models are imported
-    from sqlmodel import SQLModel
+async def db_create_tables(override_settings):
+    from fractal_server.app.db import DB
+    from fractal_server.app.models import SQLModel
 
-    async with db_engine.begin() as conn:
-        metadata = SQLModel.metadata
+    engine = DB.engine_async()
+    metadata = SQLModel.metadata
+
+    async with engine.begin() as conn:
         await conn.run_sync(metadata.create_all)
-        async_session_maker = sessionmaker(
-            db_engine, class_=AsyncSession, expire_on_commit=False
-        )
 
-        async def _get_db():
-            async with async_session_maker() as session:
-                yield session
+        yield
 
-        from fractal_server.app.db import get_db
-
-        app.dependency_overrides[get_db] = _get_db
-
-        yield async_session_maker
-
-        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(metadata.drop_all)
 
 
 @pytest.fixture
-def db_sync_session_maker(db_sync_engine, app):
-    from fractal_server.app.db import get_sync_db
-    from sqlmodel import Session
+async def db(db_create_tables):
+    from fractal_server.app.db import get_db
 
-    def _get_sync_db():
-        with Session(db_sync_engine) as session:
-            yield session
-
-    app.dependency_overrides[get_sync_db] = _get_sync_db
-
-
-@pytest.fixture
-async def db(db_session_maker):
-    async with db_session_maker() as session:
+    async for session in get_db():
         yield session
 
 
-@pytest.fixture()
-def db_sync(db_sync_engine):
-    from sqlmodel import Session
+@pytest.fixture
+async def db_sync(db_create_tables):
+    from fractal_server.app.db import get_sync_db
 
-    with Session(db_sync_engine) as session:
-
-        debug(f"yielding session {id(session)}")
+    for session in get_sync_db():
         yield session
 
 
@@ -189,7 +150,7 @@ async def register_routers(app, override_settings):
 
 @pytest.fixture
 async def client(
-    app: FastAPI, register_routers, db, db_sync
+    app: FastAPI, register_routers, db
 ) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
         app=app, base_url="http://test"
