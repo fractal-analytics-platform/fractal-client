@@ -38,15 +38,15 @@ def get_patched_settings(temp_path: Path):
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
 
-    settings.DB_ENGINE = "sqlite"
-    settings.SQLITE_PATH = (
-        f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
-    )
+    # settings.DB_ENGINE = "sqlite"
+    # settings.SQLITE_PATH = (
+    #     f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
+    # )
 
-    # settings.DB_ENGINE = "postgres"
-    # settings.POSTGRES_USER = "postgres"
-    # settings.POSTGRES_PASSWORD = "postgres"
-    # settings.POSTGRES_DB = "fractal"
+    settings.DB_ENGINE = "postgres"
+    settings.POSTGRES_USER = "postgres"
+    settings.POSTGRES_PASSWORD = "postgres"
+    settings.POSTGRES_DB = "fractal"
 
     settings.FRACTAL_ROOT = temp_path
     settings.RUNNER_ROOT_DIR = temp_path / "artifacts"
@@ -108,15 +108,12 @@ async def db_create_tables(override_settings):
     from fractal_server.app.db import DB
     from fractal_server.app.models import SQLModel
 
-    engine = DB.engine_async()
+    engine = DB.engine_sync()
     metadata = SQLModel.metadata
+    metadata.create_all(engine)
+    yield
 
-    async with engine.begin() as conn:
-        await conn.run_sync(metadata.create_all)
-
-        yield
-
-        await conn.run_sync(metadata.drop_all)
+    metadata.drop_all(engine)
 
 
 @pytest.fixture
@@ -124,7 +121,9 @@ async def db(db_create_tables):
     from fractal_server.app.db import get_db
 
     async for session in get_db():
+        debug("yielding session")
         yield session
+        debug("retrieving session")
 
 
 @pytest.fixture
