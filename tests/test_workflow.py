@@ -19,6 +19,24 @@ async def test_workflow_new(clear_db, testserver, register_user, invoke):
     assert res_wf.data["project_id"] == res_pj.data["id"]
 
 
+async def test_workflow_list(clear_db, testserver, register_user, invoke):
+    PROJECT_NAME = "project_name"
+    PROJECT_PATH = "project_path"
+    res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
+
+    res_wf = await invoke(f"workflow new WF1 {res_pj.data['id']}")
+    res_wf.show()
+    assert res_wf.retcode == 0
+
+    res_wf = await invoke(f"workflow new WF2 {res_pj.data['id']}")
+    res_wf.show()
+    assert res_wf.retcode == 0
+
+    res_list = await invoke("workflow list")
+    assert res_list.retcode == 0
+    assert len(res_list.data) == 2
+
+
 async def test_add_task(
     clear_db,
     testserver,
