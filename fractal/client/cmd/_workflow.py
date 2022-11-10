@@ -13,6 +13,7 @@ from ..schemas import ApplyWorkflowCreate
 from ..schemas import WorkflowCreate
 from ..schemas import WorkflowRead
 from ..schemas import WorkflowTaskCreate
+from ..schemas import WorkflowTaskRead
 from ..schemas import WorkflowUpdate
 
 
@@ -115,12 +116,12 @@ async def workflow_edit_task(
     with Path(args_file).open("r") as f:
         args = json.load(f)
 
-    res = await client.post(
+    res = await client.patch(
         f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
         json=args,
     )
     workflow_task = check_response(
-        res, expected_status_code=200, coerce=WorkflowRead
+        res, expected_status_code=200, coerce=WorkflowTaskRead
     )
 
     return RichJsonInterface(retcode=0, data=workflow_task.dict())
