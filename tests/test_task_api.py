@@ -79,3 +79,30 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
         full_path = settings.FRACTAL_ROOT / venv_path
         assert get_collection_path(full_path).exists()
         assert get_log_path(full_path).exists()
+
+
+async def test_collection_api_invalid_manifest(
+    client, dummy_task_package_invalid_manifest, MockCurrentUser
+):
+    """
+    GIVEN a package in a format that `pip` understands, with invalid manifest
+    WHEN the api to collect tasks from that package is called
+    THEN it returns 422 (Unprocessable Entity)
+    """
+    PREFIX = "/api/v1/task"
+
+    task_collection = dict(
+        package=dummy_task_package_invalid_manifest.as_posix()
+    )
+
+    async with MockCurrentUser(persist=True):
+        # NOTE: collecting private tasks so that they are assigned to user and
+        # written in a non-default folder. Bypass for non stateless
+        # FRACTAL_ROOT in test suite.
+        res = await client.post(
+            f"{PREFIX}/collect/pip/?public=false", json=task_collection
+        )
+        assert res.status_code == 201
+        debug(res.json())
+
+        # FIXME: how to test that the process failed (upon loading manifest)?
