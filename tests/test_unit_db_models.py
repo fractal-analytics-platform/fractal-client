@@ -5,6 +5,7 @@ from sqlmodel import select
 
 from .fixtures_server import DB_ENGINE
 from fractal_server.app.models import Project
+from fractal_server.app.models import State
 from fractal_server.app.models.workflow import Workflow
 from fractal_server.app.models.workflow import WorkflowTask
 
@@ -208,3 +209,20 @@ async def test_cascade_delete_project(
         assert not set(after_delete_wf_ids).intersection(
             set(before_delete_wf_ids)
         )
+
+
+async def test_state_table(db):
+    """
+    GIVEN the State table
+    WHEN queried
+    THEN one can CRUD items
+    """
+    payload = dict(a=1, b=2, c="tre")
+    db.add(State(data=payload))
+    await db.commit()
+
+    res = await db.execute(select(State))
+    state_list = res.scalars().all()
+    debug(state_list)
+    assert len(state_list) == 1
+    assert state_list[0].data == payload

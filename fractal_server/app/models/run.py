@@ -23,7 +23,7 @@ class StatusType(str, Enum):
     DONE = "done"
 
 
-class ApplyWorkflow(ApplyWorkflowBase, table=True):  # type: ignore
+class ApplyWorkflow(ApplyWorkflowBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     project_id: int = Field(foreign_key="project.id")
     input_dataset_id: int = Field(foreign_key="dataset.id")
