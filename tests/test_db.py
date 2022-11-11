@@ -6,6 +6,7 @@ async def test_db_connection(db):
     assert db.is_active
     # test bound
     assert db.get_bind()
+    debug(db.get_bind())
     debug(db.get_bind().url.database)
     assert db.get_bind().url.database is not None
 
@@ -48,7 +49,7 @@ async def test_sync_db(db_sync, db):
     assert task_list[0].name == "mytask"
 
     # Sync
-    res = db_sync.exec(stm)
-    task_list = res.all()
+    res = db_sync.execute(stm)
+    task_list = res.scalars().all()
     assert len(task_list) == 1
     assert task_list[0].name == "mytask"

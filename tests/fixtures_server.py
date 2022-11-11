@@ -23,26 +23,36 @@ from uuid import uuid4
 
 import pytest
 from asgi_lifespan import LifespanManager
-from devtools import debug
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import sessionmaker
 
 from fractal_server.config import get_settings
 from fractal_server.config import Settings
 from fractal_server.syringe import Inject
 
 
+DB_ENGINE = "postgres"
+
+
 def get_patched_settings(temp_path: Path):
     settings = Settings()
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
-    settings.DB_ENGINE = "sqlite"
-    settings.SQLITE_PATH = (
-        f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
-    )
+
+    settings.DB_ENGINE = DB_ENGINE
+    if DB_ENGINE == "sqlite":
+        settings.SQLITE_PATH = (
+            f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
+        )
+    elif DB_ENGINE == "postgres":
+        settings.DB_ENGINE = "postgres"
+        settings.POSTGRES_USER = "postgres"
+        settings.POSTGRES_PASSWORD = "postgres"
+        settings.POSTGRES_DB = "fractal"
+    else:
+        raise ValueError
+
     settings.FRACTAL_ROOT = temp_path
     settings.RUNNER_ROOT_DIR = temp_path / "artifacts"
     settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
@@ -56,7 +66,6 @@ def override_settings(tmp_path_factory):
     def _get_settings():
         return get_patched_settings(tmp_path)
 
-    debug(f"overriding {get_settings} with {get_patched_settings}")
     Inject.override(get_settings, _get_settings)
     try:
         yield
@@ -98,71 +107,32 @@ def event_loop():
     yield _event_loop
 
 
-@pytest.fixture(scope="session")
-async def db_engine(override_settings) -> AsyncGenerator[AsyncEngine, None]:
+@pytest.fixture
+async def db_create_tables(override_settings):
     from fractal_server.app.db import DB
+    from fractal_server.app.models import SQLModel
 
-    yield DB.engine_async()
+    engine = DB.engine_sync()
+    metadata = SQLModel.metadata
+    metadata.create_all(engine)
+    yield
 
-
-@pytest.fixture(scope="session")
-def db_sync_engine(override_settings):
-    from fractal_server.app.db import DB
-
-    yield DB.engine_sync()
-
-
-@pytest.fixture
-async def db_session_maker(
-    db_engine, app
-) -> AsyncGenerator[AsyncSession, None]:
-    import fractal_server.app.models  # noqa F401 make sure models are imported
-    from sqlmodel import SQLModel
-
-    async with db_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
-        async_session_maker = sessionmaker(
-            db_engine, class_=AsyncSession, expire_on_commit=False
-        )
-
-        async def _get_db():
-            async with async_session_maker() as session:
-                yield session
-
-        from fractal_server.app.db import get_db
-
-        app.dependency_overrides[get_db] = _get_db
-
-        yield async_session_maker
-
-        await conn.run_sync(SQLModel.metadata.drop_all)
+    metadata.drop_all(engine)
 
 
 @pytest.fixture
-def db_sync_session_maker(db_sync_engine, app):
-    from fractal_server.app.db import get_sync_db
-    from sqlmodel import Session
+async def db(db_create_tables):
+    from fractal_server.app.db import get_db
 
-    def _get_sync_db():
-        with Session(db_sync_engine) as session:
-            yield session
-
-    app.dependency_overrides[get_sync_db] = _get_sync_db
-
-
-@pytest.fixture
-async def db(db_session_maker):
-    async with db_session_maker() as session:
+    async for session in get_db():
         yield session
 
 
-@pytest.fixture()
-def db_sync(db_sync_engine):
-    from sqlmodel import Session
+@pytest.fixture
+async def db_sync(db_create_tables):
+    from fractal_server.app.db import get_sync_db
 
-    with Session(db_sync_engine) as session:
-
-        debug(f"yielding session {id(session)}")
+    for session in get_sync_db():
         yield session
 
 
@@ -181,7 +151,7 @@ async def register_routers(app, override_settings):
 
 @pytest.fixture
 async def client(
-    app: FastAPI, register_routers, db, db_sync
+    app: FastAPI, register_routers, db
 ) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
         app=app, base_url="http://test"

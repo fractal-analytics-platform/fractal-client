@@ -34,6 +34,7 @@ class TaskParameters(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        extra = "forbid"
 
 
 async def auto_output_dataset(

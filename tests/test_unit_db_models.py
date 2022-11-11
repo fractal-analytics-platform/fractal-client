@@ -3,6 +3,7 @@ from devtools import debug
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
+from .fixtures_server import DB_ENGINE
 from fractal_server.app.models import Project
 from fractal_server.app.models.workflow import Workflow
 from fractal_server.app.models.workflow import WorkflowTask
@@ -96,6 +97,23 @@ async def test_task_workflow_association(
         debug(link)
         assert link.order == 0
         assert link.task_id == t1.id
+
+
+@pytest.mark.xfail(DB_ENGINE == "sqlite", reason="Not supported in SQLite")
+async def test_task_foreign_key(
+    db, MockCurrentUser, task_factory, project_factory
+):
+    """
+    GIVEN the WorkflowTask table
+    WHEN trying to add non-existent task_id / workflow_id
+    THEN the operation fails with a foreign key violation
+    """
+
+    ltw = WorkflowTask(task_id=666, workflow_id=999)
+    db.add(ltw)
+    with pytest.raises(IntegrityError) as e:
+        await db.commit()
+    debug(e)
 
 
 async def test_cascade_delete_workflow(
