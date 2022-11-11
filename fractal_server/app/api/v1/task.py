@@ -138,7 +138,7 @@ async def check_collection_status(
             status=collection_status, log=log, task_list=task_list
         )
     except FileNotFoundError:
-        return TaskCollectStatus(status="pending")
+        return TaskCollectStatus(status="pending", log=log)
 
 
 @router.get("/", response_model=List[TaskRead])
