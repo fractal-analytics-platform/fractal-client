@@ -84,11 +84,14 @@ async def submit_workflow(
     workflow_id = workflow.id
 
     settings = Inject(get_settings)
-    WORKFLOW_DIR = settings.RUNNER_ROOT_DIR / f"workflow_{workflow_id:06d}"
+    WORKFLOW_DIR = (
+        settings.RUNNER_ROOT_DIR
+        / f"workflow_{workflow_id:06d}_job_{job_id:06d}"
+    )
     if not WORKFLOW_DIR.exists():
         WORKFLOW_DIR.mkdir(parents=True)
 
-    logger_name = f"WF{workflow_id}"
+    logger_name = f"WF{workflow_id}_job{job_id}"
     logger = set_logger(
         logger_name=logger_name,
         log_file_path=WORKFLOW_DIR / "workflow.log",
@@ -99,6 +102,9 @@ async def submit_workflow(
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
     logger.info(f"RUNNER_BACKEND: {_settings.RUNNER_BACKEND}")
     logger.info(f"username: {username}")
+    logger.info(f"input_paths: {input_paths}")
+    logger.info(f"output_path: {output_path}")
+    logger.info(f"input metadata: {input_dataset.meta}")
     logger.info(f"START workflow {workflow.name}")
     output_dataset.meta = await process_workflow(
         workflow=workflow,
