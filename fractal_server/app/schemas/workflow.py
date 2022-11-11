@@ -14,6 +14,7 @@ __all__ = (
     "WorkflowUpdate",
     "WorkflowTaskCreate",
     "WorkflowTaskRead",
+    "WorkflowTaskUpdate",
 )
 
 
@@ -32,6 +33,10 @@ class WorkflowTaskRead(_WorkflowTaskBase):
     id: int
     workflow_id: int
     task: TaskRead
+
+
+class WorkflowTaskUpdate(_WorkflowTaskBase):
+    args: Optional[Dict[str, Any]]  # type: ignore
 
 
 class _WorkflowBase(SQLModel):

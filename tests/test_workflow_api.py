@@ -299,3 +299,35 @@ async def test_patch_workflow(
         assert len(res.json()) == 0
         res = await client.get(f"api/v1/project/{other_project.id}/workflows/")
         assert len(res.json()) == 1
+
+
+async def test_patch_workflow_task(
+    db, client, MockCurrentUser, project_factory, task_factory
+):
+    """
+    GIVEN a WorkflowTask
+    WHEN the endpoint to PATCH a WorkflowTask is called
+    THEN the WorkflowTask is updated
+    """
+    async with MockCurrentUser(persist=True) as user:
+        project = await project_factory(user)
+        workflow = {"name": "WF", "project_id": project.id}
+        res = await client.post("api/v1/workflow/", json=workflow)
+        wf_id = res.json()["id"]
+
+        workflow = await db.get(Workflow, wf_id)
+        t0 = await task_factory()
+        await workflow.insert_task(t0.id, db=db)
+        await db.refresh(workflow)
+        assert workflow.task_list[0].args is None
+
+        payload = dict(args={"a": 123})
+        res = await client.patch(
+            f"api/v1/workflow/{workflow.id}/"
+            f"edit-task/{workflow.task_list[0].id}",
+            json=payload,
+        )
+
+        patched_workflow_task = res.json()
+        assert patched_workflow_task["args"] == payload["args"]
+        assert res.status_code == 200

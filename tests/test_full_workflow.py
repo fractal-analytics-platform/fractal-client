@@ -116,9 +116,18 @@ async def test_full_workflow(
         workflow_dict = res.json()
         workflow_id = workflow_dict["id"]
 
+        # Add a dummy task
         res = await client.post(
             f"{PREFIX}/workflow/{workflow_id}/add-task/",
             json=dict(task_id=collect_tasks[0]["id"]),
+        )
+        debug(res.json())
+        assert res.status_code == 201
+
+        # Add a dummy_parallel task
+        res = await client.post(
+            f"{PREFIX}/workflow/{workflow_id}/add-task/",
+            json=dict(task_id=collect_tasks[1]["id"]),
         )
         debug(res.json())
         assert res.status_code == 201

@@ -98,7 +98,7 @@ def dummy(
         json.dump(data, fout, indent=2)
 
     # Update metadata
-    metadata_update = dict(dummy=f"dummy {index}", index=[0, 1, 2])
+    metadata_update = dict(dummy=f"dummy {index}", index=["0", "1", "2"])
 
     logger.info("EXITING dummy task")
 

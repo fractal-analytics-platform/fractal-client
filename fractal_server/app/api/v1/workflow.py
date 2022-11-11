@@ -10,6 +10,8 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+from copy import deepcopy
+
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
@@ -24,6 +26,8 @@ from ...models import WorkflowCreate
 from ...models import WorkflowRead
 from ...models import WorkflowTask
 from ...models import WorkflowTaskCreate
+from ...models import WorkflowTaskRead
+from ...models import WorkflowTaskUpdate
 from ...models import WorkflowUpdate
 from ...security import current_active_user
 from ...security import User
@@ -140,6 +144,51 @@ async def add_task_to_workflow(
     await db.refresh(workflow)
 
     return workflow
+
+
+@router.patch(
+    "/{_id}/edit-task/{workflow_task_id}", response_model=WorkflowTaskRead
+)
+async def patch_workflow_task(
+    _id: int,
+    workflow_task_id: int,
+    workflow_task_update: WorkflowTaskUpdate,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+
+    # FIXME add user-owned workflowtasks
+
+    db_workflow = await db.get(Workflow, _id)
+    if not db_workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found"
+        )
+    # check autorization
+    await get_project_check_owner(
+        project_id=db_workflow.project_id,
+        user_id=user.id,
+        db=db,
+    )
+    db_workflow_task = await db.get(WorkflowTask, workflow_task_id)
+
+    if not db_workflow_task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workflow Task not found",
+        )
+
+    for key, value in workflow_task_update.dict(exclude_unset=True).items():
+        if key == "args":
+            current_args = deepcopy(db_workflow_task.args)
+            current_args = value
+            setattr(db_workflow_task, key, current_args)
+        else:
+            raise Exception("patch_workflow_task endpoint cannot set {key=}")
+
+    await db.commit()
+    await db.refresh(db_workflow_task)
+    return db_workflow_task
 
 
 @router.delete(
