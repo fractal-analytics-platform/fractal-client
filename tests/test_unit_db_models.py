@@ -3,6 +3,7 @@ from devtools import debug
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
+from .fixtures_server import DB_ENGINE
 from fractal_server.app.models import Project
 from fractal_server.app.models.workflow import Workflow
 from fractal_server.app.models.workflow import WorkflowTask
@@ -98,6 +99,7 @@ async def test_task_workflow_association(
         assert link.task_id == t1.id
 
 
+@pytest.mark.xfail(DB_ENGINE == "sqlite", reason="Not supported in SQLite")
 async def test_task_foreign_key(
     db, MockCurrentUser, task_factory, project_factory
 ):

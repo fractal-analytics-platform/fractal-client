@@ -43,6 +43,11 @@ class DB:
             settings.DATABASE_SYNC_URL,
             echo=settings.DB_ECHO,
             future=True,
+            connect_args=(
+                {"check_same_thread": False}
+                if settings.DB_ENGINE == "sqlite"
+                else {}
+            ),
         )
 
         cls._async_session_maker = sessionmaker(

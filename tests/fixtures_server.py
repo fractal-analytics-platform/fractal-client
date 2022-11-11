@@ -32,20 +32,26 @@ from fractal_server.config import Settings
 from fractal_server.syringe import Inject
 
 
+DB_ENGINE = "postgres"
+
+
 def get_patched_settings(temp_path: Path):
     settings = Settings()
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
 
-    # settings.DB_ENGINE = "sqlite"
-    # settings.SQLITE_PATH = (
-    #     f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
-    # )
-
-    settings.DB_ENGINE = "postgres"
-    settings.POSTGRES_USER = "postgres"
-    settings.POSTGRES_PASSWORD = "postgres"
-    settings.POSTGRES_DB = "fractal"
+    settings.DB_ENGINE = DB_ENGINE
+    if DB_ENGINE == "sqlite":
+        settings.SQLITE_PATH = (
+            f"{temp_path.as_posix()}/_test.db?mode=memory&cache=shared"
+        )
+    elif DB_ENGINE == "postgres":
+        settings.DB_ENGINE = "postgres"
+        settings.POSTGRES_USER = "postgres"
+        settings.POSTGRES_PASSWORD = "postgres"
+        settings.POSTGRES_DB = "fractal"
+    else:
+        raise ValueError
 
     settings.FRACTAL_ROOT = temp_path
     settings.RUNNER_ROOT_DIR = temp_path / "artifacts"
