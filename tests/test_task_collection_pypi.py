@@ -1,11 +1,29 @@
 import json
 
+import pytest
 from devtools import debug
 
 from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
 from fractal_server.tasks.collection import _TaskCollectPip
 from fractal_server.tasks.collection import load_manifest
+
+
+@pytest.mark.parametrize(
+    ("package", "version", "source"),
+    [
+        ("my_package", None, "pip:my_package"),
+        ("my-package", "1.2.3", "pip:my-package==1.2.3"),
+    ],
+)
+def test_unit_source_resolution(package, version, source):
+    """
+    GIVEN a private task package
+    WHEN the source is resolved
+    THEN it matches expectations
+    """
+    tc = _TaskCollectPip(package=package, version=version)
+    assert tc.source == source
 
 
 def test_task_collect_model(dummy_task_package):

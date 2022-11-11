@@ -74,7 +74,8 @@ class _TaskCollectPip(TaskCollectPip):
         if self.is_local_package:
             return f"pip-local:{self.package_path.name}"
         else:
-            return f"pip:{self.package}=={self.version}"
+            version = f"=={self.version}" if self.version else ""
+            return f"pip:{self.package}{version}"
 
 
 def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
