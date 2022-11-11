@@ -97,6 +97,8 @@ async def submit_workflow(
     )
 
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
+    logger.info(f"RUNNER_BACKEND: {_settings.RUNNER_BACKEND}")
+    logger.info(f"username: {username}")
     logger.info(f"START workflow {workflow.name}")
     output_dataset.meta = await process_workflow(
         workflow=workflow,
