@@ -249,6 +249,13 @@ task_check_collection_parser.add_argument(
     "installation_path",
     help="Check collection status of tasks installed at this path",
 )
+task_check_collection_parser.add_argument(
+    "--verbose",
+    default=False,
+    action="store_true",
+    help="Output more verbose output",
+)
+
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(

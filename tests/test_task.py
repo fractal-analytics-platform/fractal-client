@@ -40,7 +40,7 @@ async def test_task_collection_and_list(
         if expected_status == "OK":
             break
 
-    res2 = await invoke(f"task check-collection {venv_path}")
+    res2 = await invoke(f"task check-collection {venv_path} --verbose")
     debug(res2)
     res2.show()
     assert res2.data["status"] == "OK"
