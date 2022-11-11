@@ -3,6 +3,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+from sqlalchemy import Column
+from sqlalchemy.types import DateTime
 from sqlmodel import Field
 from sqlmodel import Relationship
 
@@ -44,7 +46,9 @@ class ApplyWorkflow(ApplyWorkflowBase, table=True):  # type: ignore
     workflow: Workflow = Relationship()
 
     start_timestamp: datetime = Field(
-        default_factory=get_timestamp, nullable=False
+        default_factory=get_timestamp,
+        nullable=False,
+        sa_column=Column(DateTime(timezone=True)),
     )
     status: StatusType = StatusType.SUBMITTED
 

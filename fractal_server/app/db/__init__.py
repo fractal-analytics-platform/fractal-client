@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 from typing import Generator
+from warnings import warn
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,6 +37,15 @@ class DB:
     def set_db(cls):
         settings = Inject(get_settings)
 
+        if settings.DB_ENGINE == "sqlite":
+            warn(
+                "SQLite is partially supported but discouraged "
+                "in production environment."
+                "SQLite offers partial support for ForeignKey "
+                "constraints. As such, consistency of the database "
+                "cannot be guaranteed."
+            )
+
         cls._engine_async = create_async_engine(
             settings.DATABASE_URL, echo=settings.DB_ECHO, future=True
         )
@@ -43,7 +53,11 @@ class DB:
             settings.DATABASE_SYNC_URL,
             echo=settings.DB_ECHO,
             future=True,
-            connect_args={"check_same_thread": False},
+            connect_args=(
+                {"check_same_thread": False}
+                if settings.DB_ENGINE == "sqlite"
+                else {}
+            ),
         )
 
         cls._async_session_maker = sessionmaker(
