@@ -2,6 +2,8 @@ import asyncio
 import json
 from copy import deepcopy
 from pathlib import Path
+from shutil import copy as shell_copy
+from tempfile import TemporaryDirectory
 from typing import List
 
 from fastapi import APIRouter
@@ -16,13 +18,16 @@ from ....syringe import Inject
 from ....tasks.collection import _TaskCollectPip
 from ....tasks.collection import create_package_dir_pip
 from ....tasks.collection import create_package_environment_pip
+from ....tasks.collection import download_package
 from ....tasks.collection import get_collection_path
 from ....tasks.collection import get_log_path
+from ....tasks.collection import inspect_package
 from ....utils import set_logger
 from ...db import AsyncSession
 from ...db import DBSyncSession
 from ...db import get_db
 from ...db import get_sync_db
+from ...models import State
 from ...models import Task
 from ...schemas import TaskCollectPip
 from ...schemas import TaskCollectResult
@@ -72,7 +77,7 @@ async def _insert_tasks(
 
 @router.post(
     "/collect/pip/",
-    response_model=TaskCollectResult,
+    response_model=State,
     status_code=status.HTTP_201_CREATED,
 )
 async def collect_tasks_pip(
@@ -81,9 +86,21 @@ async def collect_tasks_pip(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
     public: bool = True,
-) -> Task:
+) -> State:  # State[TaskCollectResult]
 
     task_pkg = _TaskCollectPip(**task_collect.dict())
+
+    with TemporaryDirectory() as tmpdir:
+        if task_pkg.is_local_package:
+            shell_copy(task_pkg.package_path, tmpdir)
+            pkg_path = Path(tmpdir) / task_pkg.package_path.name
+        else:
+            pkg_path = download_package(task_pkg=task_pkg, dest=tmpdir)
+
+        version, manifest = inspect_package(pkg_path)
+
+    task_pkg.version = version
+    task_pkg.check()
 
     try:
         pkg_user = None if public else user.slurm_user
@@ -99,7 +116,7 @@ async def collect_tasks_pip(
     )
     settings = Inject(get_settings)
 
-    return TaskCollectResult(
+    collect_result = TaskCollectResult(
         **task_pkg.dict(),
         venv_path=venv_path.relative_to(settings.FRACTAL_ROOT),
         info=(
@@ -107,6 +124,16 @@ async def collect_tasks_pip(
             "GET /task/collect/{venv_path} to query collection status"
         ),
     )
+
+    collect_result_dict = collect_result.dict()
+    collect_result_dict["venv_path"] = str(collect_result.venv_path)
+
+    state = State(data=collect_result_dict)
+    db.add(state)
+    await db.commit()
+    await db.refresh(state)
+
+    return state
 
 
 @router.get("/collect/{venv_path:path}", response_model=TaskCollectStatus)

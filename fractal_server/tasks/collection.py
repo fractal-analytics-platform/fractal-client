@@ -87,6 +87,10 @@ class _TaskCollectPip(TaskCollectPip):
         else:
             return f"pip:{self.pip_package_version}"
 
+    def check(self):
+        if not self.version:
+            raise ValueError("Version is not set or cannot be determined")
+
 
 def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
     """
