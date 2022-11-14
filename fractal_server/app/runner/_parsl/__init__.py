@@ -195,8 +195,6 @@ async def process_workflow(
         mapping representing the final state of the output dataset metadata
     """
     logger = logging.getLogger(logger_name)
-    logger.info(f"{input_paths=}")
-    logger.info(f"{output_path=}")
 
     # FIXME
     # in the following we most likely want a unique run id rather than the
