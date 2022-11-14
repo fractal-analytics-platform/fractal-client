@@ -154,7 +154,7 @@ def call_single_parallel_task(
     # write args file
     args_file_path = workflow_dir / f"{prefix}.args.json"
     with open(args_file_path, "w") as f:
-        json.dump(args_dict, f, cls=TaskParameterEncoder)
+        json.dump(args_dict, f, cls=TaskParameterEncoder, indent=4)
     # FIXME: UP TO HERE
 
     # assemble full command

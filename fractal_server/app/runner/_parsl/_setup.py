@@ -15,6 +15,7 @@ Zurich.
 """
 import logging
 import os
+import sys
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
@@ -22,6 +23,7 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 
+import parsl.executors.high_throughput
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config as ParslConfig
@@ -59,19 +61,59 @@ class FractalLocalChannel(LocalChannel):
         else:
             if cmd.startswith(("/bin/bash -c '", "ps", "kill")):
                 msg = (
-                    "We do not impersonate other users for commands such "
-                    f"as {cmd=}."
+                    f"The attribute username={self.username} is explicitly set"
+                    " but will be ignored, since we are currently using parsl "
+                    "LocalProvider."
                 )
                 warnings.warn(msg)
                 new_cmd = cmd
             elif cmd.startswith(("sbatch", "scancel")):
-                new_cmd = f'sudo --non-interactive -u {self.username} "{cmd}"'
+                new_cmd = f"sudo --non-interactive -u {self.username} {cmd}"
             elif cmd.startswith("squeue"):
                 new_cmd = cmd
             else:
-                msg = "We cannot add sudo in front of " f"commands like {cmd=}"
+                msg = "We cannot add sudo in front of commands like {cmd=}"
                 raise NotImplementedError(msg)
             return super().execute_wait(new_cmd, *args, **kwargs)
+
+
+class FractalHighThroughputExecutor(HighThroughputExecutor):
+    """
+    This subclass is used to inject an executable process_worker_pool.py
+    command (made by an absolute path to a python interpreter and an absolute
+    path to process_worker_pool.py). This is necessary since
+    process_worker_pool.py may have to be run by a different user, e.g. on a
+    SLURM cluster.
+    """
+
+    def __init__(self, *args, logger_name=None, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        # Assemble command for process_worker_pool.py script
+        python_bin = sys.executable
+        pwp_path = str(
+            Path(parsl.executors.high_throughput.__file__).parent
+            / "process_worker_pool.py"
+        )
+        pwp_command = f"{python_bin} {pwp_path}"
+
+        # Write logs
+        logger = logging.getLogger(logger_name)
+        logger.info(
+            "Replacing process_worker_pool.py with custom command, so that "
+            "other SLURM users can execute it."
+        )
+        logger.warning(
+            "Replacing process_worker_pool.py with custom command may "
+            f"break if {python_bin} is not accessible from SLURM "
+            "computing nodes."
+        )
+
+        # Replace default script with custom one
+        self.launch_cmd = self.launch_cmd.replace(
+            "process_worker_pool.py", pwp_command
+        )
 
 
 def generate_parsl_config(
@@ -82,6 +124,7 @@ def generate_parsl_config(
     enable_monitoring: bool = True,
     username: str = None,
     worker_init: str = None,
+    logger_name: str,
 ) -> ParslConfig:
 
     if enable_monitoring:
@@ -104,8 +147,11 @@ def generate_parsl_config(
     script_dir = workflow_dir / "scripts"
     worker_logdir_root = workflow_dir / "executors"
 
-    script_dir.mkdir(exist_ok=True, parents=True)
-    worker_logdir_root.mkdir(exist_ok=True, parents=True)
+    # Create folders with fully open permissions
+    old_umask = os.umask(0)
+    script_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
+    worker_logdir_root.mkdir(mode=0o777, exist_ok=True, parents=True)
+    os.umask(old_umask)
 
     channel_args: Dict[str, Any] = dict(script_dir=script_dir)
 
@@ -216,7 +262,7 @@ def generate_parsl_config(
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         executors = []
         for provider, label in zip(providers, labels):
-            htex = HighThroughputExecutor(
+            htex = FractalHighThroughputExecutor(
                 label=label,
                 provider=provider,
                 mem_per_worker=provider.mem_per_node,
@@ -224,6 +270,7 @@ def generate_parsl_config(
                 address=address_by_hostname(),
                 cpu_affinity="block",
                 worker_logdir_root=worker_logdir_root.as_posix(),
+                logger_name=logger_name,
             )
             executors.append(htex)
 
@@ -269,7 +316,7 @@ def generate_parsl_config(
         executors = []
         for provider, label in zip(providers, labels):
             executors.append(
-                HighThroughputExecutor(
+                FractalHighThroughputExecutor(
                     label=label,
                     provider=provider,
                     mem_per_worker=provider.mem_per_node,
@@ -277,6 +324,7 @@ def generate_parsl_config(
                     address=address_by_hostname(),
                     cpu_affinity="block",
                     worker_logdir_root=worker_logdir_root.as_posix(),
+                    logger_name=logger_name,
                 )
             )
 
@@ -321,6 +369,7 @@ def load_parsl_config(
             workflow_dir=workflow_dir,
             username=username,
             worker_init=worker_init,
+            logger_name=logger_name,
         )
 
     dfk = DataFlowKernel(config=parsl_config)
