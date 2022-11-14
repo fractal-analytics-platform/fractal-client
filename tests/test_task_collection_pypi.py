@@ -1,10 +1,15 @@
 import json
+from pathlib import Path
 
+import pytest
 from devtools import debug
 
+from fractal_server.config import get_settings
+from fractal_server.syringe import Inject
 from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
 from fractal_server.tasks.collection import _TaskCollectPip
+from fractal_server.tasks.collection import create_package_dir_pip
 from fractal_server.tasks.collection import load_manifest
 
 
@@ -105,3 +110,39 @@ def test_load_manifest(tmp_path):
     assert len(task_list) == 1
     for t in task_list:
         assert t.source == SOURCE
+
+
+@pytest.mark.parametrize(
+    ("task_pkg", "user", "expected_path"),
+    [
+        (
+            _TaskCollectPip(package="my-package"),
+            None,
+            Path(".fractal/my-package"),
+        ),
+        (
+            _TaskCollectPip(package="my-package", version="1.2.3"),
+            None,
+            Path(".fractal/my-package1.2.3"),
+        ),
+        (
+            _TaskCollectPip(package="my-package", version="1.2.3"),
+            "genoveffo",
+            Path("genoveffo/my-package1.2.3"),
+        ),
+    ],
+)
+def test_create_pkg_dir(task_pkg, user, expected_path):
+    """
+    GIVEN a taks package
+    WHEN the directory for installation is created
+    THEN the path is the one expected
+
+    NOTE:
+        expected_path relative to FRACTAL_ROOT
+    """
+    settings = Inject(get_settings)
+    check = settings.FRACTAL_ROOT / expected_path
+
+    venv_path = create_package_dir_pip(task_pkg=task_pkg, user=user)
+    assert venv_path == check
