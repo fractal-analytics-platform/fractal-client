@@ -96,7 +96,7 @@ class FractalHighThroughputExecutor(HighThroughputExecutor):
             Path(parsl.executors.high_throughput.__file__).parent
             / "process_worker_pool.py"
         )
-        pwp_command = python_bin + pwp_path
+        pwp_command = f"{python_bin} {pwp_path}"
 
         # Write logs
         logger = logging.getLogger(logger_name)
