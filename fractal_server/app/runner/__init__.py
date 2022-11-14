@@ -101,6 +101,7 @@ async def submit_workflow(
 
     logger.info(f"fractal_server.__VERSION__: {__VERSION__}")
     logger.info(f"RUNNER_BACKEND: {_settings.RUNNER_BACKEND}")
+    logger.info(f"worker_init: {worker_init}")
     logger.info(f"username: {username}")
     logger.info(f"input_paths: {input_paths}")
     logger.info(f"output_path: {output_path}")
@@ -114,6 +115,7 @@ async def submit_workflow(
         username=username,
         workflow_dir=WORKFLOW_DIR,
         logger_name=logger_name,
+        worker_init=worker_init,
     )
 
     logger.info(f'END workflow "{workflow.name}"')

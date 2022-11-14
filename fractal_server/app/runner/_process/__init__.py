@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
 
 from ...models import Workflow
 from ...models import WorkflowTask
@@ -144,6 +145,9 @@ async def process_workflow(
     logger_name: str,
     workflow_dir: Path,
     username: str = None,
+    worker_init: Optional[
+        str
+    ] = None,  # this is only to match to _parsl interface
 ) -> Dict[str, Any]:
     """
     TODO:
