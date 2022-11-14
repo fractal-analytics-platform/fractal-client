@@ -171,6 +171,7 @@ async def workflow_apply(
     # output_dataset_id: Optional[int] = None,
     overwrite_input: bool = False,
     project_id: Optional[int] = None,
+    worker_init: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
     apply_wf_create = ApplyWorkflowCreate(
@@ -179,6 +180,7 @@ async def workflow_apply(
         output_dataset_id=output_dataset_id,
         overwrite_input=overwrite_input,
         project_id=project_id,
+        worker_init=worker_init,
     )
 
     res = await client.post(

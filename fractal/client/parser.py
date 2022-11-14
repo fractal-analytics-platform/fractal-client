@@ -421,7 +421,11 @@ workflow_apply_parser.add_argument(
     "--project-id",
     help="Id of project the workflow and dataset belong to",
 )
-
+workflow_apply_parser.add_argument(
+    "-w",
+    "--worker-init",
+    help="Command to be run to start a worker",
+)
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
