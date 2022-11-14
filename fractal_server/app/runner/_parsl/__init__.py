@@ -5,6 +5,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Literal
+from typing import Optional
 from typing import Union
 
 from parsl.app.app import join_app
@@ -183,6 +184,7 @@ async def process_workflow(
     logger_name: str,
     workflow_dir: Path,
     username: str = None,
+    worker_init: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Public interface to the runner backend
@@ -193,8 +195,6 @@ async def process_workflow(
         mapping representing the final state of the output dataset metadata
     """
     logger = logging.getLogger(logger_name)
-    logger.info(f"{input_paths=}")
-    logger.info(f"{output_path=}")
 
     # FIXME
     # in the following we most likely want a unique run id rather than the
@@ -205,6 +205,7 @@ async def process_workflow(
         workflow_dir=workflow_dir,
         username=username,
         logger_name=logger_name,
+        worker_init=worker_init,
     ) as dfk:
         logger.info("Start definition of app futures (from last to first)")
         final_task_pars_future = recursive_task_assembly(

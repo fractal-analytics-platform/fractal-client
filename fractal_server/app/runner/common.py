@@ -140,4 +140,4 @@ def async_wrap(func: Callable) -> Callable:
 
 def write_args_file(args: Dict[str, Any], path: Path):
     with path.open("w") as f:
-        json.dump(args, f, cls=TaskParameterEncoder)
+        json.dump(args, f, cls=TaskParameterEncoder, indent=4)
