@@ -101,13 +101,12 @@ class FractalHighThroughputExecutor(HighThroughputExecutor):
         # Write logs
         logger = logging.getLogger(logger_name)
         logger.info(
-            f"Replacing process_worker_pool.py with {pwp_command}, so that"
-            " any user can execute it (useful when impersonating other "
-            "SLURM users)."
+            "Replacing process_worker_pool.py with custom command, so that "
+            "other SLURM users can execute it."
         )
         logger.warning(
-            f"Replacing process_worker_pool.py with {pwp_command} will"
-            f" break if {python_bin} is not accessible from SLURM "
+            "Replacing process_worker_pool.py with custom command may "
+            f"break if {python_bin} is not accessible from SLURM "
             "computing nodes."
         )
 
