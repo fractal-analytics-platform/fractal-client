@@ -65,7 +65,7 @@ class FractalLocalChannel(LocalChannel):
                 warnings.warn(msg)
                 new_cmd = cmd
             elif cmd.startswith(("sbatch", "scancel")):
-                new_cmd = f'sudo --non-interactive -u {self.username} "{cmd}"'
+                new_cmd = f"sudo --non-interactive -u {self.username} {cmd}"
             elif cmd.startswith("squeue"):
                 new_cmd = cmd
             else:
