@@ -59,8 +59,9 @@ class FractalLocalChannel(LocalChannel):
         else:
             if cmd.startswith(("/bin/bash -c '", "ps", "kill")):
                 msg = (
-                    f"For LocalProvider commands like {cmd=}, we do not "
-                    "impersonate other users."
+                    f"The attribute username={self.username} is explicitly set"
+                    " but will be ignored, since we are currently using parsl "
+                    "LocalProvider."
                 )
                 warnings.warn(msg)
                 new_cmd = cmd
