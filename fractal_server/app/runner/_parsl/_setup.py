@@ -104,8 +104,11 @@ def generate_parsl_config(
     script_dir = workflow_dir / "scripts"
     worker_logdir_root = workflow_dir / "executors"
 
-    script_dir.mkdir(exist_ok=True, parents=True)
-    worker_logdir_root.mkdir(exist_ok=True, parents=True)
+    # Create folders with fully open permissions
+    old_umask = os.umask(0)
+    script_dir.mkdir(mode=0o777, exist_ok=True, parents=True)
+    worker_logdir_root.mkdir(mode=0o777, exist_ok=True, parents=True)
+    os.umask(old_umask)
 
     channel_args: Dict[str, Any] = dict(script_dir=script_dir)
 

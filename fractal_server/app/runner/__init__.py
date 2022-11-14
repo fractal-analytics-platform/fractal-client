@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -89,7 +90,9 @@ async def submit_workflow(
         / f"workflow_{workflow_id:06d}_job_{job_id:06d}"
     )
     if not WORKFLOW_DIR.exists():
-        WORKFLOW_DIR.mkdir(parents=True)
+        old_umask = os.umask()
+        WORKFLOW_DIR.mkdir(parents=True, mode=0o777)
+        os.umask(old_umask)
 
     logger_name = f"WF{workflow_id}_job{job_id}"
     logger = set_logger(
