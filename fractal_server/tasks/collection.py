@@ -9,10 +9,13 @@
 # Institute for Biomedical Research and Pelkmans Lab from the University of
 # Zurich.
 import json
+from io import IOBase
 from pathlib import Path
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Union
+from zipfile import ZipFile
 
 from pydantic import root_validator
 
@@ -116,7 +119,7 @@ async def download_package(
     dest: Path,
 ):
     """
-    Download package to temporary directory and inspect it
+    Download package to destination
     """
     interpreter = f"python{task_pkg.python_version}"
     pip = f"{interpreter} -m pip"
@@ -129,6 +132,48 @@ async def download_package(
         line.split()[-1] for line in stdout.split("\n") if "Saved" in line
     )
     return Path(pkg_file)
+
+
+def inspect_package(path: Path):
+    """
+    Inspect task package for version and manifest
+
+    Parameters:
+    path: Path
+        the path in which the package is saved
+
+    Return
+    ------
+    version_manifest: dict
+        A dictionary containing `version`, the version of the pacakge, and
+        `manifest`, the Fractal manifest object relative to the tasks.
+    """
+    if "whl" in path.as_posix():
+        # it is simply a zip file
+        # we can extract the version number from *.dist-info/METADATA
+        # and read the fractal manifest from the package content
+        with ZipFile(path) as wheel:
+            namelist = wheel.namelist()
+            metadata = next(
+                name for name in namelist if "dist-info/METADATA" in name
+            )
+            manifest = next(
+                name for name in namelist if "__FRACTAL_MANIFEST__" in name
+            )
+
+            with wheel.open(metadata) as metadata_fd:
+                meta = metadata_fd.read().decode("utf-8")
+                version = next(
+                    line.split()[-1]
+                    for line in meta.splitlines()
+                    if line.startswith("Version")
+                )
+
+            with wheel.open(manifest) as manifest_fd:
+                manifest_obj = read_manifest(manifest_fd)  # type: ignore
+
+    version_manifest = dict(version=version, manifest=manifest_obj)
+    return version_manifest
 
 
 async def create_package_environment_pip(
@@ -162,6 +207,25 @@ async def create_package_environment_pip(
     return task_list
 
 
+def read_manifest(file: Union[Path, IOBase]) -> ManifestV1:
+    """
+    Read and parse manifest file
+    """
+    if isinstance(file, IOBase):
+        manifest_dict = json.load(file)
+    else:
+        with file.open("r") as f:
+            manifest_dict = json.load(f)
+
+    manifest_version = str(manifest_dict["manifest_version"])
+    if manifest_version == "1":
+        manifest = ManifestV1(**manifest_dict)
+    else:
+        raise ValueError("Manifest version {manifest_version=} not supported")
+
+    return manifest
+
+
 def load_manifest(
     package_root: Path,
     python_bin: Path,
@@ -169,23 +233,19 @@ def load_manifest(
 ) -> List[TaskCreate]:
 
     manifest_file = package_root / "__FRACTAL_MANIFEST__.json"
-    with manifest_file.open("r") as f:
-        manifest_dict = json.load(f)
+    manifest = read_manifest(manifest_file)
 
     task_list = []
-    if str(manifest_dict["manifest_version"]) == "1":
-        manifest = ManifestV1(**manifest_dict)
-
-        for t in manifest.task_list:
-            task_executable = package_root / t.executable
-            if not task_executable.exists():
-                raise FileNotFoundError(
-                    f"Cannot find executable `{task_executable}` "
-                    f"for task `{t.name}`"
-                )
-            cmd = f"{python_bin.as_posix()} {task_executable.as_posix()}"
-            this_task = TaskCreate(**t.dict(), command=cmd, source=source)
-            task_list.append(this_task)
+    for t in manifest.task_list:
+        task_executable = package_root / t.executable
+        if not task_executable.exists():
+            raise FileNotFoundError(
+                f"Cannot find executable `{task_executable}` "
+                f"for task `{t.name}`"
+            )
+        cmd = f"{python_bin.as_posix()} {task_executable.as_posix()}"
+        this_task = TaskCreate(**t.dict(), command=cmd, source=source)
+        task_list.append(this_task)
     return task_list
 
 

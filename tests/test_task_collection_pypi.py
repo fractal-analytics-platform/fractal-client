@@ -11,7 +11,9 @@ from fractal_server.tasks.collection import _pip_install
 from fractal_server.tasks.collection import _TaskCollectPip
 from fractal_server.tasks.collection import create_package_dir_pip
 from fractal_server.tasks.collection import download_package
+from fractal_server.tasks.collection import inspect_package
 from fractal_server.tasks.collection import load_manifest
+from fractal_server.tasks.collection import ManifestV1
 
 
 @pytest.mark.parametrize(
@@ -87,12 +89,33 @@ async def test_pip_install(tmp_path):
 
 
 async def test_download(tmp_path):
+    """
+    GIVEN a PyPI package name
+    WHEN download_package is called
+    THEN the package's wheel is download in the destination directory
+    """
     PACKAGE = "fractal-tasks-core"
     task_pkg = _TaskCollectPip(package=PACKAGE)
     pkg = await download_package(task_pkg=task_pkg, dest=tmp_path)
     debug(pkg)
     assert pkg.exists()
     assert "whl" in pkg.as_posix()
+
+
+async def test_inspect(tmp_path):
+    """
+    GIVEN the path to a wheel package
+    WHEN the inspect package is called on the path of the wheel
+    THEN the version number and the manifest are loaded
+    """
+    PACKAGE = "fractal-tasks-core"
+    task_pkg = _TaskCollectPip(package=PACKAGE)
+    pkg = await download_package(task_pkg=task_pkg, dest=tmp_path)
+
+    res = inspect_package(pkg)
+    debug(res)
+    assert "version" in res
+    assert isinstance(res["manifest"], ManifestV1)
 
 
 def test_load_manifest(tmp_path):
