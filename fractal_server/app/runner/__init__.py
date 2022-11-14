@@ -88,7 +88,7 @@ async def submit_workflow(
     WORKFLOW_DIR = (
         settings.RUNNER_ROOT_DIR
         / f"workflow_{workflow_id:06d}_job_{job_id:06d}"
-    )
+    ).resolve()
     if not WORKFLOW_DIR.exists():
         old_umask = os.umask(0)
         WORKFLOW_DIR.mkdir(parents=True, mode=0o777)
