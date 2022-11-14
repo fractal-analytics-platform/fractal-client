@@ -237,6 +237,7 @@ async def apply_workflow(
         output_dataset=output_dataset,
         job_id=job.id,
         username=user.slurm_user,
+        worker_init=apply_workflow.worker_init,
     )
 
     return job
