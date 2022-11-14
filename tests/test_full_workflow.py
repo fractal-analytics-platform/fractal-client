@@ -29,7 +29,8 @@ async def collect_tasks(MockCurrentUser, client, dummy_task_package):
             f"{PREFIX}/task/collect/pip/",
             json=dict(package=dummy_task_package.as_posix()),
         )
-        data = res.json()
+        state = res.json()
+        data = state["data"]
         venv_path = Path(data["venv_path"])
 
         res = await client.get(f"{PREFIX}/task/collect/{venv_path}")

@@ -48,7 +48,8 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
         assert res.status_code == 201
 
         debug(dummy_task_package)
-        data = res.json()
+        state = res.json()
+        data = state["data"]
         assert "fractal_tasks_dummy" in data["venv_path"]
         venv_path = Path(data["venv_path"])
 
