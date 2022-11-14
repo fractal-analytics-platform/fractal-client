@@ -424,7 +424,7 @@ workflow_apply_parser.add_argument(
 workflow_apply_parser.add_argument(
     "-w",
     "--worker-init",
-    help="Command to be run to start a worker",
+    help="Command to be run before starting a worker",
 )
 
 # VERSION GROUP
