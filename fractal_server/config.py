@@ -155,7 +155,6 @@ class Settings(BaseSettings):
 
     RUNNER_CONFIG: str = "local"
     RUNNER_DEFAULT_EXECUTOR: str = "cpu-low"
-    RUNNER_PARSL_ENV_ACTIVATE: str = ""
 
     # NOTE: we currently set RUNNER_MONITORING to False, due to
     # https://github.com/fractal-analytics-platform/fractal-server/issues/148
