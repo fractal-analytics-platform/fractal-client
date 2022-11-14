@@ -72,7 +72,7 @@ class FractalLocalChannel(LocalChannel):
             elif cmd.startswith("squeue"):
                 new_cmd = cmd
             else:
-                msg = "We cannot add sudo in front of " f"commands like {cmd=}"
+                msg = "We cannot add sudo in front of commands like {cmd=}"
                 raise NotImplementedError(msg)
             return super().execute_wait(new_cmd, *args, **kwargs)
 
