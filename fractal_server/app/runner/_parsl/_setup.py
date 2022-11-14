@@ -118,6 +118,9 @@ def generate_parsl_config(
     if worker_init is None:
         worker_init = ""
 
+    # Add RUNNER_PARSL_ENV_ACTIVATE to worker_init
+    worker_init = (settings.RUNNER_PARSL_ENV_ACTIVATE, worker_init)
+
     if config == "minimal":
         # Define a single provider
         prov_local = LocalProvider(
