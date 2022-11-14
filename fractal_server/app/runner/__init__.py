@@ -90,7 +90,7 @@ async def submit_workflow(
         / f"workflow_{workflow_id:06d}_job_{job_id:06d}"
     )
     if not WORKFLOW_DIR.exists():
-        old_umask = os.umask()
+        old_umask = os.umask(0)
         WORKFLOW_DIR.mkdir(parents=True, mode=0o777)
         os.umask(old_umask)
 
