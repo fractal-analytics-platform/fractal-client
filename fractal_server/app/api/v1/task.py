@@ -91,16 +91,22 @@ async def collect_tasks_pip(
     task_pkg = _TaskCollectPip(**task_collect.dict())
 
     with TemporaryDirectory() as tmpdir:
-        if task_pkg.is_local_package:
-            shell_copy(task_pkg.package_path, tmpdir)
-            pkg_path = Path(tmpdir) / task_pkg.package_path.name
-        else:
-            pkg_path = download_package(task_pkg=task_pkg, dest=tmpdir)
+        try:
+            if task_pkg.is_local_package:
+                shell_copy(task_pkg.package_path, tmpdir)
+                pkg_path = Path(tmpdir) / task_pkg.package_path.name
+            else:
+                pkg_path = download_package(task_pkg=task_pkg, dest=tmpdir)
 
-        version, manifest = inspect_package(pkg_path)
+            version_manifest = inspect_package(pkg_path)
 
-    task_pkg.version = version
-    task_pkg.check()
+            task_pkg.version = version_manifest["version"]
+            task_pkg.check()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid package or manifest. Original error: {e}",
+            )
 
     try:
         pkg_user = None if public else user.slurm_user
