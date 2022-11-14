@@ -147,9 +147,9 @@ class Settings(BaseSettings):
     ###########################################################################
     # FRACTAL SPECIFIC
     ###########################################################################
-    FRACTAL_ROOT: Optional[Path]  # Path = _DEVNULL
+    FRACTAL_ROOT: Optional[Path]
     RUNNER_BACKEND: str = "process"
-    RUNNER_ROOT_DIR: Path = Path("artifacts")
+    RUNNER_ROOT_DIR: Optional[Path]
     FRACTAL_LOGGING_LEVEL: int = logging.WARNING
     FRACTAL_PUBLIC_TASK_SUBDIR: str = ".fractal"
 
@@ -190,6 +190,7 @@ class Settings(BaseSettings):
                 SQLITE_PATH: str
 
             FRACTAL_ROOT: Path
+            RUNNER_ROOT_DIR: Path
 
         StrictSettings(**self.dict())
 

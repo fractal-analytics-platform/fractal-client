@@ -96,10 +96,7 @@ def create_package_dir_pip(
     user = user or settings.FRACTAL_PUBLIC_TASK_SUBDIR
 
     package_dir = f"{task_pkg.package}{task_pkg.version or ''}"
-    if settings.FRACTAL_ROOT:
-        # It should be always true, we are only checking that the system is
-        # fully configured
-        venv_path = settings.FRACTAL_ROOT / user / package_dir
+    venv_path = settings.FRACTAL_ROOT / user / package_dir  # type: ignore
     # TODO check the access right of the venv_path and subdirs
     venv_path.mkdir(exist_ok=False, parents=True)
     return venv_path
