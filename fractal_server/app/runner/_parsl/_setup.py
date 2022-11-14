@@ -15,6 +15,7 @@ Zurich.
 """
 import logging
 import os
+import sys
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
@@ -22,6 +23,7 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 
+import parsl.executors.high_throughput
 from parsl.addresses import address_by_hostname
 from parsl.channels import LocalChannel
 from parsl.config import Config as ParslConfig
@@ -75,6 +77,23 @@ class FractalLocalChannel(LocalChannel):
             return super().execute_wait(new_cmd, *args, **kwargs)
 
 
+class FractalHighThroughputExecutor(HighThroughputExecutor):
+    """
+    This subclass is used to inject an executable process_worker_pool.py
+    command (made by an absolute path to a python interpreter and an absolute
+    path to process_worker_pool.py). This is necessary since
+    process_worker_pool.py may have to be run by a different user, e.g. on a
+    SLURM cluster.
+    """
+
+    def __init__(self, *args, process_worker_pool_command=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if process_worker_pool_command is not None:
+            self.launch_cmd = self.launch_cmd.replace(
+                "process_worker_pool.py", process_worker_pool_command
+            )
+
+
 def generate_parsl_config(
     *,
     workflow_id: int,
@@ -83,6 +102,7 @@ def generate_parsl_config(
     enable_monitoring: bool = True,
     username: str = None,
     worker_init: str = None,
+    logger_name: str,
 ) -> ParslConfig:
 
     if enable_monitoring:
@@ -119,8 +139,24 @@ def generate_parsl_config(
     if worker_init is None:
         worker_init = ""
 
-    # Add RUNNER_PARSL_ENV_ACTIVATE to worker_init
-    worker_init = settings.RUNNER_PARSL_ENV_ACTIVATE + worker_init
+    # Assemble path of process_worker_pool.py script
+    python_bin = sys.executable
+    pwp_path = str(
+        Path(parsl.executors.high_throughput.__file__).parent
+        / "process_worker_pool.py"
+    )
+    pwp_command = python_bin + pwp_path
+    logger = logging.getLogger(logger_name)
+    logger.info(
+        f"Replacing process_worker_pool.py with {pwp_command}, so that"
+        " any user can execute it (useful when impersonating other "
+        "SLURM users)."
+    )
+    logger.warning(
+        f"Replacing process_worker_pool.py with {pwp_command} will"
+        f" break if {python_bin} is not accessible from SLURM "
+        "computing nodes."
+    )
 
     if config == "minimal":
         # Define a single provider
@@ -223,7 +259,7 @@ def generate_parsl_config(
         labels = ["cpu-low", "cpu-mid", "cpu-high", "gpu"]
         executors = []
         for provider, label in zip(providers, labels):
-            htex = HighThroughputExecutor(
+            htex = FractalHighThroughputExecutor(
                 label=label,
                 provider=provider,
                 mem_per_worker=provider.mem_per_node,
@@ -231,6 +267,7 @@ def generate_parsl_config(
                 address=address_by_hostname(),
                 cpu_affinity="block",
                 worker_logdir_root=worker_logdir_root.as_posix(),
+                process_worker_pool_command=pwp_command,
             )
             executors.append(htex)
 
@@ -276,7 +313,7 @@ def generate_parsl_config(
         executors = []
         for provider, label in zip(providers, labels):
             executors.append(
-                HighThroughputExecutor(
+                FractalHighThroughputExecutor(
                     label=label,
                     provider=provider,
                     mem_per_worker=provider.mem_per_node,
@@ -284,6 +321,7 @@ def generate_parsl_config(
                     address=address_by_hostname(),
                     cpu_affinity="block",
                     worker_logdir_root=worker_logdir_root.as_posix(),
+                    process_worker_pool_command=pwp_command,
                 )
             )
 
@@ -328,6 +366,7 @@ def load_parsl_config(
             workflow_dir=workflow_dir,
             username=username,
             worker_init=worker_init,
+            logger_name=logger_name,
         )
 
     dfk = DataFlowKernel(config=parsl_config)
