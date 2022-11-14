@@ -70,12 +70,19 @@ class _TaskCollectPip(TaskCollectPip):
         return values
 
     @property
+    def pip_package_version(self):
+        """
+        Return pip compatible specification of package and version
+        """
+        version = f"=={self.version}" if self.version else ""
+        return f"{self.package}{version}"
+
+    @property
     def source(self):
         if self.is_local_package:
             return f"pip-local:{self.package_path.name}"
         else:
-            version = f"=={self.version}" if self.version else ""
-            return f"pip:{self.package}{version}"
+            return f"pip:{self.pip_package_version}"
 
 
 def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
@@ -101,6 +108,27 @@ def create_package_dir_pip(
     # TODO check the access right of the venv_path and subdirs
     venv_path.mkdir(exist_ok=False, parents=True)
     return venv_path
+
+
+async def download_package(
+    *,
+    task_pkg: _TaskCollectPip,
+    dest: Path,
+):
+    """
+    Download package to temporary directory and inspect it
+    """
+    interpreter = f"python{task_pkg.python_version}"
+    pip = f"{interpreter} -m pip"
+    cmd = (
+        f"{pip} download --no-deps {task_pkg.pip_package_version} "
+        f"-d {dest}"
+    )
+    stdout = await execute_command(command=cmd, cwd=Path("."))
+    pkg_file = next(
+        line.split()[-1] for line in stdout.split("\n") if "Saved" in line
+    )
+    return Path(pkg_file)
 
 
 async def create_package_environment_pip(

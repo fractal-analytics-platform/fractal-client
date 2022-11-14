@@ -10,6 +10,7 @@ from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
 from fractal_server.tasks.collection import _TaskCollectPip
 from fractal_server.tasks.collection import create_package_dir_pip
+from fractal_server.tasks.collection import download_package
 from fractal_server.tasks.collection import load_manifest
 
 
@@ -83,6 +84,15 @@ async def test_pip_install(tmp_path):
     )
     debug(location)
     assert PACKAGE in location.as_posix()
+
+
+async def test_download(tmp_path):
+    PACKAGE = "fractal-tasks-core"
+    task_pkg = _TaskCollectPip(package=PACKAGE)
+    pkg = await download_package(task_pkg=task_pkg, dest=tmp_path)
+    debug(pkg)
+    assert pkg.exists()
+    assert "whl" in pkg.as_posix()
 
 
 def test_load_manifest(tmp_path):
