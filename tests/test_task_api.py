@@ -102,7 +102,5 @@ async def test_collection_api_invalid_manifest(
         res = await client.post(
             f"{PREFIX}/collect/pip/?public=false", json=task_collection
         )
-        assert res.status_code == 201
         debug(res.json())
-
-        # FIXME: how to test that the process failed (upon loading manifest)?
+        assert res.status_code == 422

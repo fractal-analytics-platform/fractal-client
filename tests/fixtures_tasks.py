@@ -1,5 +1,4 @@
 import asyncio
-import json
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -106,14 +105,9 @@ async def dummy_task_package_invalid_manifest(testdata_path, tmp_path) -> Path:
     await execute_command(f"cp {DUMMY_PACKAGE}/*.* {SOURCE_PATH}")
 
     # Make manifest invalid
-    MANIFEST_PATH = f"{SOURCE_PATH}/__FRACTAL_MANIFEST__.json"
-    with open(MANIFEST_PATH, "r") as fin:
-        manifest = json.load(fin)
-    task_list = manifest["task_list"]
-    task_list[0].pop("default_args")
-    manifest["task_list"] = task_list
-    with open(MANIFEST_PATH, "w") as fout:
-        json.dump(manifest, fout)
+    MANIFEST_PATH = SOURCE_PATH / "__FRACTAL_MANIFEST__.json"
+    with MANIFEST_PATH.open("w") as f:
+        f.write("invalid manifest")
 
     await execute_command("poetry build", cwd=PACKAGE_PATH)
     wheel_relative = await execute_command("ls dist/*.whl", cwd=PACKAGE_PATH)
