@@ -126,7 +126,9 @@ async def test_edit_workflow_task(
     assert res.retcode == 0
 
     # New arguments to be used
-    payload = dict(args={"some_arg": "some_value"})
+    payload = dict(
+        args={"some_arg": "some_value"}, meta={"executor": "cpu-low"}
+    )
 
     json_file = tmp_path / "payload.json"
     with json_file.open("w") as f:
@@ -143,9 +145,26 @@ async def test_edit_workflow_task(
     res = await invoke(cmd)
     assert res.retcode == 0
     assert res.data["args"] == payload["args"]
+    assert res.data["meta"] == payload["meta"]
 
     # Check that also the workflow in the db was correctly updated
     res = await invoke(f"workflow show {wf.id}")
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task_list"][0]["args"] == payload["args"]
+    assert res.data["task_list"][0]["meta"] == payload["meta"]
+
+    payload_error = dict(meta={"parallelization_level": "XXX"})
+
+    json_file = tmp_path / "payload_error.json"
+    with json_file.open("w") as f:
+        json.dump(payload_error, f)
+
+    workflow_task_id = res.data["task_list"][0]["id"]
+    cmd = (
+        f"workflow edit-task {wf.id} {workflow_task_id} "
+        f"--json-file {json_file}"
+    )
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 422

@@ -3,6 +3,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from pydantic import validator
 from sqlmodel import SQLModel
 
 from .task import TaskRead
@@ -14,6 +15,7 @@ __all__ = (
     "WorkflowUpdate",
     "WorkflowTaskCreate",
     "WorkflowTaskRead",
+    "WorkflowTaskUpdate",
 )
 
 
@@ -21,6 +23,7 @@ class _WorkflowTaskBase(SQLModel):
     workflow_id: Optional[int]
     task_id: Optional[int]
     order: Optional[int]
+    meta: Optional[Dict[str, Any]]
     args: Optional[Dict[str, Any]]
 
 
@@ -32,6 +35,19 @@ class WorkflowTaskRead(_WorkflowTaskBase):
     id: int
     workflow_id: int
     task: TaskRead
+
+
+class WorkflowTaskUpdate(_WorkflowTaskBase):
+    args: Optional[Dict[str, Any]]  # type: ignore
+    meta: Optional[Dict[str, Any]]  # type: ignore
+
+    @validator("meta")
+    def check_no_parallelisation_level(cls, m):
+        if "parallelization_level" in m:
+            raise ValueError(
+                "Overriding task parallelization level currently not allowed"
+            )
+        return m
 
 
 class _WorkflowBase(SQLModel):
