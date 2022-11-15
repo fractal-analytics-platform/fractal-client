@@ -62,7 +62,7 @@ async def test_background_collection(db, dummy_task_package):
 async def test_background_collection_failure(db, dummy_task_package):
     task_pkg = _TaskCollectPip(package=dummy_task_package.as_posix())
     venv_path = create_package_dir_pip(
-        task_pkg=task_pkg, user="test_bg_collection"
+        task_pkg=task_pkg, user="test_bg_collection_fail"
     )
     collection_status = TaskCollectStatus(
         status="pending", venv_path=venv_path, package=task_pkg.package
