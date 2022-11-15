@@ -23,6 +23,15 @@ from .config import get_settings
 from .syringe import Inject
 
 
+def close_logger(logger: logging.Logger) -> None:
+    """
+    Close all FileHandles of `logger`
+    """
+    for handle in logger.handlers:
+        if isinstance(handle, logging.FileHandler):
+            handle.close()
+
+
 def get_timestamp() -> datetime:
     return datetime.now(tz=timezone.utc)
 
