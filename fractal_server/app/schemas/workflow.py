@@ -22,6 +22,7 @@ class _WorkflowTaskBase(SQLModel):
     workflow_id: Optional[int]
     task_id: Optional[int]
     order: Optional[int]
+    executor: Optional[str]
     args: Optional[Dict[str, Any]] = None
 
 
