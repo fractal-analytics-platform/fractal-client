@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from devtools import debug
 
 from fractal_server.app.api.v1.task import _background_collect_pip
@@ -56,6 +57,45 @@ async def test_background_collection(db, dummy_task_package):
     out_state = await db.get(State, state.id)
     debug(out_state)
     assert out_state.data["status"] == "OK"
+
+
+async def test_background_collection_failure(db, dummy_task_package):
+    """
+    GIVEN a package and its installation environment
+    WHEN the background collection is called on it and it fails
+    THEN
+        * the log of the collection is saved to the state
+        * the installation directory is removed
+    """
+    task_pkg = _TaskCollectPip(package=dummy_task_package.as_posix())
+    venv_path = create_package_dir_pip(
+        task_pkg=task_pkg, user="test_bg_collection_fail"
+    )
+    collection_status = TaskCollectStatus(
+        status="pending", venv_path=venv_path, package=task_pkg.package
+    )
+    # replacing with path because of non-serializable Path
+    collection_status_dict = collection_status.sanitised_dict()
+    state = State(data=collection_status_dict)
+    db.add(state)
+    await db.commit()
+    await db.refresh(state)
+
+    task_pkg.package = "__NO_PACKAGE"
+    task_pkg.package_path = None
+    with pytest.raises(Exception) as err:
+        await _background_collect_pip(
+            state=state, venv_path=venv_path, task_pkg=task_pkg, db=db
+        )
+
+    debug(err)
+
+    await db.refresh(state)
+    debug(state)
+    assert state.data["log"]
+    assert state.data["status"] == "fail"
+    assert state.data["info"].startswith("Original error")
+    assert not venv_path.exists()
 
 
 async def test_collection_api(client, dummy_task_package, MockCurrentUser):
