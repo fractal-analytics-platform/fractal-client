@@ -101,8 +101,8 @@ async def execute_command(
     )
     stdout, stderr = await proc.communicate()
     logger.debug(f"Subprocess call to: {command}")
-    logger.info(stdout.decode("utf-8"))
-    logger.info(stderr.decode("utf-8"))
+    logger.debug(stdout.decode("utf-8"))
+    logger.debug(stderr.decode("utf-8"))
     if proc.returncode != 0:
         raise RuntimeError(stderr.decode("utf-8"))
     return stdout.decode("utf-8")
