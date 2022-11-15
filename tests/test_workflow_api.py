@@ -344,3 +344,10 @@ async def test_patch_workflow_task(
         assert patched_workflow_task_up["args"] == dict(
             a=dict(c=43), b=123, d=321
         )
+        payload = dict(meta={"parallelization_level": "XXX"})
+        res = await client.patch(
+            f"api/v1/workflow/{workflow.id}/"
+            f"edit-task/{workflow.task_list[0].id}",
+            json=payload,
+        )
+        assert res.status_code == 422
