@@ -176,7 +176,7 @@ async def collect_tasks_pip(
         db=db,
     )
 
-    logger.info("collection endpiont: returning state")
+    logger.info("collection endpoint: returning state")
     info = (
         "Collecting tasks in the background. "
         "GET /task/collect/{id} to query collection status"

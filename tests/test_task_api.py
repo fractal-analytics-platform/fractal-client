@@ -38,14 +38,10 @@ async def test_background_collection(db, dummy_task_package):
         task_pkg=task_pkg, user="test_bg_collection"
     )
     collection_status = TaskCollectStatus(
-        status="pending",
-        venv_path=venv_path,
-        package=task_pkg.package
-        # **task_pkg.dict(),
+        status="pending", venv_path=venv_path, package=task_pkg.package
     )
     # replacing with path because of non-serializable Path
-    collection_status_dict = collection_status.dict()
-    collection_status_dict["venv_path"] = str(collection_status.venv_path)
+    collection_status_dict = collection_status.sanitised_dict()
 
     state = State(data=collection_status_dict)
     db.add(state)
@@ -96,8 +92,8 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
         res = await client.get(f"{PREFIX}/collect/{state['id']}")
         debug(res.json())
         assert res.status_code == 200
-        status = res.json()
-        data = status["data"]
+        state = res.json()
+        data = state["data"]
 
         assert data["status"] == "OK"
         task_list = data["task_list"]
@@ -111,8 +107,8 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
         # using verbose option
         res = await client.get(f"{PREFIX}/collect/{state['id']}?verbose=true")
         debug(res.json())
-        status = res.json()
-        data = status["data"]
+        state = res.json()
+        data = state["data"]
         assert res.status_code == 200
         assert data["log"] is not None
 
