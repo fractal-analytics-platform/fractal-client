@@ -6,6 +6,7 @@ from devtools import debug
 from fractal_server.app.api.v1.task import _background_collect_pip
 from fractal_server.app.api.v1.task import _TaskCollectPip
 from fractal_server.app.api.v1.task import create_package_dir_pip
+from fractal_server.app.api.v1.task import TaskCollectionError
 from fractal_server.app.api.v1.task import TaskCollectStatus
 from fractal_server.app.models import State
 from fractal_server.config import get_settings
@@ -83,7 +84,7 @@ async def test_background_collection_failure(db, dummy_task_package):
 
     task_pkg.package = "__NO_PACKAGE"
     task_pkg.package_path = None
-    with pytest.raises(Exception) as err:
+    with pytest.raises(TaskCollectionError) as err:
         await _background_collect_pip(
             state=state, venv_path=venv_path, task_pkg=task_pkg, db=db
         )

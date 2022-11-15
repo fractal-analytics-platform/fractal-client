@@ -30,6 +30,10 @@ from ..utils import execute_command
 from ..utils import set_logger
 
 
+class TaskCollectionError(RuntimeError):
+    pass
+
+
 def get_collection_path(base: Path) -> Path:
     return base / "collection.json"
 
