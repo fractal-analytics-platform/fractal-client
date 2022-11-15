@@ -154,6 +154,8 @@ async def test_edit_workflow_task(
     assert res.data["task_list"][0]["args"] == payload["args"]
     assert res.data["task_list"][0]["meta"] == payload["meta"]
 
+    # Check if the correct error is raised where parallelization_level
+    # is set
     payload_error = dict(meta={"parallelization_level": "XXX"})
 
     json_file = tmp_path / "payload_error.json"
