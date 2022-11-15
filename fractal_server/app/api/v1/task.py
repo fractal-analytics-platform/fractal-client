@@ -30,7 +30,6 @@ from ...db import get_sync_db
 from ...models import State
 from ...models import Task
 from ...schemas import TaskCollectPip
-from ...schemas import TaskCollectResult
 from ...schemas import TaskCollectStatus
 from ...schemas import TaskCreate
 from ...schemas import TaskRead
@@ -42,22 +41,51 @@ router = APIRouter()
 
 
 async def _background_collect_pip(
-    venv_path: Path, task_pkg: _TaskCollectPip, db: AsyncSession
+    state: State, venv_path: Path, task_pkg: _TaskCollectPip, db: AsyncSession
 ) -> List[Task]:
+    """
+    Install package and collect tasks
+
+    Install a python package and collect the tasks it provides according to
+    the manifest.
+    """
+    logger = set_logger(logger_name="fractal")
+    data = TaskCollectStatus(**state.data)
+
+    # install
+    logger.info("installing")
+    data.status = "installing"
+
+    state.data = data.sanitised_dict()
+    await db.merge(state)
+    await db.commit()
     task_list = await create_package_environment_pip(
         venv_path=venv_path, task_pkg=task_pkg
     )
+
+    # collect
+    logger.info("collecting")
+    data.status = "collecting"
+    state.data = data.sanitised_dict()
+    await db.merge(state)
+    await db.commit()
     tasks = await _insert_tasks(task_list=task_list, db=db)
+
+    # finalise
+    logger.info("finalising")
     collection_path = get_collection_path(venv_path)
-    logger = set_logger(logger_name="fractal")
-    logger.debug("Writing collection file")
+    data.task_list = tasks
     with collection_path.open("w") as f:
-        data = TaskCollectStatus(
-            status="OK",
-            task_list=tasks,
-        ).dict()
-        json.dump(data, f)
-    logger.debug("Written")
+        json.dump(data.sanitised_dict(), f)
+
+    data.status = "OK"
+    data.task_list = tasks
+    state.data = data.sanitised_dict()
+    db.add(state)
+    await db.merge(state)
+    await db.commit()
+
+    logger.info("background collection completed")
     return tasks
 
 
@@ -86,8 +114,15 @@ async def collect_tasks_pip(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
     public: bool = True,
-) -> State:  # State[TaskCollectResult]
+) -> State:  # State[TaskCollectStatus]
+    """
+    Task collection endpoint
 
+    Trigger the creation of a dedicated virtual environment, the installation
+    of a package and the collection of tasks as advertised in the manifest.
+    """
+
+    logger = set_logger(logger_name="fractal")
     task_pkg = _TaskCollectPip(**task_collect.dict())
 
     with TemporaryDirectory() as tmpdir:
@@ -117,61 +152,67 @@ async def collect_tasks_pip(
             detail=f"The package is already installed. Original error: {e}",
         )
 
-    background_tasks.add_task(
-        _background_collect_pip, venv_path=venv_path, task_pkg=task_pkg, db=db
-    )
     settings = Inject(get_settings)
 
-    collect_result = TaskCollectResult(
-        **task_pkg.dict(),
-        venv_path=venv_path.relative_to(settings.FRACTAL_ROOT),
-        info=(
-            "Collecting tasks in the background. "
-            "GET /task/collect/{venv_path} to query collection status"
-        ),
+    full_venv_path = venv_path.relative_to(settings.FRACTAL_ROOT)
+    collection_status = TaskCollectStatus(
+        status="pending", venv_path=full_venv_path, package=task_pkg.package
     )
+    # replacing with path because of non-serializable Path
+    collection_status_dict = collection_status.dict()
+    collection_status_dict["venv_path"] = str(collection_status.venv_path)
 
-    collect_result_dict = collect_result.dict()
-    collect_result_dict["venv_path"] = str(collect_result.venv_path)
-
-    state = State(data=collect_result_dict)
+    state = State(data=collection_status_dict)
     db.add(state)
     await db.commit()
     await db.refresh(state)
 
+    logger.info("starting background collection")
+    background_tasks.add_task(
+        _background_collect_pip,
+        state=state,
+        venv_path=venv_path,
+        task_pkg=task_pkg,
+        db=db,
+    )
+
+    logger.info("collection endpiont: returning state")
+    info = (
+        "Collecting tasks in the background. "
+        "GET /task/collect/{id} to query collection status"
+    )
+    state.data["info"] = info
     return state
 
 
-@router.get("/collect/{venv_path:path}", response_model=TaskCollectStatus)
+@router.get("/collect/{state_id}", response_model=State)
 async def check_collection_status(
-    venv_path: Path,
+    state_id: int,
     user: User = Depends(current_active_user),
     verbose: bool = False,
-):
+    db: AsyncSession = Depends(get_db),
+) -> State:  # State[TaskCollectStatus]
+    logger = set_logger(logger_name="fractal")
+    logger.info("querying state")
     settings = Inject(get_settings)
-    package_path = settings.FRACTAL_ROOT / venv_path
-    if not package_path.exists():
+    state = await db.get(State, state_id)
+    data = TaskCollectStatus(**state.data)
+    if not state:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No package at {venv_path}",
+            detail=f"No task collection info with id={state_id}",
         )
-    collection_path = get_collection_path(package_path)
+
+    # collection_path = get_collection_path(package_path)
     if verbose:
+        logger.info("reading log")
+        venv_path = data.venv_path
+        package_path = settings.FRACTAL_ROOT / venv_path
         log_path = get_log_path(package_path)
         log = log_path.open().read()
-    else:
-        log = None
-
-    try:
-        with collection_path.open("r") as f:
-            collection_data = json.load(f)
-        task_list = collection_data["task_list"]
-        collection_status = collection_data["status"]
-        return TaskCollectStatus(
-            status=collection_status, log=log, task_list=task_list
-        )
-    except FileNotFoundError:
-        return TaskCollectStatus(status="pending", log=log)
+        data.log = log
+        state.data = data.sanitised_dict()
+    return state
 
 
 @router.get("/", response_model=List[TaskRead])

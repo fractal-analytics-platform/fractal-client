@@ -9,6 +9,7 @@
 # Institute for Biomedical Research and Pelkmans Lab from the University of
 # Zurich.
 import json
+import logging
 from io import IOBase
 from pathlib import Path
 from typing import List
@@ -24,6 +25,7 @@ from ..app.schemas import TaskCollectPip
 from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
+from ..utils import close_logger
 from ..utils import execute_command
 from ..utils import set_logger
 
@@ -190,7 +192,9 @@ async def create_package_environment_pip(
     """
     logger_name = task_pkg.package
     logger = set_logger(
-        logger_name=logger_name, log_file_path=get_log_path(venv_path)
+        logger_name=logger_name,
+        log_file_path=get_log_path(venv_path),
+        level=logging.DEBUG,
     )
     logger.debug("Creating venv and installing package")
 
@@ -208,6 +212,7 @@ async def create_package_environment_pip(
         source=task_pkg.source,
     )
     logger.debug("manifest loaded")
+    close_logger(logger)
     return task_list
 
 
