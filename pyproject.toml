@@ -29,7 +29,7 @@ pytest = "^7.1.2"
 bumpver = "^2022.1118"
 pytest-asyncio = "^0.19.0"
 # fractal-server = "^1.0.0"
-fractal-server = {url = "https://github.com/fractal-analytics-platform/fractal-server/releases/download/1.0.0a10/fractal_server-1.0.0a10-py3-none-any.whl"}
+fractal-server = {url = "https://github.com/fractal-analytics-platform/fractal-server/releases/download/1.0.0a11/fractal_server-1.0.0a11-py3-none-any.whl"}
 coverage = {extras = ["toml"], version = "^6.5.0"}
 
 [build-system]
