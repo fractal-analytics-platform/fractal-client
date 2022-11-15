@@ -38,11 +38,9 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
 
     workflow_id: Optional[int] = Field(foreign_key="workflow.id")
     task_id: Optional[int] = Field(foreign_key="task.id")
-
     order: Optional[int]
-    executor: Optional[str] = None
+    meta: Optional[Dict[str, Any]] = Field(sa_column=Column(JSON))
     args: Optional[Dict[str, Any]] = Field(sa_column=Column(JSON))
-
     task: Task = Relationship(sa_relationship_kwargs=dict(lazy="selectin"))
 
     @validator("args")
@@ -56,7 +54,7 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
             "input_paths",
             "output_path",
             "metadata",
-            "logger",
+            "component",
         }
         args_keys = set(value.keys())
         intersect_keys = forbidden_args_keys.intersection(args_keys)
@@ -86,8 +84,8 @@ class WorkflowTask(_WorkflowTaskBase, table=True):
 
     @property
     def executor(self) -> Union[str, None]:
-        if self.executor:
-            return self.executor
+        if "executor" in (self.meta or {}):
+            return self.meta["executor"]
         return self.task.executor
 
     def assemble_args(self, extra: Dict[str, Any] = None):
@@ -134,13 +132,14 @@ class Workflow(_WorkflowBase, table=True):
         task_id: int,
         *,
         args: Dict[str, Any] = None,
+        meta: Optional[str] = None,
         order: Optional[int] = None,
         db: AsyncSession,
         commit: bool = True,
     ) -> WorkflowTask:
         if order is None:
             order = len(self.task_list)
-        wf_task = WorkflowTask(task_id=task_id, args=args)
+        wf_task = WorkflowTask(task_id=task_id, args=args, meta=meta)
         db.add(wf_task)
         self.task_list.insert(order, wf_task)
         self.task_list.reorder()  # type: ignore

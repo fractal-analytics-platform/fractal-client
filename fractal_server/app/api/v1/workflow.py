@@ -183,16 +183,18 @@ async def patch_workflow_task(
             current_args = deepcopy(db_workflow_task.args) or {}
             current_args.update(value)
             setattr(db_workflow_task, key, current_args)
-        elif key == "executor":
-            setattr(db_workflow_task, key, value)
-        elif key == "parallelization_level":
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=(
-                    "Overriding parallelization level is"
-                    "currently not allowed"
-                ),
-            )
+        elif key == "meta":
+            if "parallelization_level" in value.keys():
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=(
+                        "Overriding parallelization level of a Task"
+                        "currently not allowed"
+                    ),
+                )
+            current_meta = deepcopy(db_workflow_task.meta) or {}
+            current_meta.update(value)
+            setattr(db_workflow_task, key, current_meta)
         else:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
