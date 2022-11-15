@@ -5,7 +5,6 @@ from typing import Dict
 from typing import Optional
 
 import pytest
-from devtools import debug
 from pydantic import BaseModel
 
 
@@ -53,7 +52,6 @@ async def execute_command(cmd, **kwargs):
         **kwargs,
     )
     stdout, stderr = await proc.communicate()
-    debug(cmd, stdout, stderr)
     if proc.returncode != 0:
         raise RuntimeError(stderr.decode("UTF-8"))
     return stdout.decode("UTF-8").strip()

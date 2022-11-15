@@ -34,6 +34,12 @@ def test_unit_source_resolution(package, version, source):
 
 
 def test_task_collect_model(dummy_task_package):
+    """
+    GIVEN a path to a local wheel package
+    WHEN it is passed to the _TaskCollectPip constructor
+    THEN the package name is correctly extracted and the package path
+         correctly set
+    """
     debug(dummy_task_package)
     tc = _TaskCollectPip(package=dummy_task_package.as_posix())
 
