@@ -3,6 +3,7 @@ import json
 from copy import deepcopy
 from pathlib import Path
 from shutil import copy as shell_copy
+from shutil import rmtree as shell_rmtree
 from tempfile import TemporaryDirectory
 from typing import List
 
@@ -19,8 +20,8 @@ from ....tasks.collection import _TaskCollectPip
 from ....tasks.collection import create_package_dir_pip
 from ....tasks.collection import create_package_environment_pip
 from ....tasks.collection import download_package
+from ....tasks.collection import get_collection_log
 from ....tasks.collection import get_collection_path
-from ....tasks.collection import get_log_path
 from ....tasks.collection import inspect_package
 from ....utils import set_logger
 from ...db import AsyncSession
@@ -48,45 +49,60 @@ async def _background_collect_pip(
 
     Install a python package and collect the tasks it provides according to
     the manifest.
+
+    In case of error, copy the log into the state and delete the package
+    directory.
     """
     logger = set_logger(logger_name="fractal")
     data = TaskCollectStatus(**state.data)
 
-    # install
-    logger.info("installing")
-    data.status = "installing"
+    try:
+        # install
+        logger.info("installing")
+        data.status = "installing"
 
-    state.data = data.sanitised_dict()
-    await db.merge(state)
-    await db.commit()
-    task_list = await create_package_environment_pip(
-        venv_path=venv_path, task_pkg=task_pkg
-    )
+        state.data = data.sanitised_dict()
+        await db.merge(state)
+        await db.commit()
+        task_list = await create_package_environment_pip(
+            venv_path=venv_path, task_pkg=task_pkg
+        )
 
-    # collect
-    logger.info("collecting")
-    data.status = "collecting"
-    state.data = data.sanitised_dict()
-    await db.merge(state)
-    await db.commit()
-    tasks = await _insert_tasks(task_list=task_list, db=db)
+        # collect
+        logger.info("collecting")
+        data.status = "collecting"
+        state.data = data.sanitised_dict()
+        await db.merge(state)
+        await db.commit()
+        tasks = await _insert_tasks(task_list=task_list, db=db)
 
-    # finalise
-    logger.info("finalising")
-    collection_path = get_collection_path(venv_path)
-    data.task_list = tasks
-    with collection_path.open("w") as f:
-        json.dump(data.sanitised_dict(), f)
+        # finalise
+        logger.info("finalising")
+        collection_path = get_collection_path(venv_path)
+        data.task_list = tasks
+        with collection_path.open("w") as f:
+            json.dump(data.sanitised_dict(), f)
 
-    data.status = "OK"
-    data.task_list = tasks
-    state.data = data.sanitised_dict()
-    db.add(state)
-    await db.merge(state)
-    await db.commit()
+        data.status = "OK"
+        data.task_list = tasks
+        state.data = data.sanitised_dict()
+        db.add(state)
+        await db.merge(state)
+        await db.commit()
 
-    logger.info("background collection completed")
-    return tasks
+        logger.info("background collection completed")
+        return tasks
+    except Exception as e:
+        data.status = "fail"
+        data.info = f"Original error: {e}"
+        data.log = get_collection_log(venv_path)
+        state.data = data.sanitised_dict()
+        await db.merge(state)
+        await db.commit()
+
+        # delete corrupted package dir
+        shell_rmtree(venv_path)
+        raise
 
 
 async def _insert_tasks(
@@ -194,7 +210,6 @@ async def check_collection_status(
 ) -> State:  # State[TaskCollectStatus]
     logger = set_logger(logger_name="fractal")
     logger.info("querying state")
-    settings = Inject(get_settings)
     state = await db.get(State, state_id)
     data = TaskCollectStatus(**state.data)
     if not state:
@@ -205,12 +220,7 @@ async def check_collection_status(
 
     # collection_path = get_collection_path(package_path)
     if verbose:
-        logger.info("reading log")
-        venv_path = data.venv_path
-        package_path = settings.FRACTAL_ROOT / venv_path
-        log_path = get_log_path(package_path)
-        log = log_path.open().read()
-        data.log = log
+        data.log = get_collection_log(data.venv_path)
         state.data = data.sanitised_dict()
     return state
 

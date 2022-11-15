@@ -38,6 +38,14 @@ def get_log_path(base: Path) -> Path:
     return base / "collection.log"
 
 
+def get_collection_log(venv_path: Path) -> str:
+    settings = Inject(get_settings)
+    package_path = settings.FRACTAL_ROOT / venv_path  # type: ignore
+    log_path = get_log_path(package_path)
+    log = log_path.open().read()
+    return log
+
+
 class _TaskCollectPip(TaskCollectPip):
     """
     Internal TaskCollectPip schema
