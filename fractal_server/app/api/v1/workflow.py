@@ -180,11 +180,18 @@ async def patch_workflow_task(
 
     for key, value in workflow_task_update.dict(exclude_unset=True).items():
         if key == "args":
-            current_args = deepcopy(db_workflow_task.args)
-            current_args = value
+            current_args = deepcopy(db_workflow_task.args) or {}
+            current_args.update(value)
             setattr(db_workflow_task, key, current_args)
+        elif key == "meta":
+            current_meta = deepcopy(db_workflow_task.meta) or {}
+            current_meta.update(value)
+            setattr(db_workflow_task, key, current_meta)
         else:
-            raise Exception("patch_workflow_task endpoint cannot set {key=}")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"patch_workflow_task endpoint cannot set {key=}",
+            )
 
     await db.commit()
     await db.refresh(db_workflow_task)

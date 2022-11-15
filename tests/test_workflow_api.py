@@ -321,7 +321,7 @@ async def test_patch_workflow_task(
         await db.refresh(workflow)
         assert workflow.task_list[0].args is None
 
-        payload = dict(args={"a": 123})
+        payload = dict(args={"a": 123, "d": 321}, meta={"executor": "cpu-low"})
         res = await client.patch(
             f"api/v1/workflow/{workflow.id}/"
             f"edit-task/{workflow.task_list[0].id}",
@@ -329,5 +329,25 @@ async def test_patch_workflow_task(
         )
 
         patched_workflow_task = res.json()
+        debug(patched_workflow_task)
         assert patched_workflow_task["args"] == payload["args"]
+        assert patched_workflow_task["meta"] == payload["meta"]
         assert res.status_code == 200
+
+        payload_up = dict(args={"a": {"c": 43}, "b": 123})
+        res = await client.patch(
+            f"api/v1/workflow/{workflow.id}/"
+            f"edit-task/{workflow.task_list[0].id}",
+            json=payload_up,
+        )
+        patched_workflow_task_up = res.json()
+        assert patched_workflow_task_up["args"] == dict(
+            a=dict(c=43), b=123, d=321
+        )
+        payload = dict(meta={"parallelization_level": "XXX"})
+        res = await client.patch(
+            f"api/v1/workflow/{workflow.id}/"
+            f"edit-task/{workflow.task_list[0].id}",
+            json=payload,
+        )
+        assert res.status_code == 422
