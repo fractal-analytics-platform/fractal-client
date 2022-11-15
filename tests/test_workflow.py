@@ -168,5 +168,5 @@ async def test_edit_workflow_task(
         f"--json-file {json_file}"
     )
     debug(cmd)
-    res = await invoke(cmd)
-    assert res.retcode == 422
+    with pytest.raises(ValueError):
+        res = await invoke(cmd)
