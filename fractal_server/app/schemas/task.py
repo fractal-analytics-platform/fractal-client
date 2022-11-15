@@ -16,7 +16,6 @@ __all__ = (
     "TaskUpdate",
     "TaskRead",
     "TaskCollectPip",
-    "TaskCollectResult",
     "TaskCollectStatus",
 )
 
@@ -98,28 +97,15 @@ class TaskCollectPip(_TaskCollectBase):
         return value
 
 
-class TaskCollectResult(_TaskCollectBase):
-    """
-    Temporary result of the collection process
-
-    This schema represents the partial result returned when collection is
-    initiated but it is continuing in the background.
-
-    Attributes:
-        package (str):
-            the package name
-        venv_path (Path):
-            the installation path relative to `FRACTAL_ROOT`
-        info (str):
-            arbitrary information
-    """
-
+class TaskCollectStatus(_TaskCollectBase):
+    status: Literal["pending", "installing", "collecting", "fail", "OK"]
     package: str
     venv_path: Path
-    info: Optional[str]
-
-
-class TaskCollectStatus(_TaskCollectBase):
-    status: Literal["OK", "pending", "fail"]
     task_list: Optional[List[TaskRead]] = Field(default=[])
     log: Optional[str]
+    info: Optional[str]
+
+    def sanitised_dict(self):
+        d = self.dict()
+        d["venv_path"] = str(self.venv_path)
+        return d

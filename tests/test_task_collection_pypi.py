@@ -10,10 +10,36 @@ from fractal_server.tasks.collection import _init_venv
 from fractal_server.tasks.collection import _pip_install
 from fractal_server.tasks.collection import _TaskCollectPip
 from fractal_server.tasks.collection import create_package_dir_pip
+from fractal_server.tasks.collection import download_package
+from fractal_server.tasks.collection import inspect_package
 from fractal_server.tasks.collection import load_manifest
+from fractal_server.tasks.collection import ManifestV1
+
+
+@pytest.mark.parametrize(
+    ("package", "version", "source"),
+    [
+        ("my_package", None, "pip:my_package"),
+        ("my-package", "1.2.3", "pip:my-package==1.2.3"),
+    ],
+)
+def test_unit_source_resolution(package, version, source):
+    """
+    GIVEN a private task package
+    WHEN the source is resolved
+    THEN it matches expectations
+    """
+    tc = _TaskCollectPip(package=package, version=version)
+    assert tc.source == source
 
 
 def test_task_collect_model(dummy_task_package):
+    """
+    GIVEN a path to a local wheel package
+    WHEN it is passed to the _TaskCollectPip constructor
+    THEN the package name is correctly extracted and the package path
+         correctly set
+    """
     debug(dummy_task_package)
     tc = _TaskCollectPip(package=dummy_task_package.as_posix())
 
@@ -66,6 +92,36 @@ async def test_pip_install(tmp_path):
     )
     debug(location)
     assert PACKAGE in location.as_posix()
+
+
+async def test_download(tmp_path):
+    """
+    GIVEN a PyPI package name
+    WHEN download_package is called
+    THEN the package's wheel is download in the destination directory
+    """
+    PACKAGE = "fractal-tasks-core"
+    task_pkg = _TaskCollectPip(package=PACKAGE)
+    pkg = await download_package(task_pkg=task_pkg, dest=tmp_path)
+    debug(pkg)
+    assert pkg.exists()
+    assert "whl" in pkg.as_posix()
+
+
+async def test_inspect(tmp_path):
+    """
+    GIVEN the path to a wheel package
+    WHEN the inspect package is called on the path of the wheel
+    THEN the version number and the manifest are loaded
+    """
+    PACKAGE = "fractal-tasks-core"
+    task_pkg = _TaskCollectPip(package=PACKAGE)
+    pkg = await download_package(task_pkg=task_pkg, dest=tmp_path)
+
+    res = inspect_package(pkg)
+    debug(res)
+    assert "version" in res
+    assert isinstance(res["manifest"], ManifestV1)
 
 
 def test_load_manifest(tmp_path):

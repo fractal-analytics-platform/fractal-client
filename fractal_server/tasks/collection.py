@@ -9,10 +9,14 @@
 # Institute for Biomedical Research and Pelkmans Lab from the University of
 # Zurich.
 import json
+import logging
+from io import IOBase
 from pathlib import Path
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Union
+from zipfile import ZipFile
 
 from pydantic import root_validator
 
@@ -21,6 +25,7 @@ from ..app.schemas import TaskCollectPip
 from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
+from ..utils import close_logger
 from ..utils import execute_command
 from ..utils import set_logger
 
@@ -70,11 +75,23 @@ class _TaskCollectPip(TaskCollectPip):
         return values
 
     @property
+    def pip_package_version(self):
+        """
+        Return pip compatible specification of package and version
+        """
+        version = f"=={self.version}" if self.version else ""
+        return f"{self.package}{version}"
+
+    @property
     def source(self):
         if self.is_local_package:
             return f"pip-local:{self.package_path.name}"
         else:
-            return f"pip:{self.package}=={self.version}"
+            return f"pip:{self.pip_package_version}"
+
+    def check(self):
+        if not self.version:
+            raise ValueError("Version is not set or cannot be determined")
 
 
 def _package_from_path(wheel_path: Path) -> Tuple[str, str]:
@@ -102,6 +119,69 @@ def create_package_dir_pip(
     return venv_path
 
 
+async def download_package(
+    *,
+    task_pkg: _TaskCollectPip,
+    dest: Path,
+):
+    """
+    Download package to destination
+    """
+    interpreter = f"python{task_pkg.python_version}"
+    pip = f"{interpreter} -m pip"
+    cmd = (
+        f"{pip} download --no-deps {task_pkg.pip_package_version} "
+        f"-d {dest}"
+    )
+    stdout = await execute_command(command=cmd, cwd=Path("."))
+    pkg_file = next(
+        line.split()[-1] for line in stdout.split("\n") if "Saved" in line
+    )
+    return Path(pkg_file)
+
+
+def inspect_package(path: Path):
+    """
+    Inspect task package for version and manifest
+
+    Parameters:
+    path: Path
+        the path in which the package is saved
+
+    Return
+    ------
+    version_manifest: dict
+        A dictionary containing `version`, the version of the pacakge, and
+        `manifest`, the Fractal manifest object relative to the tasks.
+    """
+    if "whl" in path.as_posix():
+        # it is simply a zip file
+        # we can extract the version number from *.dist-info/METADATA
+        # and read the fractal manifest from the package content
+        with ZipFile(path) as wheel:
+            namelist = wheel.namelist()
+            metadata = next(
+                name for name in namelist if "dist-info/METADATA" in name
+            )
+            manifest = next(
+                name for name in namelist if "__FRACTAL_MANIFEST__" in name
+            )
+
+            with wheel.open(metadata) as metadata_fd:
+                meta = metadata_fd.read().decode("utf-8")
+                version = next(
+                    line.split()[-1]
+                    for line in meta.splitlines()
+                    if line.startswith("Version")
+                )
+
+            with wheel.open(manifest) as manifest_fd:
+                manifest_obj = read_manifest(manifest_fd)  # type: ignore
+
+    version_manifest = dict(version=version, manifest=manifest_obj)
+    return version_manifest
+
+
 async def create_package_environment_pip(
     *,
     task_pkg: _TaskCollectPip,
@@ -112,7 +192,9 @@ async def create_package_environment_pip(
     """
     logger_name = task_pkg.package
     logger = set_logger(
-        logger_name=logger_name, log_file_path=get_log_path(venv_path)
+        logger_name=logger_name,
+        log_file_path=get_log_path(venv_path),
+        level=logging.DEBUG,
     )
     logger.debug("Creating venv and installing package")
 
@@ -130,7 +212,27 @@ async def create_package_environment_pip(
         source=task_pkg.source,
     )
     logger.debug("manifest loaded")
+    close_logger(logger)
     return task_list
+
+
+def read_manifest(file: Union[Path, IOBase]) -> ManifestV1:
+    """
+    Read and parse manifest file
+    """
+    if isinstance(file, IOBase):
+        manifest_dict = json.load(file)
+    else:
+        with file.open("r") as f:
+            manifest_dict = json.load(f)
+
+    manifest_version = str(manifest_dict["manifest_version"])
+    if manifest_version == "1":
+        manifest = ManifestV1(**manifest_dict)
+    else:
+        raise ValueError("Manifest version {manifest_version=} not supported")
+
+    return manifest
 
 
 def load_manifest(
@@ -140,23 +242,19 @@ def load_manifest(
 ) -> List[TaskCreate]:
 
     manifest_file = package_root / "__FRACTAL_MANIFEST__.json"
-    with manifest_file.open("r") as f:
-        manifest_dict = json.load(f)
+    manifest = read_manifest(manifest_file)
 
     task_list = []
-    if str(manifest_dict["manifest_version"]) == "1":
-        manifest = ManifestV1(**manifest_dict)
-
-        for t in manifest.task_list:
-            task_executable = package_root / t.executable
-            if not task_executable.exists():
-                raise FileNotFoundError(
-                    f"Cannot find executable `{task_executable}` "
-                    f"for task `{t.name}`"
-                )
-            cmd = f"{python_bin.as_posix()} {task_executable.as_posix()}"
-            this_task = TaskCreate(**t.dict(), command=cmd, source=source)
-            task_list.append(this_task)
+    for t in manifest.task_list:
+        task_executable = package_root / t.executable
+        if not task_executable.exists():
+            raise FileNotFoundError(
+                f"Cannot find executable `{task_executable}` "
+                f"for task `{t.name}`"
+            )
+        cmd = f"{python_bin.as_posix()} {task_executable.as_posix()}"
+        this_task = TaskCreate(**t.dict(), command=cmd, source=source)
+        task_list.append(this_task)
     return task_list
 
 
