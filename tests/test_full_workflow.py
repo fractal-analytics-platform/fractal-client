@@ -11,7 +11,6 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 from os import environ
-from pathlib import Path
 
 import pytest
 from devtools import debug
@@ -31,11 +30,11 @@ async def collect_tasks(MockCurrentUser, client, dummy_task_package):
         )
         state = res.json()
         data = state["data"]
-        venv_path = Path(data["venv_path"])
 
-        res = await client.get(f"{PREFIX}/task/collect/{venv_path}")
+        res = await client.get(f"{PREFIX}/task/collect/{state['id']}")
         assert res.status_code == 200
-        data = res.json()
+        state = res.json()
+        data = state["data"]
         task_list = data["task_list"]
     return task_list
 

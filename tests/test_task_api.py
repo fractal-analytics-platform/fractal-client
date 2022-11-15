@@ -34,7 +34,9 @@ async def test_background_collection(db, dummy_task_package):
     THEN the tasks are collected and the state is updated to db accordingly
     """
     task_pkg = _TaskCollectPip(package=dummy_task_package.as_posix())
-    venv_path = create_package_dir_pip(task_pkg=task_pkg)
+    venv_path = create_package_dir_pip(
+        task_pkg=task_pkg, user="test_bg_collection"
+    )
     collection_status = TaskCollectStatus(
         status="pending",
         venv_path=venv_path,
