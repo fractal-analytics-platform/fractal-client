@@ -5,6 +5,7 @@ from sqlmodel import SQLModel
 
 from .manifest import *  # noqa: F403
 from .project import *  # noqa: F403
+from .state import *  # noqa: F403
 from .task import *  # noqa: F403
 from .workflow import *  # noqa: F403
 
@@ -19,6 +20,7 @@ __all__ = (
     + task.__all__  # noqa: F405
     + workflow.__all__  # noqa: F405
     + manifest.__all__  # noqa: F405
+    + state.__all__  # noqa: F405
 )
 
 
