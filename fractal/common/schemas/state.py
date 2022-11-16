@@ -5,7 +5,10 @@ from typing import Optional
 
 from sqlmodel import SQLModel
 
-__all__ = ("StateRead",)
+__all__ = (
+    "_StateBase",
+    "StateRead",
+)
 
 
 class _StateBase(SQLModel):
