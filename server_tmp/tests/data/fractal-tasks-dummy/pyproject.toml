@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "fractal-tasks-dummy"
+version = "0.1.0"
+description = ""
+authors = ["Jacopo Nespolo <jacopo.nespolo@exact-lab.it>"]
+readme = "README.md"
+packages = [{include = "fractal_tasks_dummy"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "^1.10.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

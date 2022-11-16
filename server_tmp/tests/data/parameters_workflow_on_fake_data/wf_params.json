@@ -1,0 +1,29 @@
+{
+    "workflow_name": "test_workflow",
+    "dims": [1, 2],
+    "coarsening_xy": 2,
+    "coarsening_z": 1,
+    "num_levels": 2,
+    "channel_file": "tests/data/parameters_workflow_on_fake_data/wf_params_channels.json",
+    "illumination_correction": {
+        "path_dict_corr": "tests/data/parameters_workflow_on_fake_data/wf_params_illumination.json",
+        "overwrite": true,
+        "num_threads": 10
+    },
+    "image_labeling": {
+        "coarsening_xy": 2,
+        "labeling_level": 1,
+        "labeling_channel": "A01_C01",
+        "num_threads": 2,
+        "relabeling": 1,
+        "diameter_level0": 80.0,
+        "cellprob_threshold": 1.0
+    },
+    "image_labeling_whole_well": {
+        "coarsening_xy": 2,
+        "labeling_level": 2,
+        "labeling_channel": "A01_C01",
+        "diameter_level0": 80.0,
+        "cellprob_threshold": -1.5
+    }
+}

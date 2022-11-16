@@ -1,0 +1,83 @@
+[tool.poetry]
+name = "fractal-server"
+version = "1.0.0a13"
+description = "Server component of the Fractal analytics platform"
+authors = [
+    "Jacopo Nespolo <jacopo.nespolo@exact-lab.it>",
+    "Marco Franzon <marco.franzon@exact-lab.it>",
+    "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
+]
+readme = "README.md"
+homepage = "https://github.com/fractal-analytics-platform/fractal-server"
+license = "BSD-3-Clause"
+
+
+[tool.poetry.dependencies]
+python = "^3.8"
+python-dotenv = "^0.20.0"
+fastapi = "^0.78.0"
+sqlmodel = "^0.0.8"
+aiosqlite = "^0.17.0"
+fastapi-users = {extras = ["oauth"], version = "^10.1.1"}
+fastapi-users-db-sqlmodel = "^0.2.0"
+alembic = "^1.8.0"
+uvicorn = "^0.18.2"
+SQLAlchemy-Utils = "^0.38.3"
+
+parsl = {extras = ["monitoring"], git="https://github.com/fractal-analytics-platform/parsl.git", branch="1.3.1-dev", optional = true}
+
+asyncpg = { version = "^0.27.0", optional = true }
+psycopg2 = { version = "^2.9.5", optional = true }
+
+[tool.poetry.extras]
+parsl = ["parsl"]
+postgres = ["asyncpg", "psycopg2"]
+
+[tool.poetry.group.dev.dependencies]
+asgi-lifespan = "^1.0.1"
+pytest = "^7.1.2"
+httpx = "^0.23.0"
+devtools = "^0.8.0"
+pytest-asyncio = "^0.18.3"
+bumpver = "^2022.1116"
+Pillow = "^9.1.1"
+pytest-mock = "^3.8.1"
+pre-commit = "^2.19.0"
+coverage = {extras = ["toml"], version = "^6.4.4"}
+mypy = "^0.982"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.bumpver]
+current_version = "1.0.0a13"
+version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'version = "{version}"',
+]
+"fractal_server/__init__.py" = [
+    '__VERSION__ = "{version}"'
+]
+
+[tool.poetry.scripts]
+fractal-server = "fractal_server.__main__:run"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+omit = ["tests/test_*"]
+
+[[tool.mypy.overrides]]
+module = ["devtools", "uvicorn", "sqlalchemy_utils"]
+ignore_missing_imports = true

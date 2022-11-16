@@ -1,0 +1,27 @@
+{
+  "manifest_version": 1,
+  "task_list": [
+    {
+      "name": "dummy",
+      "executable": "dummy.py",
+      "input_type": "Any",
+      "output_type": "Any",
+      "default_args": {
+        "message": "default message",
+        "index": 0,
+        "raise_error": false
+      }
+    },
+    {
+      "name": "dummy parallel",
+      "executable": "dummy_parallel.py",
+      "input_type": "Any",
+      "output_type": "Any",
+      "default_args": {
+        "message": "default message",
+        "raise_error": false
+      },
+      "meta": {"parallelization_level": "index"}
+    }
+  ]
+}
