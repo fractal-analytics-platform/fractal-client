@@ -5,7 +5,7 @@ from devtools import debug
 
 
 async def test_task_collection_and_list(
-    clear_db, testserver, register_user, invoke, testdata_path, temp_data_dir
+    testserver, register_user, invoke, testdata_path
 ):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
@@ -26,21 +26,17 @@ async def test_task_collection_and_list(
     res0.show()
 
     venv_path = res0.data["data"]["venv_path"]
+    debug(venv_path)
     state_id = res0.data["id"]
     debug(state_id)
 
-    # cf. fixtures_testserver.py::testserver
-    FRACTAL_ROOT = temp_data_dir
-    collection_file = FRACTAL_ROOT / venv_path / "collection.json"
-
+    # Wait until collection is complete
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
         debug(res1)
         res1.show()
-        expected_status = "OK" if collection_file.exists() else "installing"
-        assert res1.data["data"]["status"] == expected_status
         await asyncio.sleep(1)
-        if expected_status == "OK":
+        if res1.data["data"]["status"] == "OK":
             break
 
     res2 = await invoke(f"task check-collection {state_id} --verbose")
@@ -57,7 +53,7 @@ async def test_task_collection_and_list(
 
 
 async def test_repeated_task_collection(
-    clear_db, testserver, register_user, invoke, testdata_path, temp_data_dir
+    testserver, register_user, invoke, testdata_path
 ):
     """
     GIVEN
@@ -70,7 +66,7 @@ async def test_repeated_task_collection(
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
     # Install as private task so that it does not interfere with the common
-    # FRACTAL_ROOT
+    # FRACTAL_ROOT)
     res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
     debug(res0)
     res0.show()
@@ -80,38 +76,23 @@ async def test_repeated_task_collection(
     state_id = res0.data["id"]
     debug(state_id)
 
-    # cf. fixtures_testserver.py::testserver
-    FRACTAL_ROOT = temp_data_dir
-    collection_file = FRACTAL_ROOT / venv_path / "collection.json"
-
+    # Wait until collection is complete
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
-        debug(res1)
         res1.show()
-        expected_status = (
-            ["OK"]
-            if collection_file.exists()
-            else ["collecting", "installing"]
-        )
-        assert res1.data["data"]["status"] in expected_status
         await asyncio.sleep(1)
-        if expected_status == ["OK"]:
+        if res1.data["data"]["status"] == "OK":
             break
-
-    res2 = await invoke(f"task check-collection {state_id} --verbose")
-    debug(res2)
-    res2.show()
-    assert res2.data["data"]["status"] == "OK"
 
     # Second collection
     res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
     debug(res0)
     res0.show()
 
+    # FIXME add assert about "Already installed"
 
-async def test_task_apply(
-    clear_db, testserver, register_user, invoke, testdata_path
-):
+
+async def test_task_apply(testserver, register_user, invoke, testdata_path):
     """
     GIVEN a project and a nontrivial workflow
     WHEN the client requests to apply the workflow to the project
