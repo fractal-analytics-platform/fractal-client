@@ -114,7 +114,7 @@ async def task_collection_check(
     client: AuthClient, *, state_id: int, verbose: bool, **kwargs
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/task/collect/{state_id}" f"?verbose={verbose}"
+        f"{settings.BASE_URL}/task/collect/{state_id}?verbose={verbose}"
     )
     state = check_response(res, expected_status_code=200, coerce=StateRead)
     return RichJsonInterface(retcode=0, data=state.sanitised_dict())
