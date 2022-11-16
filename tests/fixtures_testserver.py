@@ -23,7 +23,9 @@ def override_server_settings(tmp_path):
 
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
-    settings.FRACTAL_ROOT = tmp_path
+    base_folder = tmp_path
+    settings.FRACTAL_ROOT = base_folder / "FRACTAL_ROOT"
+    settings.RUNNER_ROOT_DIR = base_folder / "RUNNER_ROOT_DIR"
     settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
 
     def _get_settings():
