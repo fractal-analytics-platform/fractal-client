@@ -76,6 +76,7 @@ async def test_repeated_task_collection(
     res0.show()
 
     venv_path = res0.data["data"]["venv_path"]
+    debug(venv_path)
     state_id = res0.data["id"]
     debug(state_id)
 
@@ -87,10 +88,14 @@ async def test_repeated_task_collection(
         res1 = await invoke(f"task check-collection {state_id}")
         debug(res1)
         res1.show()
-        expected_status = "OK" if collection_file.exists() else "installing"
-        assert res1.data["data"]["status"] == expected_status
+        expected_status = (
+            ["OK"]
+            if collection_file.exists()
+            else ["collecting", "installing"]
+        )
+        assert res1.data["data"]["status"] in expected_status
         await asyncio.sleep(1)
-        if expected_status == "OK":
+        if expected_status == ["OK"]:
             break
 
     res2 = await invoke(f"task check-collection {state_id} --verbose")
