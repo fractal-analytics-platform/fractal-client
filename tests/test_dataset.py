@@ -1,7 +1,7 @@
 import pytest
 
 
-async def test_add_resource(clear_db, testserver, register_user, invoke):
+async def test_add_resource(register_user, invoke):
     res = await invoke("project new prj0 prj_path0")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
@@ -17,9 +17,7 @@ async def test_add_resource(clear_db, testserver, register_user, invoke):
     assert res.data["dataset_id"] == dataset_id
 
 
-async def test_add_resource_relative_path(
-    clear_db, testserver, register_user, invoke
-):
+async def test_add_resource_relative_path(register_user, invoke):
     res = await invoke("project new prj0 prj_path0")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
@@ -38,7 +36,7 @@ async def test_add_resource_relative_path(
         )
 
 
-async def test_edit_dataset(clear_db, testserver, register_user, invoke):
+async def test_edit_dataset(register_user, invoke):
     res = await invoke("project new prj0 prj_path0")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
@@ -54,7 +52,7 @@ async def test_edit_dataset(clear_db, testserver, register_user, invoke):
     # provided are indeed not updated
 
 
-async def test_show_dataset(clear_db, testserver, register_user, invoke):
+async def test_show_dataset(register_user, invoke):
     res = await invoke("project new prj0 prj_path0")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
@@ -64,7 +62,7 @@ async def test_show_dataset(clear_db, testserver, register_user, invoke):
     assert res.retcode == 0
 
 
-async def test_delete_resource(clear_db, testserver, register_user, invoke):
+async def test_delete_resource(register_user, invoke):
     res = await invoke("project new prj0 prj_path0")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]

@@ -4,9 +4,7 @@ import pytest
 from devtools import debug
 
 
-async def test_task_collection_and_list(
-    clear_db, testserver, register_user, invoke, testdata_path, temp_data_dir
-):
+async def test_task_collection_and_list(register_user, invoke, testdata_path):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
     WHEN the collection subcommand is called
@@ -19,31 +17,27 @@ async def test_task_collection_and_list(
     """
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    # Install as private task so that it does not interfere with the common
-    # FRACTAL_ROOT
-    res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
     debug(res0)
     res0.show()
-    venv_path = res0.data["venv_path"]
 
-    # cf. fixtures_testserver.py::testserver
-    FRACTAL_ROOT = temp_data_dir
-    collection_file = FRACTAL_ROOT / venv_path / "collection.json"
+    venv_path = res0.data["data"]["venv_path"]
+    debug(venv_path)
+    state_id = res0.data["id"]
+    debug(state_id)
 
+    # Wait until collection is complete
     while True:
-        res1 = await invoke(f"task check-collection {venv_path}")
-        debug(res1)
+        res1 = await invoke(f"task check-collection {state_id}")
         res1.show()
-        expected_status = "OK" if collection_file.exists() else "pending"
-        assert res1.data["status"] == expected_status
         await asyncio.sleep(1)
-        if expected_status == "OK":
+        if res1.data["data"]["status"] == "OK":
             break
 
-    res2 = await invoke(f"task check-collection {venv_path} --verbose")
+    res2 = await invoke(f"task check-collection {state_id} --verbose")
     debug(res2)
     res2.show()
-    assert res2.data["status"] == "OK"
+    assert res2.data["data"]["status"] == "OK"
 
     # LIST
 
@@ -53,9 +47,40 @@ async def test_task_collection_and_list(
     assert len(res.data) == 2
 
 
-async def test_task_apply(
-    clear_db, testserver, register_user, invoke, testdata_path
-):
+async def test_repeated_task_collection(register_user, invoke, testdata_path):
+    """
+    GIVEN
+        * a pip installable package containing fractal-compatible tasks
+        * a successful collection subcommand was executed
+    WHEN the collection subcommand is called a second time
+    THEN
+        * TBD..
+    """
+    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    debug(res0)
+    res0.show()
+
+    venv_path = res0.data["data"]["venv_path"]
+    state_id = res0.data["id"]
+    debug(venv_path)
+    debug(state_id)
+
+    # Wait until collection is complete
+    while True:
+        res1 = await invoke(f"task check-collection {state_id}")
+        await asyncio.sleep(1)
+        if res1.data["data"]["status"] == "OK":
+            break
+
+    # Second collection
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0.show()
+    assert res0.data["data"]["info"] == "Already installed"
+
+
+async def test_task_apply(register_user, invoke, testdata_path):
     """
     GIVEN a project and a nontrivial workflow
     WHEN the client requests to apply the workflow to the project
@@ -68,11 +93,13 @@ async def test_task_apply(
     res0 = await invoke(f"task collect {PACKAGE_NAME}")
     debug(res0)
     res0.show()
-    venv_path = res0.data["venv_path"]
+    venv_path = res0.data["data"]["venv_path"]
+    debug(venv_path)
+    state_id = res0.data["id"]
 
     while True:
-        res1 = await invoke(f"task check-collection {venv_path}")
-        if res1.data["status"] == "OK":
+        res1 = await invoke(f"task check-collection {state_id}")
+        if res1.data["data"]["status"] == "OK":
             debug(res1.data)
             break
         await asyncio.sleep(1)
@@ -116,9 +143,7 @@ async def test_task_apply(
 
 
 @pytest.mark.xfail
-async def test_edit_task(
-    clear_db, testserver, register_user, invoke, clear_task_cache
-):
+async def test_edit_task(register_user, invoke, clear_task_cache):
     # TODO:
     # Decide what it means to edit a task
     raise NotImplementedError

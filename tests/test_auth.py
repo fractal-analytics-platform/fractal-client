@@ -6,7 +6,7 @@ from fractal.client.authclient import AuthenticationError
 from fractal.client.authclient import AuthToken
 
 
-async def test_auth_fail(testserver, client):
+async def test_auth_fail(client):
     """
     GIVEN no user registered
     WHEN when fetching a token
@@ -22,7 +22,7 @@ async def test_auth_fail(testserver, client):
         await auth()
 
 
-async def test_auth_registerd(testserver, client, register_user):
+async def test_auth_registerd(client, register_user):
     """
     GIVEN no user registered
     WHEN when fetching a token

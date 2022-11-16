@@ -9,6 +9,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from ..schemas import StateRead
 from ..schemas import TaskCollectPip
 from ..schemas import TaskRead
 from ..schemas import TaskUpdate
@@ -84,6 +85,7 @@ async def task_collect_pip(
     python_version: Optional[str],
     package_extras: Optional[str] = None,
     private: Optional[bool] = False,
+    batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
     task_collect = TaskCollectPip(
@@ -97,24 +99,25 @@ async def task_collect_pip(
         f"{settings.BASE_URL}/task/collect/pip/?public={not private}",
         json=task_collect.dict(),
     )
-    # TODO check response
-    if res.status_code == 201:
-        return RichJsonInterface(retcode=0, data=res.json())
+
+    state = check_response(
+        res, expected_status_code=[200, 201], coerce=StateRead
+    )
+    if batch:
+        output = f"{state.id} {state.data['venv_path']}"
+        return PrintInterface(retcode=0, data=output)
     else:
-        raise RuntimeError(res.json())
+        return RichJsonInterface(retcode=0, data=state.sanitised_dict())
 
 
 async def task_collection_check(
-    client: AuthClient, *, installation_path: Path, verbose: bool, **kwargs
+    client: AuthClient, *, state_id: int, verbose: bool, **kwargs
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/task/collect/{installation_path}"
-        f"?verbose={verbose}"
+        f"{settings.BASE_URL}/task/collect/{state_id}?verbose={verbose}"
     )
-    if res.status_code == 200:
-        return RichJsonInterface(retcode=0, data=res.json())
-    else:
-        raise RuntimeError(res.json())
+    state = check_response(res, expected_status_code=200, coerce=StateRead)
+    return RichJsonInterface(retcode=0, data=state.sanitised_dict())
 
 
 async def task_edit(
