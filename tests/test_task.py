@@ -17,9 +17,7 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     """
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    # Install as private task so that it does not interfere with the common
-    # FRACTAL_ROOT
-    res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
     debug(res0)
     res0.show()
 
@@ -31,7 +29,6 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     # Wait until collection is complete
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
-        debug(res1)
         res1.show()
         await asyncio.sleep(1)
         if res1.data["data"]["status"] == "OK":
@@ -61,31 +58,26 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     """
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    # Install as private task so that it does not interfere with the common
-    # FRACTAL_ROOT)
-    res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
     debug(res0)
     res0.show()
 
     venv_path = res0.data["data"]["venv_path"]
-    debug(venv_path)
     state_id = res0.data["id"]
+    debug(venv_path)
     debug(state_id)
 
     # Wait until collection is complete
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
-        res1.show()
         await asyncio.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
 
     # Second collection
-    res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
-    debug(res0)
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
     res0.show()
-
-    # FIXME add assert about "Already installed"
+    assert res0.data["data"]["info"] == "Already installed"
 
 
 async def test_task_apply(register_user, invoke, testdata_path):
