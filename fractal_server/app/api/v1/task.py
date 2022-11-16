@@ -11,6 +11,7 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import Response
 from fastapi import status
 from sqlmodel import select
 
@@ -20,9 +21,11 @@ from ....tasks.collection import _TaskCollectPip
 from ....tasks.collection import create_package_dir_pip
 from ....tasks.collection import create_package_environment_pip
 from ....tasks.collection import download_package
+from ....tasks.collection import get_collection_data
 from ....tasks.collection import get_collection_log
 from ....tasks.collection import get_collection_path
 from ....tasks.collection import inspect_package
+from ....tasks.collection import TaskCollectionError
 from ....utils import set_logger
 from ...db import AsyncSession
 from ...db import DBSyncSession
@@ -55,6 +58,7 @@ async def _background_collect_pip(
     """
     logger = set_logger(logger_name="fractal")
     data = TaskCollectStatus(**state.data)
+    data.info = None
 
     try:
         # install
@@ -93,6 +97,7 @@ async def _background_collect_pip(
         logger.info("background collection completed")
         return tasks
     except Exception as e:
+        err = TaskCollectionError(*e.args)
         data.status = "fail"
         data.info = f"Original error: {e}"
         data.log = get_collection_log(venv_path)
@@ -102,7 +107,7 @@ async def _background_collect_pip(
 
         # delete corrupted package dir
         shell_rmtree(venv_path)
-        raise
+        raise err
 
 
 async def _insert_tasks(
@@ -122,11 +127,24 @@ async def _insert_tasks(
 @router.post(
     "/collect/pip/",
     response_model=State,
-    status_code=status.HTTP_201_CREATED,
+    responses={
+        201: dict(
+            description=(
+                "Task collection successfully started in the background"
+            )
+        ),
+        200: dict(
+            description=(
+                "Package already collected. Returning info on already "
+                "available tasks"
+            )
+        ),
+    },
 )
 async def collect_tasks_pip(
     task_collect: TaskCollectPip,
     background_tasks: BackgroundTasks,
+    response: Response,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
     public: bool = True,
@@ -162,11 +180,15 @@ async def collect_tasks_pip(
     try:
         pkg_user = None if public else user.slurm_user
         venv_path = create_package_dir_pip(task_pkg=task_pkg, user=pkg_user)
-    except FileExistsError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"The package is already installed. Original error: {e}",
+    except FileExistsError:
+        venv_path = create_package_dir_pip(
+            task_pkg=task_pkg, user=pkg_user, create=False
         )
+        task_collect_status = get_collection_data(venv_path)
+        task_collect_status.info = "Already installed"
+        state = State(data=task_collect_status.sanitised_dict())
+        response.status_code == status.HTTP_200_OK
+        return state
 
     settings = Inject(get_settings)
 
@@ -198,6 +220,7 @@ async def collect_tasks_pip(
         "GET /task/collect/{id} to query collection status"
     )
     state.data["info"] = info
+    response.status_code = status.HTTP_201_CREATED
     return state
 
 

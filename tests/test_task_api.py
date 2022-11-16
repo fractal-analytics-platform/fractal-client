@@ -6,6 +6,7 @@ from devtools import debug
 from fractal_server.app.api.v1.task import _background_collect_pip
 from fractal_server.app.api.v1.task import _TaskCollectPip
 from fractal_server.app.api.v1.task import create_package_dir_pip
+from fractal_server.app.api.v1.task import TaskCollectionError
 from fractal_server.app.api.v1.task import TaskCollectStatus
 from fractal_server.app.models import State
 from fractal_server.config import get_settings
@@ -83,7 +84,7 @@ async def test_background_collection_failure(db, dummy_task_package):
 
     task_pkg.package = "__NO_PACKAGE"
     task_pkg.package_path = None
-    with pytest.raises(Exception) as err:
+    with pytest.raises(TaskCollectionError) as err:
         await _background_collect_pip(
             state=state, venv_path=venv_path, task_pkg=task_pkg, db=db
         )
@@ -108,6 +109,7 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
           installed and the task collected
         * it is possible to GET the collection with the path to the folder to
           check the status of the background process
+        * if called twice, the same tasks are returned without installing
     """
     PREFIX = "/api/v1/task"
 
@@ -156,6 +158,16 @@ async def test_collection_api(client, dummy_task_package, MockCurrentUser):
         full_path = settings.FRACTAL_ROOT / venv_path
         assert get_collection_path(full_path).exists()
         assert get_log_path(full_path).exists()
+
+        # collect again
+        res = await client.post(
+            f"{PREFIX}/collect/pip/?public=false", json=task_collection
+        )
+        debug(res.json())
+        assert res.status_code == 200
+        state = res.json()
+        data = state["data"]
+        assert data["info"] == "Already installed"
 
 
 async def test_collection_api_invalid_manifest(

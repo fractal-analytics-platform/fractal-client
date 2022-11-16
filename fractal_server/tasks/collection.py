@@ -22,12 +22,35 @@ from pydantic import root_validator
 
 from ..app.schemas import ManifestV1
 from ..app.schemas import TaskCollectPip
+from ..app.schemas import TaskCollectStatus
 from ..app.schemas import TaskCreate
 from ..config import get_settings
 from ..syringe import Inject
 from ..utils import close_logger
 from ..utils import execute_command
 from ..utils import set_logger
+
+
+class TaskCollectionError(RuntimeError):
+    pass
+
+
+def get_absolute_venv_path(venv_path: Path) -> Path:
+    """
+    Note:
+    In Python 3.9 it would be safer to do:
+
+        if venv_path.is_relative_to(settings.FRACTAL_ROOT):  # type: ignore
+            package_path = venv_path
+        else:
+            package_path = settings.FRACTAL_ROOT / venv_path  # type: ignore
+    """
+    if venv_path.is_absolute():
+        package_path = venv_path
+    else:
+        settings = Inject(get_settings)
+        package_path = settings.FRACTAL_ROOT / venv_path  # type: ignore
+    return package_path
 
 
 def get_collection_path(base: Path) -> Path:
@@ -39,11 +62,18 @@ def get_log_path(base: Path) -> Path:
 
 
 def get_collection_log(venv_path: Path) -> str:
-    settings = Inject(get_settings)
-    package_path = settings.FRACTAL_ROOT / venv_path  # type: ignore
+    package_path = get_absolute_venv_path(venv_path)
     log_path = get_log_path(package_path)
     log = log_path.open().read()
     return log
+
+
+def get_collection_data(venv_path: Path) -> TaskCollectStatus:
+    package_path = get_absolute_venv_path(venv_path)
+    collection_path = get_collection_path(package_path)
+    with collection_path.open() as f:
+        data = json.load(f)
+    return TaskCollectStatus(**data)
 
 
 class _TaskCollectPip(TaskCollectPip):
@@ -115,6 +145,7 @@ def create_package_dir_pip(
     *,
     task_pkg: _TaskCollectPip,
     user: Optional[str] = None,
+    create: bool = True,
     **_,
 ) -> Path:
     settings = Inject(get_settings)
@@ -123,7 +154,8 @@ def create_package_dir_pip(
     package_dir = f"{task_pkg.package}{task_pkg.version or ''}"
     venv_path = settings.FRACTAL_ROOT / user / package_dir  # type: ignore
     # TODO check the access right of the venv_path and subdirs
-    venv_path.mkdir(exist_ok=False, parents=True)
+    if create:
+        venv_path.mkdir(exist_ok=False, parents=True)
     return venv_path
 
 
