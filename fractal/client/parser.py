@@ -246,8 +246,8 @@ task_check_collection_parser = task_subparsers.add_parser(
     help="Check status of background task collection processes",
 )
 task_check_collection_parser.add_argument(
-    "installation_path",
-    help="Check collection status of tasks installed at this path",
+    "state_id",
+    help="State ID of the collection (see output of task collect)",
 )
 task_check_collection_parser.add_argument(
     "--verbose",

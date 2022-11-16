@@ -105,11 +105,10 @@ async def task_collect_pip(
 
 
 async def task_collection_check(
-    client: AuthClient, *, installation_path: Path, verbose: bool, **kwargs
+    client: AuthClient, *, state_id: int, verbose: bool, **kwargs
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/task/collect/{installation_path}"
-        f"?verbose={verbose}"
+        f"{settings.BASE_URL}/task/collect/{state_id}" f"?verbose={verbose}"
     )
     if res.status_code == 200:
         return RichJsonInterface(retcode=0, data=res.json())
