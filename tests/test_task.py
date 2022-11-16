@@ -24,26 +24,29 @@ async def test_task_collection_and_list(
     res0 = await invoke(f"task collect {PACKAGE_NAME} --private")
     debug(res0)
     res0.show()
-    venv_path = res0.data["venv_path"]
+
+    venv_path = res0.data["data"]["venv_path"]
+    state_id = res0.data["id"]
+    debug(state_id)
 
     # cf. fixtures_testserver.py::testserver
     FRACTAL_ROOT = temp_data_dir
     collection_file = FRACTAL_ROOT / venv_path / "collection.json"
 
     while True:
-        res1 = await invoke(f"task check-collection {venv_path}")
+        res1 = await invoke(f"task check-collection {state_id}")
         debug(res1)
         res1.show()
-        expected_status = "OK" if collection_file.exists() else "pending"
-        assert res1.data["status"] == expected_status
+        expected_status = "OK" if collection_file.exists() else "installing"
+        assert res1.data["data"]["status"] == expected_status
         await asyncio.sleep(1)
         if expected_status == "OK":
             break
 
-    res2 = await invoke(f"task check-collection {venv_path} --verbose")
+    res2 = await invoke(f"task check-collection {state_id} --verbose")
     debug(res2)
     res2.show()
-    assert res2.data["status"] == "OK"
+    assert res2.data["data"]["status"] == "OK"
 
     # LIST
 
@@ -68,11 +71,13 @@ async def test_task_apply(
     res0 = await invoke(f"task collect {PACKAGE_NAME}")
     debug(res0)
     res0.show()
-    venv_path = res0.data["venv_path"]
+    venv_path = res0.data["data"]["venv_path"]
+    debug(venv_path)
+    state_id = res0.data["id"]
 
     while True:
-        res1 = await invoke(f"task check-collection {venv_path}")
-        if res1.data["status"] == "OK":
+        res1 = await invoke(f"task check-collection {state_id}")
+        if res1.data["data"]["status"] == "OK":
             debug(res1.data)
             break
         await asyncio.sleep(1)
