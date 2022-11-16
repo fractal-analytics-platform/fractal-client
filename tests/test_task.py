@@ -155,9 +155,7 @@ async def test_task_apply(testserver, register_user, invoke, testdata_path):
 
 
 @pytest.mark.xfail
-async def test_edit_task(
-    clear_db, testserver, register_user, invoke, clear_task_cache
-):
+async def test_edit_task(testserver, register_user, invoke, clear_task_cache):
     # TODO:
     # Decide what it means to edit a task
     raise NotImplementedError

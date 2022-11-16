@@ -4,7 +4,7 @@ import pytest  # noqa F401
 from devtools import debug
 
 
-async def test_workflow_new(clear_db, testserver, register_user, invoke):
+async def test_workflow_new(testserver, register_user, invoke):
     PROJECT_NAME = "project_name"
     PROJECT_PATH = "project_path"
     WORKFLOW_NAME = "mywf"
@@ -19,7 +19,7 @@ async def test_workflow_new(clear_db, testserver, register_user, invoke):
     assert res_wf.data["project_id"] == res_pj.data["id"]
 
 
-async def test_workflow_list(clear_db, testserver, register_user, invoke):
+async def test_workflow_list(testserver, register_user, invoke):
     PROJECT_NAME = "project_name"
     PROJECT_PATH = "project_path"
     res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
@@ -42,7 +42,7 @@ async def test_workflow_list(clear_db, testserver, register_user, invoke):
 
 
 async def test_workflow_list_when_two_projects_exist(
-    clear_db, testserver, register_user, invoke, tmp_path
+    testserver, register_user, invoke, tmp_path
 ):
     res_pj1 = await invoke(f"project new PRJ1 {str(tmp_path)}/prj1")
     res_pj2 = await invoke(f"project new PRJ2 {str(tmp_path)}/prj2")
@@ -70,7 +70,6 @@ async def test_workflow_list_when_two_projects_exist(
 
 
 async def test_add_task(
-    clear_db,
     testserver,
     invoke,
     register_user,
@@ -102,7 +101,6 @@ async def test_add_task(
 
 
 async def test_edit_workflow_task(
-    clear_db,
     testserver,
     invoke,
     register_user,

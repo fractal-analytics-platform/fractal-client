@@ -27,12 +27,12 @@ async def test_server(testserver):
     assert res.status_code == 200
 
 
-async def test_user(clear_db, register_user):
+async def test_user(register_user):
     debug(register_user)
     assert register_user["email"] == DEFAULT_TEST_EMAIL
 
 
-async def test_user_override(clear_db, testserver, user_factory, invoke):
+async def test_user_override(testserver, user_factory, invoke):
     """
     GIVEN a user whose credentials differ from those of the environment
     WHEN the client is invoked with -u and -p
@@ -47,7 +47,7 @@ async def test_user_override(clear_db, testserver, user_factory, invoke):
     assert res.retcode == 0
 
 
-async def test_bad_credentials(clear_db, testserver, invoke):
+async def test_bad_credentials(testserver, invoke):
     """
     GIVEN a registered user
     WHEN wrong credentials are passed
