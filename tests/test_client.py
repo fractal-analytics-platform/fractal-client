@@ -9,14 +9,14 @@ from fractal import __VERSION__
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
-async def test_version(invoke, testserver):
+async def test_version(invoke):
     iface = await invoke("version")
     debug(iface.data)
     assert f"version: {__VERSION__}" in iface.data
     assert iface.retcode == 0
 
 
-async def test_server(testserver):
+async def test_server():
     """
     GIVEN a testserver
     WHEN it gets called
@@ -32,7 +32,7 @@ async def test_user(register_user):
     assert register_user["email"] == DEFAULT_TEST_EMAIL
 
 
-async def test_user_override(testserver, user_factory, invoke):
+async def test_user_override(user_factory, invoke):
     """
     GIVEN a user whose credentials differ from those of the environment
     WHEN the client is invoked with -u and -p
@@ -47,7 +47,7 @@ async def test_user_override(testserver, user_factory, invoke):
     assert res.retcode == 0
 
 
-async def test_bad_credentials(testserver, invoke):
+async def test_bad_credentials(invoke):
     """
     GIVEN a registered user
     WHEN wrong credentials are passed

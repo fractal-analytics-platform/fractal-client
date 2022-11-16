@@ -1,7 +1,7 @@
 from devtools import debug
 
 
-async def test_project_create(testserver, register_user, invoke):
+async def test_project_create(register_user, invoke):
     PROJECT_NAME = "project_name"
     PROJECT_PATH = "project_path"
     res = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
@@ -10,7 +10,7 @@ async def test_project_create(testserver, register_user, invoke):
     assert res.data["project_dir"] == PROJECT_PATH
 
 
-async def test_project_create_batch(testserver, register_user, invoke):
+async def test_project_create_batch(register_user, invoke):
     res = await invoke("--batch project new project_name project_path")
     debug(res)
     debug(res.data)
@@ -19,7 +19,7 @@ async def test_project_create_batch(testserver, register_user, invoke):
     assert dataset_id == 1
 
 
-async def test_project_list(testserver, register_user, invoke):
+async def test_project_list(register_user, invoke):
     res = await invoke("project list")
     debug(res)
     debug(vars(res.data))
@@ -37,7 +37,7 @@ async def test_project_list(testserver, register_user, invoke):
     assert len(res.data.rows) == 2
 
 
-async def test_add_dataset(testserver, register_user, invoke):
+async def test_add_dataset(register_user, invoke):
     DATASET_NAME = "new_ds_name"
 
     res = await invoke("--batch project new prj0 prj_path0")

@@ -4,9 +4,7 @@ import pytest
 from devtools import debug
 
 
-async def test_task_collection_and_list(
-    testserver, register_user, invoke, testdata_path
-):
+async def test_task_collection_and_list(register_user, invoke, testdata_path):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
     WHEN the collection subcommand is called
@@ -52,9 +50,7 @@ async def test_task_collection_and_list(
     assert len(res.data) == 2
 
 
-async def test_repeated_task_collection(
-    testserver, register_user, invoke, testdata_path
-):
+async def test_repeated_task_collection(register_user, invoke, testdata_path):
     """
     GIVEN
         * a pip installable package containing fractal-compatible tasks
@@ -92,7 +88,7 @@ async def test_repeated_task_collection(
     # FIXME add assert about "Already installed"
 
 
-async def test_task_apply(testserver, register_user, invoke, testdata_path):
+async def test_task_apply(register_user, invoke, testdata_path):
     """
     GIVEN a project and a nontrivial workflow
     WHEN the client requests to apply the workflow to the project
@@ -155,7 +151,7 @@ async def test_task_apply(testserver, register_user, invoke, testdata_path):
 
 
 @pytest.mark.xfail
-async def test_edit_task(testserver, register_user, invoke, clear_task_cache):
+async def test_edit_task(register_user, invoke, clear_task_cache):
     # TODO:
     # Decide what it means to edit a task
     raise NotImplementedError
