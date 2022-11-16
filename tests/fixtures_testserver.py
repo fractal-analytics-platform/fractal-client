@@ -3,39 +3,50 @@ import logging
 from os import environ
 
 import pytest
-from devtools import debug
 
 
-@pytest.fixture(scope="function")
-async def testserver(tmp_path):
-    # cf. https://stackoverflow.com/a/57816608/283972
-    environ["JWT_SECRET_KEY"] = "secret_key"
-    environ["DEPLOYMENT_TYPE"] = "development"
-    environ["DATA_DIR_ROOT"] = tmp_path.as_posix()
-    environ["FRACTAL_ROOT"] = tmp_path.as_posix()
-    environ["FRACTAL_LOGGING_LEVEL"] = str(logging.DEBUG)
+logger = logging.getLogger("fractal-client")
+logger.setLevel(logging.DEBUG)
 
-    environ["DB_ENGINE"] = "sqlite"
+
+@pytest.fixture
+def override_server_settings(tmp_path):
+    from fractal_server.config import Settings, get_settings
+    from fractal_server.syringe import Inject
+
+    settings = Settings()
 
     tmp_db_path = tmp_path / "db/test.db"
     tmp_db_path.parent.mkdir()
-    debug(tmp_db_path)
+    settings.DB_ENGINE = "sqlite"
+    settings.SQLITE_PATH = tmp_db_path
 
-    environ["SQLITE_PATH"] = tmp_db_path.as_posix()
+    settings.JWT_SECRET_KEY = "secret_key"
+    settings.DEPLOYMENT_TYPE = "development"
+    settings.FRACTAL_ROOT = tmp_path
+    settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
 
+    def _get_settings():
+        return settings
+
+    Inject.override(get_settings, _get_settings)
+    try:
+        yield
+    finally:
+        Inject.pop(get_settings)
+
+
+@pytest.fixture(scope="function", autouse=True)
+async def testserver(override_server_settings):
     import uvicorn
     from fractal_server.main import start_application
     from multiprocessing import Process
+    from fractal_server.app.db import DB
+    from fractal_server.app.models import SQLModel
 
     # INIT DB
-    # FIXME: this is probably not re-loading settings
-    from fractal_server.app.db import DB
-    from sqlmodel import SQLModel
-
-    # import fractal_server.app.models  # noqa: F401
-
-    debug(dir(DB.engine_sync()))
-
+    DB.set_db()
+    logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
     # We are explicitly calling start_application() to bypass the task
@@ -48,8 +59,11 @@ async def testserver(tmp_path):
     def run_server():
         asyncio.run(server.serve())
 
+    # Running testserver in a separate process
+    # cf. https://stackoverflow.com/a/57816608/283972
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
+    logger.debug(environ["FRACTAL_SERVER"])
     yield environ["FRACTAL_SERVER"]
     proc.kill()
 
@@ -130,7 +144,7 @@ async def workflow_factory(db, project_factory, register_user):
     return _workflow_factory
 
 
-@pytest.fixture()
+@pytest.fixture
 async def user_factory(client, testserver):
     async def __register_user(email: str, password: str, slurm_user: str):
         res = await client.post(
