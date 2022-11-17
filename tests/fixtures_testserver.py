@@ -2,7 +2,6 @@ import asyncio
 import logging
 from os import environ
 
-import httpx
 import pytest
 
 
@@ -66,11 +65,9 @@ async def testserver(override_server_settings):
     # cf. https://stackoverflow.com/a/57816608/283972
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
-    async with httpx.AsyncClient() as client:
-        for i in range(20):
-            res = await client.get(f'{environ["FRACTAL_SERVER"]}/api/alive/')
-            if res.status_code == 200:
-                break
+    import time
+
+    time.sleep(0.2)  # NOTE required to let the server comes up
     logger.debug(environ["FRACTAL_SERVER"])
     yield environ["FRACTAL_SERVER"]
     proc.kill()
