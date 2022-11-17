@@ -44,7 +44,7 @@ def clisplit():
 
 @pytest.fixture
 async def invoke(clisplit):
-    from fractal.client.client import handle
+    from fractal.client import handle
 
     async def __invoke(args: str):
         return await handle(clisplit(args))
@@ -54,7 +54,7 @@ async def invoke(clisplit):
 
 @pytest.fixture
 def clear_task_cache():
-    from fractal.client.config import settings
+    from fractal.config import settings
 
     cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
     cache_file = f"{cache_dir}/tasks"
