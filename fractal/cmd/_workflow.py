@@ -4,18 +4,18 @@ from pathlib import Path
 from typing import Optional
 
 from ..authclient import AuthClient
+from ..common.schemas import ApplyWorkflowCreate
+from ..common.schemas import WorkflowCreate
+from ..common.schemas import WorkflowRead
+from ..common.schemas import WorkflowTaskCreate
+from ..common.schemas import WorkflowTaskRead
+from ..common.schemas import WorkflowTaskUpdate
+from ..common.schemas import WorkflowUpdate
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from ..schemas import ApplyWorkflowCreate
-from ..schemas import WorkflowCreate
-from ..schemas import WorkflowRead
-from ..schemas import WorkflowTaskCreate
-from ..schemas import WorkflowTaskRead
-from ..schemas import WorkflowTaskUpdate
-from ..schemas import WorkflowUpdate
 
 
 async def workflow_new(

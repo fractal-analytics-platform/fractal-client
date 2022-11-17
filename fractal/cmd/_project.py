@@ -5,16 +5,16 @@ from typing import Optional
 from rich.table import Table
 
 from ..authclient import AuthClient
+from ..common.schemas import DatasetCreate
+from ..common.schemas import DatasetRead
+from ..common.schemas import ProjectCreate
+from ..common.schemas import ProjectRead
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichConsoleInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from ..schemas import DatasetCreate
-from ..schemas import DatasetRead
-from ..schemas import ProjectCreate
-from ..schemas import ProjectRead
 
 
 async def project_create(

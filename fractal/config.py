@@ -15,7 +15,7 @@ from os import getenv
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
-from .. import __VERSION__
+from . import __VERSION__
 
 
 def fail_getenv(key):
