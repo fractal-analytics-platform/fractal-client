@@ -81,7 +81,7 @@ async def test_add_task(
     WHEN the client is invoked to add a task, including custom args
     THEN
         the WorkflowTask is correctly registered in the db, including custom
-        gargs
+        args
     """
     wf = await workflow_factory()
     t = await task_factory()
@@ -97,6 +97,31 @@ async def test_add_task(
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task_list"][0]["args"] == custom_args
+
+
+async def test_add_task_by_name(
+    invoke,
+    register_user,
+    task_factory,
+    workflow_factory,
+    tmp_path,
+):
+    """
+    GIVEN a workflow and a task
+    WHEN the client is invoked to add a task *by name*
+    THEN the WorkflowTask is correctly registered in the db
+    """
+    wf = await workflow_factory()
+    task = await task_factory()
+    debug(task)
+
+    cmd = f"workflow add-task {wf.id} {task.name}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res)
+    debug(res.data)
+    assert res.data["task_list"][0]["id"] == task.id
 
 
 async def test_edit_workflow_task(
