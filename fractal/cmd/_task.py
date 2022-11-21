@@ -37,7 +37,7 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
         return task_cache[name]
     # Case 2: name is missing, and cache was just updated
     elif cache_up_to_date:
-        raise KeyError(f"Task {name} not in {cache_file}\n")
+        raise KeyError(f'Task "{name}" not in {cache_file}\n')
     # Case 3: name is missing but cache may be out of date
     else:
         await refresh_task_cache(client)
@@ -46,7 +46,7 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
         try:
             return task_cache[name]
         except KeyError as e:
-            raise KeyError(f"Task {name} not in {cache_file}\n", str(e))
+            raise KeyError(f'Task "{name}" not in {cache_file}\n', str(e))
 
 
 async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
