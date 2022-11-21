@@ -16,6 +16,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from .utils import get_cached_task_by_name
 
 
 async def workflow_new(
@@ -83,11 +84,17 @@ async def workflow_add_task(
     client: AuthClient,
     *,
     id: int,
-    task_id: int,
+    task_id_or_name: str,
     order: int = None,
     args_file: Optional[str] = None,
     **kwargs,
 ) -> RichJsonInterface:
+
+    try:
+        task_id = int(task_id_or_name)
+    except ValueError:
+        task_id = await get_cached_task_by_name(task_id_or_name, client)
+
     workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
     if args_file:
         with Path(args_file).open("r") as f:
