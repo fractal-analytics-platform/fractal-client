@@ -304,3 +304,9 @@ async def test_workflow_apply(register_user, invoke, testdata_path):
     assert res.retcode == 0
 
     # TODO: verify outout
+
+    # FIXME: check workflow-job status
+    # cmd = "workflow job-status XXX
+    # res = await invoke(cmd)
+    # debug(res)
+    # assert ...

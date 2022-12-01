@@ -20,6 +20,18 @@ from ..response import check_response
 from .utils import get_cached_task_by_name
 
 
+async def workflow_query_job_status(
+    client: AuthClient,
+    project_id: int,
+    workflow_id: int,
+    job_id: int,
+    batch: bool = False,
+    **kwargs,
+) -> BaseInterface:
+
+    pass
+
+
 async def workflow_new(
     client: AuthClient,
     name: str,

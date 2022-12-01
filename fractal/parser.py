@@ -416,6 +416,7 @@ workflow_edit_parser.add_argument(
     help="Change the project associated with the current workflow",
 )
 
+# workflow apply
 workflow_apply_parser = workflow_subparsers.add_parser(
     "apply", help="Apply workflow to dataset", argument_default=ap.SUPPRESS
 )
@@ -440,6 +441,24 @@ workflow_apply_parser.add_argument(
     "--worker-init",
     help="Command to be run before starting a worker",
 )
+
+# workflow job-status
+workflow_job_status_parser = workflow_subparsers.add_parser(
+    "job-status",
+    help="Query workflow-execution status",
+    argument_default=ap.SUPPRESS,
+)
+workflow_job_status_parser.add_argument("workflow_id")
+workflow_job_status_parser.add_argument(
+    "-p",
+    "--project-id",
+    help="Id of project the workflow and dataset belong to",
+)
+workflow_job_status_parser.add_argument(
+    "--job-id",
+    help="Id of the job",
+)
+
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(

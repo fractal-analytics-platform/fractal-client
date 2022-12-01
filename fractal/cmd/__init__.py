@@ -26,6 +26,7 @@ from ._workflow import workflow_edit
 from ._workflow import workflow_edit_task
 from ._workflow import workflow_list
 from ._workflow import workflow_new
+from ._workflow import workflow_query_job_status
 from ._workflow import workflow_remove_task
 from ._workflow import workflow_show
 
@@ -165,6 +166,8 @@ async def workflow(
         iface = await workflow_remove_task(client, **kwargs)
     elif subcmd == "apply":
         iface = await workflow_apply(client, **kwargs)
+    elif subcmd == "job-status":
+        iface = await workflow_query_job_status(client, **kwargs)
     return iface
 
 
