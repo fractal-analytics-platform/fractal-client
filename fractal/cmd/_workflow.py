@@ -223,6 +223,6 @@ async def workflow_apply(
         f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()
     )
     apply_wf_read = check_response(
-        res, expected_status_code=200, coerce=ApplyWorkflowRead
+        res, expected_status_code=202, coerce=ApplyWorkflowRead
     )
     return RichJsonInterface(retcode=0, data=apply_wf_read.json())
