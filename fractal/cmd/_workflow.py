@@ -122,12 +122,30 @@ async def workflow_edit_task(
     *,
     id: int,
     workflow_task_id: int,
-    json_file: str,
+    args_file: Optional[str] = None,
+    meta_file: Optional[str] = None,
     **kwargs,
 ) -> RichJsonInterface:
 
-    with Path(json_file).open("r") as f:
-        payload = json.load(f)
+    # Check that at least one of args_file or meta_file was given (note: it
+    # would be reasonable check it in the parser, but we are not aware of a
+    # method within argparse).
+    if not (args_file or meta_file):
+        raise ValueError(
+            "At least one of {args_file,meta_file} arguments is " "required"
+        )
+
+    # Combine args/meta payload
+    payload = {}
+    if args_file:
+        with Path(args_file).open("r") as f:
+            args = json.load(f)
+            payload["args"] = args
+    if meta_file:
+        with Path(meta_file).open("r") as f:
+            meta = json.load(f)
+            payload["meta"] = meta
+
     payload_update = WorkflowTaskUpdate(**payload)
     res = await client.patch(
         f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
