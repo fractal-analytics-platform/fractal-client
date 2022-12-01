@@ -87,6 +87,7 @@ async def workflow_add_task(
     task_id_or_name: str,
     order: int = None,
     args_file: Optional[str] = None,
+    meta_file: Optional[str] = None,
     **kwargs,
 ) -> RichJsonInterface:
 
@@ -100,6 +101,10 @@ async def workflow_add_task(
         with Path(args_file).open("r") as f:
             args = json.load(f)
             workflow_task.args = args
+    if meta_file:
+        with Path(meta_file).open("r") as f:
+            meta = json.load(f)
+            workflow_task.meta = meta
 
     res = await client.post(
         f"{settings.BASE_URL}/workflow/{id}/add-task/",
