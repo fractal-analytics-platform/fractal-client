@@ -58,7 +58,7 @@ def clear_task_cache():
     # This is a workaround to clean up the state before the test. The right way
     # would be to inject a new (function-scoped) FRACTAL_CACHE_PATH variable
     # for each test
-    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+    cache_dir = Path(settings.FRACTAL_CACHE_PATH).expanduser()
     cache_file = cache_dir / "tasks"
     cache_file.unlink(missing_ok=True)
 
