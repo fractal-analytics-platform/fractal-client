@@ -129,7 +129,7 @@ async def workflow_edit_task(
 ) -> RichJsonInterface:
 
     # Check that at least one of args_file or meta_file was given (note: it
-    # would be reasonable check it in the parser, but we are not aware of a
+    # would be reasonable to check it in the parser, but we are not aware of a
     # method within argparse).
     if not (args_file or meta_file):
         raise ValueError(
