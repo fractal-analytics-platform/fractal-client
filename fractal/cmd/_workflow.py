@@ -5,6 +5,7 @@ from typing import Optional
 
 from ..authclient import AuthClient
 from ..common.schemas import ApplyWorkflowCreate
+from ..common.schemas import ApplyWorkflowRead
 from ..common.schemas import WorkflowCreate
 from ..common.schemas import WorkflowRead
 from ..common.schemas import WorkflowTaskCreate
@@ -217,6 +218,7 @@ async def workflow_apply(
     res = await client.post(
         f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()
     )
-    # TODO check output
-
-    return RichJsonInterface(retcode=0, data=res.json())
+    apply_wf_read = check_response(
+        res, expected_status_code=200, coerce=ApplyWorkflowRead
+    )
+    return RichJsonInterface(retcode=0, data=apply_wf_read.json())
