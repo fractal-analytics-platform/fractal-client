@@ -47,6 +47,16 @@ async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
     res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
 
+    # Check that there are no name clashes
+    names = [task["name"] for task in task_list]
+    if len(set(names)) < len(names):
+        msg = (
+            "Cannot write task-list cache if task names are not unique "
+            "(version-based disambiguation will be added in the future).\n"
+            f"Current task list includes: {names}"
+        )
+        raise NotImplementedError(msg)
+
     # Refresh cache of (name,id) pairs
     task_cache = {}
     for task in task_list:
