@@ -87,7 +87,6 @@ async def workflow_add_task(
     id: int,
     task_id_or_name: str,
     order: int = None,
-    batch: bool = False,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
     **kwargs,
@@ -112,14 +111,11 @@ async def workflow_add_task(
         f"{settings.BASE_URL}/workflow/{id}/add-task/",
         json=workflow_task.dict(),
     )
-    workflow_task = check_response(
+    workflow = check_response(
         res, expected_status_code=201, coerce=WorkflowRead
     )
 
-    if batch:
-        return PrintInterface(retcode=0, data=f"{workflow_task.id}")
-    else:
-        return RichJsonInterface(retcode=0, data=workflow_task.dict())
+    return RichJsonInterface(retcode=0, data=workflow.dict())
 
 
 async def workflow_edit_task(
