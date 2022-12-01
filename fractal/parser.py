@@ -351,6 +351,14 @@ workflow_add_task_parser.add_argument(
         "ovverrides of the task"
     ),
 )
+workflow_add_task_parser.add_argument(
+    "--meta-file",
+    help=(
+        "Path to a json serialised file containing the meta"
+        "ovverrides of the task"
+    ),
+)
+
 
 # workflow edit task
 workflow_edit_task_parser = workflow_subparsers.add_parser(
@@ -365,9 +373,16 @@ workflow_edit_task_parser.add_argument(
     help="Workflow task Id, the Id of a task inside the list of tasks",
 )
 workflow_edit_task_parser.add_argument(
-    "--json-file",
+    "--args-file",
     help=(
-        "Path to a json serialised file containing the attribute "
+        "Path to a json serialised file containing the arguments "
+        "ovverrides of the task"
+    ),
+)
+workflow_edit_task_parser.add_argument(
+    "--meta-file",
+    help=(
+        "Path to a json serialised file containing the meta"
         "ovverrides of the task"
     ),
 )
