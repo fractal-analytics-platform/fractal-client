@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 from typing import List
 
@@ -55,7 +56,8 @@ async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
             "(version-based disambiguation will be added in the future).\n"
             f"Current task list includes: {names}"
         )
-        raise NotImplementedError(msg)
+        logging.warning(msg)
+        return task_list
 
     # Refresh cache of (name,id) pairs
     task_cache = {}
