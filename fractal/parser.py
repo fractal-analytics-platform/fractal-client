@@ -339,8 +339,7 @@ workflow_add_task_parser.add_argument(
     help="Workflow id",
 )
 workflow_add_task_parser.add_argument(
-    "task_id",
-    help="Task id",
+    "task_id_or_name", help="ID or name of the new task", type=str
 )
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list"

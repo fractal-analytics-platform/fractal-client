@@ -1,4 +1,6 @@
 import json
+import logging
+from pathlib import Path
 
 import pytest  # noqa F401
 from devtools import debug
@@ -42,7 +44,7 @@ async def test_workflow_list(register_user, invoke):
 
 
 async def test_workflow_list_when_two_projects_exist(
-    register_user, invoke, tmp_path
+    register_user, invoke, tmp_path: Path
 ):
     res_pj1 = await invoke(f"project new PRJ1 {str(tmp_path)}/prj1")
     res_pj2 = await invoke(f"project new PRJ2 {str(tmp_path)}/prj2")
@@ -74,14 +76,14 @@ async def test_add_task(
     register_user,
     task_factory,
     workflow_factory,
-    tmp_path,
+    tmp_path: Path,
 ):
     """
     GIVEN a workflow
     WHEN the client is invoked to add a task, including custom args
     THEN
         the WorkflowTask is correctly registered in the db, including custom
-        gargs
+        args
     """
     wf = await workflow_factory()
     t = await task_factory()
@@ -99,12 +101,76 @@ async def test_add_task(
     assert res.data["task_list"][0]["args"] == custom_args
 
 
+async def test_add_task_by_name(
+    invoke,
+    register_user,
+    task_factory,
+    workflow_factory,
+    tmp_path: Path,
+    clear_task_cache,
+):
+    """
+    GIVEN a workflow and a task
+    WHEN the client is invoked to add a task *by name*
+    THEN the WorkflowTask is correctly registered in the db
+    """
+    wf = await workflow_factory()
+    task = await task_factory()
+    debug(task)
+
+    cmd = f"workflow add-task {wf.id} {task.name}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res)
+    debug(res.data)
+    assert res.data["task_list"][0]["id"] == task.id
+
+
+async def test_task_cache_fails_for_non_unique_names(
+    invoke,
+    register_user,
+    task_factory,
+    workflow_factory,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    clear_task_cache,
+):
+    """
+    GIVEN two tasks with the same name
+    WHEN the client is invoked to list the tasks
+    THEN
+        * A warning is raised that the cache won't be written
+        * Addressing tasks by name raises a FileNotFoundError
+    """
+
+    # Create two tasks with the same name
+    task1 = await task_factory()
+    task2 = await task_factory()
+    assert task1.name == task2.name
+
+    # Verify that a warning is raised upon creating the cache file
+    caplog.set_level(logging.WARNING)
+    res = await invoke("task list")
+    assert res.retcode == 0
+    debug(caplog.text)
+    assert "Cannot write task-list cache" in caplog.text
+
+    # Verify that adding tasks to a worfklow by name (as opposed to "by id")
+    # fails because of missing cache file
+    wf = await workflow_factory()
+    cmd = f"workflow add-task {wf.id} {task1.name}"
+    debug(cmd)
+    with pytest.raises(FileNotFoundError):
+        res = await invoke(cmd)
+
+
 async def test_edit_workflow_task(
     invoke,
     register_user,
     task_factory,
     workflow_factory,
-    tmp_path,
+    tmp_path: Path,
 ):
     """
     GIVEN a workflow

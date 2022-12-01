@@ -1,4 +1,3 @@
-import os
 import shlex
 from os import environ
 from pathlib import Path
@@ -56,10 +55,12 @@ async def invoke(clisplit):
 def clear_task_cache():
     from fractal.config import settings
 
-    cache_dir = str(Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser())
-    cache_file = f"{cache_dir}/tasks"
-    if os.path.isfile(cache_file):
-        os.remove(cache_file)
+    # This is a workaround to clean up the state before the test. The right way
+    # would be to inject a new (function-scoped) FRACTAL_CACHE_PATH variable
+    # for each test
+    cache_dir = Path(settings.FRACTAL_CACHE_PATH).expanduser()
+    cache_file = cache_dir / "tasks"
+    cache_file.unlink(missing_ok=True)
 
 
 from .fixtures_testserver import *  # noqa: 401
