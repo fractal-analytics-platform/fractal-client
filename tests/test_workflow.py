@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -88,17 +89,25 @@ async def test_add_task(
     wf = await workflow_factory()
     t = await task_factory()
 
-    custom_args = dict(custom="args")
+    ARGS = {"arg": "arg_value"}
+    META = {"executor": "some-executor"}
     args_file = tmp_path / "args_file.json"
     with args_file.open("w") as f:
-        json.dump(custom_args, f)
+        json.dump(ARGS, f)
+    meta_file = tmp_path / "meta_file.json"
+    with meta_file.open("w") as f:
+        json.dump(META, f)
 
-    cmd = f"workflow add-task {wf.id} {t.id} --args-file {args_file}"
+    cmd = (
+        f"workflow add-task {wf.id} {t.id} "
+        f"--args-file {args_file} --meta-file {meta_file}"
+    )
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
-    assert res.data["task_list"][0]["args"] == custom_args
+    assert res.data["task_list"][0]["args"] == ARGS
+    assert res.data["task_list"][0]["meta"] == META
 
 
 async def test_add_task_by_name(
@@ -188,47 +197,110 @@ async def test_edit_workflow_task(
     assert res.retcode == 0
 
     # New arguments to be used
-    payload = dict(
-        args={"some_arg": "some_value"}, meta={"executor": "cpu-low"}
-    )
+    ARGS = {"some_arg": "some_value"}
+    META = {"executor": "cpu-low"}
 
-    json_file = tmp_path / "payload.json"
-    with json_file.open("w") as f:
-        json.dump(payload, f)
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
+    meta_file = tmp_path / "meta_file.json"
+    with meta_file.open("w") as f:
+        json.dump(META, f)
 
     # Edit workflow task
     debug(res.data)
     workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
-        f"--json-file {json_file}"
+        f"--args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
-    assert res.data["args"] == payload["args"]
-    assert res.data["meta"] == payload["meta"]
+    assert res.data["args"] == ARGS
+    assert res.data["meta"] == META
 
     # Check that also the workflow in the db was correctly updated
     res = await invoke(f"workflow show {wf.id}")
     assert res.retcode == 0
     debug(res.data)
-    assert res.data["task_list"][0]["args"] == payload["args"]
-    assert res.data["task_list"][0]["meta"] == payload["meta"]
+    assert res.data["task_list"][0]["args"] == ARGS
+    assert res.data["task_list"][0]["meta"] == META
 
     # Check if the correct error is raised where parallelization_level
     # is set
-    payload_error = dict(meta={"parallelization_level": "XXX"})
-
-    json_file = tmp_path / "payload_error.json"
-    with json_file.open("w") as f:
-        json.dump(payload_error, f)
+    META_err = {"parallelization_level": "XXX"}
+    meta_file = tmp_path / "meta_file.json"
+    with meta_file.open("w") as f:
+        json.dump(META_err, f)
 
     workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
-        f"--json-file {json_file}"
+        f"--meta-file {meta_file}"
     )
     debug(cmd)
     with pytest.raises(ValueError):
         res = await invoke(cmd)
+
+
+async def test_workflow_apply(register_user, invoke, testdata_path):
+    """
+    GIVEN a project and a nontrivial workflow
+    WHEN the client requests to apply the workflow to the project
+    THEN the workflow is scheduled and executed, and the artifacts created
+    """
+    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    WORKFLOW_NAME = "mywf"
+    DATASET_NAME = "myds"
+
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    debug(res0)
+    res0.show()
+    venv_path = res0.data["data"]["venv_path"]
+    debug(venv_path)
+    state_id = res0.data["id"]
+
+    while True:
+        res1 = await invoke(f"task check-collection {state_id}")
+        if res1.data["data"]["status"] == "OK":
+            debug(res1.data)
+            break
+        await asyncio.sleep(1)
+
+    res = await invoke("project new testproject prjpath")
+    debug(res)
+    assert res.retcode == 0
+
+    prj = res.data
+    prj_id = prj["id"]
+    input_dataset_id = prj["dataset_list"][0]["id"]
+
+    res = await invoke(f"project add-dataset {prj_id} {DATASET_NAME}")
+    assert res.retcode == 0
+    debug(res.data)
+    output_dataset_id = res.data["id"]
+
+    res = await invoke(
+        f"dataset add-resource {prj_id} {output_dataset_id} "
+        f"{testdata_path} -g 'out.json'"
+    )
+
+    res = await invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
+    workflow = res.data
+    workflow_id = workflow["id"]
+
+    TASK_ID = 1
+    res = await invoke(f"workflow add-task {workflow_id} {TASK_ID}")
+    assert res.retcode == 0
+
+    cmd = (
+        f"workflow apply {workflow_id} {input_dataset_id} "
+        f"-o {output_dataset_id} -p {prj['id']}"
+    )
+    debug(cmd)
+    res = await invoke(cmd)
+    debug(res.data)
+    assert res.retcode == 0
+
+    # TODO: verify outout

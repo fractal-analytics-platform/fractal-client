@@ -5,6 +5,7 @@ from typing import Optional
 
 from ..authclient import AuthClient
 from ..common.schemas import ApplyWorkflowCreate
+from ..common.schemas import ApplyWorkflowRead
 from ..common.schemas import WorkflowCreate
 from ..common.schemas import WorkflowRead
 from ..common.schemas import WorkflowTaskCreate
@@ -87,6 +88,7 @@ async def workflow_add_task(
     task_id_or_name: str,
     order: int = None,
     args_file: Optional[str] = None,
+    meta_file: Optional[str] = None,
     **kwargs,
 ) -> RichJsonInterface:
 
@@ -100,16 +102,20 @@ async def workflow_add_task(
         with Path(args_file).open("r") as f:
             args = json.load(f)
             workflow_task.args = args
+    if meta_file:
+        with Path(meta_file).open("r") as f:
+            meta = json.load(f)
+            workflow_task.meta = meta
 
     res = await client.post(
         f"{settings.BASE_URL}/workflow/{id}/add-task/",
         json=workflow_task.dict(),
     )
-    workflow_task = check_response(
+    workflow = check_response(
         res, expected_status_code=201, coerce=WorkflowRead
     )
 
-    return RichJsonInterface(retcode=0, data=workflow_task.dict())
+    return RichJsonInterface(retcode=0, data=workflow.dict())
 
 
 async def workflow_edit_task(
@@ -117,12 +123,30 @@ async def workflow_edit_task(
     *,
     id: int,
     workflow_task_id: int,
-    json_file: str,
+    args_file: Optional[str] = None,
+    meta_file: Optional[str] = None,
     **kwargs,
 ) -> RichJsonInterface:
 
-    with Path(json_file).open("r") as f:
-        payload = json.load(f)
+    # Check that at least one of args_file or meta_file was given (note: it
+    # would be reasonable to check it in the parser, but we are not aware of a
+    # method within argparse).
+    if not (args_file or meta_file):
+        raise ValueError(
+            "At least one of {args_file,meta_file} arguments is " "required"
+        )
+
+    # Combine args/meta payload
+    payload = {}
+    if args_file:
+        with Path(args_file).open("r") as f:
+            args = json.load(f)
+            payload["args"] = args
+    if meta_file:
+        with Path(meta_file).open("r") as f:
+            meta = json.load(f)
+            payload["meta"] = meta
+
     payload_update = WorkflowTaskUpdate(**payload)
     res = await client.patch(
         f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
@@ -194,6 +218,7 @@ async def workflow_apply(
     res = await client.post(
         f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()
     )
-    # TODO check output
-
-    return RichJsonInterface(retcode=0, data=res.json())
+    apply_wf_read = check_response(
+        res, expected_status_code=202, coerce=ApplyWorkflowRead
+    )
+    return RichJsonInterface(retcode=0, data=apply_wf_read.json())
