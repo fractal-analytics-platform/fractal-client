@@ -88,17 +88,25 @@ async def test_add_task(
     wf = await workflow_factory()
     t = await task_factory()
 
-    custom_args = dict(custom="args")
+    ARGS = {"arg": "arg_value"}
+    META = {"executor": "some-executor"}
     args_file = tmp_path / "args_file.json"
     with args_file.open("w") as f:
-        json.dump(custom_args, f)
+        json.dump(ARGS, f)
+    meta_file = tmp_path / "meta_file.json"
+    with meta_file.open("w") as f:
+        json.dump(META, f)
 
-    cmd = f"workflow add-task {wf.id} {t.id} --args-file {args_file}"
+    cmd = (
+        f"workflow add-task {wf.id} {t.id} "
+        f"--args-file {args_file} --meta-file {meta_file}"
+    )
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
-    assert res.data["task_list"][0]["args"] == custom_args
+    assert res.data["task_list"][0]["args"] == ARGS
+    assert res.data["task_list"][0]["meta"] == META
 
 
 async def test_add_task_by_name(
@@ -188,46 +196,47 @@ async def test_edit_workflow_task(
     assert res.retcode == 0
 
     # New arguments to be used
-    payload = dict(
-        args={"some_arg": "some_value"}, meta={"executor": "cpu-low"}
-    )
+    ARGS = {"some_arg": "some_value"}
+    META = {"executor": "cpu-low"}
 
-    json_file = tmp_path / "payload.json"
-    with json_file.open("w") as f:
-        json.dump(payload, f)
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
+    meta_file = tmp_path / "meta_file.json"
+    with meta_file.open("w") as f:
+        json.dump(META, f)
 
     # Edit workflow task
     debug(res.data)
     workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
-        f"--json-file {json_file}"
+        f"--args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
-    assert res.data["args"] == payload["args"]
-    assert res.data["meta"] == payload["meta"]
+    assert res.data["args"] == ARGS
+    assert res.data["meta"] == META
 
     # Check that also the workflow in the db was correctly updated
     res = await invoke(f"workflow show {wf.id}")
     assert res.retcode == 0
     debug(res.data)
-    assert res.data["task_list"][0]["args"] == payload["args"]
-    assert res.data["task_list"][0]["meta"] == payload["meta"]
+    assert res.data["task_list"][0]["args"] == ARGS
+    assert res.data["task_list"][0]["meta"] == META
 
     # Check if the correct error is raised where parallelization_level
     # is set
-    payload_error = dict(meta={"parallelization_level": "XXX"})
-
-    json_file = tmp_path / "payload_error.json"
-    with json_file.open("w") as f:
-        json.dump(payload_error, f)
+    META_err = {"parallelization_level": "XXX"}
+    meta_file = tmp_path / "meta_file.json"
+    with meta_file.open("w") as f:
+        json.dump(META_err, f)
 
     workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
-        f"--json-file {json_file}"
+        f"--meta-file {meta_file}"
     )
     debug(cmd)
     with pytest.raises(ValueError):
