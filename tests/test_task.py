@@ -80,7 +80,7 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     assert res0.data["data"]["info"] == "Already installed"
 
 
-async def test_task_apply(register_user, invoke, testdata_path):
+async def test_workflow_apply(register_user, invoke, testdata_path):
     """
     GIVEN a project and a nontrivial workflow
     WHEN the client requests to apply the workflow to the project
