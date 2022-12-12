@@ -221,4 +221,4 @@ async def workflow_apply(
     apply_wf_read = check_response(
         res, expected_status_code=202, coerce=ApplyWorkflowRead
     )
-    return RichJsonInterface(retcode=0, data=apply_wf_read.json())
+    return RichJsonInterface(retcode=0, data=apply_wf_read.sanitised_dict())
