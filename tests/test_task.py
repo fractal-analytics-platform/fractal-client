@@ -1,7 +1,11 @@
 import asyncio
+import time
 
 import pytest
 from devtools import debug
+
+
+COLLECTION_TIMEOUT = 15.0
 
 
 async def test_task_collection_and_list(register_user, invoke, testdata_path):
@@ -27,12 +31,14 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     debug(state_id)
 
     # Wait until collection is complete
+    starting_time = time.perf_counter()
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
         res1.show()
         await asyncio.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
+        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     res2 = await invoke(f"task check-collection {state_id} --verbose")
     debug(res2)
@@ -68,11 +74,13 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     debug(state_id)
 
     # Wait until collection is complete
+    starting_time = time.perf_counter()
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
         await asyncio.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
+        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Second collection
     res0 = await invoke(f"task collect {PACKAGE_NAME}")
