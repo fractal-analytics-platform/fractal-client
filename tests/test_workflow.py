@@ -329,6 +329,7 @@ async def test_workflow_apply(
     debug(res.data)
     assert res.data["history"][0] == TASK_NAME
 
+    # Test output with --batch
     cmd = f"--batch workflow job-status --job-id {job_id}"
     res = await invoke(cmd)
     assert res.retcode == 0
@@ -351,6 +352,9 @@ async def test_workflow_apply(
     res = await invoke(cmd)
     assert res.retcode == 0
     job_id = res.data["id"]
+
+    # Note: we may want to use a while loop to wait for the failure of the
+    # workflow execution
 
     # Verify that status is failed, and that there is a log
     cmd = f"workflow job-status --job-id {job_id}"
