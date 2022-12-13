@@ -448,12 +448,6 @@ workflow_job_status_parser = workflow_subparsers.add_parser(
     help="Query workflow-execution status",
     argument_default=ap.SUPPRESS,
 )
-workflow_job_status_parser.add_argument("workflow_id")
-workflow_job_status_parser.add_argument(
-    "-p",
-    "--project-id",
-    help="Id of project the workflow and dataset belong to",
-)
 workflow_job_status_parser.add_argument(
     "--job-id",
     help="Id of the job",

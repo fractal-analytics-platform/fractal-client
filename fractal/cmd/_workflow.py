@@ -22,14 +22,22 @@ from .utils import get_cached_task_by_name
 
 async def workflow_query_job_status(
     client: AuthClient,
-    project_id: int,
-    workflow_id: int,
     job_id: int,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
+    """
+    Query the status of a workflow job
+    """
 
-    pass
+    res = await client.get(f"{settings.BASE_URL}/job/{job_id}")
+    job = check_response(
+        res, expected_status_code=200, coerce=ApplyWorkflowRead
+    )
+    if batch:
+        return PrintInterface(retcode=0, data=job.status)
+    else:
+        return RichJsonInterface(retcode=0, data=job.dict())
 
 
 async def workflow_new(

@@ -167,7 +167,7 @@ async def workflow(
     elif subcmd == "apply":
         iface = await workflow_apply(client, **kwargs)
     elif subcmd == "job-status":
-        iface = await workflow_query_job_status(client, **kwargs)
+        iface = await workflow_query_job_status(client, batch=batch, **kwargs)
     return iface
 
 
