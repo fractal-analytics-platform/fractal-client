@@ -1,10 +1,13 @@
 import asyncio
 import json
 import logging
+import time
 from pathlib import Path
 
 import pytest  # noqa F401
 from devtools import debug
+
+TIMEOUT = 15.0
 
 
 async def test_workflow_new(register_user, invoke):
@@ -244,7 +247,9 @@ async def test_edit_workflow_task(
         res = await invoke(cmd)
 
 
-async def test_workflow_apply(register_user, invoke, testdata_path):
+async def test_workflow_apply(
+    register_user, invoke, testdata_path: Path, tmp_path: Path
+):
     """
     GIVEN a project and a nontrivial workflow
     WHEN the client requests to apply the workflow to the project
@@ -261,12 +266,14 @@ async def test_workflow_apply(register_user, invoke, testdata_path):
     debug(venv_path)
     state_id = res0.data["id"]
 
+    starting_time = time.perf_counter()
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
         if res1.data["data"]["status"] == "OK":
             debug(res1.data)
             break
         await asyncio.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
 
     res = await invoke("project new testproject prjpath")
     debug(res)
@@ -293,6 +300,10 @@ async def test_workflow_apply(register_user, invoke, testdata_path):
     TASK_ID = 1
     res = await invoke(f"workflow add-task {workflow_id} {TASK_ID}")
     assert res.retcode == 0
+    debug(res.data)
+    TASK_NAME = res.data["task_list"][0]["task"]["name"]
+    WORKFLOW_TASK_ID = res.data["task_list"][0]["id"]
+    debug(TASK_NAME)
 
     cmd = (
         f"workflow apply {workflow_id} {input_dataset_id} "
@@ -301,12 +312,54 @@ async def test_workflow_apply(register_user, invoke, testdata_path):
     debug(cmd)
     res = await invoke(cmd)
     debug(res.data)
+    job_id = res.data["id"]
     assert res.retcode == 0
+    assert res.data["status"] == "submitted"
 
-    # TODO: verify outout
+    # Check that job completed successfully
+    cmd = f"workflow job-status --job-id {job_id}"
+    starting_time = time.perf_counter()
+    debug(cmd)
+    while True:
+        res = await invoke(cmd)
+        assert res.retcode == 0
+        if res.data["status"] == "done":
+            break
+        await asyncio.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
+    debug(res.data)
+    assert res.data["history"][0] == TASK_NAME
 
-    # FIXME: check workflow-job status
-    # cmd = "workflow job-status XXX
-    # res = await invoke(cmd)
-    # debug(res)
-    # assert ...
+    cmd = f"--batch workflow job-status --job-id {job_id}"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    assert res.data == "done"
+
+    # Prepare and run a workflow with a failing task
+    args_file = str(tmp_path / "args.json")
+    with open(args_file, "w") as f:
+        json.dump({"raise_error": True}, f)
+    cmd = (
+        f"workflow edit-task {workflow_id} {WORKFLOW_TASK_ID} "
+        f"--args-file {args_file}"
+    )
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    cmd = (
+        f"workflow apply {workflow_id} {input_dataset_id} "
+        f"-o {output_dataset_id} -p {prj['id']}"
+    )
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    job_id = res.data["id"]
+
+    # Verify that status is failed, and that there is a log
+    cmd = f"workflow job-status --job-id {job_id}"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+    assert res.data["status"] == "failed"
+    assert res.data["log"] is not None
+    print(res.data["log"])
