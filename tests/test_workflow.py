@@ -302,7 +302,6 @@ async def test_workflow_apply(
     assert res.retcode == 0
     debug(res.data)
     TASK_NAME = res.data["task_list"][0]["task"]["name"]
-    WORKFLOW_TASK_ID = res.data["task_list"][0]["id"]
     debug(TASK_NAME)
 
     cmd = (
@@ -339,12 +338,10 @@ async def test_workflow_apply(
     args_file = str(tmp_path / "args.json")
     with open(args_file, "w") as f:
         json.dump({"raise_error": True}, f)
-    cmd = (
-        f"workflow edit-task {workflow_id} {WORKFLOW_TASK_ID} "
-        f"--args-file {args_file}"
+    res = await invoke(
+        f"workflow add-task {workflow_id} {TASK_ID}"
+        f" --args-file {args_file}"
     )
-    debug(cmd)
-    res = await invoke(cmd)
     assert res.retcode == 0
     cmd = (
         f"workflow apply {workflow_id} {input_dataset_id} "
@@ -362,4 +359,6 @@ async def test_workflow_apply(
     debug(res.data)
     assert res.data["status"] == "failed"
     assert res.data["log"] is not None
+    # Note: the failing task is not added to the history
+    assert len(res.data["history"]) > 0
     print(res.data["log"])
