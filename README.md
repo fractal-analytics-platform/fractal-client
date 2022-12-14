@@ -14,24 +14,9 @@ This is the repository that contains the **Fractal client**. Find more informati
 
 ## Documentation
 
-Work in progress.
+Documentation is not yet available.
+
 For installation instructions, see below.
-
-
-
-Example input data for Fractal can be found here: [10.5281/zenodo.7057076](https://doi.org/10.5281/zenodo.7057076)
-Example output data from Fractal in the OME-Zarr format can be found here: [10.5281/zenodo.7081622](https://doi.org/10.5281/zenodo.7081622)
-Example workflows can be found in the [fractal-demos repository](https://github.com/fractal-analytics-platform/fractal-demos) in the `examples` folder, together with additional instructions for how to set up the server & client, download the test data and run workflows through Fractal.
-
-Fractal is currently in an early alpha version. We have the core processing functionality working for Yokogawa CV7000 image data and a workflow for processing OME-Zarr images up to feature measurements. But we're still adding core functionality and will introduce breaking changes. You can follow along our planned milestones on the [architecture side](https://github.com/fractal-analytics-platform/fractal/milestones) & the [tasks side](https://github.com/fractal-analytics-platform/fractal-tasks-core). Open an issue to get in touch, raise bugs or ask questions.
-
-OME-Zarr files can be interactively visualizated in napari. Here is an example using the newly-proposed async loading in [NAP4](https://github.com/napari/napari/pull/4905) and the [napari-ome-zarr plugin](https://github.com/ome/napari-ome-zarr):
-
-![napari_plate_overview](https://user-images.githubusercontent.com/18033446/190983839-afb9743f-530c-4b00-bde7-23ad62404ee8.gif)
-
-### Contributors
-Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi).
-The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from eXact lab S.r.l. <exact-lab.it>.
 
 ## Installation
 
@@ -102,3 +87,9 @@ git push && git push --tags
 poetry publish --dry-run
 ```
 removing the `--dry-run` when you made sure that everything looks good.
+
+# Contributors and license
+
+Unless otherwise stated in each individual module, all Fractal components are released according to a BSD 3-Clause License, and Copyright is with Friedrich Miescher Institute for Biomedical Research and University of Zurich.
+
+Fractal was conceived in the Liberali Lab at the Friedrich Miescher Institute for Biomedical Research and in the Pelkmans Lab at the University of Zurich (both in Switzerland). The project lead is with [@gusqgm](https://github.com/gusqgm) & [@jluethi](https://github.com/jluethi). The core development is done under contract by [@mfranzon](https://github.com/mfranzon), [@tcompa](https://github.com/tcompa) & [jacopo-exact](https://github.com/jacopo-exact) from [eXact lab S.r.l.](exact-lab.it).
