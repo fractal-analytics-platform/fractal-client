@@ -4,15 +4,20 @@
 [![CI Status](https://github.com/fractal-analytics-platform/fractal/actions/workflows/ci.yml/badge.svg)](https://github.com/fractal-analytics-platform/fractal/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
+Fractal is a framework to process high-content imaging data at scale and prepare it for interactive visualization.
 
-Fractal is a framework to process high content imaging data at scale and prepare it for interactive visualization.
+![Fractal_Overview](https://fractal-analytics-platform.github.io/assets/fractal_overview.jpg)
 
 Fractal provides distributed workflows that convert TBs of image data into OME-Zarr files. The platform then processes the 3D image data by applying tasks like illumination correction, maximum intensity projection, 3D segmentation using [cellpose](https://cellpose.readthedocs.io/en/latest/) and measurements using [napari workflows](https://github.com/haesleinhuepf/napari-workflows). The pyramidal OME-Zarr files enable interactive visualization in the napari viewer.
 
-![Fractal_Overview](https://user-images.githubusercontent.com/18033446/190978261-2e7b57e9-72c7-443e-9202-15d233f8416d.jpg)
+This is the repository that contains the **Fractal client**. Find more information about Fractal in general and the other repositories at the [Fractal home page](https://fractal-analytics-platform.github.io).
+
+## Documentation
+
+Work in progress.
+For installation instructions, see below.
 
 
-This is the main Fractal repository that contains the **Fractal client**. The **Fractal core tasks** to parse images and process OME-Zarr files can be found [here](https://github.com/fractal-analytics-platform/fractal-tasks-core). The **Fractal server** can be found [here](https://github.com/fractal-analytics-platform/fractal-server).
 
 Example input data for Fractal can be found here: [10.5281/zenodo.7057076](https://doi.org/10.5281/zenodo.7057076)
 Example output data from Fractal in the OME-Zarr format can be found here: [10.5281/zenodo.7081622](https://doi.org/10.5281/zenodo.7081622)
@@ -32,7 +37,9 @@ The core development is done under contract by [@mfranzon](https://github.com/mf
 
 Simply
 
-``` pip install fractal-client ```
+```
+pip install fractal-client
+```
 
 Subsequently, you may invoke it as `fractal`. Note that you must provide
 the following environment variables:
@@ -50,22 +57,16 @@ folder from which `fractal` is invoked.
 
 ## Development
 
-Development takes place on Github. You are welcome to submit an issue and open
-pull requests.
-
-### Developmente installation
+### Installation
 
 Fractal is developed and maintained using [poetry](https://python-poetry.org/).
 
 After cloning the repo, use
-
 ```
 poetry install --with dev
 ```
-
 to set up the development environment and all the dependencies and
 dev-dependencies. You may run the test suite with
-
 ```
 poetry run pytest
 ```
