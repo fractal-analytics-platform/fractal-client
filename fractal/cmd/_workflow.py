@@ -37,7 +37,7 @@ async def workflow_query_job_status(
     if batch:
         return PrintInterface(retcode=0, data=job.status)
     else:
-        return RichJsonInterface(retcode=0, data=job.dict())
+        return RichJsonInterface(retcode=0, data=job.sanitised_dict())
 
 
 async def workflow_new(
