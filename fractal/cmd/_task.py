@@ -33,7 +33,7 @@ async def task_collect_pip(
     task_collect = TaskCollectPip(
         package=package,
         version=package_version,
-        python_version=python_version or "3.8",
+        python_version=python_version,
         package_extras=package_extras,
     )
 
