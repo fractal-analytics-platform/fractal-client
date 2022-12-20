@@ -358,6 +358,7 @@ async def test_workflow_apply(
     starting_time = time.perf_counter()
     while True:
         res = await invoke(cmd)
+        debug(res.data)
         assert res.retcode == 0
         if res.data["status"] == "failed":
             break
@@ -367,4 +368,12 @@ async def test_workflow_apply(
     assert res.data["log"] is not None
     # Note: the failing task is not added to the history
     assert len(res.data["history"]) > 0
-    print(res.data["log"])
+
+    # Test --separate-log option
+    cmd = f"workflow job-status --job-id {job_id} --separate-log"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+    assert "log" not in res.data
+    debug(res.extra_lines)
+    assert res.extra_lines
