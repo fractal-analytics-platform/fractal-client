@@ -24,6 +24,7 @@ async def workflow_query_job_status(
     client: AuthClient,
     job_id: int,
     batch: bool = False,
+    separate_log: bool = False,
     **kwargs,
 ) -> BaseInterface:
     """
@@ -37,7 +38,15 @@ async def workflow_query_job_status(
     if batch:
         return PrintInterface(retcode=0, data=job.status)
     else:
-        return RichJsonInterface(retcode=0, data=job.sanitised_dict())
+        data = job.sanitised_dict()
+        if job.log is None or (not separate_log):
+            return RichJsonInterface(retcode=0, data=data)
+        else:
+            log = data.pop("log")
+            extra_lines = ["\nThis is the job log:\n", log]
+            return RichJsonInterface(
+                retcode=0, data=data, extra_lines=extra_lines
+            )
 
 
 async def workflow_new(

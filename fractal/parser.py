@@ -452,6 +452,12 @@ workflow_job_status_parser.add_argument(
     "--job-id",
     help="Id of the job",
 )
+workflow_job_status_parser.add_argument(
+    "--separate-log",
+    dest="separate_log",
+    help="Show the job log as a separate field, for improved clarity",
+    action="store_true",
+)
 
 
 # VERSION GROUP
