@@ -4,7 +4,7 @@ import pytest  # noqa F401
 from devtools import debug
 
 
-LOG = "This are some logs"
+LOG = "Here are some logs"
 
 
 @pytest.mark.parametrize("status", ["done", "failed"])
@@ -111,3 +111,57 @@ async def test_job_list(
 
     # FIXME add assertions
     # FIXME also test --batch option
+
+
+@pytest.mark.xfail(reason="Missing endpoint server side")
+async def test_job_download_logs(
+    register_user,
+    invoke,
+    tmp_path: Path,
+    workflow_factory,
+    job_factory,
+):
+    """
+    GIVEN a job entry in the database
+    WHEN calling the `job download-logs` command
+    THEN FIXME
+    """
+
+    # Create mock Workflow/ApplyWorkflow objects
+    wf = await workflow_factory()
+    wd = tmp_path / f"workflow_{wf.id}"
+    job = await job_factory(
+        working_dir=wd.as_posix(),
+        worfklow_id=wf.id,
+        status="running",
+    )
+
+    # Write something in a logfile within the workflow directory
+    LOGFILE = "log.txt"
+    wd.mkdir()
+    with (wd / LOGFILE).open("w") as f:
+        f.write(LOG)
+
+    # Check that download-logs fails if the output folder already exists
+    output_fail = tmp_path / "output_dir_for_logs_fail"
+    output_fail.mkdir()
+    cmd = f"job download-logs {job.project_id} --output {str(output_fail)}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 1
+
+    # Check standard `job download-logs` output
+    output = tmp_path / "output_dir_for_logs"
+    cmd = f"job download-logs {job.project_id} --output {str(output)}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+
+    # Check that the logfile is there and has the right content
+    logfile = output / LOGFILE
+    assert logfile.exists()
+    with logfile.open("r") as f:
+        contents = f.read()
+    # FIXME: review the following assertion
+    assert contents == LOG
