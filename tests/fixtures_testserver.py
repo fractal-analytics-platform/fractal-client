@@ -152,6 +152,29 @@ async def workflow_factory(db, project_factory, register_user):
 
 
 @pytest.fixture
+async def job_factory(db):
+    from fractal_server.app.models.run import ApplyWorkflow
+
+    async def _job_factory(**job_args_override):
+        job_args = dict(
+            project_id=1,
+            input_dataset_id=1,
+            output_dataset_id=2,
+            workflow_id=1,
+            overwrite_input=False,
+            worker_init="WORKER_INIT string",
+        )
+        job_args.update(job_args_override)
+        j = ApplyWorkflow(**job_args)
+        db.add(j)
+        await db.commit()
+        await db.refresh(j)
+        return j
+
+    return _job_factory
+
+
+@pytest.fixture
 async def user_factory(client, testserver):
     async def __register_user(email: str, password: str, slurm_user: str):
         res = await client.post(

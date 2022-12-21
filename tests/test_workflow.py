@@ -315,8 +315,10 @@ async def test_workflow_apply(
     assert res.retcode == 0
     assert res.data["status"] == "submitted"
 
+    # TODO: add an assertion about the output, instead of calling `job status`
+
     # Check that job completed successfully
-    cmd = f"workflow job-status --job-id {job_id}"
+    cmd = f"job status {job_id}"
     starting_time = time.perf_counter()
     debug(cmd)
     while True:
@@ -328,12 +330,6 @@ async def test_workflow_apply(
         assert time.perf_counter() - starting_time < TIMEOUT
     debug(res.data)
     assert res.data["history"][0] == TASK_NAME
-
-    # Test output with --batch
-    cmd = f"--batch workflow job-status --job-id {job_id}"
-    res = await invoke(cmd)
-    assert res.retcode == 0
-    assert res.data == "done"
 
     # Prepare and run a workflow with a failing task
     args_file = str(tmp_path / "args.json")
@@ -354,7 +350,7 @@ async def test_workflow_apply(
     job_id = res.data["id"]
 
     # Verify that status is failed, and that there is a log
-    cmd = f"workflow job-status --job-id {job_id} --do-not-separate-logs"
+    cmd = f"job status {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     while True:
         res = await invoke(cmd)
@@ -368,13 +364,3 @@ async def test_workflow_apply(
     assert res.data["log"] is not None
     # Note: the failing task is not added to the history
     assert len(res.data["history"]) > 0
-
-    # Test job-status default (without --do-not-separate-logs)
-    cmd = f"workflow job-status --job-id {job_id}"
-    res = await invoke(cmd)
-    assert res.retcode == 0
-    debug(res.data)
-    debug(res.extra_lines)
-    assert "log" not in res.data
-    assert res.extra_lines
-    res.show()
