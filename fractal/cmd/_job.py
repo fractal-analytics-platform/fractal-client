@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from ..authclient import AuthClient
 from ..common.schemas import ApplyWorkflowRead
 from ..config import settings
@@ -48,9 +50,16 @@ async def job_list(
 
 async def job_download_logs(
     client: AuthClient,
-    project_id: int,
+    job_id: int,
+    output: str,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
+
+    # Check that output folder does not already exist
+    if Path(output).exists():
+        return PrintInterface(
+            retcode=1, data=f"ERROR: {output} already exists"
+        )
 
     raise NotImplementedError("job_download_logs not implemented")
