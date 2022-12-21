@@ -11,6 +11,9 @@ from ._dataset import dataset_add_resource
 from ._dataset import dataset_delete_resource
 from ._dataset import dataset_edit
 from ._dataset import dataset_show
+from ._job import job_download_logs
+from ._job import job_list
+from ._job import job_status
 from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_list
@@ -26,7 +29,6 @@ from ._workflow import workflow_edit
 from ._workflow import workflow_edit_task
 from ._workflow import workflow_list
 from ._workflow import workflow_new
-from ._workflow import workflow_query_job_status
 from ._workflow import workflow_remove_task
 from ._workflow import workflow_show
 
@@ -166,8 +168,18 @@ async def workflow(
         iface = await workflow_remove_task(client, **kwargs)
     elif subcmd == "apply":
         iface = await workflow_apply(client, **kwargs)
-    elif subcmd == "job-status":
-        iface = await workflow_query_job_status(client, batch=batch, **kwargs)
+    return iface
+
+
+async def job(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> BaseInterface:
+    if subcmd == "list":
+        iface = await job_list(client, batch=batch, **kwargs)
+    elif subcmd == "status":
+        iface = await job_status(client, batch=batch, **kwargs)
+    elif subcmd == "download-logs":
+        iface = await job_download_logs(client, **kwargs)
     return iface
 
 

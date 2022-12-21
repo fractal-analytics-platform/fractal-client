@@ -442,21 +442,52 @@ workflow_apply_parser.add_argument(
     help="Command to be run before starting a worker",
 )
 
-# workflow job-status
-workflow_job_status_parser = workflow_subparsers.add_parser(
-    "job-status",
-    help="Query workflow-execution status",
+
+# JOB GROUP
+
+job_parser = subparsers_main.add_parser("job", help="job commands")
+job_subparsers = job_parser.add_subparsers(
+    title="Valid subcommand", dest="subcmd", required=True
+)
+
+# job list
+job_list_parser = job_subparsers.add_parser(
+    "list", help="List jobs for given project"
+)
+job_list_parser.add_argument(
+    "project_id",
+    help="Project ID",
+)
+
+# job status
+job_status_parser = job_subparsers.add_parser(
+    "status",
+    help="Query status of workflow-execution job",
     argument_default=ap.SUPPRESS,
 )
-workflow_job_status_parser.add_argument(
-    "--job-id",
+job_status_parser.add_argument(
+    "job_id",
     help="Id of the job",
 )
-workflow_job_status_parser.add_argument(
+job_status_parser.add_argument(
     "--do-not-separate-logs",
     dest="do_not_separate_logs",
     help="Show the job logs in the main output, instead of a separate field",
     action="store_true",
+)
+
+# job download-logs
+job_download_logs_parser = job_subparsers.add_parser(
+    "download-logs",
+    help="Download full folder of workflow-execution job",
+)
+job_download_logs_parser.add_argument(
+    "job_id",
+    help="Id of the job",
+)
+job_download_logs_parser.add_argument(
+    "--parent-path",
+    help="Path where the folder should be created",
 )
 
 
