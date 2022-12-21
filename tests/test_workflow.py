@@ -353,16 +353,28 @@ async def test_workflow_apply(
     assert res.retcode == 0
     job_id = res.data["id"]
 
-    # Note: we may want to use a while loop to wait for the failure of the
-    # workflow execution
-
     # Verify that status is failed, and that there is a log
+    cmd = f"workflow job-status --job-id {job_id} --do-not-separate-logs"
+    starting_time = time.perf_counter()
+    while True:
+        res = await invoke(cmd)
+        debug(res.data)
+        assert res.retcode == 0
+        if res.data["status"] == "failed":
+            break
+        await asyncio.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
+    debug(res.data)
+    assert res.data["log"] is not None
+    # Note: the failing task is not added to the history
+    assert len(res.data["history"]) > 0
+
+    # Test job-status default (without --do-not-separate-logs)
     cmd = f"workflow job-status --job-id {job_id}"
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
-    assert res.data["status"] == "failed"
-    assert res.data["log"] is not None
-    # Note: the failing task is not added to the history
-    assert len(res.data["history"]) > 0
-    print(res.data["log"])
+    debug(res.extra_lines)
+    assert "log" not in res.data
+    assert res.extra_lines
+    res.show()
