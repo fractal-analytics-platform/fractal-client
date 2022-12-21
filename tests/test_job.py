@@ -47,7 +47,7 @@ async def test_job_status(
         assert res.data["log"] is None
     elif status == "failed":
         assert "log" not in res.data
-        assert res.extra_lines
+        assert LOG in res.extra_lines
         res.show()
 
     # Check `job status` output with --batch
@@ -64,7 +64,7 @@ async def test_job_status(
         assert res.retcode == 0
         assert res.data["status"] == status
         debug(res.data)
-        assert res.data["log"] is not None
+        assert res.data["log"] == LOG
 
 
 @pytest.mark.xfail(reason="Missing endpoint server side")
