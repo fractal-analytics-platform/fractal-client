@@ -19,7 +19,7 @@ async def test_job_status(
     """
     GIVEN a job entry in the database
     WHEN calling the `job status` command with multiple options
-    THEN the server's response has the expected status and log attributes
+    THEN the client response has the expected status and log attributes
     """
 
     # Create mock Workflow/ApplyWorkflow objects
@@ -65,3 +65,49 @@ async def test_job_status(
         assert res.data["status"] == status
         debug(res.data)
         assert res.data["log"] is not None
+
+
+@pytest.mark.xfail(reason="Missing endpoint server side")
+async def test_job_list(
+    register_user,
+    invoke,
+    tmp_path: Path,
+    project_factory,
+    workflow_factory,
+    job_factory,
+):
+    """
+    GIVEN several job entries in the database
+    WHEN calling the `job list ` command
+    THEN the client response lists the jobs associated to the project
+    """
+
+    # Create mock Project/Workflow/ApplyWorkflow objects
+    pj = await project_factory()
+    project_id = pj.id
+    wf_1 = await workflow_factory(project_id=project_id)
+    wf_2 = await workflow_factory(project_id=project_id)
+    wd_1 = tmp_path / f"workflow_{wf_1.id}"
+    wd_2 = tmp_path / f"workflow_{wf_2.id}"
+    job1 = await job_factory(
+        working_dir=wd_1.as_posix(),
+        worfklow_id=wf_1.id,
+        status="running",
+    )
+    job2 = await job_factory(
+        working_dir=wd_2.as_posix(),
+        worfklow_id=wf_2.id,
+        status="done",
+    )
+    debug(job1)
+    debug(job2)
+
+    # Check `job status` output
+    cmd = f"job list {project_id}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+
+    # FIXME add assertions
+    # FIXME also test --batch option
