@@ -486,8 +486,8 @@ job_download_logs_parser.add_argument(
     help="Id of the job",
 )
 job_download_logs_parser.add_argument(
-    "--parent-path",
-    help="Path where the folder should be created",
+    "--output",
+    help="Path of the output folder",
 )
 
 
