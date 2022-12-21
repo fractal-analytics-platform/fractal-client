@@ -453,9 +453,9 @@ workflow_job_status_parser.add_argument(
     help="Id of the job",
 )
 workflow_job_status_parser.add_argument(
-    "--separate-log",
-    dest="separate_log",
-    help="Show the job log as a separate field, for improved clarity",
+    "--do-not-separate-logs",
+    dest="do_not_separate_logs",
+    help="Show the job logs in the main output, instead of a separate field",
     action="store_true",
 )
 

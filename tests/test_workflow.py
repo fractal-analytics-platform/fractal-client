@@ -354,7 +354,7 @@ async def test_workflow_apply(
     job_id = res.data["id"]
 
     # Verify that status is failed, and that there is a log
-    cmd = f"workflow job-status --job-id {job_id}"
+    cmd = f"workflow job-status --job-id {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     while True:
         res = await invoke(cmd)
@@ -369,11 +369,12 @@ async def test_workflow_apply(
     # Note: the failing task is not added to the history
     assert len(res.data["history"]) > 0
 
-    # Test --separate-log option
-    cmd = f"workflow job-status --job-id {job_id} --separate-log"
+    # Test job-status default (without --do-not-separate-logs)
+    cmd = f"workflow job-status --job-id {job_id}"
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
-    assert "log" not in res.data
     debug(res.extra_lines)
+    assert "log" not in res.data
     assert res.extra_lines
+    res.show()
