@@ -67,7 +67,6 @@ async def test_job_status(
         assert res.data["log"] == LOG
 
 
-@pytest.mark.xfail(reason="Missing endpoint server side")
 async def test_job_list(
     register_user,
     invoke,
@@ -83,8 +82,8 @@ async def test_job_list(
     """
 
     # Create mock Project/Workflow/ApplyWorkflow objects
-    pj = await project_factory()
-    project_id = pj.id
+    res = await invoke("project new prj0 prj_path0")
+    project_id = res.data["id"]
     wf_1 = await workflow_factory(project_id=project_id)
     wf_2 = await workflow_factory(project_id=project_id)
     wd_1 = tmp_path / f"workflow_{wf_1.id}"
@@ -102,18 +101,27 @@ async def test_job_list(
     debug(job1)
     debug(job2)
 
+    # Check `job status` output with --batch option
+    cmd = f"--batch job list {project_id}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+    job_ids = [int(i) for i in res.data.split()]
+    assert job1.id in job_ids
+    assert job2.id in job_ids
+
     # Check `job status` output
     cmd = f"job list {project_id}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
+    # There is not much to assert here, apart from successful invocation of the
+    # command. We add a res.show() for when pytest is run with the -s flag
+    res.show()
 
-    # FIXME add assertions
-    # FIXME also test --batch option
 
-
-@pytest.mark.xfail(reason="Missing endpoint server side")
 async def test_job_download_logs(
     register_user,
     invoke,
@@ -122,13 +130,13 @@ async def test_job_download_logs(
     job_factory,
 ):
     """
-    GIVEN a job entry in the database
-    WHEN calling the `job download-logs` command
-    THEN FIXME
+    Test the `job download-logs` command
     """
 
     # Create mock Workflow/ApplyWorkflow objects
-    wf = await workflow_factory()
+    res = await invoke("project new prj0 prj_path0")
+    project_id = res.data["id"]
+    wf = await workflow_factory(project_id=project_id)
     wd = tmp_path / f"workflow_{wf.id}"
     job = await job_factory(
         working_dir=wd.as_posix(),
@@ -163,5 +171,4 @@ async def test_job_download_logs(
     assert logfile.exists()
     with logfile.open("r") as f:
         contents = f.read()
-    # FIXME: review the following assertion
     assert contents == LOG
