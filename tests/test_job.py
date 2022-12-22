@@ -67,7 +67,6 @@ async def test_job_status(
         assert res.data["log"] == LOG
 
 
-@pytest.mark.xfail(reason="Missing endpoint server side")
 async def test_job_list(
     register_user,
     invoke,
@@ -83,8 +82,8 @@ async def test_job_list(
     """
 
     # Create mock Project/Workflow/ApplyWorkflow objects
-    pj = await project_factory()
-    project_id = pj.id
+    res = await invoke("project new prj0 prj_path0")
+    project_id = res.data["id"]
     wf_1 = await workflow_factory(project_id=project_id)
     wf_2 = await workflow_factory(project_id=project_id)
     wd_1 = tmp_path / f"workflow_{wf_1.id}"
