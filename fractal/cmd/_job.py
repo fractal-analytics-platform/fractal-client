@@ -128,14 +128,12 @@ async def job_download_logs(
 
     # Write response into a temporary zipped file
     zipped_archive_path = output + "_tmp.zip"
-    print(zipped_archive_path)
     with open(zipped_archive_path, "wb") as f:
         f.write(res.content)
 
     # Unzip the log archive
     unzipped_archived_path = output
     os.mkdir(unzipped_archived_path)
-    print(unzipped_archived_path)
     with ZipFile(zipped_archive_path, mode="r") as zipfile:
         zipfile.extractall(path=unzipped_archived_path)
 
