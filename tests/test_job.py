@@ -101,15 +101,25 @@ async def test_job_list(
     debug(job1)
     debug(job2)
 
+    # Check `job status` output with --batch option
+    cmd = f"--batch job list {project_id}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+    job_ids = [int(i) for i in res.data.split()]
+    assert job1.id in job_ids
+    assert job2.id in job_ids
+
     # Check `job status` output
     cmd = f"job list {project_id}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
-
-    # FIXME add assertions
-    # FIXME also test --batch option
+    # There is not much to assert here, apart from successful invocation of the
+    # command. We add a res.show() for when pytest is run with the -s flag
+    res.show()
 
 
 @pytest.mark.xfail(reason="Missing endpoint server side")
