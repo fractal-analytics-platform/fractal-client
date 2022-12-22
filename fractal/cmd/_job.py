@@ -1,10 +1,13 @@
 from pathlib import Path
 
+from rich.table import Table
+
 from ..authclient import AuthClient
 from ..common.schemas import ApplyWorkflowRead
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
+from ..interface import RichConsoleInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
 
@@ -45,7 +48,32 @@ async def job_list(
     **kwargs,
 ) -> BaseInterface:
 
-    raise NotImplementedError("job_list not implemented")
+    res = await client.get(f"{settings.BASE_URL}/project/{project_id}/jobs/")
+    jobs = check_response(res, expected_status_code=200)
+    # Coerce to ApplyWorkflowRead
+    jobs = [ApplyWorkflowRead(**job) for job in jobs]
+
+    if batch:
+        job_ids = " ".join(str(job.id) for job in jobs)
+        return PrintInterface(retcode=0, data=job_ids)
+    else:
+        table = Table(title=f"Job list for project {project_id}")
+        kwargs = dict(style="white", justify="center")
+        table.add_column("id", **kwargs)
+        table.add_column("start_timestamp", **kwargs)
+        table.add_column("status", **kwargs)
+        table.add_column("workflow_id", **kwargs)
+        table.add_column("working_dir", **kwargs)
+
+        for j in jobs:
+            table.add_row(
+                str(j.id),
+                j.sanitised_dict()["start_timestamp"],
+                j.status,
+                str(j.workflow_id),
+                j.working_dir,
+            )
+        return RichConsoleInterface(retcode=0, data=table)
 
 
 async def job_download_logs(
