@@ -130,9 +130,7 @@ async def test_job_download_logs(
     job_factory,
 ):
     """
-    GIVEN a job entry in the database
-    WHEN calling the `job download-logs` command
-    THEN FIXME
+    Test the `job download-logs` command
     """
 
     # Create mock Workflow/ApplyWorkflow objects
@@ -173,5 +171,4 @@ async def test_job_download_logs(
     assert logfile.exists()
     with logfile.open("r") as f:
         contents = f.read()
-    # FIXME: review the following assertion
     assert contents == LOG
