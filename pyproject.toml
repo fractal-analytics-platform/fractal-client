@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fractal-client"
-version = "1.0.0a7"
+version = "1.0.0a8"
 description = "Client and common components of the Fractal analytics platform"
 authors = [
     "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
@@ -40,7 +40,7 @@ build-backend = "poetry.core.masonry.api"
 asyncio_mode = "auto"
 
 [tool.bumpver]
-current_version = "1.0.0a7"
+current_version = "1.0.0a8"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
