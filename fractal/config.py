@@ -10,6 +10,7 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import logging
 from os import getenv
 
 from dotenv import load_dotenv
@@ -32,6 +33,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Fractal client"
     PROJECT_VERSION: str = __VERSION__
 
+    FRACTAL_LOGGING_LEVEL: int = logging.INFO
+
     FRACTAL_USER: str = fail_getenv("FRACTAL_USER")
     FRACTAL_PASSWORD: str = fail_getenv("FRACTAL_PASSWORD")
     SLURM_USER: str = fail_getenv("SLURM_USER")
@@ -43,3 +46,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+logging.basicConfig(level=settings.FRACTAL_LOGGING_LEVEL)
