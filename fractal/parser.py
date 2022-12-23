@@ -487,7 +487,9 @@ job_download_logs_parser.add_argument(
 )
 job_download_logs_parser.add_argument(
     "--output",
+    dest="output_folder",
     help="Path of the output folder",
+    required=True,
 )
 
 

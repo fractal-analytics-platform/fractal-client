@@ -83,14 +83,14 @@ async def job_list(
 async def job_download_logs(
     client: AuthClient,
     job_id: int,
-    output: str,
+    output_folder: str,
     **kwargs,
 ) -> BaseInterface:
 
-    # Check that output folder does not already exist
-    if Path(output).exists():
+    # Check that output_folder does not already exist
+    if Path(output_folder).exists():
         return PrintInterface(
-            retcode=1, data=f"ERROR: {output} already exists"
+            retcode=1, data=f"ERROR: {output_folder=} already exists"
         )
 
     # Send request to server
@@ -127,12 +127,12 @@ async def job_download_logs(
         exit(1)
 
     # Write response into a temporary zipped file
-    zipped_archive_path = output + "_tmp.zip"
+    zipped_archive_path = output_folder + "_tmp.zip"
     with open(zipped_archive_path, "wb") as f:
         f.write(res.content)
 
     # Unzip the log archive
-    unzipped_archived_path = output
+    unzipped_archived_path = output_folder
     os.mkdir(unzipped_archived_path)
     with ZipFile(zipped_archive_path, mode="r") as zipfile:
         zipfile.extractall(path=unzipped_archived_path)
@@ -141,5 +141,5 @@ async def job_download_logs(
     os.unlink(zipped_archive_path)
 
     return PrintInterface(
-        retcode=0, data=f"Logs downloaded to {output} folder"
+        retcode=0, data=f"Logs downloaded to {output_folder=}"
     )
