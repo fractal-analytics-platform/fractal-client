@@ -55,6 +55,8 @@ async def project(
             metadata_filename=kwargs.pop("metadata"),
             **kwargs,
         )
+    else:
+        raise NoCommandError(f"Command project {subcmd} not found")
 
     return iface
 
@@ -94,6 +96,8 @@ async def dataset(
             dataset_id=dataset_id,
             dataset_update_dict=dataset_update_dict,
         )
+    else:
+        raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
 
 
@@ -144,6 +148,8 @@ async def task(
         iface = await task_collection_check(client, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
+    else:
+        raise NoCommandError(f"Command task {subcmd} not found")
     return iface
 
 
@@ -168,6 +174,8 @@ async def workflow(
         iface = await workflow_remove_task(client, **kwargs)
     elif subcmd == "apply":
         iface = await workflow_apply(client, **kwargs)
+    else:
+        raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface
 
 
@@ -180,6 +188,8 @@ async def job(
         iface = await job_status(client, batch=batch, **kwargs)
     elif subcmd == "download-logs":
         iface = await job_download_logs(client, **kwargs)
+    else:
+        raise NoCommandError(f"Command job {subcmd} not found")
     return iface
 
 
