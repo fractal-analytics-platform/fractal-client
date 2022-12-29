@@ -112,6 +112,12 @@ async def test_add_task(
     assert res.data["task_list"][0]["args"] == ARGS
     assert res.data["task_list"][0]["meta"] == META
 
+    cmd = f"--batch workflow add-task {wf.id} {t.id}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+
 
 async def test_add_task_by_name(
     invoke,
