@@ -70,9 +70,10 @@ async def job_list(
         table.add_column("working_dir", **kwargs)
 
         for j in jobs:
+            timestamp = j.dict()["start_timestamp"]
             table.add_row(
                 str(j.id),
-                j.sanitised_dict()["start_timestamp"],
+                timestamp.strftime("%Y-%m-%d %H:%M:%S"),
                 j.status,
                 str(j.workflow_id),
                 j.working_dir,
