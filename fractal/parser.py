@@ -15,7 +15,7 @@ Zurich.
 import argparse as ap
 
 
-parser_main = ap.ArgumentParser(description="Fractal Analytics Framework")
+parser_main = ap.ArgumentParser(description="Client component of Fractal")
 
 parser_main.add_argument(
     "-u",
