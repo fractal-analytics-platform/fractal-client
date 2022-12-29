@@ -52,6 +52,7 @@ parser_main.add_argument(
 
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 
+
 # REGISTER GROUP
 register_parser = subparsers_main.add_parser(
     "register", help="Register with the Fractal server"
@@ -65,6 +66,8 @@ register_parser.add_argument(
     "--password",
     help=("Password for the new user"),
 )
+
+
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser("project", help="project commands")
 project_subparsers = project_parser.add_subparsers(
@@ -105,10 +108,12 @@ project_show_parser.add_argument(
     "project_id", type=int, help="Id of project to show"
 )
 
-
 # project delete
 project_delete_parser = project_subparsers.add_parser(
     "delete", help="Delete project"
+)
+project_delete_parser.add_argument(
+    "project_id", type=int, help="Id of project to delete"
 )
 
 # project add-dataset
@@ -198,6 +203,13 @@ dataset_show_parser = dataset_subparsers.add_parser(
 dataset_show_parser.add_argument("project_id", type=int, help="Project id")
 dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset id")
 
+# dataset delete
+dataset_delete_parser = dataset_subparsers.add_parser(
+    "delete", help="Delete dataset", argument_default=ap.SUPPRESS
+)
+dataset_delete_parser.add_argument("project_id", type=int, help="Project id")
+dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset id")
+
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser("task", help="task commands")
@@ -257,7 +269,6 @@ task_check_collection_parser.add_argument(
     help="Also include task-collection logs",
 )
 
-
 # task edit
 task_edit_parser = task_subparsers.add_parser(
     "edit", help="Edit task", argument_default=ap.SUPPRESS
@@ -277,6 +288,15 @@ task_edit_parser.add_argument(
 task_edit_parser.add_argument(
     "--default-args", help="Filename containing JSON encoded default arguments"
 )
+
+# task delete
+task_delete_parser = task_subparsers.add_parser(
+    "delete", help="Delete task", argument_default=ap.SUPPRESS
+)
+task_delete_parser.add_argument(
+    "task_id_or_name", help="ID or name of task to delete", type=str
+)
+
 
 # WORKFLOW GROUP
 
@@ -309,10 +329,10 @@ workflow_list_parser.add_argument(
 )
 
 # workflow delete
-workflow_new_parser = workflow_subparsers.add_parser(
+workflow_delete_parser = workflow_subparsers.add_parser(
     "delete", help="Delete workflow"
 )
-workflow_new_parser.add_argument(
+workflow_delete_parser.add_argument(
     "workflow_id",
     help="Workflow id",
 )
@@ -355,7 +375,6 @@ workflow_add_task_parser.add_argument(
     ),
 )
 
-
 # workflow edit task
 workflow_edit_task_parser = workflow_subparsers.add_parser(
     "edit-task", help="Edit a task within a specific workflow"
@@ -382,7 +401,6 @@ workflow_edit_task_parser.add_argument(
         "ovverrides of the task"
     ),
 )
-
 
 # workflow remove task
 workflow_remove_task_parser = workflow_subparsers.add_parser(
