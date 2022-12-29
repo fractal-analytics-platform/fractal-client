@@ -146,7 +146,9 @@ async def workflow_add_task(
     )
 
     if batch:
-        return PrintInterface(retcode=0, data="")
+        return PrintInterface(
+            retcode=0, data=f"Added task {task_id} to workflow {workflow.id}"
+        )
     else:
         return RichJsonInterface(retcode=0, data=workflow.dict())
 
