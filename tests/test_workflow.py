@@ -117,6 +117,9 @@ async def test_add_task(
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
+    # Note: this check will change if we include some actual information (e.g.
+    # a WorkflowTask id) in the --batch case
+    assert not res.data
 
 
 async def test_add_task_by_name(
