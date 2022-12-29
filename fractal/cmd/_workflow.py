@@ -114,6 +114,7 @@ async def workflow_add_task(
     client: AuthClient,
     *,
     id: int,
+    batch: bool = False,
     task_id_or_name: str,
     order: int = None,
     args_file: Optional[str] = None,
@@ -144,7 +145,10 @@ async def workflow_add_task(
         res, expected_status_code=201, coerce=WorkflowRead
     )
 
-    return RichJsonInterface(retcode=0, data=workflow.dict())
+    if batch:
+        return PrintInterface(retcode=0, data="")
+    else:
+        return RichJsonInterface(retcode=0, data=workflow.dict())
 
 
 async def workflow_edit_task(
