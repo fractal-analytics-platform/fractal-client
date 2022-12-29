@@ -85,3 +85,16 @@ async def task_edit(
     )
     new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
     return RichJsonInterface(retcode=0, data=new_task.dict())
+
+
+async def task_delete(
+    client: AuthClient, task_id: int, **kwargs
+) -> PrintInterface:
+
+    raise NotImplementedError("task_delete")
+
+    # res = await client.delete(
+    #    f"{settings.BASE_URL}/xxxx"
+    # )
+    # check_response(res, expected_status_code=204)
+    # return PrintInterface(retcode=0, data="")
