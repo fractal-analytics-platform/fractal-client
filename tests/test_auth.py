@@ -22,7 +22,7 @@ async def test_auth_fail(client):
         await auth()
 
 
-async def test_auth_registerd(client, register_user):
+async def test_auth_registered(client, register_user):
     """
     GIVEN no user registered
     WHEN when fetching a token
