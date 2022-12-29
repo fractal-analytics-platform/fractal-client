@@ -55,7 +55,6 @@ async def task_collect_pip(
 async def task_collection_check(
     client: AuthClient, *, state_id: int, include_logs: bool, **kwargs
 ) -> BaseInterface:
-
     res = await client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
     )
