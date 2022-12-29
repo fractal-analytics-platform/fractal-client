@@ -184,6 +184,7 @@ async def job(
 
 
 async def version(client: AsyncClient, **kwargs) -> PrintInterface:
+
     res = await client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
     data = res.json()
 

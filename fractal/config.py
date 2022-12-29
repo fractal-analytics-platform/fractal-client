@@ -46,4 +46,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-logging.basicConfig(level=settings.FRACTAL_LOGGING_LEVEL)
