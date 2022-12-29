@@ -267,11 +267,6 @@ task_edit_parser.add_argument(
 )
 task_edit_parser.add_argument("--name", help="New task name")
 task_edit_parser.add_argument(
-    "--resource-type",
-    choices=["task", "workflow"],
-    help="New resource type",
-)
-task_edit_parser.add_argument(
     "--input-type",
     help="New input type",
 )
