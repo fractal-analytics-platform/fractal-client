@@ -167,7 +167,7 @@ async def workflow(
     elif subcmd == "delete":
         iface = await workflow_delete(client, **kwargs)
     elif subcmd == "add-task":
-        iface = await workflow_add_task(client, **kwargs)
+        iface = await workflow_add_task(client, batch=batch, **kwargs)
     elif subcmd == "edit-task":
         iface = await workflow_edit_task(client, **kwargs)
     elif subcmd == "rm-task":

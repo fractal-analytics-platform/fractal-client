@@ -53,10 +53,10 @@ async def task_collect_pip(
 
 
 async def task_collection_check(
-    client: AuthClient, *, state_id: int, verbose: bool, **kwargs
+    client: AuthClient, *, state_id: int, include_logs: bool, **kwargs
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/task/collect/{state_id}?verbose={verbose}"
+        f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
     )
     state = check_response(res, expected_status_code=200, coerce=StateRead)
     return RichJsonInterface(retcode=0, data=state.sanitised_dict())

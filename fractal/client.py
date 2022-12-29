@@ -28,12 +28,16 @@ from .interface import PrintInterface
 from .parser import parser_main
 
 
-logging.basicConfig(level=logging.DEBUG)
-
-
 async def handle(cli_args: List[str] = argv):
     args = parser_main.parse_args(cli_args[1:])
-    logging.debug(args)
+
+    # Set logging level
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=settings.FRACTAL_LOGGING_LEVEL)
+
+    logging.debug(f"Arguments: {args}")
 
     if args.cmd:
         handler = getattr(cmd, args.cmd)

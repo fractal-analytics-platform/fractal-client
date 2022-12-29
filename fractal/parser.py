@@ -15,7 +15,7 @@ Zurich.
 import argparse as ap
 
 
-parser_main = ap.ArgumentParser(description="Fractal Analytics Framework")
+parser_main = ap.ArgumentParser(description="Client component of Fractal")
 
 parser_main.add_argument(
     "-u",
@@ -27,10 +27,11 @@ parser_main.add_argument(
 )
 parser_main.add_argument("-s", "--slurm_user", help="Slurm user")
 parser_main.add_argument(
+    "--verbose",
     "-v",
-    action="count",
-    default=0,
-    help="Use one or more time to increase verbosity level",
+    action="store_true",
+    default=False,
+    help="Change minimal logging level from default to DEBUG",
 )
 parser_main.add_argument(
     "--batch",
@@ -250,10 +251,10 @@ task_check_collection_parser.add_argument(
     help="State ID of the collection (see output of task collect)",
 )
 task_check_collection_parser.add_argument(
-    "--verbose",
+    "--include-logs",
     default=False,
     action="store_true",
-    help="Output more verbose output",
+    help="Also include task-collection logs",
 )
 
 
@@ -495,5 +496,5 @@ job_download_logs_parser.add_argument(
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
-    "version", help="Print verison and exit"
+    "version", help="Print version and exit"
 )

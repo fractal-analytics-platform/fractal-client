@@ -11,10 +11,11 @@ COLLECTION_TIMEOUT = 15.0
 async def test_task_collection_and_list(register_user, invoke, testdata_path):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
+
     WHEN the collection subcommand is called
     THEN
         * the collection is initiated in the background
-        * the server returns immediately and the client displays the
+        * the server returns immediately
 
     WHEN the list command is called
     THEN the tasks collected are shown
@@ -34,15 +35,19 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     starting_time = time.perf_counter()
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
+        assert res1.retcode == 0
         res1.show()
         await asyncio.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+    assert res1.data["data"]["log"] is None
 
-    res2 = await invoke(f"task check-collection {state_id} --verbose")
-    debug(res2)
+    # Add --include-logs flag
+    res2 = await invoke(f"task check-collection {state_id} --include-logs")
+    assert res2.retcode == 0
     res2.show()
+    assert res2.data["data"]["log"] is not None
     assert res2.data["data"]["status"] == "OK"
 
     # LIST
