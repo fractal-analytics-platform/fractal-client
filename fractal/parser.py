@@ -313,7 +313,7 @@ workflow_new_parser = workflow_subparsers.add_parser(
     "delete", help="Delete workflow"
 )
 workflow_new_parser.add_argument(
-    "id",
+    "workflow_id",
     help="Workflow id",
 )
 
@@ -322,7 +322,7 @@ workflow_new_parser = workflow_subparsers.add_parser(
     "show", help="Show a workflow"
 )
 workflow_new_parser.add_argument(
-    "id",
+    "workflow_id",
     help="Workflow id",
 )
 
@@ -331,7 +331,7 @@ workflow_add_task_parser = workflow_subparsers.add_parser(
     "add-task", help="Add a new task to a specific workflow"
 )
 workflow_add_task_parser.add_argument(
-    "id",
+    "workflow_id",
     help="Workflow id",
 )
 workflow_add_task_parser.add_argument(
@@ -361,7 +361,7 @@ workflow_edit_task_parser = workflow_subparsers.add_parser(
     "edit-task", help="Edit a task within a specific workflow"
 )
 workflow_edit_task_parser.add_argument(
-    "id",
+    "workflow_id",
     help="Workflow id",
 )
 workflow_edit_task_parser.add_argument(
@@ -389,7 +389,7 @@ workflow_remove_task_parser = workflow_subparsers.add_parser(
     "rm-task", help="Remove a task in a specific workflow"
 )
 workflow_remove_task_parser.add_argument(
-    "id",
+    "workflow_id",
     help="Workflow id",
 )
 workflow_remove_task_parser.add_argument(
@@ -402,7 +402,7 @@ workflow_edit_parser = workflow_subparsers.add_parser(
     "edit", help="Edit workflow", argument_default=ap.SUPPRESS
 )
 workflow_edit_parser.add_argument(
-    "id",
+    "workflow_id",
     help="Workflow id",
 )
 workflow_edit_parser.add_argument("--name", help="New workflow name")
