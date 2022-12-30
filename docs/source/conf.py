@@ -18,7 +18,7 @@ copyright = (
     "2022, Friedrich Miescher Institute for Biomedical Research and "
     "University of Zurich"
 )
-version = "1.0.0"
+version = "1.0.0a9"
 language = "en"
 
 # -- General configuration ---------------------------------------------------
@@ -26,13 +26,7 @@ language = "en"
 
 extensions = [
     'sphinxarg.ext',
-#    "sphinx.ext.autodoc",
-#    "sphinx.ext.autosummary",
-#    "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
-#    "sphinx_autodoc_typehints",
-#    "autodocsumm",
-#    "sphinx_autodoc_defaultargs",
 ]
 
 templates_path = ['_templates']
@@ -42,8 +36,6 @@ exclude_patterns = [
     'sphinxarg.ext',
 
 ]
-
-
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
