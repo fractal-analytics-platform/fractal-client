@@ -55,7 +55,23 @@ async def test_edit_dataset(register_user, invoke):
     # provided are indeed not updated
 
 
+async def test_delete_dataset(register_user, invoke):
+    # Create a project with its default dataset
+    res = await invoke("project new prj0 prj_path0")
+    project_id = res.data["id"]
+    dataset_id = res.data["dataset_list"][0]["id"]
+
+    # Delete dataset
+    res = await invoke(f"dataset delete {project_id} {dataset_id}")
+
+    # Check that dataset show fails
+    res = await invoke(f"dataset show {project_id} {dataset_id}")
+    res.show()
+    assert res.retcode == 1
+
+
 async def test_show_dataset(register_user, invoke):
+    # Create a project with its default dataset
     res = await invoke("project new prj0 prj_path0")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
