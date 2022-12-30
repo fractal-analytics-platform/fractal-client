@@ -127,10 +127,8 @@ async def project_delete(
     client: AuthClient, project_id: int, **kwargs
 ) -> PrintInterface:
 
-    raise NotImplementedError("project_delete")
-
-    # res = await client.delete(
-    #    f"{settings.BASE_URL}/project/{project_id}",
-    # )
-    # check_response(res, expected_status_code=204)
-    # return PrintInterface(retcode=0, data="")
+    res = await client.delete(
+        f"{settings.BASE_URL}/project/{project_id}",
+    )
+    check_response(res, expected_status_code=204)
+    return PrintInterface(retcode=0, data="")
