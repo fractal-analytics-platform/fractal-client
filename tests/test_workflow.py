@@ -150,6 +150,33 @@ async def test_add_task(
     assert res.data.startswith("Added")
 
 
+async def test_remove_task(
+    invoke,
+    register_user,
+    task_factory,
+    workflow_factory,
+    tmp_path: Path,
+):
+    # Create workflow and task
+    wf = await workflow_factory()
+    t = await task_factory()
+
+    # Add task to workflow, twice
+    cmd = f"workflow add-task {wf.id} {t.id}"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    workflow_task_id_1 = res.data["task_list"][0]["id"]
+
+    # Remove task 1 from workflow
+    cmd = f"workflow rm-task {wf.id} {workflow_task_id_1}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+
+
 async def test_add_task_by_name(
     invoke,
     register_user,
