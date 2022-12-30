@@ -1,3 +1,4 @@
+import pytest
 from devtools import debug
 
 
@@ -8,6 +9,26 @@ async def test_project_create(register_user, invoke):
     debug(res)
     assert res.data["name"] == PROJECT_NAME
     assert res.data["project_dir"] == PROJECT_PATH
+
+
+async def test_project_delete(register_user, invoke):
+
+    # Create project
+    res = await invoke("project new MyProj1 /some/path/1")
+    res.show()
+    project_id_1 = res.data["id"]
+
+    # Show project
+    res = await invoke(f"project show {project_id_1}")
+    res.show()
+
+    # Delete project
+    res = await invoke(f"project delete {project_id_1}")
+    assert res.retcode == 0
+
+    # Try to show deleted project, and fail
+    with pytest.raises(SystemExit):
+        res = await invoke(f"project show {project_id_1}")
 
 
 async def test_project_create_batch(register_user, invoke):
