@@ -1,19 +1,11 @@
-from pathlib import Path
-from typing import Any
-from typing import List
-
-from sphinx.application import Sphinx
-from sphinx.ext import apidoc
-
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Fractal Client'
+project = "Fractal Client"
 copyright = (
     "2022, Friedrich Miescher Institute for Biomedical Research and "
     "University of Zurich"
@@ -25,22 +17,21 @@ language = "en"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinxarg.ext',
+    "sphinxarg.ext",
     "sphinx_rtd_theme",
 ]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinxarg.ext',
-
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinxarg.ext",
 ]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "logo_only": False,
     "sticky_navigation": True,
