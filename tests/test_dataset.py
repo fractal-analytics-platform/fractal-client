@@ -65,9 +65,8 @@ async def test_delete_dataset(register_user, invoke):
     res = await invoke(f"dataset delete {project_id} {dataset_id}")
 
     # Check that dataset show fails
-    res = await invoke(f"dataset show {project_id} {dataset_id}")
-    res.show()
-    assert res.retcode == 1
+    with pytest.raises(SystemExit):
+        res = await invoke(f"dataset show {project_id} {dataset_id}")
 
 
 async def test_show_dataset(register_user, invoke):
