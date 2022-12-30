@@ -597,14 +597,14 @@ sqlmodel = "*"
 
 [[package]]
 name = "fractal-server"
-version = "1.0.0b9"
+version = "1.0.0b10"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fractal_server-1.0.0b9-py3-none-any.whl", hash = "sha256:28773ba3ab2dd1d6dcd626b6219f8df3b1b160e9348acaabe9a1d1dd9fb41e4c"},
-    {file = "fractal_server-1.0.0b9.tar.gz", hash = "sha256:238713625a73fa8de314f357c4bea3439522354ceaac29e114dd86bc466748ed"},
+    {file = "fractal_server-1.0.0b10-py3-none-any.whl", hash = "sha256:3d41a9805f1da81f90a6b57b09e8f07184e0bb5cf075d3cc48f58d84808671fa"},
+    {file = "fractal_server-1.0.0b10.tar.gz", hash = "sha256:afcd64753f4513cbe3804026485c23aaa8c1f1d38cfe139c7f936edb2ed6465f"},
 ]
 
 [package.dependencies]
@@ -1727,4 +1727,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "e56e526a9d7183108414e5d3c6989e701996f901ba60b03890df7d8d60446665"
+content-hash = "c1fb17261f4ceac618f8d1d3af87e39f863de394e9cfb183ef00056b62d778ea"
