@@ -153,7 +153,7 @@ async def workflow_factory(db, project_factory, register_user):
 
 @pytest.fixture
 async def job_factory(db):
-    from fractal_server.app.models.run import ApplyWorkflow
+    from fractal_server.app.models.job import ApplyWorkflow
 
     async def _job_factory(**job_args_override):
         job_args = dict(

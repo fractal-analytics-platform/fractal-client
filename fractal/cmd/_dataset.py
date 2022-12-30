@@ -100,7 +100,7 @@ async def dataset_show(
     client: AuthClient, *, project_id: int, dataset_id: int, **kwargs
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/dataset/{project_id}/{dataset_id}"
+        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}"
     )
     from rich.console import Group
 
