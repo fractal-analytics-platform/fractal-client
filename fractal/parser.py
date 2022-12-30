@@ -153,7 +153,7 @@ dataset_add_resource_parser.add_argument(
     "-g", "--glob-pattern", help="Glob pattern"
 )
 
-# dataset add-resource
+# dataset rm-resource
 dataset_rm_resource_parser = dataset_subparsers.add_parser(
     "rm-resource", help="Remove resource to existing dataset"
 )
