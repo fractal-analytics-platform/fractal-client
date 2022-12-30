@@ -134,3 +134,14 @@ async def dataset_show(
             )
         group = Group(table, table_res)
         return RichConsoleInterface(retcode=0, data=group)
+
+
+async def dataset_delete(
+    client: AuthClient, project_id: int, dataset_id: int, **kwargs
+) -> PrintInterface:
+
+    res = await client.delete(
+        f"{settings.BASE_URL}/project/{project_id}/{dataset_id}"
+    )
+    check_response(res, expected_status_code=204)
+    return PrintInterface(retcode=0, data="")

@@ -91,10 +91,10 @@ async def workflow_list(
 async def workflow_delete(
     client: AuthClient,
     *,
-    id: int,
+    workflow_id: int,
     **kwargs,
 ) -> BaseInterface:
-    res = await client.delete(f"{settings.BASE_URL}/workflow/{id}")
+    res = await client.delete(f"{settings.BASE_URL}/workflow/{workflow_id}")
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
 
@@ -102,10 +102,10 @@ async def workflow_delete(
 async def workflow_show(
     client: AuthClient,
     *,
-    id: int,
+    workflow_id: int,
     **kwargs,
 ) -> RichJsonInterface:
-    res = await client.get(f"{settings.BASE_URL}/workflow/{id}")
+    res = await client.get(f"{settings.BASE_URL}/workflow/{workflow_id}")
     workflow = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=workflow)
 
@@ -113,7 +113,7 @@ async def workflow_show(
 async def workflow_add_task(
     client: AuthClient,
     *,
-    id: int,
+    workflow_id: int,
     batch: bool = False,
     task_id_or_name: str,
     order: int = None,
@@ -138,7 +138,7 @@ async def workflow_add_task(
             workflow_task.meta = meta
 
     res = await client.post(
-        f"{settings.BASE_URL}/workflow/{id}/add-task/",
+        f"{settings.BASE_URL}/workflow/{workflow_id}/add-task/",
         json=workflow_task.dict(),
     )
     workflow = check_response(
@@ -156,7 +156,7 @@ async def workflow_add_task(
 async def workflow_edit_task(
     client: AuthClient,
     *,
-    id: int,
+    workflow_id: int,
     workflow_task_id: int,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
@@ -168,7 +168,7 @@ async def workflow_edit_task(
     # method within argparse).
     if not (args_file or meta_file):
         raise ValueError(
-            "At least one of {args_file,meta_file} arguments is " "required"
+            "At least one of {args_file,meta_file} arguments is required"
         )
 
     # Combine args/meta payload
@@ -184,7 +184,8 @@ async def workflow_edit_task(
 
     payload_update = WorkflowTaskUpdate(**payload)
     res = await client.patch(
-        f"{settings.BASE_URL}/workflow/{id}/edit-task/{workflow_task_id}",
+        f"{settings.BASE_URL}/"
+        f"workflow/{workflow_id}/edit-task/{workflow_task_id}",
         json=payload_update.dict(exclude_unset=True),
     )
     workflow_task = check_response(
@@ -197,13 +198,14 @@ async def workflow_edit_task(
 async def workflow_remove_task(
     client: AuthClient,
     *,
-    id: int,
+    workflow_id: int,
     workflow_task_id: int,
     **kwargs,
 ) -> BaseInterface:
 
     res = await client.delete(
-        f"{settings.BASE_URL}/workflow/{id}/rm-task/{workflow_task_id}"
+        f"{settings.BASE_URL}/"
+        f"workflow/{workflow_id}/rm-task/{workflow_task_id}"
     )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
@@ -212,7 +214,7 @@ async def workflow_remove_task(
 async def workflow_edit(
     client: AuthClient,
     *,
-    id: str,
+    workflow_id: int,
     **workflow_update_dict,
 ) -> BaseInterface:
     workflow_update = WorkflowUpdate(**workflow_update_dict)
@@ -221,7 +223,7 @@ async def workflow_edit(
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        f"{settings.BASE_URL}/workflow/{id}", json=payload
+        f"{settings.BASE_URL}/workflow/{workflow_id}", json=payload
     )
     new_workflow = check_response(
         res, expected_status_code=200, coerce=WorkflowRead

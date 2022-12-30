@@ -8,6 +8,7 @@ from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
 from ._dataset import dataset_add_resource
+from ._dataset import dataset_delete
 from ._dataset import dataset_delete_resource
 from ._dataset import dataset_edit
 from ._dataset import dataset_show
@@ -16,10 +17,12 @@ from ._job import job_list
 from ._job import job_status
 from ._project import project_add_dataset
 from ._project import project_create
+from ._project import project_delete
 from ._project import project_list
 from ._project import project_show
 from ._task import task_collect_pip
 from ._task import task_collection_check
+from ._task import task_delete
 from ._task import task_edit
 from ._task import task_list
 from ._workflow import workflow_add_task
@@ -55,6 +58,8 @@ async def project(
             metadata_filename=kwargs.pop("metadata"),
             **kwargs,
         )
+    elif subcmd == "delete":
+        iface = await project_delete(client, **kwargs)
     else:
         raise NoCommandError(f"Command project {subcmd} not found")
 
@@ -96,6 +101,8 @@ async def dataset(
             dataset_id=dataset_id,
             dataset_update_dict=dataset_update_dict,
         )
+    elif subcmd == "delete":
+        iface = await dataset_delete(client, **kwargs)
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
@@ -148,6 +155,8 @@ async def task(
         iface = await task_collection_check(client, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
+    elif subcmd == "delete":
+        iface = await task_delete(client, **kwargs)
     else:
         raise NoCommandError(f"Command task {subcmd} not found")
     return iface

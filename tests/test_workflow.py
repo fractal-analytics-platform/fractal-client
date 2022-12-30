@@ -25,6 +25,34 @@ async def test_workflow_new(register_user, invoke):
     assert res_wf.data["project_id"] == res_pj.data["id"]
 
 
+async def test_workflow_delete(register_user, invoke):
+    # Create project
+    res_pj = await invoke("project new project_name /some/path")
+    assert res_pj.retcode == 0
+    project_id = res_pj.data["id"]
+
+    # Create workflow
+    res_wf = await invoke(f"workflow new MyWorkflow {project_id}")
+    workflow_id = res_wf.data["id"]
+    assert res_wf.retcode == 0
+
+    # List workflows
+    res_list = await invoke(f"workflow list {project_id}")
+    assert res_list.retcode == 0
+    debug(res_list.data)
+    assert len(res_list.data) == 1
+
+    # Delete workflow
+    res_delete = await invoke(f"workflow delete {workflow_id}")
+    assert res_delete.retcode == 0
+
+    # List workflows
+    res_list = await invoke(f"workflow list {project_id}")
+    assert res_list.retcode == 0
+    debug(res_list.data)
+    assert len(res_list.data) == 0
+
+
 async def test_workflow_list(register_user, invoke):
     PROJECT_NAME = "project_name"
     PROJECT_PATH = "project_path"
@@ -120,6 +148,33 @@ async def test_add_task(
     # Note: this check will change if we include some actual information (e.g.
     # a WorkflowTask id) in the --batch case
     assert res.data.startswith("Added")
+
+
+async def test_remove_task(
+    invoke,
+    register_user,
+    task_factory,
+    workflow_factory,
+    tmp_path: Path,
+):
+    # Create workflow and task
+    wf = await workflow_factory()
+    t = await task_factory()
+
+    # Add task to workflow, twice
+    cmd = f"workflow add-task {wf.id} {t.id}"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    workflow_task_id_1 = res.data["task_list"][0]["id"]
+
+    # Remove task 1 from workflow
+    cmd = f"workflow rm-task {wf.id} {workflow_task_id_1}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
 
 
 async def test_add_task_by_name(
