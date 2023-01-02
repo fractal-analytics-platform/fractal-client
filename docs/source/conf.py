@@ -2,8 +2,7 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+# Project information
 
 project = "Fractal Client"
 copyright = (
@@ -13,12 +12,12 @@ copyright = (
 version = "1.0.0a10"
 language = "en"
 
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+# General configuration
 
 extensions = [
     "sphinxarg.ext",
     "sphinx_rtd_theme",
+    "myst_parser",
 ]
 
 templates_path = ["_templates"]
@@ -28,8 +27,7 @@ exclude_patterns = [
     "sphinxarg.ext",
 ]
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+# Options for HTML output
 
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
@@ -41,3 +39,7 @@ html_theme_options = {
     "display_version": True,
     "style_external_links": True,
 }
+
+# Disable python default syntax highlighting (see
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-highlight_language)
+highlight_language = "none"

@@ -6,4 +6,3 @@ fractal workflow
    :func: parser_main
    :prog: fractal
    :path: workflow
-   
