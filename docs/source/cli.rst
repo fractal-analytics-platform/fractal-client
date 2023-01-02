@@ -11,10 +11,10 @@ Fractal CLI
 .. toctree::
    :maxdepth: 1
 
-   fractal version <cli/version>
-   fractal register  <cli/register>
-   fractal project <cli/project>
-   fractal dataset <cli/dataset>
-   fractal workflow <cli/workflow>
-   fractal job <cli/job>
-   fractal task <cli/task>
+   fractal version <cli_files/version>
+   fractal register  <cli_files/register>
+   fractal project <cli_files/project>
+   fractal dataset <cli_files/dataset>
+   fractal workflow <cli_files/workflow>
+   fractal job <cli_files/job>
+   fractal task <cli_files/task>
