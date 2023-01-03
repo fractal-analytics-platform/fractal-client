@@ -300,13 +300,23 @@ task_delete_parser.add_argument(
 
 # WORKFLOW GROUP
 
-# workflow new
 workflow_parser = subparsers_main.add_parser(
     "workflow", help="workflow commands"
 )
 workflow_subparsers = workflow_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
 )
+
+# workflow list
+workflow_list_parser = workflow_subparsers.add_parser(
+    "list", help="List workflows for given project"
+)
+workflow_list_parser.add_argument(
+    "project_id",
+    help="Project ID",
+)
+
+# workflow new
 workflow_new_parser = workflow_subparsers.add_parser(
     "new", help="Create new workflow"
 )
@@ -319,13 +329,29 @@ workflow_new_parser.add_argument(
     help="Project ID",
 )
 
-# workflow list
-workflow_list_parser = workflow_subparsers.add_parser(
-    "list", help="List workflows for given project"
+# workflow show
+workflow_new_parser = workflow_subparsers.add_parser(
+    "show", help="Show a workflow"
 )
-workflow_list_parser.add_argument(
-    "project_id",
-    help="Project ID",
+workflow_new_parser.add_argument(
+    "workflow_id",
+    help="Workflow id",
+)
+
+# workflow edit (currently only supporting a name change)
+workflow_edit_parser = workflow_subparsers.add_parser(
+    "edit", help="Edit workflow", argument_default=ap.SUPPRESS
+)
+workflow_edit_parser.add_argument(
+    "workflow_id",
+    type=int,
+    help="Workflow id",
+)
+workflow_edit_parser.add_argument("--name", type=str, help="New workflow name")
+workflow_edit_parser.add_argument(
+    "--project-id",
+    type=int,
+    help="ID of the project to be associated with the current workflow",
 )
 
 # workflow delete
@@ -337,14 +363,6 @@ workflow_delete_parser.add_argument(
     help="Workflow id",
 )
 
-# workflow show
-workflow_new_parser = workflow_subparsers.add_parser(
-    "show", help="Show a workflow"
-)
-workflow_new_parser.add_argument(
-    "workflow_id",
-    help="Workflow id",
-)
 
 # workflow add task
 workflow_add_task_parser = workflow_subparsers.add_parser(
@@ -413,22 +431,6 @@ workflow_remove_task_parser.add_argument(
 workflow_remove_task_parser.add_argument(
     "workflow_task_id",
     help="Workflow task ID, the ID of a task inside the list of tasks",
-)
-
-# workflow edit (currently only supporting a name change)
-workflow_edit_parser = workflow_subparsers.add_parser(
-    "edit", help="Edit workflow name", argument_default=ap.SUPPRESS
-)
-workflow_edit_parser.add_argument(
-    "workflow_id",
-    type=int,
-    help="Workflow id",
-)
-workflow_edit_parser.add_argument("--name", type=str, help="New workflow name")
-workflow_edit_parser.add_argument(
-    "--project-id",
-    type=int,
-    help="Change the project associated with the current workflow",
 )
 
 # workflow apply
