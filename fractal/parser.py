@@ -39,7 +39,7 @@ parser_main.add_argument(
     action="store_true",
     help=(
         "Return output suitable for scripting, e.g., "
-        "only the id of items created instead of the full object."
+        "only the ID of items created instead of the full object."
     ),
 )
 parser_main.add_argument(
@@ -143,10 +143,10 @@ dataset_add_resource_parser = dataset_subparsers.add_parser(
     "add-resource", help="Add resource to existing dataset"
 )
 dataset_add_resource_parser.add_argument(
-    "project_id", type=int, help="Project id"
+    "project_id", type=int, help="Project ID"
 )
 dataset_add_resource_parser.add_argument(
-    "dataset_id", type=int, help="Dataset id"
+    "dataset_id", type=int, help="Dataset ID"
 )
 dataset_add_resource_parser.add_argument("path", help="Path to resource")
 dataset_add_resource_parser.add_argument(
@@ -158,21 +158,21 @@ dataset_rm_resource_parser = dataset_subparsers.add_parser(
     "rm-resource", help="Remove resource to existing dataset"
 )
 dataset_rm_resource_parser.add_argument(
-    "project_id", type=int, help="Project id"
+    "project_id", type=int, help="Project ID"
 )
 dataset_rm_resource_parser.add_argument(
-    "dataset_id", type=int, help="Dataset id"
+    "dataset_id", type=int, help="Dataset ID"
 )
 dataset_rm_resource_parser.add_argument(
-    "resource_id", type=int, help="Resource id"
+    "resource_id", type=int, help="Resource ID"
 )
 
 # dataset edit
 dataset_edit_parser = dataset_subparsers.add_parser(
     "edit", help="Edit dataset", argument_default=ap.SUPPRESS
 )
-dataset_edit_parser.add_argument("project_id", type=int, help="Project id")
-dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset id")
+dataset_edit_parser.add_argument("project_id", type=int, help="Project ID")
+dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID")
 dataset_edit_parser.add_argument("--name", help="New name of dataset")
 dataset_edit_parser.add_argument("--path", help="New path of dataset")
 dataset_edit_parser.add_argument(
@@ -200,15 +200,15 @@ dataset_edit_parser.add_argument("-t", "--type", help="Dataset type")
 dataset_show_parser = dataset_subparsers.add_parser(
     "show", help="Show dataset", argument_default=ap.SUPPRESS
 )
-dataset_show_parser.add_argument("project_id", type=int, help="Project id")
-dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset id")
+dataset_show_parser.add_argument("project_id", type=int, help="Project ID")
+dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset ID")
 
 # dataset delete
 dataset_delete_parser = dataset_subparsers.add_parser(
     "delete", help="Delete dataset", argument_default=ap.SUPPRESS
 )
-dataset_delete_parser.add_argument("project_id", type=int, help="Project id")
-dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset id")
+dataset_delete_parser.add_argument("project_id", type=int, help="Project ID")
+dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset ID")
 
 
 # TASK GROUP
@@ -335,17 +335,17 @@ workflow_new_parser = workflow_subparsers.add_parser(
 )
 workflow_new_parser.add_argument(
     "workflow_id",
-    help="Workflow id",
+    help="Workflow ID",
 )
 
-# workflow edit (currently only supporting a name change)
+# workflow edit
 workflow_edit_parser = workflow_subparsers.add_parser(
     "edit", help="Edit workflow", argument_default=ap.SUPPRESS
 )
 workflow_edit_parser.add_argument(
     "workflow_id",
     type=int,
-    help="Workflow id",
+    help="Workflow ID",
 )
 workflow_edit_parser.add_argument("--name", type=str, help="New workflow name")
 workflow_edit_parser.add_argument(
@@ -360,7 +360,7 @@ workflow_delete_parser = workflow_subparsers.add_parser(
 )
 workflow_delete_parser.add_argument(
     "workflow_id",
-    help="Workflow id",
+    help="Workflow ID",
 )
 
 
@@ -370,7 +370,7 @@ workflow_add_task_parser = workflow_subparsers.add_parser(
 )
 workflow_add_task_parser.add_argument(
     "workflow_id",
-    help="Workflow id",
+    help="Workflow ID",
 )
 workflow_add_task_parser.add_argument(
     "task_id_or_name", help="ID or name of the new task", type=str
@@ -399,7 +399,7 @@ workflow_edit_task_parser = workflow_subparsers.add_parser(
 )
 workflow_edit_task_parser.add_argument(
     "workflow_id",
-    help="Workflow id",
+    help="Workflow ID",
 )
 workflow_edit_task_parser.add_argument(
     "workflow_task_id",
@@ -426,7 +426,7 @@ workflow_remove_task_parser = workflow_subparsers.add_parser(
 )
 workflow_remove_task_parser.add_argument(
     "workflow_id",
-    help="Workflow id",
+    help="Workflow ID",
 )
 workflow_remove_task_parser.add_argument(
     "workflow_task_id",
@@ -440,7 +440,7 @@ workflow_apply_parser = workflow_subparsers.add_parser(
 workflow_apply_parser.add_argument("workflow_id")
 workflow_apply_parser.add_argument("input_dataset_id")
 workflow_apply_parser.add_argument(
-    "-o", "--output_dataset_id", help="Output dataset id"
+    "-o", "--output_dataset_id", help="Output dataset ID"
 )
 workflow_apply_parser.add_argument(
     "--overwrite-input",
