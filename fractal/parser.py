@@ -55,7 +55,7 @@ subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 
 # REGISTER GROUP
 register_parser = subparsers_main.add_parser(
-    "register", help="Register with the Fractal server"
+    "register", description="Register with the Fractal server"
 )
 register_parser.add_argument("email", help="Email to be used as username")
 register_parser.add_argument(
@@ -69,14 +69,16 @@ register_parser.add_argument(
 
 
 # PROJECT GROUP
-project_parser = subparsers_main.add_parser("project", help="project commands")
+project_parser = subparsers_main.add_parser(
+    "project", description="project commands"
+)
 project_subparsers = project_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
 )
 
 # project new
 project_new_parser = project_subparsers.add_parser(
-    "new", help="Create new project"
+    "new", description="Create new project"
 )
 project_new_parser.add_argument("name", help="Name of new project", type=str)
 project_new_parser.add_argument(
@@ -97,12 +99,12 @@ project_new_parser.add_argument(
 
 # project list
 project_list_parser = project_subparsers.add_parser(
-    "list", help="List projects"
+    "list", description="List projects"
 )
 
 # project show
 project_show_parser = project_subparsers.add_parser(
-    "show", help="Show details of a single project"
+    "show", description="Show details of single project"
 )
 project_show_parser.add_argument(
     "project_id", type=int, help="ID of project to show"
@@ -110,7 +112,7 @@ project_show_parser.add_argument(
 
 # project delete
 project_delete_parser = project_subparsers.add_parser(
-    "delete", help="Delete project"
+    "delete", description="Delete project"
 )
 project_delete_parser.add_argument(
     "project_id", type=int, help="ID of project to delete"
@@ -118,7 +120,7 @@ project_delete_parser.add_argument(
 
 # project add-dataset
 project_add_dataset_parser = project_subparsers.add_parser(
-    "add-dataset", help="Add dataset to project"
+    "add-dataset", description="Add dataset to project"
 )
 project_add_dataset_parser.add_argument(
     "project_id", type=int, help="ID of project to add the new dataset to"
@@ -133,14 +135,16 @@ project_add_dataset_parser.add_argument(
 
 
 # DATASET GROUP
-dataset_parser = subparsers_main.add_parser("dataset", help="dataset commands")
+dataset_parser = subparsers_main.add_parser(
+    "dataset", description="dataset commands"
+)
 dataset_subparsers = dataset_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
 )
 
 # dataset add-resource
 dataset_add_resource_parser = dataset_subparsers.add_parser(
-    "add-resource", help="Add resource to existing dataset"
+    "add-resource", description="Add resource to existing dataset"
 )
 dataset_add_resource_parser.add_argument(
     "project_id", type=int, help="Project ID"
@@ -155,7 +159,7 @@ dataset_add_resource_parser.add_argument(
 
 # dataset rm-resource
 dataset_rm_resource_parser = dataset_subparsers.add_parser(
-    "rm-resource", help="Remove resource to existing dataset"
+    "rm-resource", description="Remove resource to existing dataset"
 )
 dataset_rm_resource_parser.add_argument(
     "project_id", type=int, help="Project ID"
@@ -169,7 +173,7 @@ dataset_rm_resource_parser.add_argument(
 
 # dataset edit
 dataset_edit_parser = dataset_subparsers.add_parser(
-    "edit", help="Edit dataset", argument_default=ap.SUPPRESS
+    "edit", description="Edit dataset", argument_default=ap.SUPPRESS
 )
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID")
@@ -198,32 +202,32 @@ dataset_edit_parser.add_argument("-t", "--type", help="Dataset type")
 
 # dataset show
 dataset_show_parser = dataset_subparsers.add_parser(
-    "show", help="Show dataset", argument_default=ap.SUPPRESS
+    "show", description="Show dataset", argument_default=ap.SUPPRESS
 )
 dataset_show_parser.add_argument("project_id", type=int, help="Project ID")
 dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset ID")
 
 # dataset delete
 dataset_delete_parser = dataset_subparsers.add_parser(
-    "delete", help="Delete dataset", argument_default=ap.SUPPRESS
+    "delete", description="Delete dataset", argument_default=ap.SUPPRESS
 )
 dataset_delete_parser.add_argument("project_id", type=int, help="Project ID")
 dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset ID")
 
 
 # TASK GROUP
-task_parser = subparsers_main.add_parser("task", help="task commands")
+task_parser = subparsers_main.add_parser("task", description="task commands")
 task_subparsers = task_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
 )
 
 # task list
-task_list_parser = task_subparsers.add_parser("list", help="List tasks")
+task_list_parser = task_subparsers.add_parser("list", description="List tasks")
 
 # task collect
 task_collect_parser = task_subparsers.add_parser(
     "collect",
-    help="Install and collect all tasks a pip installable package exposes",
+    description="Install and collect all tasks from a pip-installable package",
 )
 task_collect_parser.add_argument(
     "package",
@@ -256,7 +260,7 @@ task_collect_parser.add_argument(
 # task check-collection
 task_check_collection_parser = task_subparsers.add_parser(
     "check-collection",
-    help="Check status of background task collection processes",
+    description="Check status of background task collection processes",
 )
 task_check_collection_parser.add_argument(
     "state_id",
@@ -271,7 +275,7 @@ task_check_collection_parser.add_argument(
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(
-    "edit", help="Edit task", argument_default=ap.SUPPRESS
+    "edit", description="Edit task", argument_default=ap.SUPPRESS
 )
 task_edit_parser.add_argument(
     "task_id_or_name", help="ID or name of task to edit", type=str
@@ -291,7 +295,7 @@ task_edit_parser.add_argument(
 
 # task delete
 task_delete_parser = task_subparsers.add_parser(
-    "delete", help="Delete task", argument_default=ap.SUPPRESS
+    "delete", description="Delete task", argument_default=ap.SUPPRESS
 )
 task_delete_parser.add_argument(
     "task_id_or_name", help="ID or name of task to delete", type=str
@@ -301,7 +305,7 @@ task_delete_parser.add_argument(
 # WORKFLOW GROUP
 
 workflow_parser = subparsers_main.add_parser(
-    "workflow", help="workflow commands"
+    "workflow", description="workflow commands"
 )
 workflow_subparsers = workflow_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
@@ -309,7 +313,7 @@ workflow_subparsers = workflow_parser.add_subparsers(
 
 # workflow list
 workflow_list_parser = workflow_subparsers.add_parser(
-    "list", help="List workflows for given project"
+    "list", description="List workflows for given project"
 )
 workflow_list_parser.add_argument(
     "project_id",
@@ -318,7 +322,7 @@ workflow_list_parser.add_argument(
 
 # workflow new
 workflow_new_parser = workflow_subparsers.add_parser(
-    "new", help="Create new workflow"
+    "new", description="Create new workflow"
 )
 workflow_new_parser.add_argument(
     "name",
@@ -331,7 +335,7 @@ workflow_new_parser.add_argument(
 
 # workflow show
 workflow_new_parser = workflow_subparsers.add_parser(
-    "show", help="Show a workflow"
+    "show", description="Show workflow"
 )
 workflow_new_parser.add_argument(
     "workflow_id",
@@ -340,7 +344,7 @@ workflow_new_parser.add_argument(
 
 # workflow edit
 workflow_edit_parser = workflow_subparsers.add_parser(
-    "edit", help="Edit workflow", argument_default=ap.SUPPRESS
+    "edit", description="Edit workflow", argument_default=ap.SUPPRESS
 )
 workflow_edit_parser.add_argument(
     "workflow_id",
@@ -356,7 +360,7 @@ workflow_edit_parser.add_argument(
 
 # workflow delete
 workflow_delete_parser = workflow_subparsers.add_parser(
-    "delete", help="Delete workflow"
+    "delete", description="Delete workflow"
 )
 workflow_delete_parser.add_argument(
     "workflow_id",
@@ -366,7 +370,7 @@ workflow_delete_parser.add_argument(
 
 # workflow add task
 workflow_add_task_parser = workflow_subparsers.add_parser(
-    "add-task", help="Add a new task to a specific workflow"
+    "add-task", description="Add new task to specific workflow"
 )
 workflow_add_task_parser.add_argument(
     "workflow_id",
@@ -381,21 +385,21 @@ workflow_add_task_parser.add_argument(
 workflow_add_task_parser.add_argument(
     "--args-file",
     help=(
-        "Path to a json serialised file containing the arguments "
+        "Path to json serialised file containing the arguments "
         "ovverrides of the task"
     ),
 )
 workflow_add_task_parser.add_argument(
     "--meta-file",
     help=(
-        "Path to a json serialised file containing the meta"
+        "Path to json serialised file containing the meta"
         "ovverrides of the task"
     ),
 )
 
 # workflow edit task
 workflow_edit_task_parser = workflow_subparsers.add_parser(
-    "edit-task", help="Edit a task within a specific workflow"
+    "edit-task", description="Edit task within specific workflow"
 )
 workflow_edit_task_parser.add_argument(
     "workflow_id",
@@ -408,21 +412,21 @@ workflow_edit_task_parser.add_argument(
 workflow_edit_task_parser.add_argument(
     "--args-file",
     help=(
-        "Path to a json serialised file containing the arguments "
+        "Path to json serialised file containing the arguments "
         "ovverrides of the task"
     ),
 )
 workflow_edit_task_parser.add_argument(
     "--meta-file",
     help=(
-        "Path to a json serialised file containing the meta "
+        "Path to json serialised file containing the meta "
         "ovverrides of the task"
     ),
 )
 
 # workflow remove task
 workflow_remove_task_parser = workflow_subparsers.add_parser(
-    "rm-task", help="Remove a task in a specific workflow"
+    "rm-task", description="Remove task from a specific workflow"
 )
 workflow_remove_task_parser.add_argument(
     "workflow_id",
@@ -430,12 +434,14 @@ workflow_remove_task_parser.add_argument(
 )
 workflow_remove_task_parser.add_argument(
     "workflow_task_id",
-    help="Workflow task ID, the ID of a task inside the list of tasks",
+    help="Workflow task ID (the ID of a task inside the list of tasks)",
 )
 
 # workflow apply
 workflow_apply_parser = workflow_subparsers.add_parser(
-    "apply", help="Apply workflow to dataset", argument_default=ap.SUPPRESS
+    "apply",
+    description="Apply workflow to dataset",
+    argument_default=ap.SUPPRESS,
 )
 workflow_apply_parser.add_argument("workflow_id")
 workflow_apply_parser.add_argument("input_dataset_id")
@@ -462,14 +468,14 @@ workflow_apply_parser.add_argument(
 
 # JOB GROUP
 
-job_parser = subparsers_main.add_parser("job", help="job commands")
+job_parser = subparsers_main.add_parser("job", description="job commands")
 job_subparsers = job_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
 )
 
 # job list
 job_list_parser = job_subparsers.add_parser(
-    "list", help="List jobs for given project"
+    "list", description="List jobs for given project"
 )
 job_list_parser.add_argument(
     "project_id",
@@ -479,7 +485,7 @@ job_list_parser.add_argument(
 # job status
 job_status_parser = job_subparsers.add_parser(
     "status",
-    help="Query status of workflow-execution job",
+    description="Query status of workflow-execution job",
     argument_default=ap.SUPPRESS,
 )
 job_status_parser.add_argument(
@@ -496,7 +502,7 @@ job_status_parser.add_argument(
 # job download-logs
 job_download_logs_parser = job_subparsers.add_parser(
     "download-logs",
-    help="Download full folder of workflow-execution job",
+    description="Download full folder of workflow-execution job",
 )
 job_download_logs_parser.add_argument(
     "job_id",
@@ -512,5 +518,5 @@ job_download_logs_parser.add_argument(
 
 # VERSION GROUP
 version_parser = subparsers_main.add_parser(
-    "version", help="Print version and exit"
+    "version", description="Print version and exit"
 )
