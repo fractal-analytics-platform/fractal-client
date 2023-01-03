@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "fractal-client"
 version = "1.0.0a10"
-description = "Client and common components of the Fractal analytics platform"
+description = "Client component of the Fractal analytics platform"
 authors = [
     "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
     "Marco Franzon <marco.franzon@exact-lab.it>",
