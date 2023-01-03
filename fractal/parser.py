@@ -105,7 +105,7 @@ project_show_parser = project_subparsers.add_parser(
     "show", help="Show details of a single project"
 )
 project_show_parser.add_argument(
-    "project_id", type=int, help="Id of project to show"
+    "project_id", type=int, help="ID of project to show"
 )
 
 # project delete
@@ -113,7 +113,7 @@ project_delete_parser = project_subparsers.add_parser(
     "delete", help="Delete project"
 )
 project_delete_parser.add_argument(
-    "project_id", type=int, help="Id of project to delete"
+    "project_id", type=int, help="ID of project to delete"
 )
 
 # project add-dataset
@@ -121,7 +121,7 @@ project_add_dataset_parser = project_subparsers.add_parser(
     "add-dataset", help="Add dataset to project"
 )
 project_add_dataset_parser.add_argument(
-    "project_id", type=int, help="Id of project to add the new dataset to"
+    "project_id", type=int, help="ID of project to add the new dataset to"
 )
 project_add_dataset_parser.add_argument(
     "dataset_name", help="Name of new dataset"
@@ -385,7 +385,7 @@ workflow_edit_task_parser.add_argument(
 )
 workflow_edit_task_parser.add_argument(
     "workflow_task_id",
-    help="Workflow task Id, the Id of a task inside the list of tasks",
+    help="Workflow task ID, the ID of a task inside the list of tasks",
 )
 workflow_edit_task_parser.add_argument(
     "--args-file",
@@ -412,7 +412,7 @@ workflow_remove_task_parser.add_argument(
 )
 workflow_remove_task_parser.add_argument(
     "workflow_task_id",
-    help="Workflow task Id, the Id of a task inside the list of tasks",
+    help="Workflow task ID, the ID of a task inside the list of tasks",
 )
 
 # workflow edit (currently only supporting a name change)
@@ -449,7 +449,7 @@ workflow_apply_parser.add_argument(
 workflow_apply_parser.add_argument(
     "-p",
     "--project-id",
-    help="Id of project the workflow and dataset belong to",
+    help="ID of project the workflow and dataset belong to",
 )
 workflow_apply_parser.add_argument(
     "-w",
@@ -482,7 +482,7 @@ job_status_parser = job_subparsers.add_parser(
 )
 job_status_parser.add_argument(
     "job_id",
-    help="Id of the job",
+    help="ID of the job",
 )
 job_status_parser.add_argument(
     "--do-not-separate-logs",
@@ -498,7 +498,7 @@ job_download_logs_parser = job_subparsers.add_parser(
 )
 job_download_logs_parser.add_argument(
     "job_id",
-    help="Id of the job",
+    help="ID of the job",
 )
 job_download_logs_parser.add_argument(
     "--output",

@@ -55,7 +55,7 @@ async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
     projects = [ProjectRead(**item) for item in res]
 
     table = Table(title="Project List")
-    table.add_column("Id", style="cyan", no_wrap=True)
+    table.add_column("ID", style="cyan", no_wrap=True)
     table.add_column("Name", style="magenta")
     table.add_column("Proj. Dir.", justify="right", style="green")
     table.add_column("Dataset list", style="white")
