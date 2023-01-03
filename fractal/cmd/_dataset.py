@@ -110,7 +110,7 @@ async def dataset_show(
         return RichJsonInterface(retcode=0, data=dataset.dict())
     else:
         table = Table(title="Dataset")
-        table.add_column("Id", style="cyan", no_wrap=True)
+        table.add_column("ID", style="cyan", no_wrap=True)
         table.add_column("Name", justify="right", style="green")
         table.add_column("Type", style="white")
         table.add_column("Meta", justify="center")

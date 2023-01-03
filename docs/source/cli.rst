@@ -1,5 +1,5 @@
-Fractal CLI
-===================
+Command-line interface for Fractal Client
+=========================================
 
 .. argparse::
    :filename: fractal/parser.py
