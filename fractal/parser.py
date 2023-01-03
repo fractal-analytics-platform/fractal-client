@@ -15,7 +15,9 @@ Zurich.
 import argparse as ap
 
 
-parser_main = ap.ArgumentParser(description="Client component of Fractal")
+parser_main = ap.ArgumentParser(
+    description="Command-line interface for Fractal Client"
+)
 
 parser_main.add_argument(
     "-u",
