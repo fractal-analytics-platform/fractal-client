@@ -53,6 +53,10 @@ async def test_workflow_delete(register_user, invoke):
     assert len(res_list.data) == 0
 
 
+async def test_workflow_edit(register_user, invoke):
+    pass
+
+
 async def test_workflow_list(register_user, invoke):
     PROJECT_NAME = "project_name"
     PROJECT_PATH = "project_path"
@@ -103,7 +107,7 @@ async def test_workflow_list_when_two_projects_exist(
     assert len(res_list_2.data) == NUM_WF_PROJECT_2
 
 
-async def test_add_task(
+async def test_workflow_add_task(
     invoke,
     register_user,
     task_factory,
@@ -150,34 +154,7 @@ async def test_add_task(
     assert res.data.startswith("Added")
 
 
-async def test_remove_task(
-    invoke,
-    register_user,
-    task_factory,
-    workflow_factory,
-    tmp_path: Path,
-):
-    # Create workflow and task
-    wf = await workflow_factory()
-    t = await task_factory()
-
-    # Add task to workflow, twice
-    cmd = f"workflow add-task {wf.id} {t.id}"
-    res = await invoke(cmd)
-    assert res.retcode == 0
-    res = await invoke(cmd)
-    assert res.retcode == 0
-    workflow_task_id_1 = res.data["task_list"][0]["id"]
-
-    # Remove task 1 from workflow
-    cmd = f"workflow rm-task {wf.id} {workflow_task_id_1}"
-    debug(cmd)
-    res = await invoke(cmd)
-    assert res.retcode == 0
-    debug(res.data)
-
-
-async def test_add_task_by_name(
+async def test_workflow_add_task_by_name(
     invoke,
     register_user,
     task_factory,
@@ -203,7 +180,7 @@ async def test_add_task_by_name(
     assert res.data["task_list"][0]["id"] == task.id
 
 
-async def test_task_cache_fails_for_non_unique_names(
+async def test_task_cache_with_non_unique_names(
     invoke,
     register_user,
     task_factory,
@@ -241,7 +218,34 @@ async def test_task_cache_fails_for_non_unique_names(
         res = await invoke(cmd)
 
 
-async def test_edit_workflow_task(
+async def test_workflow_rm_task(
+    invoke,
+    register_user,
+    task_factory,
+    workflow_factory,
+    tmp_path: Path,
+):
+    # Create workflow and task
+    wf = await workflow_factory()
+    t = await task_factory()
+
+    # Add task to workflow, twice
+    cmd = f"workflow add-task {wf.id} {t.id}"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    workflow_task_id_1 = res.data["task_list"][0]["id"]
+
+    # Remove task 1 from workflow
+    cmd = f"workflow rm-task {wf.id} {workflow_task_id_1}"
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+
+
+async def test_workflow_edit_task(
     invoke,
     register_user,
     task_factory,
