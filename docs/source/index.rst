@@ -18,6 +18,6 @@ This documentation concerns the **Fractal Client**. Find more information about 
    :caption: Contents:
 
    Home page <self>
-   How to install <install>
+   Installation and usage <install>
    Command-line interface <cli>
    How to contribute <contribute>
