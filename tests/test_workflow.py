@@ -54,7 +54,48 @@ async def test_workflow_delete(register_user, invoke):
 
 
 async def test_workflow_edit(register_user, invoke):
-    pass
+    # Create two projects
+    res_pj_1 = await invoke("project new project_name_1 /some/path")
+    res_pj_2 = await invoke("project new project_name_2 /some/path")
+    assert res_pj_1.retcode == 0
+    assert res_pj_2.retcode == 0
+    project_id_1 = res_pj_1.data["id"]
+    project_id_2 = res_pj_2.data["id"]
+
+    # Add a workflow to project 1
+    res_wf = await invoke(f"workflow new MyWorkflow {project_id_1}")
+    workflow_id = res_wf.data["id"]
+    assert res_wf.retcode == 0
+
+    # List workflows
+    res_list_1 = await invoke(f"workflow list {project_id_1}")
+    res_list_2 = await invoke(f"workflow list {project_id_2}")
+    assert res_list_1.retcode == 0
+    assert res_list_2.retcode == 0
+    assert len(res_list_1.data) == 1
+    assert len(res_list_2.data) == 0
+    assert res_list_1.data[0]["id"] == workflow_id
+
+    # Edit workflow's name and project
+    NAME = "New workflow name"
+    cmd = (
+        f"workflow edit {workflow_id} "
+        f'--name "{NAME}" --project-id {project_id_2}'
+    )
+    debug(cmd)
+    res_edit = await invoke(cmd)
+    assert res_edit.retcode == 0
+    debug(res_edit.data)
+
+    # List workflows, and check edit
+    res_list_1 = await invoke(f"workflow list {project_id_1}")
+    res_list_2 = await invoke(f"workflow list {project_id_2}")
+    assert res_list_1.retcode == 0
+    assert res_list_2.retcode == 0
+    assert len(res_list_1.data) == 0
+    assert len(res_list_2.data) == 1
+    assert res_list_2.data[0]["id"] == workflow_id
+    assert res_list_2.data[0]["name"] == NAME
 
 
 async def test_workflow_list(register_user, invoke):
