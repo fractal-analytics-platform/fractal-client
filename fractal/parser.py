@@ -397,7 +397,7 @@ workflow_edit_task_parser.add_argument(
 workflow_edit_task_parser.add_argument(
     "--meta-file",
     help=(
-        "Path to a json serialised file containing the meta"
+        "Path to a json serialised file containing the meta "
         "ovverrides of the task"
     ),
 )
