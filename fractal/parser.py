@@ -72,7 +72,7 @@ register_parser.add_argument(
 
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser(
-    "project", description="project commands"
+    "project", description="Project commands"
 )
 project_subparsers = project_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
@@ -138,7 +138,7 @@ project_add_dataset_parser.add_argument(
 
 # DATASET GROUP
 dataset_parser = subparsers_main.add_parser(
-    "dataset", description="dataset commands"
+    "dataset", description="Dataset commands"
 )
 dataset_subparsers = dataset_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
@@ -218,7 +218,7 @@ dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset ID")
 
 
 # TASK GROUP
-task_parser = subparsers_main.add_parser("task", description="task commands")
+task_parser = subparsers_main.add_parser("task", description="Task commands")
 task_subparsers = task_parser.add_subparsers(
     title="Valid subcommands:", dest="subcmd", required=True
 )
@@ -307,7 +307,7 @@ task_delete_parser.add_argument(
 # WORKFLOW GROUP
 
 workflow_parser = subparsers_main.add_parser(
-    "workflow", description="workflow commands"
+    "workflow", description="Workflow commands"
 )
 workflow_subparsers = workflow_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
@@ -470,7 +470,7 @@ workflow_apply_parser.add_argument(
 
 # JOB GROUP
 
-job_parser = subparsers_main.add_parser("job", description="job commands")
+job_parser = subparsers_main.add_parser("job", description="Job commands")
 job_subparsers = job_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
 )
