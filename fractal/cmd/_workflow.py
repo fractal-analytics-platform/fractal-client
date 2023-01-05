@@ -141,16 +141,14 @@ async def workflow_add_task(
         f"{settings.BASE_URL}/workflow/{workflow_id}/add-task/",
         json=workflow_task.dict(),
     )
-    workflow = check_response(
-        res, expected_status_code=201, coerce=WorkflowRead
+    workflow_task = check_response(
+        res, expected_status_code=201, coerce=WorkflowTaskRead
     )
 
     if batch:
-        return PrintInterface(
-            retcode=0, data=f"Added task {task_id} to workflow {workflow.id}"
-        )
+        return PrintInterface(retcode=0, data=str(workflow_task.id))
     else:
-        return RichJsonInterface(retcode=0, data=workflow.dict())
+        return RichJsonInterface(retcode=0, data=workflow_task.dict())
 
 
 async def workflow_edit_task(
