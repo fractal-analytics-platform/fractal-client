@@ -421,7 +421,7 @@ async def test_workflow_apply(
     res = await invoke(f"workflow add-task {workflow_id} {TASK_ID}")
     assert res.retcode == 0
     debug(res.data)
-    TASK_NAME = res.data["task_list"][0]["task"]["name"]
+    TASK_NAME = res.data["task"]["name"]
     debug(TASK_NAME)
 
     cmd = (
