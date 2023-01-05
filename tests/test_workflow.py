@@ -157,14 +157,17 @@ async def test_workflow_add_task(
 ):
     """
     GIVEN a workflow
-    WHEN the client is invoked to add a task, including custom args
+    WHEN
+        the client is invoked to add a task, with several different options
+        (custom args, custom meta, --batch)
     THEN
-        the WorkflowTask is correctly registered in the db, including custom
-        args
+        the WorkflowTask's are correctly registered in the db, and the returned
+        object has the right properties
     """
     wf = await workflow_factory()
     t = await task_factory()
 
+    # Add a WorkflowTask with --args-file and --meta-file arguments
     ARGS = {"arg": "arg_value"}
     META = {"executor": "some-executor"}
     args_file = tmp_path / "args_file.json"
@@ -173,7 +176,6 @@ async def test_workflow_add_task(
     meta_file = tmp_path / "meta_file.json"
     with meta_file.open("w") as f:
         json.dump(META, f)
-
     cmd = (
         f"workflow add-task {wf.id} {t.id} "
         f"--args-file {args_file} --meta-file {meta_file}"
@@ -181,18 +183,28 @@ async def test_workflow_add_task(
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
-    debug(res.data)
-    assert res.data["task_list"][0]["args"] == ARGS
-    assert res.data["task_list"][0]["meta"] == META
+    workflow_task = res.data
+    workflow_task_id_1 = workflow_task["id"]
+    debug(workflow_task)
+    assert workflow_task["args"] == ARGS
+    assert workflow_task["meta"] == META
 
+    # Add a WorkflowTask with the --batch option
     cmd = f"--batch workflow add-task {wf.id} {t.id}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
-    # Note: this check will change if we include some actual information (e.g.
-    # a WorkflowTask id) in the --batch case
-    assert res.data.startswith("Added")
+    workflow_task_id_2 = int(res.data)
+
+    # Check that the WorkflowTask's in Workflow.task_list have the correct IDs
+    cmd = f"workflow show {wf.id}"
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    workflow = res.data
+    debug(workflow)
+    list_IDs = [wftask["id"] for wftask in workflow["task_list"]]
+    assert list_IDs == [workflow_task_id_1, workflow_task_id_2]
 
 
 async def test_workflow_add_task_by_name(
@@ -216,9 +228,8 @@ async def test_workflow_add_task_by_name(
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
-    debug(res)
     debug(res.data)
-    assert res.data["task_list"][0]["id"] == task.id
+    assert res.data["task"]["id"] == task.id
 
 
 async def test_task_cache_with_non_unique_names(
@@ -276,7 +287,7 @@ async def test_workflow_rm_task(
     assert res.retcode == 0
     res = await invoke(cmd)
     assert res.retcode == 0
-    workflow_task_id_1 = res.data["task_list"][0]["id"]
+    workflow_task_id_1 = res.data["id"]
 
     # Remove task 1 from workflow
     cmd = f"workflow rm-task {wf.id} {workflow_task_id_1}"
