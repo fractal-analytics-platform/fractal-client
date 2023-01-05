@@ -497,3 +497,8 @@ job_download_logs_parser.add_argument(
 version_parser = subparsers_main.add_parser(
     "version", help="Print verison and exit"
 )
+
+# WHOAMI GROUP
+whoami_parser = subparsers_main.add_parser(
+    "whoami", help="Check registration to the Fractal server"
+)
