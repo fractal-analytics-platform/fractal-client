@@ -332,7 +332,7 @@ async def test_workflow_edit_task(
 
     # Edit workflow task
     debug(res.data)
-    workflow_task_id = res.data["task_list"][0]["id"]
+    workflow_task_id = res.data["id"]
     cmd = (
         f"workflow edit-task {wf.id} {workflow_task_id} "
         f"--args-file {args_file} --meta-file {meta_file}"
