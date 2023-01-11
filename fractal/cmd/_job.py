@@ -15,7 +15,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def job_status(
+async def job_show(
     client: AuthClient,
     job_id: int,
     batch: bool = False,
