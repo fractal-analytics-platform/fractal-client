@@ -8,7 +8,7 @@ LOG = "Here are some logs"
 
 
 @pytest.mark.parametrize("status", ["done", "failed"])
-async def test_job_status(
+async def test_job_show(
     register_user,
     invoke,
     tmp_path: Path,
@@ -18,7 +18,7 @@ async def test_job_status(
 ):
     """
     GIVEN a job entry in the database
-    WHEN calling the `job status` command with multiple options
+    WHEN calling the `job show` command with multiple options
     THEN the client response has the expected status and log attributes
     """
 
@@ -36,8 +36,8 @@ async def test_job_status(
     )
     debug(job)
 
-    # Check `job status` output
-    cmd = f"job status {job.id}"
+    # Check `job show` output
+    cmd = f"job show {job.id}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
@@ -50,15 +50,15 @@ async def test_job_status(
         assert LOG in res.extra_lines
         res.show()
 
-    # Check `job status` output with --batch
-    cmd = f"--batch job status {job.id}"
+    # Check `job show` output with --batch
+    cmd = f"--batch job show {job.id}"
     res = await invoke(cmd)
     assert res.retcode == 0
     assert res.data == status
 
-    # Check `job status` output with `--do-not-separate-logs`
+    # Check `job show` output with `--do-not-separate-logs`
     if status == "failed":
-        cmd = f"job status {job.id} --do-not-separate-logs"
+        cmd = f"job show {job.id} --do-not-separate-logs"
         res = await invoke(cmd)
         debug(res.data)
         assert res.retcode == 0
@@ -101,7 +101,7 @@ async def test_job_list(
     debug(job1)
     debug(job2)
 
-    # Check `job status` output with --batch option
+    # Check `job list` output with --batch option
     cmd = f"--batch job list {project_id}"
     debug(cmd)
     res = await invoke(cmd)
@@ -111,7 +111,7 @@ async def test_job_list(
     assert job1.id in job_ids
     assert job2.id in job_ids
 
-    # Check `job status` output
+    # Check `job list` output
     cmd = f"job list {project_id}"
     debug(cmd)
     res = await invoke(cmd)

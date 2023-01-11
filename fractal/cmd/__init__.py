@@ -14,7 +14,7 @@ from ._dataset import dataset_edit
 from ._dataset import dataset_show
 from ._job import job_download_logs
 from ._job import job_list
-from ._job import job_status
+from ._job import job_show
 from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_delete
@@ -193,8 +193,8 @@ async def job(
 ) -> BaseInterface:
     if subcmd == "list":
         iface = await job_list(client, batch=batch, **kwargs)
-    elif subcmd == "status":
-        iface = await job_status(client, batch=batch, **kwargs)
+    elif subcmd == "show":
+        iface = await job_show(client, batch=batch, **kwargs)
     elif subcmd == "download-logs":
         iface = await job_download_logs(client, **kwargs)
     else:

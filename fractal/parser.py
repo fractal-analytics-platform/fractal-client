@@ -484,17 +484,17 @@ job_list_parser.add_argument(
     help="Project ID",
 )
 
-# job status
-job_status_parser = job_subparsers.add_parser(
-    "status",
+# job show
+job_show_parser = job_subparsers.add_parser(
+    "show",
     description="Query status of workflow-execution job",
     argument_default=ap.SUPPRESS,
 )
-job_status_parser.add_argument(
+job_show_parser.add_argument(
     "job_id",
     help="ID of the job",
 )
-job_status_parser.add_argument(
+job_show_parser.add_argument(
     "--do-not-separate-logs",
     dest="do_not_separate_logs",
     help="Show the job logs in the main output, instead of a separate field",
