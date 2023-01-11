@@ -435,10 +435,10 @@ async def test_workflow_apply(
     assert res.retcode == 0
     assert res.data["status"] == "submitted"
 
-    # TODO: add an assertion about the output, instead of calling `job status`
+    # TODO: add an assertion about the output, instead of calling `job show`
 
     # Check that job completed successfully
-    cmd = f"job status {job_id}"
+    cmd = f"job show {job_id}"
     starting_time = time.perf_counter()
     debug(cmd)
     while True:
@@ -470,7 +470,7 @@ async def test_workflow_apply(
     job_id = res.data["id"]
 
     # Verify that status is failed, and that there is a log
-    cmd = f"job status {job_id} --do-not-separate-logs"
+    cmd = f"job show {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     while True:
         res = await invoke(cmd)
