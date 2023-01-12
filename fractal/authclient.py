@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import jwt
 from httpx import AsyncClient
@@ -17,7 +18,7 @@ class AuthToken:
         client: AsyncClient,
         username: str,
         password: str,
-        slurm_user: str,
+        slurm_user: Optional[str] = None,
     ):
         self.client = client
         self.username = username
@@ -88,7 +89,7 @@ class AuthClient:
         self,
         username: str,
         password: str,
-        slurm_user: str,
+        slurm_user: Optional[str] = None,
     ):
         self.auth = None
         self.client = None
