@@ -35,6 +35,8 @@ from ._workflow import workflow_new
 from ._workflow import workflow_remove_task
 from ._workflow import workflow_show
 
+# FIXME: import all needed functions from _user
+
 
 class NoCommandError(ValueError):
     pass
@@ -217,8 +219,22 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
         ),
     )
 
-async def whoami(client: AuthClient, **kwargs) -> PrintInterface:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/users/me/")
+
+async def user(  # FIXME
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+):
+    if subcmd == "list":
+        pass
+    elif subcmd == "show":
+        pass
+
+    # FIXME ...
+
+
+async def whoami(
+    client: AuthClient, **kwargs
+) -> PrintInterface:  # FIXME: remove
+    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/me")
     data = res.json()
 
     return PrintInterface(
