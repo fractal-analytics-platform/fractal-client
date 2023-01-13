@@ -522,3 +522,8 @@ job_download_logs_parser.add_argument(
 version_parser = subparsers_main.add_parser(
     "version", description="Print version and exit"
 )
+
+# WHOAMI GROUP
+whoami_parser = subparsers_main.add_parser(
+    "whoami", description="Print user credentials"
+)

@@ -216,3 +216,12 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
             f"\tversion: {data['version']}"
         ),
     )
+
+async def whoami(client: AuthClient, **kwargs) -> PrintInterface:
+    res = await client.get(f"{settings.FRACTAL_SERVER}/users/me/")
+    data = res.json()
+
+    return PrintInterface(
+        retcode=0,
+        data=data,
+    )

@@ -57,3 +57,10 @@ async def test_bad_credentials(invoke):
     res.show()
     assert res.retcode != 0
     assert "BAD_CREDENTIALS" in res.data
+
+async def test_whoami(invoke):
+    me = await invoke("whoami")
+    debug(me.data)
+    you = await invoke ("-u nouser@exact-lab.it -p nopassword whoami")
+    debug(you)
+    assert False
