@@ -58,9 +58,18 @@ async def test_bad_credentials(invoke):
     assert res.retcode != 0
     assert "BAD_CREDENTIALS" in res.data
 
-async def test_whoami(invoke):
-    me = await invoke("whoami")
-    debug(me.data)
-    you = await invoke ("-u nouser@exact-lab.it -p nopassword whoami")
-    debug(you)
-    assert False
+
+async def test_whoami(user_factory, invoke):
+    # Register a user
+    EMAIL = "other_user@exact-lab.it"
+    PASSWORD = "other_password"
+    SLURM_USER = "slurm_user"
+    user = await user_factory(
+        email=EMAIL, password=PASSWORD, slurm_user=SLURM_USER
+    )
+    debug(user)
+    # Call `fractal whoami`
+    res = await invoke(f"-u {EMAIL} -p {PASSWORD} whoami")
+    debug(res.data)
+    assert res.retcode == 0
+    assert res.data["email"] == EMAIL
