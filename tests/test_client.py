@@ -69,7 +69,7 @@ async def test_whoami(user_factory, invoke):
     )
     debug(user)
     # Call `fractal whoami`
-    res = await invoke(f"-u {EMAIL} -p {PASSWORD} whoami")
+    res = await invoke(f"-u {EMAIL} -p {PASSWORD} user whoami")
     debug(res.data)
     assert res.retcode == 0
     assert res.data["email"] == EMAIL
