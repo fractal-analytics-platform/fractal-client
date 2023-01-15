@@ -68,7 +68,7 @@ async def test_whoami(user_factory, invoke):
         email=EMAIL, password=PASSWORD, slurm_user=SLURM_USER
     )
     debug(user)
-    # Call `fractal whoami`
+    # Call `fractal user whoami`
     res = await invoke(f"-u {EMAIL} -p {PASSWORD} user whoami")
     debug(res.data)
     assert res.retcode == 0

@@ -25,6 +25,12 @@ from ._task import task_collection_check
 from ._task import task_delete
 from ._task import task_edit
 from ._task import task_list
+from ._user import user_register
+from ._user import user_list
+from ._user import user_show
+from ._user import user_edit
+from ._user import user_delete
+from ._user import user_whoami
 from ._workflow import workflow_add_task
 from ._workflow import workflow_apply
 from ._workflow import workflow_delete
@@ -34,8 +40,6 @@ from ._workflow import workflow_list
 from ._workflow import workflow_new
 from ._workflow import workflow_remove_task
 from ._workflow import workflow_show
-
-# FIXME: import all needed functions from _user
 
 
 class NoCommandError(ValueError):
@@ -109,41 +113,6 @@ async def dataset(
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
 
-
-async def register(
-    client: AsyncClient,
-    email: str,
-    slurm_user: str,
-    password: str = None,
-    **kwargs,
-) -> BaseInterface:
-    from getpass import getpass
-
-    if password is None:
-        password = getpass()
-        confirm_password = getpass("Confirm password: ")
-        if password == confirm_password:
-            res = await client.post(
-                f"{settings.FRACTAL_SERVER}/auth/register",
-                json=dict(
-                    email=email, slurm_user=slurm_user, password=password
-                ),
-            )
-
-            data = check_response(res, expected_status_code=201)
-            iface = RichJsonInterface(retcode=0, data=data)
-        else:
-            iface = PrintInterface(retcode=1, data="Passwords do not match.")
-        return iface
-
-    res = await client.post(
-        f"{settings.FRACTAL_SERVER}/auth/register",
-        json=dict(email=email, slurm_user=slurm_user, password=password),
-    )
-    data = check_response(res, expected_status_code=201)
-    iface = RichJsonInterface(retcode=0, data=data)
-
-    return iface
 
 
 async def task(
@@ -220,13 +189,24 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
     )
 
 
-async def user(  # FIXME
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+async def user(
+    client: AuthClient, subcmd: str, **kwargs
 ):
-    if subcmd == "list":
-        pass
+    if subcmd == "register":
+        iface = await user_register(client, **kwargs)
+    elif subcmd == "list":
+        iface = await user_list(client)
     elif subcmd == "show":
-        pass
-
-    # FIXME ...
+        iface = await user_show(client)
+    elif subcmd == "edit":
+        iface = await user_edit(client)
+    elif subcmd == "delete":
+        iface = await user_delete(client)
+    elif subcmd == "whoami":
+        iface = await user_whoami(client)
+    else:
+        raise NoCommandError(f"Command user {subcmd} not found")
+    
+    return iface
+        
 

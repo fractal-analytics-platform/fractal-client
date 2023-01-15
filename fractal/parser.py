@@ -557,7 +557,7 @@ user_edit_parser = user_subparsers.add_parser(
 
 # user delete
 
-user_delete_parser = user_subparsers.add_parser(
+user_show_parser = user_subparsers.add_parser(
     "delete", description="---" # TODO description
 )
 # TODO add arguments
