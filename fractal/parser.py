@@ -55,20 +55,6 @@ parser_main.add_argument(
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 
 
-# REGISTER GROUP
-register_parser = subparsers_main.add_parser(
-    "register", description="Register with the Fractal server"
-)
-register_parser.add_argument("email", help="Email to be used as username")
-register_parser.add_argument(
-    "slurm_user", help="Username to login into Slurm cluster"
-)
-register_parser.add_argument(
-    "-p",
-    "--password",
-    help=("Password for the new user"),
-)
-
 
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser(
@@ -523,7 +509,61 @@ version_parser = subparsers_main.add_parser(
     "version", description="Print version and exit"
 )
 
-# WHOAMI GROUP
-whoami_parser = subparsers_main.add_parser(
+
+# USER GROUP
+
+user_parser = subparsers_main.add_parser(
+    "user", description="---" # TODO description
+)
+user_subparsers = user_parser.add_subparsers(
+    title="Valid subcommand", dest="subcmd", required=True
+)
+
+# user register
+
+user_register_parser = user_subparsers.add_parser(
+    "register", description="Register with the Fractal server"
+)
+user_register_parser.add_argument("email", help="Email to be used as username")
+user_register_parser.add_argument(
+    "slurm_user", help="Username to login into Slurm cluster"
+)
+user_register_parser.add_argument(
+    "-p",
+    "--password",
+    help=("Password for the new user"),
+)
+
+# user list
+
+user_list_parser = user_subparsers.add_parser(
+    "list", description="List users"
+)
+# TODO add arguments
+
+# user show
+
+user_show_parser = user_subparsers.add_parser(
+    "show", description="---" # TODO description
+)
+# TODO add arguments
+
+# user edit
+
+user_edit_parser = user_subparsers.add_parser(
+    "edit", description="---" # TODO description
+)
+# TODO add arguments
+
+# user delete
+
+user_delete_parser = user_subparsers.add_parser(
+    "delete", description="---" # TODO description
+)
+# TODO add arguments
+
+# user whoami
+
+user_whoami_parser = user_subparsers.add_parser(
     "whoami", description="Print user credentials"
 )

@@ -230,14 +230,3 @@ async def user(  # FIXME
 
     # FIXME ...
 
-
-async def whoami(
-    client: AuthClient, **kwargs
-) -> PrintInterface:  # FIXME: remove
-    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/me")
-    data = res.json()
-
-    return PrintInterface(
-        retcode=0,
-        data=data,
-    )
