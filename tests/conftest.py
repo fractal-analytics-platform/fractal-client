@@ -1,3 +1,4 @@
+import multiprocessing
 import shlex
 from os import environ
 from pathlib import Path
@@ -11,6 +12,11 @@ environ["FRACTAL_PASSWORD"] = "password"
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
 environ["DB_ECHO"] = "0"
 environ["SLURM_USER"] = "slurm_user"
+
+# set_start_method("fork") necessary to run tests on MacOS
+# https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228
+# https://docs.python.org/3/library/multiprocessing.html#multiprocessing.get_start_method
+multiprocessing.set_start_method("fork")
 
 
 @pytest.fixture(scope="session")
