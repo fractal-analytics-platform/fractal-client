@@ -524,46 +524,56 @@ user_subparsers = user_parser.add_subparsers(
 user_register_parser = user_subparsers.add_parser(
     "register", description="Register with the Fractal server"
 )
-user_register_parser.add_argument("email", help="Email to be used as username")
+user_register_parser.add_argument(
+    "email", help="Email to be used as username"
+)
 user_register_parser.add_argument(
     "slurm_user", help="Username to login into Slurm cluster"
 )
 user_register_parser.add_argument(
-    "-p",
-    "--password",
-    help=("Password for the new user"),
+    "password", help="Password for the new user"
+)
+user_register_parser.add_argument(
+    "--superuser",
+    help="Give superuser privileges to the new user",
+    action="store_true",
 )
 
 # user list
 
 user_list_parser = user_subparsers.add_parser(
-    "list", description="List users"
+    "list", description="---" # TODO description
 )
-# TODO add arguments
 
 # user show
 
 user_show_parser = user_subparsers.add_parser(
     "show", description="---" # TODO description
 )
-# TODO add arguments
+user_show_parser.add_argument(
+    "user_id", help="Id of the user"
+)
 
 # user edit
 
 user_edit_parser = user_subparsers.add_parser(
     "edit", description="---" # TODO description
 )
-# TODO add arguments
+user_edit_parser.add_argument(
+    "user_id", help="Id of the user"
+)
 
 # user delete
 
-user_show_parser = user_subparsers.add_parser(
+user_delete_parser = user_subparsers.add_parser(
     "delete", description="---" # TODO description
 )
-# TODO add arguments
+user_delete_parser.add_argument(
+    "user_id", help="Id of the user"
+)
 
 # user whoami
 
 user_whoami_parser = user_subparsers.add_parser(
-    "whoami", description="Print user credentials"
+    "whoami", description="---" # TODO description
 )
