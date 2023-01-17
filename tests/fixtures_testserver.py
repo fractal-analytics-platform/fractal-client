@@ -194,3 +194,7 @@ async def register_user(user_factory):
         password=environ["FRACTAL_PASSWORD"],
         slurm_user=environ["SLURM_USER"],
     )
+
+@pytest.fixture
+async def default_superuser():
+    pass

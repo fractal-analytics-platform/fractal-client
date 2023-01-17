@@ -39,6 +39,17 @@ async def client():
         yield client
 
 
+# @pytest.fixture
+# async def client_superuser():
+#     from fractal.authclient import AuthClient
+#     async with AuthClient(
+#         username="admin@fractal.xy",
+#         password="1234",
+#         slurm_user="test" # FIXME remove
+#     ) as client:
+#         yield client
+
+
 @pytest.fixture(scope="session")
 def clisplit():
     def __clisplit(args: str):
