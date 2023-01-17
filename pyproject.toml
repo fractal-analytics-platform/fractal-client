@@ -30,7 +30,7 @@ bumpver = "^2022.1118"
 pytest-asyncio = "^0.19.0"
 # fractal-server = "^1.0.0"
 # fractal-server = ">=1.0.0rc1"
-fractal-server = {git="https://github.com/fractal-analytics-platform/fractal-server.git", branch="main"}
+fractal-server = {git="https://github.com/fractal-analytics-platform/fractal-server.git"}
 coverage = {extras = ["toml"], version = "^6.5.0"}
 
 [tool.poetry.group.docs.dependencies]
