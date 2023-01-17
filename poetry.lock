@@ -705,7 +705,7 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "main"
+reference = "HEAD"
 resolved_reference = "f690e72206415fe571c6c39926ce8ca26d055fe9"
 
 [[package]]
@@ -1946,4 +1946,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "4a8eef82fd79fd9ee14aeefaee7e62a8d4608e1392852240bc959fd9d4f9cb30"
+content-hash = "fcd389300930ec6b9ad5c16f72148629ecdae01b097e9e9f0fd8135b4feb88d2"
