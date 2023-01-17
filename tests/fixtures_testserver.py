@@ -44,6 +44,7 @@ def override_server_settings(tmp_path):
 async def testserver(override_server_settings):
     import uvicorn
     from fractal_server.main import start_application
+    from fractal_server.main import _create_user
     from multiprocessing import Process
     from fractal_server.app.db import DB
     from fractal_server.app.models import SQLModel
@@ -56,6 +57,7 @@ async def testserver(override_server_settings):
     # We are explicitly calling start_application() to bypass the task
     # collection routine
     app = start_application()
+    await _create_user("admin@fractal.xy", "1234", is_superuser=True)
 
     config = uvicorn.Config(app, port=10080, log_level="debug")
     server = uvicorn.Server(config)
@@ -175,9 +177,9 @@ async def job_factory(db):
 
 
 @pytest.fixture
-async def user_factory(client, testserver):
+async def user_factory(client_superuser, testserver):
     async def __register_user(email: str, password: str, slurm_user: str):
-        res = await client.post(
+        res = await client_superuser.post(
             f"{testserver}/auth/register",
             json=dict(email=email, password=password, slurm_user=slurm_user),
         )
@@ -194,6 +196,7 @@ async def register_user(user_factory):
         password=environ["FRACTAL_PASSWORD"],
         slurm_user=environ["SLURM_USER"],
     )
+
 
 @pytest.fixture
 async def default_superuser():
