@@ -70,6 +70,17 @@ async def invoke(clisplit):
 
 
 @pytest.fixture
+async def invoke_as_superuser(clisplit):
+    from fractal.client import handle
+
+    async def __invoke(args: str):
+        new_args = f"--user admin@fractal.xy --password 1234 {args}"
+        return await handle(clisplit(new_args))
+
+    return __invoke
+
+
+@pytest.fixture
 def clear_task_cache():
     from fractal.config import settings
 
