@@ -2,12 +2,13 @@ from typing import Dict
 
 from ..authclient import AuthClient
 from ..client import AsyncClient
-# from ..common.schemas import UserRead  # TODO create schema in common
-# from ..common.schemas import UserUpdate  # TODO create schema in common
 from ..config import settings
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+
+# from ..common.schemas import UserRead  # TODO create schema in common
+# from ..common.schemas import UserUpdate  # TODO create schema in common
 
 
 async def user_register(
@@ -30,7 +31,7 @@ async def user_register(
                     email=email,
                     slurm_user=slurm_user,
                     password=password,
-                    is_superuser=superuser
+                    is_superuser=superuser,
                 ),
             )
 
@@ -68,7 +69,7 @@ async def user_show(
     user = check_response(
         res,
         expected_status_code=200,
-        #coerce=UserRead
+        # coerce=UserRead
     )
     return RichJsonInterface(
         retcode=0,
@@ -79,8 +80,10 @@ async def user_show(
 async def user_edit(
     client: AuthClient, user_id: str, payload: Dict, **user_update_dict
 ) -> RichJsonInterface:
-    user_update = UserUpdate(**user_update_dict)
-    payload = user_update.dict(exclude_unset=True)
+    # user_update = UserUpdate(**user_update_dict)
+    # payload = user_update.dict(exclude_unset=True)
+    # FIXME: add UserUpdate
+    payload = user_update_dict  # FIXME
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
@@ -90,7 +93,7 @@ async def user_edit(
     new_user = check_response(
         res,
         expected_status_code=200,
-        #coerce=UserRead
+        # coerce=UserRead
     )
 
     return PrintInterface(
@@ -111,7 +114,7 @@ async def user_delete(
 
 
 async def user_whoami(client: AuthClient, **kwargs) -> RichJsonInterface:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/me")
+    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/whoami")
     user = check_response(res, expected_status_code=200)
 
     return RichJsonInterface(
