@@ -39,17 +39,17 @@ async def user_register(
         f"{settings.FRACTAL_SERVER}/auth/register",
         json=new_user.dict(exclude_unset=True, exclude_none=True),
     )
-    data = check_response(res, expected_status_code=201)
+    data = check_response(res, expected_status_code=201, coerce=UserRead)
 
     if superuser:
-        user_id = data["id"]
+        user_id = data.id
         res = await client.patch(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}",
             json={"is_superuser": True},
         )
-        data = check_response(res, expected_status_code=200)
+        data = check_response(res, expected_status_code=200, coerce=UserRead)
 
-    iface = RichJsonInterface(retcode=0, data=data)
+    iface = RichJsonInterface(retcode=0, data=data.dict())
 
     return iface
 
@@ -123,9 +123,6 @@ async def user_delete(
 
 async def user_whoami(client: AuthClient, **kwargs) -> RichJsonInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/whoami")
-    user = check_response(res, expected_status_code=200)
+    user = check_response(res, expected_status_code=200, coerce=UserRead)
 
-    return RichJsonInterface(
-        retcode=0,
-        data=user,
-    )
+    return RichJsonInterface(retcode=0, data=user.dict())
