@@ -31,15 +31,9 @@ async def user_register(
         confirm_new_password = getpass("Confirm password: ")
         if new_password == confirm_new_password:
             new_user.password = new_password
-            res = await client.post(
-                f"{settings.FRACTAL_SERVER}/auth/register",
-                json=new_user.dict(exclude_unset=True, exclude_none=True),
-            )
-            data = check_response(res, expected_status_code=201)
-            iface = RichJsonInterface(retcode=0, data=data)
         else:
             iface = PrintInterface(retcode=1, data="Passwords do not match.")
-        return iface
+            return iface
 
     res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register",
