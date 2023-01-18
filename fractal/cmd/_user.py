@@ -1,4 +1,5 @@
 from typing import Dict
+from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -12,25 +13,24 @@ from ..response import check_response
 
 async def user_register(
     client: AuthClient,
-    email: str,
-    slurm_user: str,
-    password: str = None,
-    superuser: bool = False,
+    new_email: str,
+    new_password: str = None,
+    slurm_user: Optional[str] = None,
+    is_superuser: bool = False,
     **kwargs,
 ) -> RichJsonInterface:
     from getpass import getpass
 
-    if password is None:
-        password = getpass()
+    if new_password is None:
+        new_password = getpass()
         confirm_password = getpass("Confirm password: ")
-        if password == confirm_password:
+        if new_password == confirm_password:
             res = await client.post(
                 f"{settings.FRACTAL_SERVER}/auth/register",
                 json=dict(
-                    email=email,
+                    email=new_email,
                     slurm_user=slurm_user,
-                    password=password,
-                    is_superuser=superuser,
+                    password=new_password,
                 ),
             )
 
@@ -40,11 +40,19 @@ async def user_register(
             iface = PrintInterface(retcode=1, data="Passwords do not match.")
         return iface
 
+    # FIXME: remove slurm_user
     res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register",
-        json=dict(email=email, slurm_user=slurm_user, password=password),
+        json=dict(
+            email=new_email, slurm_user=slurm_user, password=new_password
+        ),
     )
     data = check_response(res, expected_status_code=201)
+
+    if is_superuser:
+        # FIXME: add PATCH /auth/users/edit/{user_id}
+        pass
+
     iface = RichJsonInterface(retcode=0, data=data)
 
     return iface

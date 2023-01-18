@@ -55,7 +55,6 @@ parser_main.add_argument(
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 
 
-
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser(
     "project", description="Project commands"
@@ -485,6 +484,7 @@ job_show_parser.add_argument(
     dest="do_not_separate_logs",
     help="Show the job logs in the main output, instead of a separate field",
     action="store_true",
+    required=False,
 )
 
 # job download-logs
@@ -513,7 +513,7 @@ version_parser = subparsers_main.add_parser(
 # USER GROUP
 
 user_parser = subparsers_main.add_parser(
-    "user", description="---" # TODO description
+    "user", description="---"  # TODO description
 )
 user_subparsers = user_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
@@ -522,58 +522,55 @@ user_subparsers = user_parser.add_subparsers(
 # user register
 
 user_register_parser = user_subparsers.add_parser(
-    "register", description="Register with the Fractal server"
+    "register", description="Register a new user with the Fractal server"
 )
 user_register_parser.add_argument(
-    "email", help="Email to be used as username"
+    "new_email", help="Email to be used as username"
 )
 user_register_parser.add_argument(
-    "slurm_user", help="Username to login into Slurm cluster"
+    "new_password", help="Password for the new user"
 )
 user_register_parser.add_argument(
-    "password", help="Password for the new user"
+    "--slurm_user",
+    help="Username to login into Slurm cluster",
+    required=False,
 )
 user_register_parser.add_argument(
-    "--superuser",
+    "--is-superuser",
     help="Give superuser privileges to the new user",
     action="store_true",
+    required=False,
 )
 
 # user list
 
 user_list_parser = user_subparsers.add_parser(
-    "list", description="---" # TODO description
+    "list", description="---"  # TODO description
 )
 
 # user show
 
 user_show_parser = user_subparsers.add_parser(
-    "show", description="---" # TODO description
+    "show", description="---"  # TODO description
 )
-user_show_parser.add_argument(
-    "user_id", help="Id of the user"
-)
+user_show_parser.add_argument("user_id", help="Id of the user")
 
 # user edit
 
 user_edit_parser = user_subparsers.add_parser(
-    "edit", description="---" # TODO description
+    "edit", description="---"  # TODO description
 )
-user_edit_parser.add_argument(
-    "user_id", help="Id of the user"
-)
+user_edit_parser.add_argument("user_id", help="Id of the user")
 
 # user delete
 
 user_delete_parser = user_subparsers.add_parser(
-    "delete", description="---" # TODO description
+    "delete", description="---"  # TODO description
 )
-user_delete_parser.add_argument(
-    "user_id", help="Id of the user"
-)
+user_delete_parser.add_argument("user_id", help="Id of the user")
 
 # user whoami
 
 user_whoami_parser = user_subparsers.add_parser(
-    "whoami", description="---" # TODO description
+    "whoami", description="---"  # TODO description
 )
