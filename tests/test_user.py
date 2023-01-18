@@ -20,7 +20,7 @@ async def test_register_as_user(invoke, register_user, caplog):
 async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
     if is_superuser:
         res = await invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} --is-superuser"
+            f"user register {EMAIL_USER} {PWD_USER} --superuser"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -92,14 +92,25 @@ async def test_edit_as_user(
     assert "Forbidden" in caplog.text
 
 
-async def test_edit_as_superuser(invoke_as_superuser):
+@pytest.mark.parametrize("new_is_superuser", [True, False])
+async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     # Register a new user
     res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
     # Call fractal user edit
-    # FIXME: add some options
-    res = await invoke_as_superuser(f"user edit {user_id}")
+    NEW_EMAIL = "asd@asd.new"
+    NEW_SLURM_USER = "new_slurm"
+    res = await invoke_as_superuser(
+        f"user edit {user_id} "
+        f"--new-email {NEW_EMAIL} "
+        f"--new-slurm-user {NEW_SLURM_USER} "
+        f"--new-is-superuser {new_is_superuser}"
+    )
+    debug(res.data)
     assert res.retcode == 0
+    assert res.data["email"] == NEW_EMAIL
+    assert res.data["slurm_user"] == NEW_SLURM_USER
+    assert res.data["is_superuser"] == new_is_superuser
 
 
 async def test_delete_as_user(
