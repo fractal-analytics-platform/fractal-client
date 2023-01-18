@@ -34,7 +34,7 @@ class AuthToken:
         data = dict(
             username=self.username,
             password=self.password,
-            slurm_user=self.slurm_user,
+            slurm_user=self.slurm_user,  # FIXME: remove
         )
         res = await self.client.post(
             f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
