@@ -56,8 +56,6 @@ async def handle(cli_args: List[str] = argv):
             async with AuthClient(
                 username=args.user or settings.FRACTAL_USER,
                 password=args.password or settings.FRACTAL_PASSWORD,
-                slurm_user=args.slurm_user
-                or settings.SLURM_USER,  # FIXME remove
             ) as client:
                 interface = await handler(client, **vars(args))
     except AuthenticationError as e:

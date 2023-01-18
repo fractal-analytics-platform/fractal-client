@@ -19,6 +19,11 @@ async def user_register(
     is_superuser: bool = False,
     **kwargs,
 ) -> RichJsonInterface:
+
+    new_user = UserCreate(
+        email=new_email, password=new_password, slurm_user=slurm_user
+    )
+
     from getpass import getpass
 
     if new_password is None:
@@ -27,25 +32,17 @@ async def user_register(
         if new_password == confirm_password:
             res = await client.post(
                 f"{settings.FRACTAL_SERVER}/auth/register",
-                json=dict(
-                    email=new_email,
-                    password=new_password,
-                    slurm_user=slurm_user,
-                ),
+                json=new_user.dict(exclude_unset=True),
             )
-
             data = check_response(res, expected_status_code=201)
             iface = RichJsonInterface(retcode=0, data=data)
         else:
             iface = PrintInterface(retcode=1, data="Passwords do not match.")
         return iface
 
-    # FIXME: remove slurm_user
     res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register",
-        json=dict(
-            email=new_email, password=new_password, slurm_user=slurm_user
-        ),
+        json=new_user.dict(exclude_unset=True),
     )
     data = check_response(res, expected_status_code=201)
 

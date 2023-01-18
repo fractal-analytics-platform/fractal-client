@@ -46,7 +46,6 @@ async def client_superuser():
     async with AuthClient(
         username="admin@fractal.xy",
         password="1234",
-        slurm_user="test",  # FIXME remove
     ) as client_superuser:
         yield client_superuser
 

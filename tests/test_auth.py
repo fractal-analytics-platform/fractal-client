@@ -17,7 +17,6 @@ async def test_auth_fail(client):
             client,
             username=environ.get("FRACTAL_USER"),
             password=environ.get("FRACTAL_PASSWORD"),
-            slurm_user=environ.get("SLURM_USER"),
         )
         await auth()
 
@@ -32,7 +31,6 @@ async def test_auth_registered(client, register_user):
         client,
         username=environ.get("FRACTAL_USER"),
         password=environ.get("FRACTAL_PASSWORD"),
-        slurm_user=environ.get("SLURM_USER"),
     )
     token = await auth()
     assert token

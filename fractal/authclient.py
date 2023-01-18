@@ -17,12 +17,10 @@ class AuthToken:
         client: AsyncClient,
         username: str,
         password: str,
-        slurm_user: str,
     ):
         self.client = client
         self.username = username
         self.password = password
-        self.slurm_user = slurm_user
 
         try:
             with open(f"{settings.FRACTAL_CACHE_PATH}/session", "r") as f:
@@ -34,7 +32,6 @@ class AuthToken:
         data = dict(
             username=self.username,
             password=self.password,
-            slurm_user=self.slurm_user,  # FIXME: remove
         )
         res = await self.client.post(
             f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
@@ -88,13 +85,11 @@ class AuthClient:
         self,
         username: str,
         password: str,
-        slurm_user: str,
     ):
         self.auth = None
         self.client = None
         self.username = username
         self.password = password
-        self.slurm_user = slurm_user
 
     async def __aenter__(self):
         self.client = AsyncClient()
@@ -102,7 +97,6 @@ class AuthClient:
             client=self.client,
             username=self.username,
             password=self.password,
-            slurm_user=self.slurm_user,
         )
         return self
 
