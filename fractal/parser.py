@@ -521,6 +521,11 @@ user_subparsers = user_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
 )
 
+# user whoami
+user_whoami_parser = user_subparsers.add_parser(
+    "whoami", description="Verify information on current user"
+)
+
 # user register
 user_register_parser = user_subparsers.add_parser(
     "register", description="Register a new user with the Fractal server"
@@ -578,8 +583,3 @@ user_delete_parser = user_subparsers.add_parser(
     "delete", description="Delete a single user"
 )
 user_delete_parser.add_argument("user_id", help="ID of the user")
-
-# user whoami
-user_whoami_parser = user_subparsers.add_parser(
-    "whoami", description="Verify information on current user"
-)
