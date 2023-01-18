@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Dict
 from pathlib import Path
 from typing import Any
 from typing import List
@@ -45,7 +46,7 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
 
 async def refresh_task_cache(
     client: AuthClient, **kwargs
-) -> List[dict[str, Any]]:
+) -> List[Dict[str, Any]]:
 
     # Get task_list
     res = await client.get(f"{settings.BASE_URL}/task/")
