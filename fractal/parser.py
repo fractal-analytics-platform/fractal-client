@@ -572,9 +572,17 @@ user_edit_parser.add_argument(
 user_edit_parser.add_argument(
     "--new-slurm-user", help="New SLURM username", type=str, required=False
 )
-user_edit_parser.add_argument(
-    "--new-is-superuser",
-    help="Give superuser privileges for the new user",
+
+user_edit_parser_superuser = user_edit_parser.add_mutually_exclusive_group()
+user_edit_parser_superuser.add_argument(
+    "--make-superuser",
+    help="Give superuser privileges to user",
+    action="store_true",
+    required=False,
+)
+user_edit_parser_superuser.add_argument(
+    "--remove-superuser",
+    help="Remove superuser privileges from user",
     action="store_true",
     required=False,
 )

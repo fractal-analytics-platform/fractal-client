@@ -30,9 +30,10 @@ async def user_register(
         new_password = getpass()
         confirm_new_password = getpass("Confirm password: ")
         if new_password == confirm_new_password:
+            new_user.password = new_password
             res = await client.post(
                 f"{settings.FRACTAL_SERVER}/auth/register",
-                json=new_user.dict(exclude_unset=True),
+                json=new_user.dict(exclude_unset=True, exclude_none=True),
             )
             data = check_response(res, expected_status_code=201)
             iface = RichJsonInterface(retcode=0, data=data)
@@ -42,7 +43,7 @@ async def user_register(
 
     res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register",
-        json=new_user.dict(exclude_unset=True),
+        json=new_user.dict(exclude_unset=True, exclude_none=True),
     )
     data = check_response(res, expected_status_code=201)
 
@@ -85,16 +86,22 @@ async def user_edit(
     user_id: str,
     new_email: Optional[str] = None,
     new_slurm_user: Optional[str] = None,
-    new_is_superuser: bool = False,
+    make_superuser: bool = False,
+    remove_superuser: bool = False,
     **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
+
     user_update = UserUpdate(
         email=new_email,
         slurm_user=new_slurm_user,
     )
-    if new_is_superuser:
+
+    if make_superuser:
         user_update.is_superuser = True
-    payload = user_update.dict(exclude_unset=True)
+    if remove_superuser:
+        user_update.is_superuser = False
+
+    payload = user_update.dict(exclude_unset=True, exclude_none=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
