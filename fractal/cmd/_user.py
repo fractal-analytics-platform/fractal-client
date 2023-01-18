@@ -81,9 +81,18 @@ async def user_show(
 
 
 async def user_edit(
-    client: AuthClient, user_id: str, **user_update_dict
+    client: AuthClient,
+    user_id: str,
+    new_email: Optional[str] = None,
+    new_slurm_user: Optional[str] = None,
+    new_is_superuser: Optional[bool] = None,
+    **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
-    user_update = UserUpdate(**user_update_dict)
+    user_update = UserUpdate(
+        email=new_email,
+        slurm_user=new_slurm_user,
+        is_superuser=new_is_superuser,
+    )
     payload = user_update.dict(exclude_unset=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")

@@ -537,7 +537,7 @@ user_register_parser.add_argument(
     required=False,
 )
 user_register_parser.add_argument(
-    "--is-superuser",
+    "--superuser",
     help="Give superuser privileges to the new user",
     action="store_true",
     required=False,
@@ -560,6 +560,19 @@ user_edit_parser = user_subparsers.add_parser(
     "edit", description="Edit details of single user"
 )
 user_edit_parser.add_argument("user_id", help="Id of the user")
+user_edit_parser.add_argument(
+    "--new-email", help="New email address", type=str, required=False
+)
+user_edit_parser.add_argument(
+    "--new-slurm-user", help="New SLURM username", type=str, required=False
+)
+user_edit_parser.add_argument(
+    "--new-is-superuser",
+    help="Superuser privileges for the new user",
+    type=bool,
+    default=False,
+    required=False,
+)
 
 # user delete
 user_delete_parser = user_subparsers.add_parser(
