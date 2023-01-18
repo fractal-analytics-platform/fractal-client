@@ -39,10 +39,35 @@ async def test_register(register_user, invoke):
     pass
 
 
-async def test_register_superuser(invoke_as_superuser):
-    res = await invoke_as_superuser("user register a@b.c abc --slurm_user FK")
-    debug(res, res.data)
-    assert res.retcode == 0
+@pytest.mark.parametrize("subcmd", ["register", "show"])  # FIXME
+async def test_user_forbidden(subcmd, invoke, register_user, caplog):
+
+    # NOTE: will this fail with 403 or with argparse errors? I suspect
+    # argparse..
+
+    # with pytest.raises(SystemExit):
+    #    await invoke("user list")
+    # debug(caplog.text)
+    # assert "403" in caplog.text
+    # assert "Forbidden" in caplog.text
+
+    # see test_list
+    pass
+
+
+@pytest.mark.parametrize("is_superuser", [True, False])
+async def test_register_superuser(is_superuser, invoke_as_superuser):
+    if is_superuser:
+        # TODO
+        # FIXME: asert superuser
+        pass
+    else:
+        res = await invoke_as_superuser(
+            "user register a@b.c abc --slurm_user FK"
+        )
+        debug(res, res.data)
+        assert res.retcode == 0
+        # FIXME: asert not superuser
 
 
 async def test_show(invoke, register_user):
