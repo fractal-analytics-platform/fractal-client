@@ -523,7 +523,8 @@ user_subparsers = user_parser.add_subparsers(
 
 # user whoami
 user_whoami_parser = user_subparsers.add_parser(
-    "whoami", description="Verify information on current user"
+    "whoami",
+    description="Get info on current user (fails if user is not registered)",
 )
 
 # user register
