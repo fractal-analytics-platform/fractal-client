@@ -51,12 +51,10 @@ async def user_register(
     return iface
 
 
-async def user_list(client: AuthClient, **kwargs) -> RichJsonInterface: # TODO fixme
+async def user_list(client: AuthClient, **kwargs) -> RichJsonInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/userlist")
-    id_list = check_response(res, expected_status_code=200)
-    users = []
-    for _id in id_list:
-        users.append((await user_show(client, _id)).data)
+    users = check_response(res, expected_status_code=200)
+    # users = [UserRead(**user) for user in users]  #FIXME
     return RichJsonInterface(
         retcode=0,
         data=users,
