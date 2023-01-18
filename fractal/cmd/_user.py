@@ -1,4 +1,3 @@
-from typing import Dict
 from typing import Optional
 from typing import Union
 
@@ -82,7 +81,7 @@ async def user_show(
 
 
 async def user_edit(
-    client: AuthClient, user_id: str, payload: Dict, **user_update_dict
+    client: AuthClient, user_id: str, **user_update_dict
 ) -> Union[RichJsonInterface, PrintInterface]:
     user_update = UserUpdate(**user_update_dict)
     payload = user_update.dict(exclude_unset=True)
