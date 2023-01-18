@@ -29,8 +29,8 @@ async def user_register(
                 f"{settings.FRACTAL_SERVER}/auth/register",
                 json=dict(
                     email=new_email,
-                    slurm_user=slurm_user,
                     password=new_password,
+                    slurm_user=slurm_user,
                 ),
             )
 
@@ -44,14 +44,17 @@ async def user_register(
     res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register",
         json=dict(
-            email=new_email, slurm_user=slurm_user, password=new_password
+            email=new_email, password=new_password, slurm_user=slurm_user
         ),
     )
     data = check_response(res, expected_status_code=201)
 
     if is_superuser:
-        # FIXME: add PATCH /auth/users/edit/{user_id}
-        pass
+        user_id = res.json()['id']
+        res = await client.patch(
+            f"{settings.FRACTAL_SERVER}/auth/users/edit/{user_id}",
+            json={'is_superuser': True}
+        )
 
     iface = RichJsonInterface(retcode=0, data=data)
 
@@ -72,6 +75,7 @@ async def user_show(
     client: AuthClient, user_id: str, **kwargs
 ) -> RichJsonInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/{user_id}")
+    # FIXME how to handle wrong user_id?
     user = check_response(
         res,
         expected_status_code=200,
