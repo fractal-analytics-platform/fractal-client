@@ -50,11 +50,12 @@ async def user_register(
     data = check_response(res, expected_status_code=201)
 
     if is_superuser:
-        user_id = res.json()["id"]
+        user_id = data["id"]
         res = await client.patch(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}",
             json={"is_superuser": True},
         )
+        data = check_response(res, expected_status_code=200)
 
     iface = RichJsonInterface(retcode=0, data=data)
 
