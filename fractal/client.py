@@ -53,8 +53,8 @@ async def handle(cli_args: List[str] = argv):
                 interface = await handler(client, **kwargs)
         else:
             # Extract (and remove) username/password for AuthClient from kwargs
-            username = kwargs.pop("user", settings.FRACTAL_USER)
-            password = kwargs.pop("password", settings.FRACTAL_PASSWORD)
+            username = kwargs.pop("user") or settings.FRACTAL_USER
+            password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
             async with AuthClient(
                 username=username, password=password
             ) as client:
