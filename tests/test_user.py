@@ -96,16 +96,20 @@ async def test_edit_as_user(
 async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     # Register a new user
     res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    assert res.retcode == 0
     user_id = res.data["id"]
     # Call fractal user edit
     NEW_EMAIL = "asd@asd.new"
     NEW_SLURM_USER = "new_slurm"
-    res = await invoke_as_superuser(
+    cmd = (
         f"user edit {user_id} "
         f"--new-email {NEW_EMAIL} "
         f"--new-slurm-user {NEW_SLURM_USER} "
-        f"--new-is-superuser {new_is_superuser}"
     )
+    if new_is_superuser:
+        cmd = f"{cmd} --new-is-superuser"
+    debug(cmd)
+    res = await invoke_as_superuser(cmd)
     debug(res.data)
     assert res.retcode == 0
     assert res.data["email"] == NEW_EMAIL
