@@ -34,8 +34,42 @@ async def test_list_superuser(invoke_as_superuser):
     debug(res.data)
 
 
-async def test_show_superuser(invoke_as_superuser):
+async def test_register(register_user, invoke):
+    # TODO
+    pass
+
+
+async def test_register_superuser(invoke_as_superuser):
     res = await invoke_as_superuser("user register a@b.c abc FK")
     debug(res, res.data)
-    res = await invoke_as_superuser("user register c@b.a cba AE")
-    debug(res, res.data)
+    assert res.retcode == 0
+
+
+async def test_show(invoke, register_user):
+    # TODO
+    pass
+
+
+async def test_show_superuser(invoke_as_superuser):
+    # TODO
+    pass
+
+
+async def test_edit(invoke, register_user):
+    # TODO
+    pass
+
+
+async def test_edit_superuser(invoke_as_superuser):
+    # TODO
+    pass
+
+
+async def test_delete(invoke, register_user):
+    # TODO
+    pass
+
+
+async def test_delete_superuser(invoke_as_superuser):
+    # TODO
+    pass
