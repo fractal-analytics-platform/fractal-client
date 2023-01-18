@@ -4,6 +4,7 @@ University of Zurich
 
 Original authors:
 Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
+Tommaso Comparin <tommaso.comparin@exact-lab.it>
 
 This file is part of Fractal and was originally developed by eXact lab S.r.l.
 <exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
@@ -12,6 +13,7 @@ Zurich.
 """
 import logging
 from os import getenv
+from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -37,7 +39,7 @@ class Settings(BaseSettings):
 
     FRACTAL_USER: str = fail_getenv("FRACTAL_USER")
     FRACTAL_PASSWORD: str = fail_getenv("FRACTAL_PASSWORD")
-    SLURM_USER: str = fail_getenv("SLURM_USER")
+    SLURM_USER: Optional[str] = getenv("SLURM_USER")
 
     FRACTAL_SERVER: str = getenv("FRACTAL_SERVER", "http://localhost:8000")
 

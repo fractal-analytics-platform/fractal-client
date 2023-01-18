@@ -12,7 +12,7 @@ Command-line interface for Fractal Client
    :maxdepth: 1
 
    fractal version <cli_files/version>
-   fractal register  <cli_files/register>
+   fractal user <cli_files/user>
    fractal project <cli_files/project>
    fractal dataset <cli_files/dataset>
    fractal workflow <cli_files/workflow>

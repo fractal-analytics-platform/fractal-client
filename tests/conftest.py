@@ -1,3 +1,4 @@
+import multiprocessing
 import shlex
 from os import environ
 from pathlib import Path
@@ -11,6 +12,11 @@ environ["FRACTAL_PASSWORD"] = "password"
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
 environ["DB_ECHO"] = "0"
 environ["SLURM_USER"] = "slurm_user"
+
+# set_start_method("fork") necessary to run tests on MacOS
+# https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228
+# https://docs.python.org/3/library/multiprocessing.html#multiprocessing.get_start_method
+multiprocessing.set_start_method("fork")
 
 
 @pytest.fixture(scope="session")
@@ -33,6 +39,17 @@ async def client():
         yield client
 
 
+@pytest.fixture
+async def client_superuser():
+    from fractal.authclient import AuthClient
+
+    async with AuthClient(
+        username="admin@fractal.xy",
+        password="1234",
+    ) as client_superuser:
+        yield client_superuser
+
+
 @pytest.fixture(scope="session")
 def clisplit():
     def __clisplit(args: str):
@@ -47,6 +64,17 @@ async def invoke(clisplit):
 
     async def __invoke(args: str):
         return await handle(clisplit(args))
+
+    return __invoke
+
+
+@pytest.fixture
+async def invoke_as_superuser(clisplit):
+    from fractal.client import handle
+
+    async def __invoke(args: str):
+        new_args = f"--user admin@fractal.xy --password 1234 {args}"
+        return await handle(clisplit(new_args))
 
     return __invoke
 

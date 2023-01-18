@@ -1,6 +1,8 @@
 import json
 import logging
 from pathlib import Path
+from typing import Any
+from typing import Dict
 from typing import List
 
 from ..authclient import AuthClient
@@ -42,7 +44,9 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
             raise KeyError(f'Task "{name}" not in {cache_file}\n', str(e))
 
 
-async def refresh_task_cache(client: AuthClient, **kwargs) -> List[dict]:
+async def refresh_task_cache(
+    client: AuthClient, **kwargs
+) -> List[Dict[str, Any]]:
 
     # Get task_list
     res = await client.get(f"{settings.BASE_URL}/task/")

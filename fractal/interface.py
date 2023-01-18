@@ -1,7 +1,9 @@
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Sequence
+from typing import Union
 
 from rich import print_json
 from rich.console import Console
@@ -39,7 +41,7 @@ class RichJsonInterface(BaseInterface):
     def __init__(
         self,
         retcode: int,
-        data: Dict[str, Any],
+        data: Union[Dict[str, Any], List[Dict[str, Any]]],
         extra_lines: Optional[Sequence[str]] = None,
     ):
         super().__init__(retcode, data)

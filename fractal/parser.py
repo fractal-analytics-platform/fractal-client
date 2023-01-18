@@ -6,6 +6,7 @@ Original authors:
 Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
 Marco Franzon <marco.franzon@exact-lab.it>
 Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Yuri Chiucconi  <yuri.chiucconi@exact-lab.it>
 
 This file is part of Fractal and was originally developed by eXact lab S.r.l.
 <exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
@@ -53,21 +54,6 @@ parser_main.add_argument(
 )
 
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
-
-
-# REGISTER GROUP
-register_parser = subparsers_main.add_parser(
-    "register", description="Register with the Fractal server"
-)
-register_parser.add_argument("email", help="Email to be used as username")
-register_parser.add_argument(
-    "slurm_user", help="Username to login into Slurm cluster"
-)
-register_parser.add_argument(
-    "-p",
-    "--password",
-    help=("Password for the new user"),
-)
 
 
 # PROJECT GROUP
@@ -499,6 +485,7 @@ job_show_parser.add_argument(
     dest="do_not_separate_logs",
     help="Show the job logs in the main output, instead of a separate field",
     action="store_true",
+    required=False,
 )
 
 # job download-logs
@@ -522,3 +509,86 @@ job_download_logs_parser.add_argument(
 version_parser = subparsers_main.add_parser(
     "version", description="Print version and exit"
 )
+
+
+# USER GROUP
+
+user_parser = subparsers_main.add_parser(
+    "user",
+    description="User commands",
+)
+user_subparsers = user_parser.add_subparsers(
+    title="Valid subcommand", dest="subcmd", required=True
+)
+
+# user whoami
+user_whoami_parser = user_subparsers.add_parser(
+    "whoami",
+    description="Get info on current user (fails if user is not registered)",
+)
+
+# user register
+user_register_parser = user_subparsers.add_parser(
+    "register", description="Register a new user with the Fractal server"
+)
+user_register_parser.add_argument(
+    "new_email", help="Email to be used as username"
+)
+user_register_parser.add_argument(
+    "new_password", help="Password for the new user"
+)
+user_register_parser.add_argument(
+    "--slurm_user",
+    help="Username to login into Slurm cluster",
+    required=False,
+)
+user_register_parser.add_argument(
+    "--superuser",
+    help="Give superuser privileges to the new user",
+    action="store_true",
+    required=False,
+)
+
+# user list
+user_list_parser = user_subparsers.add_parser(
+    "list",
+    description="List all users",
+)
+
+# user show
+user_show_parser = user_subparsers.add_parser(
+    "show", description="Show details of single user"
+)
+user_show_parser.add_argument("user_id", help="ID of the user")
+
+# user edit
+user_edit_parser = user_subparsers.add_parser(
+    "edit", description="Edit details of single user"
+)
+user_edit_parser.add_argument("user_id", help="ID of the user")
+user_edit_parser.add_argument(
+    "--new-email", help="New email address", type=str, required=False
+)
+user_edit_parser.add_argument(
+    "--new-slurm-user", help="New SLURM username", type=str, required=False
+)
+
+user_edit_parser_superuser = user_edit_parser.add_mutually_exclusive_group()
+user_edit_parser_superuser.add_argument(
+    "--make-superuser",
+    help="Give superuser privileges to user",
+    action="store_true",
+    required=False,
+)
+user_edit_parser_superuser.add_argument(
+    "--remove-superuser",
+    help="Remove superuser privileges from user",
+    action="store_true",
+    required=False,
+)
+
+# user delete
+user_delete_parser = user_subparsers.add_parser(
+    "delete", description="Delete a single user"
+)
+user_delete_parser.add_argument("user_id", help="ID of the user")
