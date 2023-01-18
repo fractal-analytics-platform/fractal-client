@@ -5,8 +5,6 @@ from ..config import __VERSION__
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
-from ..interface import RichJsonInterface
-from ..response import check_response
 from ._dataset import dataset_add_resource
 from ._dataset import dataset_delete
 from ._dataset import dataset_delete_resource
@@ -25,11 +23,11 @@ from ._task import task_collection_check
 from ._task import task_delete
 from ._task import task_edit
 from ._task import task_list
-from ._user import user_register
-from ._user import user_list
-from ._user import user_show
-from ._user import user_edit
 from ._user import user_delete
+from ._user import user_edit
+from ._user import user_list
+from ._user import user_register
+from ._user import user_show
 from ._user import user_whoami
 from ._workflow import workflow_add_task
 from ._workflow import workflow_apply
@@ -114,7 +112,6 @@ async def dataset(
     return iface
 
 
-
 async def task(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
@@ -189,24 +186,20 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
     )
 
 
-async def user(
-    client: AuthClient, subcmd: str, user_id: str = None, **kwargs
-):
+async def user(client: AuthClient, subcmd: str, **kwargs) -> BaseInterface:
     if subcmd == "register":
         iface = await user_register(client, **kwargs)
     elif subcmd == "list":
-        iface = await user_list(client)
+        iface = await user_list(client, **kwargs)
     elif subcmd == "show":
-        iface = await user_show(client, user_id=user_id)
+        iface = await user_show(client, **kwargs)
     elif subcmd == "edit":
-        iface = await user_edit(client)
+        iface = await user_edit(client, **kwargs)
     elif subcmd == "delete":
-        iface = await user_delete(client)
+        iface = await user_delete(client, **kwargs)
     elif subcmd == "whoami":
-        iface = await user_whoami(client)
+        iface = await user_whoami(client, **kwargs)
     else:
         raise NoCommandError(f"Command user {subcmd} not found")
-    
-    return iface
-        
 
+    return iface
