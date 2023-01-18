@@ -47,7 +47,8 @@ async def handle(cli_args: List[str] = argv):
         exit(1)
 
     try:
-        if args.cmd in ["version", "register"]:
+        # FIXME: register is not any more authorized for anonymous users
+        if args.cmd in ["version"]:
             async with AsyncClient() as client:
                 interface = await handler(client, **vars(args))
         else:

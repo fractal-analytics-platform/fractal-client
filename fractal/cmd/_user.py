@@ -1,7 +1,6 @@
 from typing import Dict
 
 from ..authclient import AuthClient
-from ..client import AsyncClient
 from ..config import settings
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
@@ -12,7 +11,7 @@ from ..response import check_response
 
 
 async def user_register(
-    client: AsyncClient,
+    client: AuthClient,
     email: str,
     slurm_user: str,
     password: str = None,
