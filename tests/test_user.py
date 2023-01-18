@@ -116,6 +116,8 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     assert res.data["slurm_user"] == NEW_SLURM_USER
     assert res.data["is_superuser"] == new_is_superuser
 
+    # FIXME if new_is_superuser, also check that we can go back to normal user
+
 
 async def test_delete_as_user(
     invoke, invoke_as_superuser, register_user, caplog
@@ -131,14 +133,19 @@ async def test_delete_as_user(
     assert "Forbidden" in caplog.text
 
 
-async def test_delete_as_superuser(invoke_as_superuser):
+async def test_delete_as_superuser(invoke_as_superuser, caplog):
     # Register a new user
     res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
     # Call fractal user delete
     res = await invoke_as_superuser(f"user delete {user_id}")
     assert res.retcode == 0
-    # FIXME: add assertion
+    # Check that user was not found
+    with pytest.raises(SystemExit):
+        res = await invoke_as_superuser(f"user show {user_id}")
+    debug(caplog.text)
+    assert "404" in caplog.text
+    assert "Not Found" in caplog.text
 
 
 async def test_whoami_as_user(invoke, register_user):
