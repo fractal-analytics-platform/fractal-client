@@ -16,7 +16,7 @@ async def user_register(
     new_email: str,
     new_password: Optional[str] = None,
     slurm_user: Optional[str] = None,
-    is_superuser: bool = False,
+    superuser: bool = False,
     **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
 
@@ -46,7 +46,7 @@ async def user_register(
     )
     data = check_response(res, expected_status_code=201)
 
-    if is_superuser:
+    if superuser:
         user_id = data["id"]
         res = await client.patch(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}",
