@@ -47,7 +47,7 @@ async def test_list_as_superuser(invoke_as_superuser, register_user):
     res = await invoke_as_superuser("user list")
     debug(res.data)
     assert res.retcode == 0
-    list_emails = [user.email for user in res.data]
+    list_emails = [user["email"] for user in res.data]
     debug(list_emails)
     assert "admin@fractal.xy" in list_emails
     assert environ["FRACTAL_USER"] in list_emails
