@@ -1,5 +1,6 @@
 from typing import Dict
 from typing import Optional
+from typing import Union
 
 from ..authclient import AuthClient
 from ..common.schemas.user import UserCreate
@@ -14,11 +15,11 @@ from ..response import check_response
 async def user_register(
     client: AuthClient,
     new_email: str,
-    new_password: str = None,
+    new_password: Optional[str] = None,
     slurm_user: Optional[str] = None,
     is_superuser: bool = False,
     **kwargs,
-) -> RichJsonInterface:
+) -> Union[RichJsonInterface, PrintInterface]:
 
     new_user = UserCreate(
         email=new_email, password=new_password, slurm_user=slurm_user
@@ -28,8 +29,8 @@ async def user_register(
 
     if new_password is None:
         new_password = getpass()
-        confirm_password = getpass("Confirm password: ")
-        if new_password == confirm_password:
+        confirm_new_password = getpass("Confirm password: ")
+        if new_password == confirm_new_password:
             res = await client.post(
                 f"{settings.FRACTAL_SERVER}/auth/register",
                 json=new_user.dict(exclude_unset=True),
@@ -82,7 +83,7 @@ async def user_show(
 
 async def user_edit(
     client: AuthClient, user_id: str, payload: Dict, **user_update_dict
-) -> RichJsonInterface:
+) -> Union[RichJsonInterface, PrintInterface]:
     user_update = UserUpdate(**user_update_dict)
     payload = user_update.dict(exclude_unset=True)
     if not payload:
@@ -91,13 +92,9 @@ async def user_edit(
     res = await client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}", json=payload
     )
-    new_user = check_response(
-        res,
-        expected_status_code=200,
-        # coerce=UserRead
-    )
+    new_user = check_response(res, expected_status_code=200, coerce=UserRead)
 
-    return PrintInterface(
+    return RichJsonInterface(
         retcode=0,
         data=new_user.dict(),
     )
@@ -105,13 +102,13 @@ async def user_edit(
 
 async def user_delete(
     client: AuthClient, user_id: str, **kwargs
-) -> RichJsonInterface:
+) -> PrintInterface:
 
     res = await client.delete(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}"
     )
     check_response(res, expected_status_code=204)
-    return RichJsonInterface(retcode=0, data="")
+    return PrintInterface(retcode=0, data="")
 
 
 async def user_whoami(client: AuthClient, **kwargs) -> RichJsonInterface:

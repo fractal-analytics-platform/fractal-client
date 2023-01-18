@@ -6,6 +6,7 @@ Original authors:
 Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
 Marco Franzon <marco.franzon@exact-lab.it>
 Tommaso Comparin <tommaso.comparin@exact-lab.it>
+Yuri Chiucconi  <yuri.chiucconi@exact-lab.it>
 
 This file is part of Fractal and was originally developed by eXact lab S.r.l.
 <exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
