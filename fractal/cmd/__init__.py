@@ -190,14 +190,14 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
 
 
 async def user(
-    client: AuthClient, subcmd: str, **kwargs
+    client: AuthClient, subcmd: str, user_id: str = None, **kwargs
 ):
     if subcmd == "register":
         iface = await user_register(client, **kwargs)
     elif subcmd == "list":
         iface = await user_list(client)
     elif subcmd == "show":
-        iface = await user_show(client)
+        iface = await user_show(client, user_id=user_id)
     elif subcmd == "edit":
         iface = await user_edit(client)
     elif subcmd == "delete":
