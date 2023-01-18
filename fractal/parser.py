@@ -553,13 +553,13 @@ user_list_parser = user_subparsers.add_parser(
 user_show_parser = user_subparsers.add_parser(
     "show", description="Show details of single user"
 )
-user_show_parser.add_argument("user_id", help="Id of the user")
+user_show_parser.add_argument("user_id", help="ID of the user")
 
 # user edit
 user_edit_parser = user_subparsers.add_parser(
     "edit", description="Edit details of single user"
 )
-user_edit_parser.add_argument("user_id", help="Id of the user")
+user_edit_parser.add_argument("user_id", help="ID of the user")
 user_edit_parser.add_argument(
     "--new-email", help="New email address", type=str, required=False
 )
@@ -577,7 +577,7 @@ user_edit_parser.add_argument(
 user_delete_parser = user_subparsers.add_parser(
     "delete", description="Delete a single user"
 )
-user_delete_parser.add_argument("user_id", help="Id of the user")
+user_delete_parser.add_argument("user_id", help="ID of the user")
 
 # user whoami
 user_whoami_parser = user_subparsers.add_parser(
