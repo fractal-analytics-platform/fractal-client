@@ -513,14 +513,14 @@ version_parser = subparsers_main.add_parser(
 # USER GROUP
 
 user_parser = subparsers_main.add_parser(
-    "user", description="---"  # TODO description
+    "user",
+    description="User commands",
 )
 user_subparsers = user_parser.add_subparsers(
     title="Valid subcommand", dest="subcmd", required=True
 )
 
 # user register
-
 user_register_parser = user_subparsers.add_parser(
     "register", description="Register a new user with the Fractal server"
 )
@@ -543,34 +543,30 @@ user_register_parser.add_argument(
 )
 
 # user list
-
 user_list_parser = user_subparsers.add_parser(
-    "list", description="---"  # TODO description
+    "list",
+    description="List all users",
 )
 
 # user show
-
 user_show_parser = user_subparsers.add_parser(
-    "show", description="---"  # TODO description
+    "show", description="Show details of single user"
 )
 user_show_parser.add_argument("user_id", help="Id of the user")
 
 # user edit
-
 user_edit_parser = user_subparsers.add_parser(
-    "edit", description="---"  # TODO description
+    "edit", description="Edit details of single user"
 )
 user_edit_parser.add_argument("user_id", help="Id of the user")
 
 # user delete
-
 user_delete_parser = user_subparsers.add_parser(
-    "delete", description="---"  # TODO description
+    "delete", description="Delete a single user"
 )
 user_delete_parser.add_argument("user_id", help="Id of the user")
 
 # user whoami
-
 user_whoami_parser = user_subparsers.add_parser(
-    "whoami", description="---"  # TODO description
+    "whoami", description="Verify information on current user"
 )
