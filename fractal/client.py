@@ -47,17 +47,18 @@ async def handle(cli_args: List[str] = argv):
         exit(1)
 
     try:
+        kwargs = vars(args)
         if args.cmd == "version":
             async with AsyncClient() as client:
-                interface = await handler(client, **vars(args))
+                interface = await handler(client, **kwargs)
         else:
-            # FIXME: extract user/password from args (via `pop`) or from
-            # settings
+            # Extract (and remove) username/password for AuthClient from kwargs
+            username = kwargs.pop("user", settings.FRACTAL_USER)
+            password = kwargs.pop("password", settings.FRACTAL_PASSWORD)
             async with AuthClient(
-                username=args.user or settings.FRACTAL_USER,
-                password=args.password or settings.FRACTAL_PASSWORD,
+                username=username, password=password
             ) as client:
-                interface = await handler(client, **vars(args))
+                interface = await handler(client, **kwargs)
     except AuthenticationError as e:
         return PrintInterface(retcode=1, data=e.args[0])
     except ConnectError as e:
