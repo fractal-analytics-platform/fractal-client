@@ -40,7 +40,7 @@ async def test_register(register_user, invoke):
 
 
 async def test_register_superuser(invoke_as_superuser):
-    res = await invoke_as_superuser("user register a@b.c abc FK")
+    res = await invoke_as_superuser("user register a@b.c abc --slurm_user FK")
     debug(res, res.data)
     assert res.retcode == 0
 
