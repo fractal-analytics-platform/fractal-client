@@ -85,14 +85,15 @@ async def user_edit(
     user_id: str,
     new_email: Optional[str] = None,
     new_slurm_user: Optional[str] = None,
-    new_is_superuser: Optional[bool] = None,
+    new_is_superuser: bool = False,
     **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
     user_update = UserUpdate(
         email=new_email,
         slurm_user=new_slurm_user,
-        is_superuser=new_is_superuser,
     )
+    if new_is_superuser:
+        user_update.is_superuser = True
     payload = user_update.dict(exclude_unset=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")

@@ -568,9 +568,8 @@ user_edit_parser.add_argument(
 )
 user_edit_parser.add_argument(
     "--new-is-superuser",
-    help="Superuser privileges for the new user",
-    type=bool,
-    default=False,
+    help="Give superuser privileges for the new user",
+    action="store_true",
     required=False,
 )
 
