@@ -104,6 +104,7 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     cmd = (
         f"user edit {user_id} "
         f"--new-email {NEW_EMAIL} "
+        f"--new-password SOMETHING "
         f"--new-slurm-user {NEW_SLURM_USER} "
     )
     if new_is_superuser:
