@@ -35,6 +35,21 @@ async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
     assert res.data["email"] == EMAIL_USER
 
 
+async def test_register_as_superuser_with_batch(invoke_as_superuser):
+    # Register a user with the --batch flag
+    res = await invoke_as_superuser(
+        f"--batch user register {EMAIL_USER} {PWD_USER}"
+    )
+    user_id = res.data
+    debug(user_id)
+    assert res.retcode == 0
+    # Check that the user exists
+    res = await invoke_as_superuser(f"user show {user_id}")
+    debug(res.data)
+    assert res.data["email"] == EMAIL_USER
+    assert res.retcode == 0
+
+
 async def test_list_as_user(invoke, register_user, caplog):
     with pytest.raises(SystemExit):
         await invoke("user list")
@@ -170,6 +185,13 @@ async def test_whoami_as_user(invoke, register_user):
     debug(res.data)
     assert res.data["email"] == environ["FRACTAL_USER"]
     assert not res.data["is_superuser"]
+    user_id = res.data["id"]
+
+    # Test user whoami with --batch flag
+    res = await invoke("--batch user whoami")
+    debug(res.data)
+    assert res.data == user_id
+    assert res.retcode == 0
 
 
 async def test_whoami_as_superuser(invoke_as_superuser):
