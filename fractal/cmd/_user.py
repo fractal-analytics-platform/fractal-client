@@ -17,6 +17,7 @@ async def user_register(
     new_password: Optional[str] = None,
     slurm_user: Optional[str] = None,
     superuser: bool = False,
+    batch: bool = False,
     **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
 
@@ -32,8 +33,7 @@ async def user_register(
         if new_password == confirm_new_password:
             new_user.password = new_password
         else:
-            iface = PrintInterface(retcode=1, data="Passwords do not match.")
-            return iface
+            return PrintInterface(retcode=1, data="Passwords do not match.")
 
     res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register",
@@ -49,9 +49,10 @@ async def user_register(
         )
         data = check_response(res, expected_status_code=200, coerce=UserRead)
 
-    iface = RichJsonInterface(retcode=0, data=data.dict())
-
-    return iface
+    if batch:
+        return PrintInterface(retcode=0, data=data.id)
+    else:
+        return RichJsonInterface(retcode=0, data=data.dict())
 
 
 async def user_list(client: AuthClient, **kwargs) -> RichJsonInterface:
@@ -123,8 +124,13 @@ async def user_delete(
     return PrintInterface(retcode=0, data="")
 
 
-async def user_whoami(client: AuthClient, **kwargs) -> RichJsonInterface:
+async def user_whoami(
+    client: AuthClient, batch: bool, **kwargs
+) -> Union[RichJsonInterface, PrintInterface]:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/whoami")
     user = check_response(res, expected_status_code=200, coerce=UserRead)
 
-    return RichJsonInterface(retcode=0, data=user.dict())
+    if batch:
+        return PrintInterface(retcode=0, data=user.id)
+    else:
+        return RichJsonInterface(retcode=0, data=user.dict())

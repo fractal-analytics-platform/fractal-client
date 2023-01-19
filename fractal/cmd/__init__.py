@@ -186,9 +186,11 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
     )
 
 
-async def user(client: AuthClient, subcmd: str, **kwargs) -> BaseInterface:
+async def user(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> BaseInterface:
     if subcmd == "register":
-        iface = await user_register(client, **kwargs)
+        iface = await user_register(client, batch=batch, **kwargs)
     elif subcmd == "list":
         iface = await user_list(client, **kwargs)
     elif subcmd == "show":
@@ -198,7 +200,7 @@ async def user(client: AuthClient, subcmd: str, **kwargs) -> BaseInterface:
     elif subcmd == "delete":
         iface = await user_delete(client, **kwargs)
     elif subcmd == "whoami":
-        iface = await user_whoami(client, **kwargs)
+        iface = await user_whoami(client, batch=batch, **kwargs)
     else:
         raise NoCommandError(f"Command user {subcmd} not found")
 
