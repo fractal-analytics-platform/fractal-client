@@ -570,6 +570,9 @@ user_edit_parser.add_argument(
     "--new-email", help="New email address", type=str, required=False
 )
 user_edit_parser.add_argument(
+    "--new-password", help="New password", type=str, required=False
+)
+user_edit_parser.add_argument(
     "--new-slurm-user", help="New SLURM username", type=str, required=False
 )
 

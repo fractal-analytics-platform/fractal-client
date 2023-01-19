@@ -79,6 +79,7 @@ async def user_edit(
     client: AuthClient,
     user_id: str,
     new_email: Optional[str] = None,
+    new_password: Optional[str] = None,
     new_slurm_user: Optional[str] = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
@@ -87,6 +88,7 @@ async def user_edit(
 
     user_update = UserUpdate(
         email=new_email,
+        password=new_password,
         slurm_user=new_slurm_user,
     )
 
