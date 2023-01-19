@@ -27,7 +27,7 @@ async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
         assert res.data["is_superuser"]
     else:
         res = await invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER}"
+            f"user register {EMAIL_USER} {PWD_USER} --slurm-user SOMETHING"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -104,6 +104,7 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     cmd = (
         f"user edit {user_id} "
         f"--new-email {NEW_EMAIL} "
+        f"--new-password SOMETHING "
         f"--new-slurm-user {NEW_SLURM_USER} "
     )
     if new_is_superuser:

@@ -22,6 +22,7 @@ httpx = "^0.23.0"
 PyJWT = "^2.4.0"
 pydantic = "^1.10.1"
 sqlmodel = "^0.0.8"
+fastapi-users = {extras = ["oauth"], version = "^10.1"}
 
 [tool.poetry.group.dev.dependencies]
 devtools = "^0.9.0"

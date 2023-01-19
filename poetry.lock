@@ -125,7 +125,7 @@ pytz = ">=2015.7"
 name = "bcrypt"
 version = "4.0.1"
 description = "Modern password hashing for your software and your servers"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -192,7 +192,7 @@ files = [
 name = "cffi"
 version = "1.15.1"
 description = "Foreign Function Interface for Python calling C code."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -475,7 +475,7 @@ toml = ["tomli"]
 name = "cryptography"
 version = "39.0.0"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -538,7 +538,7 @@ pygments = ["pygments (>=2.2.0)"]
 name = "dnspython"
 version = "2.3.0"
 description = "DNS toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
@@ -571,7 +571,7 @@ files = [
 name = "email-validator"
 version = "1.3.0"
 description = "A robust email address syntax and deliverability validation library."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 files = [
@@ -614,7 +614,7 @@ files = [
 name = "fastapi"
 version = "0.89.1"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -636,7 +636,7 @@ test = ["anyio[trio] (>=3.2.1,<4.0.0)", "black (==22.10.0)", "coverage[toml] (>=
 name = "fastapi-users"
 version = "10.3.0"
 description = "Ready-to-use and customizable users management for FastAPI"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -840,7 +840,7 @@ socks = ["socksio (>=1.0.0,<2.0.0)"]
 name = "httpx-oauth"
 version = "0.10.2"
 description = "Async OAuth client using HTTPX"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -960,7 +960,7 @@ files = [
 name = "makefun"
 version = "1.15.0"
 description = "Small library to dynamically create python functions."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -1148,7 +1148,7 @@ files = [
 name = "passlib"
 version = "1.7.4"
 description = "comprehensive password hashing framework supporting over 30 schemes"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -1200,7 +1200,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
@@ -1358,7 +1358,7 @@ cli = ["click (>=5.0)"]
 name = "python-multipart"
 version = "0.0.5"
 description = "A streaming multipart parser for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -1511,7 +1511,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
@@ -1812,14 +1812,14 @@ url = ["furl (>=0.4.1)"]
 
 [[package]]
 name = "sqlalchemy2-stubs"
-version = "0.0.2a31"
+version = "0.0.2a32"
 description = "Typing Stubs for SQLAlchemy 1.4"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "sqlalchemy2-stubs-0.0.2a31.tar.gz", hash = "sha256:18e70515eec96c48825f3e1da0c60b04e155593213e25eb28c4cee994a315e4d"},
-    {file = "sqlalchemy2_stubs-0.0.2a31-py3-none-any.whl", hash = "sha256:515a97fbe4b7cd299b43166c51ce6f356f1222128bf2ba57b0619ce8d89dfab4"},
+    {file = "sqlalchemy2-stubs-0.0.2a32.tar.gz", hash = "sha256:2a2cfab71d35ac63bf21ad841d8610cd93a3bd4c6562848c538fa975585c2739"},
+    {file = "sqlalchemy2_stubs-0.0.2a32-py3-none-any.whl", hash = "sha256:7f5fb30b0cf7c6b74c50c1d94df77ff32007afee8d80499752eb3fedffdbdfb8"},
 ]
 
 [package.dependencies]
@@ -1846,7 +1846,7 @@ sqlalchemy2-stubs = "*"
 name = "starlette"
 version = "0.22.0"
 description = "The little ASGI library that shines."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1952,4 +1952,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "572de58112b0f984f78126c8d65046d30a42fc8c4322496588e1a7b52f3f8bd4"
+content-hash = "9b7a1e5ff6218e0fd8e688cfa98a96ebe4ac0b8e583cf32d5cfcc6412f5cd437"
