@@ -28,7 +28,7 @@ parser_main.add_argument(
 parser_main.add_argument(
     "-p", "--password", help="User password (overrides configuration file)"
 )
-parser_main.add_argument("-s", "--slurm_user", help="Slurm user")
+parser_main.add_argument("-s", "--slurm-user", help="SLURM user")
 parser_main.add_argument(
     "--verbose",
     "-v",
@@ -538,8 +538,8 @@ user_register_parser.add_argument(
     "new_password", help="Password for the new user"
 )
 user_register_parser.add_argument(
-    "--slurm_user",
-    help="Username to login into Slurm cluster",
+    "--slurm-user",
+    help="Username to login into SLURM cluster",
     required=False,
 )
 user_register_parser.add_argument(
