@@ -28,6 +28,23 @@ from .interface import PrintInterface
 from .parser import parser_main
 
 
+class MissingCredentialsError(RuntimeError):
+    pass
+
+
+def _check_credentials(*, username: str, password: str):
+    info = (
+        "\nPossible options: \n"
+        + "    1. Set --user/--password arguments;\n"
+        + "    2. Write credentials in a .fractal.env file;\n"
+        + "    3. Write credentials as environment variables."
+    )
+    if not username:
+        raise MissingCredentialsError(f"FRACTAL_USER not defined.\n{info}")
+    if not password:
+        raise MissingCredentialsError(f"FRACTAL_PASSWORD not defined.\n{info}")
+
+
 async def handle(cli_args: List[str] = argv):
     args = parser_main.parse_args(cli_args[1:])
 
@@ -55,6 +72,11 @@ async def handle(cli_args: List[str] = argv):
             # Extract (and remove) username/password for AuthClient from kwargs
             username = kwargs.pop("user") or settings.FRACTAL_USER
             password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
+            _check_credentials(username=username, password=password)
+            from devtools import debug
+
+            debug(username)
+            debug(password)
             async with AuthClient(
                 username=username, password=password
             ) as client:

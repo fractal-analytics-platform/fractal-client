@@ -37,8 +37,8 @@ class Settings(BaseSettings):
 
     FRACTAL_LOGGING_LEVEL: int = logging.INFO
 
-    FRACTAL_USER: str = fail_getenv("FRACTAL_USER")
-    FRACTAL_PASSWORD: str = fail_getenv("FRACTAL_PASSWORD")
+    FRACTAL_USER: Optional[str] = getenv("FRACTAL_USER")
+    FRACTAL_PASSWORD: Optional[str] = getenv("FRACTAL_PASSWORD")
     SLURM_USER: Optional[str] = getenv("SLURM_USER")
 
     FRACTAL_SERVER: str = getenv("FRACTAL_SERVER", "http://localhost:8000")
