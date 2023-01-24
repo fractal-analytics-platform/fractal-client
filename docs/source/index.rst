@@ -21,3 +21,4 @@ This documentation concerns the **Fractal Client**. Find more information about 
    Installation and usage <install>
    Command-line interface <cli>
    How to contribute <contribute>
+   Changelog <changelog>
