@@ -72,7 +72,7 @@ Preliminary check-list
 * You reviewed dependencies, and the lock file is up to date with ``pyproject.toml``.
 * The current HEAD of the `main` branch passes all the tests (note: make sure
   that you are using the poetry-installed local package).
-* You updated the changelog (note: this is not yet in-place).
+* You updated the `CHANGELOG.md` file.
 
 Actual **release instructions**:
 
