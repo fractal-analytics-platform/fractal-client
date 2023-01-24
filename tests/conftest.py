@@ -4,7 +4,6 @@ from os import environ
 from pathlib import Path
 
 import pytest
-from devtools import debug
 from httpx import AsyncClient
 
 
@@ -90,21 +89,6 @@ def clear_task_cache():
     cache_dir = Path(settings.FRACTAL_CACHE_PATH).expanduser()
     cache_file = cache_dir / "tasks"
     cache_file.unlink(missing_ok=True)
-
-
-@pytest.fixture(scope="function")
-def remove_credentials_from_env():
-    FRACTAL_USER = environ.pop("FRACTAL_USER")
-    FRACTAL_PASSWORD = environ.pop("FRACTAL_PASSWORD")
-    debug(f"Removing {FRACTAL_USER=} from environ")
-    debug(f"Removing {FRACTAL_PASSWORD=} from environ")
-    yield
-    if FRACTAL_USER:
-        debug(f"Resetting {FRACTAL_USER=} in environ")
-        environ["FRACTAL_USER"] = FRACTAL_USER
-    if FRACTAL_PASSWORD:
-        debug(f"Resetting {FRACTAL_PASSWORD=} in environ")
-        environ["FRACTAL_PASSWORD"] = FRACTAL_PASSWORD
 
 
 from .fixtures_testserver import *  # noqa: 401
