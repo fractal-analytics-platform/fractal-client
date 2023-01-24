@@ -16,6 +16,8 @@ import asyncio
 import logging
 from sys import argv
 from typing import List
+from typing import Tuple
+from typing import Union
 
 from httpx import AsyncClient
 from httpx import ConnectError
@@ -32,7 +34,19 @@ class MissingCredentialsError(RuntimeError):
     pass
 
 
-def _check_credentials(*, username: str, password: str):
+def _check_credentials(
+    *, username: Union[str, None], password: Union[str, None]
+) -> Tuple[str, str]:
+    """
+    Check that username and password are defined
+
+    Arguments:
+        username: Username
+        password: Password
+
+    Raises:
+        MissingCredentialsError: If either `username` of `password` is `None`.
+    """
     info = (
         "\nPossible options: \n"
         + "    1. Set --user/--password arguments;\n"
@@ -43,6 +57,7 @@ def _check_credentials(*, username: str, password: str):
         raise MissingCredentialsError(f"FRACTAL_USER not defined.\n{info}")
     if not password:
         raise MissingCredentialsError(f"FRACTAL_PASSWORD not defined.\n{info}")
+    return (username, password)
 
 
 async def handle(cli_args: List[str] = argv):
@@ -72,11 +87,9 @@ async def handle(cli_args: List[str] = argv):
             # Extract (and remove) username/password for AuthClient from kwargs
             username = kwargs.pop("user") or settings.FRACTAL_USER
             password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
-            _check_credentials(username=username, password=password)
-            from devtools import debug
-
-            debug(username)
-            debug(password)
+            username, password = _check_credentials(
+                username=username, password=password
+            )
             async with AuthClient(
                 username=username, password=password
             ) as client:
