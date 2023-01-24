@@ -83,3 +83,5 @@ async def test_missing_credentials(monkeypatch):
         with pytest.raises(MissingCredentialsError) as e:
             await handle(shlex.split("fractal user whoami"))
         debug(e.value)
+        debug(e.value.args[0])
+        assert "FRACTAL_USER" in e.value.args[0]
