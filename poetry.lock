@@ -1340,6 +1340,22 @@ pytest = ">=6.1.0"
 testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy (>=0.931)", "pytest-trio (>=0.7.0)"]
 
 [[package]]
+name = "pytest-pretty"
+version = "1.0.1"
+description = "pytest plugin for printing summary data as I want it"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_pretty-1.0.1-py3-none-any.whl", hash = "sha256:c1039f05ee1a11e1d9e586faea79c7437d74d899d95e8f2824e884d2117329bd"},
+    {file = "pytest_pretty-1.0.1.tar.gz", hash = "sha256:d5221cb69384d581b490edd15e22d607e00772e02e6a393292626c626ff1c075"},
+]
+
+[package.dependencies]
+pytest = ">=7"
+rich = ">=12"
+
+[[package]]
 name = "python-dotenv"
 version = "0.20.0"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -1952,4 +1968,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "ed1ae51804f625dbcb89ec56fef61c1bd6462db48d58e6edd1ecf50787c40791"
+content-hash = "88df7223e1f18430bc0040f6837cdbc8048d85aa5d94b68c52e71f82b188ccb5"

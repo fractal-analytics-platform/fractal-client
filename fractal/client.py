@@ -16,6 +16,8 @@ import asyncio
 import logging
 from sys import argv
 from typing import List
+from typing import Tuple
+from typing import Union
 
 from httpx import AsyncClient
 from httpx import ConnectError
@@ -26,6 +28,44 @@ from .authclient import AuthenticationError
 from .config import settings
 from .interface import PrintInterface
 from .parser import parser_main
+
+
+class MissingCredentialsError(RuntimeError):
+    pass
+
+
+def _check_credentials(
+    *, username: Union[str, None], password: Union[str, None]
+) -> Tuple[str, str]:
+    """
+    Check that username and password are defined
+
+    Arguments:
+        username: Username
+        password: Password
+
+    Raises:
+        MissingCredentialsError: If either `username` of `password` is `None`.
+    """
+    if not username:
+        message = (
+            "FRACTAL_USER variable not defined."
+            "\nPossible options: \n"
+            + "    1. Set --user argument;\n"
+            + "    2. Define FRACTAL_USER in a .fractal.env file;\n"
+            + "    3. Define FRACTAL_USER as an environment variable."
+        )
+        raise MissingCredentialsError(message)
+    if not password:
+        message = (
+            "FRACTAL_PASSWORD variable not defined."
+            "\nPossible options: \n"
+            + "    1. Set --password argument;\n"
+            + "    2. Define FRACTAL_PASSWORD in a .fractal.env file;\n"
+            + "    3. Define FRACTAL_PASSWORD as an environment variable."
+        )
+        raise MissingCredentialsError(message)
+    return (username, password)
 
 
 async def handle(cli_args: List[str] = argv):
@@ -55,6 +95,9 @@ async def handle(cli_args: List[str] = argv):
             # Extract (and remove) username/password for AuthClient from kwargs
             username = kwargs.pop("user") or settings.FRACTAL_USER
             password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
+            username, password = _check_credentials(
+                username=username, password=password
+            )
             async with AuthClient(
                 username=username, password=password
             ) as client:
