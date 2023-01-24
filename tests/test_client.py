@@ -1,9 +1,11 @@
 from os import environ
 
 import httpx
+import pytest
 from devtools import debug
 
 from fractal import __VERSION__
+from fractal.client import MissingCredentialsError
 
 
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
@@ -57,3 +59,12 @@ async def test_bad_credentials(invoke):
     res.show()
     assert res.retcode != 0
     assert "BAD_CREDENTIALS" in res.data
+
+
+async def test_missing_credentials(remove_credentials_from_env, invoke):
+    """
+    GIVEN an invocation without any credentials
+    THEN the client raises a MissingCredentialsError
+    """
+    with pytest.raises(MissingCredentialsError):
+        await invoke("user whoami")
