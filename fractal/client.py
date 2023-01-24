@@ -47,16 +47,24 @@ def _check_credentials(
     Raises:
         MissingCredentialsError: If either `username` of `password` is `None`.
     """
-    info = (
-        "\nPossible options: \n"
-        + "    1. Set --user/--password arguments;\n"
-        + "    2. Write credentials in a .fractal.env file;\n"
-        + "    3. Write credentials as environment variables."
-    )
     if not username:
-        raise MissingCredentialsError(f"FRACTAL_USER not defined.\n{info}")
+        message = (
+            "FRACTAL_USER variable not defined."
+            "\nPossible options: \n"
+            + "    1. Set --user argument;\n"
+            + "    2. Define FRACTAL_USER in a .fractal.env file;\n"
+            + "    3. Define FRACTAL_USER as an environment variable."
+        )
+        raise MissingCredentialsError(message)
     if not password:
-        raise MissingCredentialsError(f"FRACTAL_PASSWORD not defined.\n{info}")
+        message = (
+            "FRACTAL_PASSWORD variable not defined."
+            "\nPossible options: \n"
+            + "    1. Set --password argument;\n"
+            + "    2. Define FRACTAL_PASSWORD in a .fractal.env file;\n"
+            + "    3. Define FRACTAL_PASSWORD as an environment variable."
+        )
+        raise MissingCredentialsError(message)
     return (username, password)
 
 
