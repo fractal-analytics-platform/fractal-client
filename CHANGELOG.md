@@ -1,6 +1,6 @@
 # 1.0.2
 
-* Remove obsolete references to SLURM user, either as an CLI argument or an environment variable (\#419).
+* Remove obsolete references to SLURM user, either as a CLI argument or an environment variable (\#419).
 
 # 1.0.1
 
