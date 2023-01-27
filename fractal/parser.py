@@ -28,7 +28,6 @@ parser_main.add_argument(
 parser_main.add_argument(
     "-p", "--password", help="User password (overrides configuration file)"
 )
-parser_main.add_argument("-s", "--slurm-user", help="SLURM user")
 parser_main.add_argument(
     "--verbose",
     "-v",
