@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from os import environ
+from typing import Optional
 
 import pytest
 
@@ -178,10 +179,15 @@ async def job_factory(db):
 
 @pytest.fixture
 async def user_factory(client_superuser, testserver):
-    async def __register_user(email: str, password: str, slurm_user: str):
+    async def __register_user(
+        email: str, password: str, slurm_user: Optional[str] = None
+    ):
+        payload = dict(email=email, password=password)
+        if slurm_user:
+            payload["slurm_user"] = slurm_user
         res = await client_superuser.post(
             f"{testserver}/auth/register",
-            json=dict(email=email, password=password, slurm_user=slurm_user),
+            json=payload,
         )
         assert res.status_code == 201
         return res.json()
@@ -194,5 +200,4 @@ async def register_user(user_factory):
     return await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
-        slurm_user=environ["SLURM_USER"],
     )

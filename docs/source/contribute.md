@@ -46,14 +46,6 @@ its dependencies, including development dependencies.
 Note that to run commands from within this environment you should prepend them
 with `poetry run`, as in `poetry run fractalctl start`.
 
-To install Fractal Server with some additional extras, use the [`-E`
-option](https://python-poetry.org/docs/pyproject/#extras), as in
-```
-poetry install -E slurm
-poetry install -E slurm -E postgres
-poetry install --all-extras
-```
-
 It may sometimes be useful to use a different Python interpreter from the one
 installed in your system. To this end we suggest using
 [pyenv](https://github.com/pyenv/pyenv). In the project folder, invoking
