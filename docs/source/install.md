@@ -17,8 +17,6 @@ the following environment variables:
 * `FRACTAL_SERVER`: fully qualified URL to the Fractal server installation
 * `FRACTAL_USER`, `FRACTAL_PASSWORD`: email and password used to log-in to the
    Fractal server.
-* `SLURM_USER`: name of the user on the SLURM cluster (only for when the
-  Fractal Server is running with a SLURM backend).
 
 By default, `fractal` caches some information in `~/.cache/fractal`. This destination
 can be customized by setting `FRACTAL_CACHE_PATH`.
@@ -29,6 +27,5 @@ variables.  An example of such file is
 ```
 FRACTAL_USER=user@something.com
 FRACTAL_PASSWORD=myuser
-SLURM_USER=myslurmuser
 FRACTAL_SERVER=http://localhost:8010
 ```
