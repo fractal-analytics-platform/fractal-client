@@ -3,6 +3,7 @@ from typing import Optional
 from ..authclient import AuthClient
 from ..common.schemas import StateRead
 from ..common.schemas import TaskCollectPip
+from ..common.schemas import TaskCreate
 from ..common.schemas import TaskRead
 from ..common.schemas import TaskUpdate
 from ..config import settings
@@ -74,7 +75,24 @@ async def task_new(
     meta_file: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
-    raise NotImplementedError
+    optionals = {}
+    if default_args_file:
+        default_args = None  # read from file
+        optionals["default_args"] = default_args
+    if meta_file:
+        meta = None  # read from file
+        optionals["meta"] = meta
+    payload = TaskCreate(
+        name=name,
+        command=command,
+        source=source,
+        input_type=input_type,
+        output_type=output_type,
+        **optionals,
+    )
+    res = await client.post(f"{settings.BASE_URL}/task/", json=payload)
+    new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
+    return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
 async def task_edit(
