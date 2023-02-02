@@ -23,6 +23,7 @@ from ._task import task_collection_check
 from ._task import task_delete
 from ._task import task_edit
 from ._task import task_list
+from ._task import task_new
 from ._user import user_delete
 from ._user import user_edit
 from ._user import user_list
@@ -121,6 +122,8 @@ async def task(
         iface = await task_collect_pip(client, batch=batch, **kwargs)
     elif subcmd == "check-collection":
         iface = await task_collection_check(client, **kwargs)
+    elif subcmd == "new":
+        iface = await task_new(client, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
     elif subcmd == "delete":
