@@ -91,7 +91,7 @@ async def task_new(
         output_type=output_type,
         **optionals,
     )
-    res = await client.post(f"{settings.BASE_URL}/task/", json=payload)
+    res = await client.post(f"{settings.BASE_URL}/task/", json=dict(payload))
     new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
     return RichJsonInterface(retcode=0, data=new_task.dict())
 

@@ -98,3 +98,35 @@ async def test_edit_task(register_user, invoke, clear_task_cache):
     # TODO:
     # Decide what it means to edit a task
     raise NotImplementedError
+
+
+async def test_task_new(register_user, invoke):
+
+    # create a new task with just positional required args
+    res = await invoke("task new _name _command _source")
+    res.show()
+    assert res.retcode == 0
+    assert res.data["name"] == "_name"
+    assert res.data["command"] == "_command"
+    assert res.data["source"] == "_source"
+    assert res.data["input_type"] == res.data["output_type"] == "Any"
+    assert res.data["default_args"] == res.data["meta"] == {}
+
+    # create a new task with same source as before
+    with pytest.raises(SystemExit) as exit:
+        await invoke("task new _name2 _command2 _source")
+    assert exit.value.code == 1
+
+    # create a new task without all positional required args
+    with pytest.raises(SystemExit) as exit:
+        await invoke("task new _name2 _command2")
+    assert exit.value.code == 2
+
+    # create a new task using too many args
+    with pytest.raises(SystemExit) as exit:
+        await invoke("task new A B C D E F G H I J K L M N O")
+    assert exit.value.code == 2
+
+    # create a new task passing not existing file
+    with pytest.raises(FileNotFoundError):
+        await invoke("task new A B C --meta-file ./foo.pdf")
