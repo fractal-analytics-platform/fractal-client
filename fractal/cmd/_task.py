@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -77,11 +78,11 @@ async def task_new(
 ) -> BaseInterface:
     optionals = {}
     if default_args_file:
-        default_args = None  # read from file
-        optionals["default_args"] = default_args
+        with open(default_args_file, "r") as f:
+            optionals["default_args"] = json.load(f)
     if meta_file:
-        meta = None  # read from file
-        optionals["meta"] = meta
+        with open(meta_file, "r") as f:
+            optionals["meta"] = json.load(f)
     payload = TaskCreate(
         name=name,
         command=command,
