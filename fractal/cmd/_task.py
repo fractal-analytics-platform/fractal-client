@@ -62,6 +62,21 @@ async def task_collection_check(
     return RichJsonInterface(retcode=0, data=state.sanitised_dict())
 
 
+async def task_new(
+    client: AuthClient,
+    *,
+    name: str,
+    command: str,
+    source: str,
+    input_type: Optional[str] = "Any",
+    output_type: Optional[str] = "Any",
+    default_args_file: Optional[str] = None,
+    meta_file: Optional[str] = None,
+    **kwargs,
+) -> BaseInterface:
+    raise NotImplementedError
+
+
 async def task_edit(
     client: AuthClient,
     *,
