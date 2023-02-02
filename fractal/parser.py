@@ -260,6 +260,22 @@ task_check_collection_parser.add_argument(
     help="Also include task-collection logs",
 )
 
+# task new
+task_new_parser = task_subparsers.add_parser(
+    "new", description="Create new task", argument_default=ap.SUPPRESS
+)
+task_new_parser.add_argument("name", help="---", type=str)
+task_new_parser.add_argument("command", help="---", type=str)
+task_new_parser.add_argument("source", help="---", type=str)
+task_new_parser.add_argument(
+    "--input-type", help="---", type=str, default="Any"
+)
+task_new_parser.add_argument(
+    "--output-type", help="---", type=str, default="Any"
+)
+task_new_parser.add_argument("--default-args-file", help="---", type=str)
+task_new_parser.add_argument("--meta-file", help="---", type=str)
+
 # task edit
 task_edit_parser = task_subparsers.add_parser(
     "edit", description="Edit task", argument_default=ap.SUPPRESS
