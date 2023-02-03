@@ -70,6 +70,7 @@ async def task_new(
     name: str,
     command: str,
     source: str,
+    batch: bool = False,
     input_type: Optional[str] = "Any",
     output_type: Optional[str] = "Any",
     default_args_file: Optional[str] = None,
@@ -93,7 +94,11 @@ async def task_new(
     )
     res = await client.post(f"{settings.BASE_URL}/task/", json=dict(payload))
     new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
-    return RichJsonInterface(retcode=0, data=new_task.dict())
+
+    if batch:
+        return PrintInterface(retcode=0, data=str(new_task.id))
+    else:
+        return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
 async def task_edit(

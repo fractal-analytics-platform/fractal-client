@@ -123,7 +123,7 @@ async def task(
     elif subcmd == "check-collection":
         iface = await task_collection_check(client, **kwargs)
     elif subcmd == "new":
-        iface = await task_new(client, **kwargs)
+        iface = await task_new(client, batch=batch, **kwargs)
     elif subcmd == "edit":
         iface = await task_edit(client, **kwargs)
     elif subcmd == "delete":
