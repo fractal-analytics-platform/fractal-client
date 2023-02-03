@@ -1,3 +1,8 @@
+# 1.0.3
+
+* Add `fractal task new` command (\#421).
+* Remove obsolete `-j/--json` argument from `fractal` command (\#421).
+
 # 1.0.2
 
 * Remove obsolete references to SLURM user, either as a CLI argument or an environment variable (\#419).
