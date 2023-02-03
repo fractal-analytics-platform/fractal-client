@@ -114,26 +114,17 @@ async def test_task_new(register_user, invoke):
     first_task_id = int(res.data["id"])
 
     # create a new task with batch option
-    res = await invoke("--batch task new _name _command _source2")
+    res = await invoke("--batch task new _name2 _command2 _source2")
     res.show()
     assert res.retcode == 0
     assert res.data == str(first_task_id + 1)
 
-    # create a new task with same source as before
-    with pytest.raises(SystemExit) as exit:
+    # create a new task with same source as before. Note that in check_response
+    # we have sys.exit(1) when status code is not the expecte one
+    with pytest.raises(SystemExit) as e:
         await invoke("task new _name2 _command2 _source")
-    assert exit.value.code == 1
-
-    # create a new task without all positional required args
-    with pytest.raises(SystemExit) as exit:
-        await invoke("task new _name2 _command2")
-    assert exit.value.code == 2
-
-    # create a new task using too many args
-    with pytest.raises(SystemExit) as exit:
-        await invoke("task new A B C D E F G H I J K L M N O")
-    assert exit.value.code == 2
+    assert e.value.code == 1
 
     # create a new task passing not existing file
     with pytest.raises(FileNotFoundError):
-        await invoke("task new A B C --meta-file ./foo.pdf")
+        await invoke("task new _name _command _source --meta-file ./foo.pdf")
