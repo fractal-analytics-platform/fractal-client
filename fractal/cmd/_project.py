@@ -87,8 +87,8 @@ async def project_show(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}",
     )
-    project = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=project)
+    project = check_response(res, expected_status_code=200, coerce=ProjectRead)
+    return RichJsonInterface(retcode=0, data=project.dict())
 
 
 async def project_add_dataset(
