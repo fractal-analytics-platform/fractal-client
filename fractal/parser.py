@@ -264,17 +264,35 @@ task_check_collection_parser.add_argument(
 task_new_parser = task_subparsers.add_parser(
     "new", description="Create new task", argument_default=ap.SUPPRESS
 )
-task_new_parser.add_argument("name", help="---", type=str)
-task_new_parser.add_argument("command", help="---", type=str)
-task_new_parser.add_argument("source", help="---", type=str)
 task_new_parser.add_argument(
-    "--input-type", help="---", type=str, default="Any"
+    "name", help="A human readable name for the task", type=str
 )
 task_new_parser.add_argument(
-    "--output-type", help="---", type=str, default="Any"
+    "command", help="The command that executes the task", type=str
 )
-task_new_parser.add_argument("--default-args-file", help="---", type=str)
-task_new_parser.add_argument("--meta-file", help="---", type=str)
+task_new_parser.add_argument("source", help="TBD", type=str)
+task_new_parser.add_argument(
+    "--input-type",
+    help="The type of data the task expects as input",
+    type=str,
+    default="Any",
+)
+task_new_parser.add_argument(
+    "--output-type",
+    help="The type of data the task expects as output",
+    type=str,
+    default="Any",
+)
+task_new_parser.add_argument(
+    "--default-args-file",
+    help="Path to JSON file with default task arguments",
+    type=str,
+)
+task_new_parser.add_argument(
+    "--meta-file",
+    help="Path to JSON file with additional parameters useful for execution",
+    type=str,
+)
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(
