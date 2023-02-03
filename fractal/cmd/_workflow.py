@@ -77,8 +77,10 @@ async def workflow_show(
     **kwargs,
 ) -> RichJsonInterface:
     res = await client.get(f"{settings.BASE_URL}/workflow/{workflow_id}")
-    workflow = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=workflow)
+    workflow = check_response(
+        res, expected_status_code=200, coerce=WorkflowRead
+    )
+    return RichJsonInterface(retcode=0, data=workflow.dict())
 
 
 async def workflow_add_task(
