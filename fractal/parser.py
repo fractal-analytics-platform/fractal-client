@@ -44,13 +44,6 @@ parser_main.add_argument(
         "only the ID of items created instead of the full object."
     ),
 )
-parser_main.add_argument(
-    "-j",
-    "--json",
-    default=False,
-    action="store_true",
-    help="Output raw json",
-)
 
 subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
 
@@ -258,6 +251,40 @@ task_check_collection_parser.add_argument(
     default=False,
     action="store_true",
     help="Also include task-collection logs",
+)
+
+# task new
+task_new_parser = task_subparsers.add_parser(
+    "new", description="Create new task", argument_default=ap.SUPPRESS
+)
+task_new_parser.add_argument(
+    "name", help="A human readable name for the task", type=str
+)
+task_new_parser.add_argument(
+    "command", help="The command that executes the task", type=str
+)
+task_new_parser.add_argument("source", help="TBD", type=str)
+task_new_parser.add_argument(
+    "--input-type",
+    help="The type of data the task expects as input",
+    type=str,
+    default="Any",
+)
+task_new_parser.add_argument(
+    "--output-type",
+    help="The type of data the task expects as output",
+    type=str,
+    default="Any",
+)
+task_new_parser.add_argument(
+    "--default-args-file",
+    help="Path to JSON file with default task arguments",
+    type=str,
+)
+task_new_parser.add_argument(
+    "--meta-file",
+    help="Path to JSON file with additional parameters useful for execution",
+    type=str,
 )
 
 # task edit

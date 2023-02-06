@@ -98,3 +98,33 @@ async def test_edit_task(register_user, invoke, clear_task_cache):
     # TODO:
     # Decide what it means to edit a task
     raise NotImplementedError
+
+
+async def test_task_new(register_user, invoke):
+
+    # create a new task with just positional required args
+    res = await invoke("task new _name _command _source")
+    res.show()
+    assert res.retcode == 0
+    assert res.data["name"] == "_name"
+    assert res.data["command"] == "_command"
+    assert res.data["source"] == "_source"
+    assert res.data["input_type"] == res.data["output_type"] == "Any"
+    assert res.data["default_args"] == res.data["meta"] == {}
+    first_task_id = int(res.data["id"])
+
+    # create a new task with batch option
+    res = await invoke("--batch task new _name2 _command2 _source2")
+    res.show()
+    assert res.retcode == 0
+    assert res.data == str(first_task_id + 1)
+
+    # create a new task with same source as before. Note that in check_response
+    # we have sys.exit(1) when status code is not the expecte one
+    with pytest.raises(SystemExit) as e:
+        await invoke("task new _name2 _command2 _source")
+    assert e.value.code == 1
+
+    # create a new task passing not existing file
+    with pytest.raises(FileNotFoundError):
+        await invoke("task new _name _command _source --meta-file ./foo.pdf")

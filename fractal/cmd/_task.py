@@ -1,8 +1,10 @@
+import json
 from typing import Optional
 
 from ..authclient import AuthClient
 from ..common.schemas import StateRead
 from ..common.schemas import TaskCollectPip
+from ..common.schemas import TaskCreate
 from ..common.schemas import TaskRead
 from ..common.schemas import TaskUpdate
 from ..config import settings
@@ -60,6 +62,43 @@ async def task_collection_check(
     )
     state = check_response(res, expected_status_code=200, coerce=StateRead)
     return RichJsonInterface(retcode=0, data=state.sanitised_dict())
+
+
+async def task_new(
+    client: AuthClient,
+    *,
+    name: str,
+    command: str,
+    source: str,
+    batch: bool = False,
+    input_type: Optional[str] = "Any",
+    output_type: Optional[str] = "Any",
+    default_args_file: Optional[str] = None,
+    meta_file: Optional[str] = None,
+    **kwargs,
+) -> BaseInterface:
+    optionals = {}
+    if default_args_file:
+        with open(default_args_file, "r") as f:
+            optionals["default_args"] = json.load(f)
+    if meta_file:
+        with open(meta_file, "r") as f:
+            optionals["meta"] = json.load(f)
+    payload = TaskCreate(
+        name=name,
+        command=command,
+        source=source,
+        input_type=input_type,
+        output_type=output_type,
+        **optionals,
+    ).dict()
+    res = await client.post(f"{settings.BASE_URL}/task/", json=payload)
+    new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
+
+    if batch:
+        return PrintInterface(retcode=0, data=str(new_task.id))
+    else:
+        return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
 async def task_edit(
