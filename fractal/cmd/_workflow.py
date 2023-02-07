@@ -230,3 +230,22 @@ async def workflow_apply(
         res, expected_status_code=202, coerce=ApplyWorkflowRead
     )
     return RichJsonInterface(retcode=0, data=apply_wf_read.sanitised_dict())
+
+
+async def workflow_import(
+    client: AuthClient,
+    *,
+    json_file: str,
+    **kwargs,
+) -> BaseInterface:
+    raise NotImplementedError
+
+
+async def workflow_export(
+    client: AuthClient,
+    *,
+    workflow_id: int,
+    json_file: str,
+    **kwargs,
+) -> BaseInterface:
+    raise NotImplementedError

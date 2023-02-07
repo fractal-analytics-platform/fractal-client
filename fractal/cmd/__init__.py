@@ -35,6 +35,8 @@ from ._workflow import workflow_apply
 from ._workflow import workflow_delete
 from ._workflow import workflow_edit
 from ._workflow import workflow_edit_task
+from ._workflow import workflow_export
+from ._workflow import workflow_import
 from ._workflow import workflow_list
 from ._workflow import workflow_new
 from ._workflow import workflow_remove_task
@@ -154,6 +156,10 @@ async def workflow(
         iface = await workflow_remove_task(client, **kwargs)
     elif subcmd == "apply":
         iface = await workflow_apply(client, **kwargs)
+    elif subcmd == "import":
+        iface = await workflow_import(client, **kwargs)
+    elif subcmd == "export":
+        iface = await workflow_export(client, **kwargs)
     else:
         raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface

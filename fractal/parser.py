@@ -479,6 +479,29 @@ workflow_apply_parser.add_argument(
     help="Command to be run before starting a worker",
 )
 
+# workflow import
+workflow_import_parser = workflow_subparsers.add_parser(
+    "import",
+    description="Import workflow from file",
+)
+workflow_import_parser.add_argument(
+    "--json-file",
+    help="---",  # TODO
+)
+
+# workflow export
+workflow_export_parser = workflow_subparsers.add_parser(
+    "export",
+    description="Export workflow to file",
+)
+workflow_export_parser.add_argument(
+    "workflow_id",
+    help="Workflow ID",
+)
+workflow_export_parser.add_argument(
+    "--json-file",
+    help="---",  # TODO
+)
 
 # JOB GROUP
 
