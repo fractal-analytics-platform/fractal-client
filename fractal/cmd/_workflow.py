@@ -7,6 +7,7 @@ from ..authclient import AuthClient
 from ..common.schemas import ApplyWorkflowCreate
 from ..common.schemas import ApplyWorkflowRead
 from ..common.schemas import WorkflowCreate
+from ..common.schemas import WorkflowImport
 from ..common.schemas import WorkflowRead
 from ..common.schemas import WorkflowTaskCreate
 from ..common.schemas import WorkflowTaskRead
@@ -238,7 +239,16 @@ async def workflow_import(
     json_file: str,
     **kwargs,
 ) -> BaseInterface:
-    raise NotImplementedError
+    with Path(json_file).open("r") as f:
+        workflow = json.load(f)
+    workflow = WorkflowImport(**workflow)
+    res = await client.post(
+        f"{settings.BASE_URL}/workflow/import/", json=workflow
+    )
+    wf_read = check_response(
+        res, expected_status_code=201, coerce=WorkflowRead
+    )
+    return RichJsonInterface(retcode=0, data=wf_read.dict())
 
 
 async def workflow_export(
