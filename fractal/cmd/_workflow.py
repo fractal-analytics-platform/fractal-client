@@ -7,6 +7,8 @@ from ..authclient import AuthClient
 from ..common.schemas import ApplyWorkflowCreate
 from ..common.schemas import ApplyWorkflowRead
 from ..common.schemas import WorkflowCreate
+from ..common.schemas import WorkflowExport
+from ..common.schemas import WorkflowImport
 from ..common.schemas import WorkflowRead
 from ..common.schemas import WorkflowTaskCreate
 from ..common.schemas import WorkflowTaskRead
@@ -230,3 +232,50 @@ async def workflow_apply(
         res, expected_status_code=202, coerce=ApplyWorkflowRead
     )
     return RichJsonInterface(retcode=0, data=apply_wf_read.sanitised_dict())
+
+
+async def workflow_import(
+    client: AuthClient,
+    *,
+    project_id: int,
+    json_file: str,
+    batch: bool = False,
+    **kwargs,
+) -> BaseInterface:
+    with Path(json_file).open("r") as f:
+        workflow = json.load(f)
+    workflow = WorkflowImport(**workflow)
+    res = await client.post(
+        f"{settings.BASE_URL}/project/{project_id}/import-workflow/",
+        json=workflow.dict(),
+    )
+    wf_read = check_response(
+        res, expected_status_code=201, coerce=WorkflowRead
+    )
+    if batch:
+        datastr = f"{wf_read.id}"
+        for wftask in wf_read.task_list:
+            datastr += f" {wftask.id}"
+        return PrintInterface(retcode=0, data=datastr)
+    else:
+        return RichJsonInterface(retcode=0, data=wf_read.dict())
+
+
+async def workflow_export(
+    client: AuthClient,
+    *,
+    workflow_id: int,
+    json_file: str,
+    **kwargs,
+) -> BaseInterface:
+    res = await client.get(
+        f"{settings.BASE_URL}/workflow/{workflow_id}/export/"
+    )
+    workflow = check_response(
+        res, expected_status_code=200, coerce=WorkflowExport
+    )
+    with Path(json_file).open("w") as f:
+        json.dump(workflow.dict(), f)
+    return PrintInterface(
+        retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
+    )

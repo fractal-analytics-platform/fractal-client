@@ -366,11 +366,6 @@ workflow_edit_parser.add_argument(
     help="Workflow ID",
 )
 workflow_edit_parser.add_argument("--name", type=str, help="New workflow name")
-workflow_edit_parser.add_argument(
-    "--project-id",
-    type=int,
-    help="ID of the project to be associated with the current workflow",
-)
 
 # workflow delete
 workflow_delete_parser = workflow_subparsers.add_parser(
@@ -479,6 +474,36 @@ workflow_apply_parser.add_argument(
     help="Command to be run before starting a worker",
 )
 
+# workflow import
+workflow_import_parser = workflow_subparsers.add_parser(
+    "import",
+    description="Import workflow to project from file",
+)
+workflow_import_parser.add_argument(
+    "--project-id",
+    help="ID of the project where the workflow will be imported",
+    required=True,
+)
+workflow_import_parser.add_argument(
+    "--json-file",
+    help="Path to a JSON file with the workflow to be imported",
+)
+
+# workflow export
+workflow_export_parser = workflow_subparsers.add_parser(
+    "export",
+    description="Export workflow to file",
+)
+workflow_export_parser.add_argument(
+    "--workflow-id",
+    help="Workflow ID",
+    required=True,
+)
+workflow_export_parser.add_argument(
+    "--json-file",
+    help="Path to the JSON file where the workflow will be exported",
+    required=True,
+)
 
 # JOB GROUP
 
