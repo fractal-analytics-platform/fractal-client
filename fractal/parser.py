@@ -486,12 +486,12 @@ workflow_import_parser = workflow_subparsers.add_parser(
 )
 workflow_import_parser.add_argument(
     "--project-id",
-    help="---",  # TODO
+    help="ID of the project where the workflow will be imported",
     required=True,
 )
 workflow_import_parser.add_argument(
     "--json-file",
-    help="---",  # TODO
+    help="Path to a JSON file with the workflow to be imported",
 )
 
 # workflow export
@@ -506,7 +506,7 @@ workflow_export_parser.add_argument(
 )
 workflow_export_parser.add_argument(
     "--json-file",
-    help="---",  # TODO
+    help="Path to the JSON file where the workflow will be exported",
     required=True,
 )
 
