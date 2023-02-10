@@ -1,6 +1,7 @@
 # 1.0.4
 
 * Add `fractal workflow {import,export}` commands (\#426).
+* Remove `--project-id` argument from `fractal workflow edit` commands (\#426).
 
 # 1.0.3
 
