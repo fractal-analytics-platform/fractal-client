@@ -484,3 +484,29 @@ async def test_workflow_apply(
     assert res.data["log"] is not None
     # Note: the failing task is not added to the history
     assert len(res.data["history"]) > 0
+
+
+async def test_workflow_import_export(
+    register_user,
+    invoke,
+    task_factory,
+    workflow_factory,
+):
+    # need fractal-server > 1.0.6
+    wf = await workflow_factory()
+    wf_id = wf.id
+    filename = "tests/data/exported_wf.json"
+    res = await invoke(
+        f"workflow export --workflow-id {wf_id} --json-file {filename}"
+    )
+    debug(wf)
+    debug(res.data)
+    PROJECT_NAME = "project_name"
+    PROJECT_PATH = "project_path"
+    res = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
+    project = res.data
+    res = await invoke(
+        f"workflow import --project-id {project['id']} --json-file {filename}"
+    )
+    debug(res)
+    assert False
