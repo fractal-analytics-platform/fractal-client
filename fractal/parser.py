@@ -366,11 +366,6 @@ workflow_edit_parser.add_argument(
     help="Workflow ID",
 )
 workflow_edit_parser.add_argument("--name", type=str, help="New workflow name")
-workflow_edit_parser.add_argument(
-    "--project-id",
-    type=int,
-    help="ID of the project to be associated with the current workflow",
-)
 
 # workflow delete
 workflow_delete_parser = workflow_subparsers.add_parser(
