@@ -492,7 +492,7 @@ async def test_workflow_export(
     workflow_factory,
     tmp_path: Path,
 ):
-    NAME="WorkFlow"
+    NAME = "WorkFlow"
     wf = await workflow_factory(name=NAME)
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")
@@ -503,13 +503,13 @@ async def test_workflow_export(
     assert res.retcode == 0
     with open(filename, "r") as f:
         exported_wf = json.load(f)
+        assert exported_wf["name"] == NAME
         assert "id" not in exported_wf
         assert "project_id" not in exported_wf
         for wftask in exported_wf["task_list"]:
             assert "id" not in wftask
             assert "task_id" not in wftask
             assert "workflow_id" not in wftask
-
 
 
 async def test_workflow_import(
@@ -533,30 +533,24 @@ async def test_workflow_import(
         await asyncio.sleep(1)
         assert time.perf_counter() - starting_time < TIMEOUT
 
-
-    
+    # create project
     PROJECT_NAME = "project_name"
     PROJECT_PATH = str(tmp_path / "project_path")
     res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
+    # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
-
     res = await invoke(
         f"workflow import --project-id {project_id} --json-file {filename}"
     )
     debug(res.data)
     assert res.retcode == 0
     imported_workflow = res.data
-    
-    task_list = res.data["task_list"]
 
+    # get the workflow from the server, and check that it is the same
     workflow_id = res.data["id"]
-    task_id = res.data["task_list"][0]["task"]["id"]
     res = await invoke(f"workflow show {workflow_id}")
     assert res.retcode == 0
-    assert res.retcode == 0
-    
-    
-
+    assert res.data == imported_workflow
