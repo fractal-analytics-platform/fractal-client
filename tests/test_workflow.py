@@ -486,27 +486,77 @@ async def test_workflow_apply(
     assert len(res.data["history"]) > 0
 
 
-async def test_workflow_import_export(
+async def test_workflow_export(
     register_user,
     invoke,
-    task_factory,
     workflow_factory,
+    tmp_path: Path,
 ):
-    # need fractal-server > 1.0.6
-    wf = await workflow_factory()
+    NAME="WorkFlow"
+    wf = await workflow_factory(name=NAME)
     wf_id = wf.id
-    filename = "tests/data/exported_wf.json"
+    filename = str(tmp_path / "exported_wf.json")
     res = await invoke(
         f"workflow export --workflow-id {wf_id} --json-file {filename}"
     )
-    debug(wf)
     debug(res.data)
+    assert res.retcode == 0
+    with open(filename, "r") as f:
+        exported_wf = json.load(f)
+        assert "id" not in exported_wf
+        assert "project_id" not in exported_wf
+        for wftask in exported_wf["task_list"]:
+            assert "id" not in wftask
+            assert "task_id" not in wftask
+            assert "workflow_id" not in wftask
+
+
+
+async def test_workflow_import(
+    register_user,
+    invoke,
+    workflow_factory,
+    tmp_path: Path,
+    testdata_path: Path,
+    project_factory,
+):
+    # collect tasks
+    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    assert res0.retcode == 0
+    state_id = res0.data["id"]
+    starting_time = time.perf_counter()
+    while True:
+        res1 = await invoke(f"task check-collection {state_id}")
+        if res1.data["data"]["status"] == "OK":
+            break
+        await asyncio.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
+
+
+    
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = "project_path"
-    res = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
-    project = res.data
+    PROJECT_PATH = str(tmp_path / "project_path")
+    res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
+    assert res_pj.retcode == 0
+    project_id = res_pj.data["id"]
+
+    filename = str(testdata_path / "import-export/workflow.json")
+
     res = await invoke(
-        f"workflow import --project-id {project['id']} --json-file {filename}"
+        f"workflow import --project-id {project_id} --json-file {filename}"
     )
-    debug(res)
-    assert False
+    debug(res.data)
+    assert res.retcode == 0
+    imported_workflow = res.data
+    
+    task_list = res.data["task_list"]
+
+    workflow_id = res.data["id"]
+    task_id = res.data["task_list"][0]["task"]["id"]
+    res = await invoke(f"workflow show {workflow_id}")
+    assert res.retcode == 0
+    assert res.retcode == 0
+    
+    
+
