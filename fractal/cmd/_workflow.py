@@ -237,6 +237,7 @@ async def workflow_apply(
 async def workflow_import(
     client: AuthClient,
     *,
+    project_id: int,
     json_file: str,
     **kwargs,
 ) -> BaseInterface:
@@ -244,7 +245,7 @@ async def workflow_import(
         workflow = json.load(f)
     workflow = WorkflowImport(**workflow)
     res = await client.post(
-        f"{settings.BASE_URL}/workflow/import/",
+        f"{settings.BASE_URL}/project/{project_id}/import-workflow/",
         json=workflow.dict(),
     )
     wf_read = check_response(
@@ -267,7 +268,7 @@ async def workflow_export(
         res, expected_status_code=200, coerce=WorkflowExport
     )
     with Path(json_file).open("w") as f:
-        json.dump(workflow, f)
+        json.dump(workflow.dict(), f)
     return PrintInterface(
         retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
     )
