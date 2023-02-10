@@ -1,3 +1,7 @@
+# 1.0.4
+
+* Add `fractal workflow {import,export}` commands (\#426).
+
 # 1.0.3
 
 * Add `fractal task new` command (\#421).
