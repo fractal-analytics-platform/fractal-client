@@ -239,6 +239,7 @@ async def workflow_import(
     *,
     project_id: int,
     json_file: str,
+    batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
     with Path(json_file).open("r") as f:
@@ -251,7 +252,13 @@ async def workflow_import(
     wf_read = check_response(
         res, expected_status_code=201, coerce=WorkflowRead
     )
-    return RichJsonInterface(retcode=0, data=wf_read.dict())
+    if batch:
+        datastr = f"{wf_read.id}"
+        for wftask in wf_read.task_list:
+            datastr += f" {wftask.id}"
+        return PrintInterface(retcode=0, data=datastr)
+    else:
+        return RichJsonInterface(retcode=0, data=wf_read.dict())
 
 
 async def workflow_export(

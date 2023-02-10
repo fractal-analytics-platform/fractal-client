@@ -157,7 +157,7 @@ async def workflow(
     elif subcmd == "apply":
         iface = await workflow_apply(client, **kwargs)
     elif subcmd == "import":
-        iface = await workflow_import(client, **kwargs)
+        iface = await workflow_import(client, batch=batch, **kwargs)
     elif subcmd == "export":
         iface = await workflow_export(client, **kwargs)
     else:
