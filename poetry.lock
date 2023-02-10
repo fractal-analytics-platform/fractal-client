@@ -678,14 +678,14 @@ sqlmodel = "*"
 
 [[package]]
 name = "fractal-server"
-version = "1.0.6"
+version = "1.0.7a0"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fractal_server-1.0.6-py3-none-any.whl", hash = "sha256:c05da7a9f7bd7ff1edc5527ce425586507c19f53b71168627edeebd14c166f56"},
-    {file = "fractal_server-1.0.6.tar.gz", hash = "sha256:3c09f2016c4de60e30ee251d67fff2895d29b9f12004829dfd6791065fd4aa1f"},
+    {file = "fractal_server-1.0.7a0-py3-none-any.whl", hash = "sha256:0cba7d6acfe61457bb48381b88a8ffa506eb9fb32c7067bd2bb22bd3484919bb"},
+    {file = "fractal_server-1.0.7a0.tar.gz", hash = "sha256:156337e1c6ed9879483172cd63c794a9d8d72eba2be453023db080b1f3b5542e"},
 ]
 
 [package.dependencies]
@@ -1968,14 +1968,14 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 
 [[package]]
 name = "zipp"
-version = "3.12.1"
+version = "3.13.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "zipp-3.12.1-py3-none-any.whl", hash = "sha256:6c4fe274b8f85ec73c37a8e4e3fa00df9fb9335da96fb789e3b96b318e5097b3"},
-    {file = "zipp-3.12.1.tar.gz", hash = "sha256:a3cac813d40993596b39ea9e93a18e8a2076d5c378b8bc88ec32ab264e04ad02"},
+    {file = "zipp-3.13.0-py3-none-any.whl", hash = "sha256:e8b2a36ea17df80ffe9e2c4fda3f693c3dad6df1697d3cd3af232db680950b0b"},
+    {file = "zipp-3.13.0.tar.gz", hash = "sha256:23f70e964bc11a34cef175bc90ba2914e1e4545ea1e3e2f67c079671883f9cb6"},
 ]
 
 [package.extras]
@@ -1985,4 +1985,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "dc888979c88ebc6bc66b957a340c190ec9fa95786589315b9cc00fd726886a3d"
+content-hash = "cd91585a87df4cdc6f338cb9991cbe6a28526a4c76fb4e6b1a2efcad59150ffb"
