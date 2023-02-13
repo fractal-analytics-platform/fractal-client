@@ -275,7 +275,7 @@ async def workflow_export(
         res, expected_status_code=200, coerce=WorkflowExport
     )
     with Path(json_file).open("w") as f:
-        json.dump(workflow.dict(), f)
+        json.dump(workflow.dict(), f, indent=2)
     return PrintInterface(
         retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
     )
