@@ -477,9 +477,7 @@ async def test_workflow_export(
     wf = await workflow_factory(name=NAME)
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")
-    res = await invoke(
-        f"workflow export --workflow-id {wf_id} --json-file {filename}"
-    )
+    res = await invoke(f"workflow export {wf_id} --json-file {filename}")
     debug(res.data)
     assert res.retcode == 0
     with open(filename, "r") as f:
