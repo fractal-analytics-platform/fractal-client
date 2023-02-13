@@ -495,9 +495,8 @@ workflow_export_parser = workflow_subparsers.add_parser(
     description="Export workflow to file",
 )
 workflow_export_parser.add_argument(
-    "--workflow-id",
+    "workflow_id",
     help="Workflow ID",
-    required=True,
 )
 workflow_export_parser.add_argument(
     "--json-file",
