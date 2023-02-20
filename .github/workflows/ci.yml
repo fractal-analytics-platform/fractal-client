@@ -23,7 +23,6 @@ jobs:
         with:
           submodules: "recursive"
           fetch-depth: 1
-          persist-credentials: true
 
       - name: Install poetry
         run: pipx install poetry==1.3
