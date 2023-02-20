@@ -23,6 +23,7 @@ jobs:
         with:
           submodules: "recursive"
           fetch-depth: 1
+          persist-credentials: true
 
       - name: Install poetry
         run: pipx install poetry==1.3
@@ -35,8 +36,6 @@ jobs:
 
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
-        with:
-          github-token: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Test with pytest
         run: poetry run coverage run -m pytest
