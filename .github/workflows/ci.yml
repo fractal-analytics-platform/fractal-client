@@ -35,7 +35,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          source "$HOME/.poetry/env"
           echo "https://${{ secrets.MY_GITHUB_TOKEN }}:@github.com" > $HOME/.git-credentials
           git config --global credential.helper store
           poetry config virtualenvs.in-project true
