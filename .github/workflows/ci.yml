@@ -34,7 +34,14 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --with dev --without docs --no-interaction
+        run: |
+          source "$HOME/.poetry/env"
+          echo "https://${{ secrets.MY_GITHUB_TOKEN }}:@github.com" > $HOME/.git-credentials
+          git config --global credential.helper store
+          poetry config virtualenvs.in-project true
+          poetry install --with dev --without docs --no-interaction
+          rm -f $HOME/.git-credentials
+          
 
       - name: Test with pytest
         run: poetry run coverage run -m pytest
