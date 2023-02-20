@@ -36,6 +36,8 @@ jobs:
       - name: Install dependencies
         run: |
           poetry config experimental.system-git-client true
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true
           poetry config repositories.fractal-server https://github.com/fractal-analytics-platform/fractal-server.git
           poetry config http-basic.fractal-server fractal ${{ secrets.MY_GITHUB_TOKEN }}
           poetry install --with dev --without docs --no-interaction
