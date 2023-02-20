@@ -24,6 +24,15 @@ jobs:
           submodules: "recursive"
           fetch-depth: 1
 
+      - name: Setup SSH Keys and known_hosts
+        env:
+            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+            ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+
       - name: Install poetry
         run: pipx install poetry==1.3
 
@@ -35,6 +44,8 @@ jobs:
 
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
+        env:
+            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
 
       - name: Test with pytest
         run: poetry run coverage run -m pytest
