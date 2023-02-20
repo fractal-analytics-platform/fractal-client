@@ -36,10 +36,10 @@ jobs:
       - name: Install dependencies
         run: |
           echo "https://${{ secrets.MY_GITHUB_TOKEN }}:@github.com" > $HOME/.git-credentials
-          git config --global credential.helper store
-          poetry config virtualenvs.in-project true
+          poetry config repositories.git-org-project https://github.com/org/project.git
+          poetry config http-basic.git-org-project fractal ${{ secrets.MY_GITHUB_TOKEN }}
+          poetry add git+https://github.com/org/project.git
           poetry install --with dev --without docs --no-interaction
-          rm -f $HOME/.git-credentials
           
 
       - name: Test with pytest
