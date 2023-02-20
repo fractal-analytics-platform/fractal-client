@@ -35,7 +35,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          echo "https://${{ secrets.MY_GITHUB_TOKEN }}:@github.com" > $HOME/.git-credentials
           poetry config repositories.git-org-project https://github.com/org/project.git
           poetry config http-basic.git-org-project fractal ${{ secrets.MY_GITHUB_TOKEN }}
           poetry add git+https://github.com/org/project.git
