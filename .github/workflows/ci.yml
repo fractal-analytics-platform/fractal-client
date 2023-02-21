@@ -19,6 +19,18 @@ jobs:
 
     steps:
 
+      - name: Clone fractal-analytics-platform/fractal-server  PUBLIC repository
+        uses: GuillaumeFalourd/clone-github-repo-action@v2
+        with:
+          owner: 'fractal-analytics-platform'
+          repository: 'fractal-server'
+
+      - name: Git clone A
+        run: git clone https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
+
+      - name: Git clone B
+        run: git clone --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
+
       - uses: actions/checkout@v3
         with:
           submodules: "recursive"
@@ -27,14 +39,6 @@ jobs:
       - name: Install poetry
         run: pipx install poetry==1.3
 
-      - name: Clone fractal-analytics-platform/fractal-server  PUBLIC repository
-        uses: GuillaumeFalourd/clone-github-repo-action@v2
-        with:
-          owner: 'fractal-analytics-platform'
-          repository: 'fractal-server'
-
-      - name: Git clone
-        run: git clone --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
