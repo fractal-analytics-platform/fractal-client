@@ -1,3 +1,6 @@
+# Unreleases
+* Update `_TaskBase` schema from fractal-common (\#431).
+
 # 1.0.5
 
 * Minor updates to `fractal workflow export` (\#429).
