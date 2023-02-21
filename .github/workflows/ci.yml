@@ -33,6 +33,9 @@ jobs:
           owner: 'fractal-analytics-platform'
           repository: 'fractal-server'
 
+      - name: Git clone
+        run: git clone --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
