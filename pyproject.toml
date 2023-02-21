@@ -7,4 +7,4 @@ description = "Client component of the Fractal analytics platform"
 [tool.poetry.dependencies]
 python = "^3.8"
 # fractal-server = "1.0.7a1"
-fractal-server = { git = "ssh://git@github.com/fractal-analytics-platform/fractal-server.git", branch = "https_submodule" }
+fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "main" }

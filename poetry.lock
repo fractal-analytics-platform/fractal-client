@@ -386,9 +386,9 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/fractal-analytics-platform/fractal-server.git"
-reference = "https_submodule"
-resolved_reference = "8b7a17765b3a7208b9f306248b70c47c6c7e5f1a"
+url = "https://github.com/fractal-analytics-platform/fractal-server.git"
+reference = "main"
+resolved_reference = "43d8fbb422cb6c67af4e085a8fae144134cfc052"
 
 [[package]]
 name = "greenlet"
@@ -1058,4 +1058,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "764410a941b344bab0668f82f35b7147b9327029b521bc716707ee4c512cd50c"
+content-hash = "26672ed49a2d9d2797588c3fa0d6a4119c4763a76f439d477f834682bd0fa0f7"
