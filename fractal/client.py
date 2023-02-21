@@ -70,6 +70,12 @@ def _check_credentials(
 
 async def handle(cli_args: List[str] = argv):
     args = parser_main.parse_args(cli_args[1:])
+    a = 1
+
+    if a == 2:
+        print("asda")
+    else:
+        pass
 
     # Set logging level
     if args.verbose:
