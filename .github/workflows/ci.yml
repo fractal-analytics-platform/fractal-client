@@ -67,14 +67,9 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Combine coverage
-        run: |
-          python -m coverage combine
-          python -m coverage xml -o coverage.xml
-          python -m coverage report
-
-      - name: Parse and publish coverage xml to a PR
-        uses: orgoro/coverage@v3
+      - name: Coverage comment
+        id: coverage_comment
+        uses: py-cov-action/python-coverage-comment-action@v3
         with:
-            coverageFile: coverage.xml
-            token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          MERGE_COVERAGE_FILES: true
