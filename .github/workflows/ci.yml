@@ -38,7 +38,7 @@ jobs:
 
       - name: Git clone C
         run: |
-          git clone --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-other-clone
+          git clone --branch https_submodule --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-other-clone
           ls -l /tmp/some-other-clone
 
       - uses: actions/checkout@v3
