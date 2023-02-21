@@ -67,14 +67,13 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Combine coverage
-        run: |
-          python -m coverage combine
-          python -m coverage html --skip-covered --skip-empty
-          python -m coverage report
-
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v3
+      - name: Add coverage comment to Pull Requests
+        id: coverage_comment
+        uses: py-cov-action/python-coverage-comment-action@v3
         with:
-          name: html-report
-          path: htmlcov
+          GITHUB_TOKEN: ${{ github.token }}
+          MERGE_COVERAGE_FILES: true
+          MINIMUM_GREEN: 90
+          MINIMUM_ORANGE: 60
+          ANNOTATE_MISSING_LINES: true
+          ANNOTATION_TYPE: notice

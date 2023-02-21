@@ -73,4 +73,5 @@ fractal_new = "fractal.new:run"
 [tool.coverage.run]
 branch = true
 parallel = true
+relative_files = true
 omit = ["tests/*"]
