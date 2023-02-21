@@ -27,11 +27,11 @@ jobs:
       - name: Install poetry
         run: pipx install poetry==1.3
 
-      - name: Clone GuillaumeFalourd/poc-github-actions PUBLIC repository
+      - name: Clone fractal-analytics-platform/fractal-server  PUBLIC repository
         uses: GuillaumeFalourd/clone-github-repo-action@v2
         with:
-          owner: 'GuillaumeFalourd'
-          repository: 'poc-github-actions'
+          owner: 'fractal-analytics-platform'
+          repository: 'fractal-server'
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
