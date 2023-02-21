@@ -84,3 +84,6 @@ jobs:
         uses: pavi2410/html-preview-action@v2
         with:
           html_file: 'htmlcov/index.html'
+
+      - name: Print URL
+        run: echo ${{ steps.html_preview.outputs.url }}
