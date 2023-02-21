@@ -27,7 +27,7 @@ jobs:
 
       - name: Git clone A
         run: |
-          git clone https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
+          git clone -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
           ls -l /tmp/some-clone
 
       - name: Git clone B
