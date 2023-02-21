@@ -26,10 +26,14 @@ jobs:
           repository: 'fractal-server'
 
       - name: Git clone A
-        run: git clone https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
+        run: |
+          git clone https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-clone
+          ls -l /tmp/some-clone
 
       - name: Git clone B
-        run: git clone --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-other-clone
+        run: |
+          git clone --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-other-clone
+          ls -l /tmp/some-other-clone
 
       - uses: actions/checkout@v3
         with:
