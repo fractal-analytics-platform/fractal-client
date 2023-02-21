@@ -78,3 +78,9 @@ jobs:
         with:
           name: html-report
           path: htmlcov
+
+      - name: HTML Coverage Preview
+        id: html_preview
+        uses: pavi2410/html-preview-action@v2
+        with:
+          html_file: 'htmlcov/index.html'
