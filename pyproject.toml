@@ -1,76 +1,9 @@
 [tool.poetry]
 name = "fractal-client"
 version = "1.0.5"
+authors = ["xyz"]
 description = "Client component of the Fractal analytics platform"
-authors = [
-    "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
-    "Marco Franzon <marco.franzon@exact-lab.it>",
-    "Jacopo Nespolo <jacopo.nespolo@exact-lab.it>",
-]
-readme = "README.md"
-packages = [
-    {include="fractal"}
-]
-homepage = "https://github.com/fractal-analytics-platform/fractal"
-license = "BSD-3-Clause"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-python-dotenv = "^0.20.0"
-rich = "^12.5.1"
-httpx = "^0.23.0"
-PyJWT = "^2.4.0"
-pydantic = "^1.10.1"
-sqlmodel = "^0.0.8"
-fastapi-users = {extras = ["oauth"], version = "^10.1"}
-
-[tool.poetry.group.dev.dependencies]
-devtools = "^0.9.0"
-pytest = "^7.1.2"
-bumpver = "^2022.1118"
-pytest-asyncio = "^0.19.0"
 fractal-server = "1.0.7a1"
-coverage = {extras = ["toml"], version = "^6.5.0"}
-pytest-pretty = "^1.0.1"
-
-[tool.poetry.group.docs.dependencies]
-sphinx = "^5.3.0"
-sphinx-rtd-theme = "^1.1.1"
-sphinx-argparse = "^0.4.0"
-myst-parser = "^0.18.1"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-
-[tool.bumpver]
-current_version = "1.0.5"
-version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
-commit_message = "bump version {old_version} -> {new_version}"
-commit = true
-tag = true
-push = true
-
-[tool.bumpver.file_patterns]
-"pyproject.toml" = [
-    'version = "{version}"',
-]
-"fractal/__init__.py" = [
-    '__VERSION__ = "{version}"'
-]
-"docs/source/conf.py" = [
-    'version = "{version}"',
-]
-
-[tool.poetry.scripts]
-fractal = "fractal.__main__:run"
-fractal_old = "fractal.old:run"
-fractal_new = "fractal.new:run"
-
-[tool.coverage.run]
-branch = true
-parallel = true
-omit = ["tests/*"]
