@@ -70,17 +70,11 @@ jobs:
       - name: Combine coverage
         run: |
           python -m coverage combine
-          python -m coverage lcov
+          python -m coverage xml -o coverage.xml
           python -m coverage report
 
-      - name: Setup LCOV
-        uses: hrishikesh-kadam/setup-lcov@v1
-
-      - name: Report code coverage
-        uses: zgosalvez/github-actions-report-lcov@v3
+      - name: Parse and publish coverage xml to a PR
+        uses: orgoro/coverage@v3
         with:
-          coverage-files: coverage.lcov
-          artifact-name: code-coverage-report
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: fractal
-          update-comment: true
+            coverageFile: coverage.xml
+            token: ${{ secrets.GITHUB_TOKEN }}
