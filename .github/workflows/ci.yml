@@ -67,18 +67,6 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Combine coverage
-        run: |
-          python -m coverage combine
-          python -m coverage html --skip-covered --skip-empty
-          python -m coverage report
-
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v3
-        with:
-          name: html-report
-          path: htmlcov
-
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
