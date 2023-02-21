@@ -32,6 +32,12 @@ jobs:
 
       - name: Git clone B
         run: |
+          git clone -- https://github.com/fractal-analytics-platform/fractal-common.git /tmp/some-clone-common
+          ls -l /tmp/some-clone-common
+
+
+      - name: Git clone C
+        run: |
           git clone --recurse-submodules -- https://github.com/fractal-analytics-platform/fractal-server.git /tmp/some-other-clone
           ls -l /tmp/some-other-clone
 
