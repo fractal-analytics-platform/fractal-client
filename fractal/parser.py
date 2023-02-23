@@ -400,14 +400,14 @@ workflow_add_task_parser.add_argument(
     "--args-file",
     help=(
         "Path to json serialised file containing the arguments "
-        "ovverrides of the task"
+        "overrides of the task"
     ),
 )
 workflow_add_task_parser.add_argument(
     "--meta-file",
     help=(
-        "Path to json serialised file containing the meta"
-        "ovverrides of the task"
+        "Path to json serialised file containing the meta "
+        "overrides of the task"
     ),
 )
 
@@ -427,14 +427,14 @@ workflow_edit_task_parser.add_argument(
     "--args-file",
     help=(
         "Path to json serialised file containing the arguments "
-        "ovverrides of the task"
+        "overrides of the task"
     ),
 )
 workflow_edit_task_parser.add_argument(
     "--meta-file",
     help=(
         "Path to json serialised file containing the meta "
-        "ovverrides of the task"
+        "overrides of the task"
     ),
 )
 
