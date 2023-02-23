@@ -87,18 +87,15 @@ async def test_missing_credentials(monkeypatch):
 
 
 async def test_abbreviation(invoke_as_superuser):
+    # https://github.com/fractal-analytics-platform/fractal/issues/440
     # https://docs.python.org/3/library/argparse.html#prefix-matching
-
     res = await invoke_as_superuser(
         "user register test@mail.com secret --superuser"
     )
     res.show()
     assert res.retcode == 0
-    assert res.data["is_superuser"] is True
 
-    res = await invoke_as_superuser(
-        "user register test2@mail.com secret2 --super"
-    )
-    res.show()
-    assert res.retcode == 0
-    assert res.data["is_superuser"] is False
+    with pytest.raises(SystemExit):
+        await invoke_as_superuser(
+            "user register test2@mail.com secret2 --super"
+        )
