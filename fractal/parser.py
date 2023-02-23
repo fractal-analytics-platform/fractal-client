@@ -302,14 +302,18 @@ task_edit_parser.add_argument(
 )
 task_edit_parser.add_argument(
     "--output-type",
-    help="New resource type",
+    help="New output type",
 )
 task_edit_parser.add_argument(
     "--default-args-file",
-    help="Filename containing JSON encoded default arguments",
+    help=(
+        "Path to JSON serialised file containing "
+        "the task default arguments dictionary"
+    ),
 )
 task_edit_parser.add_argument(
-    "--meta-file", help="Filename containing JSON encoded default arguments"
+    "--meta-file",
+    help="Path to JSON serialised file containing the task meta dictionary",
 )
 
 # task delete
