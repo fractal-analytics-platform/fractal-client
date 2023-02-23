@@ -135,10 +135,12 @@ async def test_task_edit(
     assert task.retcode == 0
     task_id = task.data["id"]
     NEW = "new"
-    # Test regular user not authorized
+
+    # Test that regular user is not authorized
     with pytest.raises(SystemExit):
         res = await invoke(f"task edit {task_id} --name {NEW}")
-    # Test successful edits
+
+    # Test successful edit of string attributes
     res = await invoke_as_superuser(f"task edit {task_id} --name {NEW}")
     assert res.data["name"] == NEW
     assert res.retcode == 0
@@ -151,7 +153,8 @@ async def test_task_edit(
     res = await invoke_as_superuser(f"task edit {task_id} --output-type {NEW}")
     assert res.data["output_type"] == NEW
     assert res.retcode == 0
-    # Test `file not found`
+
+    # Test `file not found` errors
     with pytest.raises(FileNotFoundError):
         res = await invoke_as_superuser(
             f"task edit {task_id} --default-args-file {NEW}"
@@ -159,15 +162,15 @@ async def test_task_edit(
     with pytest.raises(FileNotFoundError):
         await invoke_as_superuser(f"task edit {task_id} --meta-file {NEW}")
 
-    args_file = testdata_path / "task_edit_json/default_args.json"
+    # Test successful edit of dictionary attributes
+    args_file = str(testdata_path / "task_edit_json/default_args.json")
     res = await invoke_as_superuser(
         f"task edit {task_id} --default-args-file {args_file}"
     )
     debug(res)
     debug(res.data)
     assert res.retcode == 0
-
-    meta_file = testdata_path / "task_edit_json/meta.json"
+    meta_file = str(testdata_path / "task_edit_json/meta.json")
     res = await invoke_as_superuser(
         f"task edit {task_id} --meta-file {meta_file}"
     )
