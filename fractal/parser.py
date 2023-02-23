@@ -17,7 +17,8 @@ import argparse as ap
 
 
 parser_main = ap.ArgumentParser(
-    description="Command-line interface for Fractal Client"
+    description="Command-line interface for Fractal Client",
+    allow_abbrev=False,
 )
 
 parser_main.add_argument(
