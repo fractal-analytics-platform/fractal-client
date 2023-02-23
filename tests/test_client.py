@@ -84,3 +84,26 @@ async def test_missing_credentials(monkeypatch):
         debug(e.value)
         debug(e.value.args[0])
         assert "FRACTAL_USER" in e.value.args[0]
+
+
+async def test_argparse_abbreviation(invoke_as_superuser):
+    """
+    Check that argparse abbreviations are disabled on at least one command.
+
+    Refs:
+    * https://github.com/fractal-analytics-platform/fractal/issues/440
+    * https://docs.python.org/3/library/argparse.html#prefix-matching
+    """
+
+    # Successful invoke
+    res = await invoke_as_superuser(
+        "user register test@mail.com secret --superuser"
+    )
+    res.show()
+    assert res.retcode == 0
+
+    # Failed (abbreviation-based) invoke
+    with pytest.raises(SystemExit):
+        await invoke_as_superuser(
+            "user register test2@mail.com secret2 --super"
+        )
