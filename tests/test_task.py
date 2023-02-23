@@ -94,13 +94,6 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     assert res0.data["data"]["info"] == "Already installed"
 
 
-@pytest.mark.xfail
-async def test_edit_task(register_user, invoke, clear_task_cache):
-    # TODO:
-    # Decide what it means to edit a task
-    raise NotImplementedError
-
-
 async def test_task_new(register_user, invoke):
 
     # create a new task with just positional required args
