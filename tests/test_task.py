@@ -1,5 +1,6 @@
 import asyncio
 import time
+from pathlib import Path
 
 import pytest
 from devtools import debug
@@ -93,13 +94,6 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     assert res0.data["data"]["info"] == "Already installed"
 
 
-@pytest.mark.xfail
-async def test_edit_task(register_user, invoke, clear_task_cache):
-    # TODO:
-    # Decide what it means to edit a task
-    raise NotImplementedError
-
-
 async def test_task_new(register_user, invoke):
 
     # create a new task with just positional required args
@@ -128,3 +122,58 @@ async def test_task_new(register_user, invoke):
     # create a new task passing not existing file
     with pytest.raises(FileNotFoundError):
         await invoke("task new _name _command _source --meta-file ./foo.pdf")
+
+
+async def test_task_edit(
+    register_user,
+    invoke,
+    invoke_as_superuser,
+    testdata_path: Path,
+):
+    task = await invoke("task new _name _command _source")
+    task.show()
+    assert task.retcode == 0
+    task_id = task.data["id"]
+    NEW = "new"
+
+    # Test that regular user is not authorized
+    with pytest.raises(SystemExit):
+        res = await invoke(f"task edit {task_id} --name {NEW}")
+
+    # Test successful edit of string attributes
+    res = await invoke_as_superuser(f"task edit {task_id} --name {NEW}")
+    assert res.data["name"] == NEW
+    assert res.retcode == 0
+    res = await invoke_as_superuser(f"task edit {task_id} --command {NEW}")
+    assert res.data["command"] == NEW
+    assert res.retcode == 0
+    res = await invoke_as_superuser(f"task edit {task_id} --input-type {NEW}")
+    assert res.data["input_type"] == NEW
+    assert res.retcode == 0
+    res = await invoke_as_superuser(f"task edit {task_id} --output-type {NEW}")
+    assert res.data["output_type"] == NEW
+    assert res.retcode == 0
+
+    # Test `file not found` errors
+    with pytest.raises(FileNotFoundError):
+        res = await invoke_as_superuser(
+            f"task edit {task_id} --default-args-file {NEW}"
+        )
+    with pytest.raises(FileNotFoundError):
+        await invoke_as_superuser(f"task edit {task_id} --meta-file {NEW}")
+
+    # Test successful edit of dictionary attributes
+    args_file = str(testdata_path / "task_edit_json/default_args.json")
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --default-args-file {args_file}"
+    )
+    debug(res)
+    debug(res.data)
+    assert res.retcode == 0
+    meta_file = str(testdata_path / "task_edit_json/meta.json")
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --meta-file {meta_file}"
+    )
+    debug(res)
+    debug(res.data)
+    assert res.retcode == 0

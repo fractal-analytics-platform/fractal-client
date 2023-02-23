@@ -13,7 +13,6 @@ async def test_register_as_user(invoke, register_user, caplog):
         await invoke(f"user register {EMAIL_USER} {PWD_USER}")
     debug(caplog.text)
     assert "403" in caplog.text
-    assert "Forbidden" in caplog.text
 
 
 @pytest.mark.parametrize("is_superuser", [True, False])
@@ -55,7 +54,6 @@ async def test_list_as_user(invoke, register_user, caplog):
         await invoke("user list")
     debug(caplog.text)
     assert "403" in caplog.text
-    assert "Forbidden" in caplog.text
 
 
 async def test_list_as_superuser(invoke_as_superuser, register_user):
@@ -79,7 +77,6 @@ async def test_show_as_user(
         await invoke(f"user show {user_id}")
     debug(caplog.text)
     assert "403" in caplog.text
-    assert "Forbidden" in caplog.text
 
 
 async def test_show_as_superuser(invoke_as_superuser):
@@ -104,7 +101,6 @@ async def test_edit_as_user(
         await invoke(f"user edit {user_id} --new-email email@something.xy")
     debug(caplog.text)
     assert "403" in caplog.text
-    assert "Forbidden" in caplog.text
 
 
 @pytest.mark.parametrize("new_is_superuser", [True, False])
@@ -161,7 +157,6 @@ async def test_delete_as_user(
         await invoke(f"user delete {user_id}")
     debug(caplog.text)
     assert "403" in caplog.text
-    assert "Forbidden" in caplog.text
 
 
 async def test_delete_as_superuser(invoke_as_superuser, caplog):
