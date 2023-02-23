@@ -1,7 +1,8 @@
 # Unreleased
 
 * Drop support for python 3.8 (\#438).
-* Update `_TaskBase` schema from fractal-common (\#431).
+* Update `_TaskBase` schema from `fractal-common` (\#431).
+* Disable `argparse` abbreviation for CLI commands (\#441).
 
 # 1.0.5
 
