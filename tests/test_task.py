@@ -139,7 +139,6 @@ async def test_task_edit(register_user, invoke, invoke_as_superuser):
     # Test regular user not authorized
     with pytest.raises(SystemExit):
         res = await invoke(f"task edit {task_id} --name {NEW}")
-    debug(res.data)
     # Test successful edits
     res = await invoke_as_superuser(f"task edit {task_id} --name {NEW}")
     assert res.data["name"] == NEW
@@ -160,3 +159,19 @@ async def test_task_edit(register_user, invoke, invoke_as_superuser):
         )
     with pytest.raises(FileNotFoundError):
         await invoke_as_superuser(f"task edit {task_id} --meta-file {NEW}")
+
+    args_file = "tests/data/task_edit_json/default_args.json"
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --default-args-file {args_file}"
+    )
+    debug(res)
+    debug(res.data)
+    assert res.retcode == 0
+
+    meta_file = "tests/data/task_edit_json/meta.json"
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --meta-file {meta_file}"
+    )
+    debug(res)
+    debug(res.data)
+    assert res.retcode == 0
