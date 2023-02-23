@@ -1,5 +1,6 @@
 import asyncio
 import time
+from pathlib import Path
 
 import pytest
 from devtools import debug
@@ -130,7 +131,12 @@ async def test_task_new(register_user, invoke):
         await invoke("task new _name _command _source --meta-file ./foo.pdf")
 
 
-async def test_task_edit(register_user, invoke, invoke_as_superuser):
+async def test_task_edit(
+    register_user,
+    invoke,
+    invoke_as_superuser,
+    testdata_path: Path,
+):
     task = await invoke("task new _name _command _source")
     task.show()
     assert task.retcode == 0
@@ -160,7 +166,7 @@ async def test_task_edit(register_user, invoke, invoke_as_superuser):
     with pytest.raises(FileNotFoundError):
         await invoke_as_superuser(f"task edit {task_id} --meta-file {NEW}")
 
-    args_file = "tests/data/task_edit_json/default_args.json"
+    args_file = testdata_path / "task_edit_json/default_args.json"
     res = await invoke_as_superuser(
         f"task edit {task_id} --default-args-file {args_file}"
     )
@@ -168,7 +174,7 @@ async def test_task_edit(register_user, invoke, invoke_as_superuser):
     debug(res.data)
     assert res.retcode == 0
 
-    meta_file = "tests/data/task_edit_json/meta.json"
+    meta_file = testdata_path / "task_edit_json/meta.json"
     res = await invoke_as_superuser(
         f"task edit {task_id} --meta-file {meta_file}"
     )
