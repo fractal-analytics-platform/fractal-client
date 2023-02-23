@@ -128,3 +128,29 @@ async def test_task_new(register_user, invoke):
     # create a new task passing not existing file
     with pytest.raises(FileNotFoundError):
         await invoke("task new _name _command _source --meta-file ./foo.pdf")
+
+
+async def test_task_edit(register_user, invoke, invoke_as_superuser):
+    res = await invoke("task new _name _command _source")
+    res.show()
+    task_id = res.data["id"]
+    NEW = "new"
+    # Test regular user not authorized
+    with pytest.raises(SystemExit):
+        await invoke(f"task edit {task_id} --name {NEW}")
+    # Test successful edits
+    res = await invoke_as_superuser(f"task edit {task_id} --name {NEW}")
+    assert res.data["name"] == NEW
+    res = await invoke_as_superuser(f"task edit {task_id} --command {NEW}")
+    assert res.data["command"] == NEW
+    res = await invoke_as_superuser(f"task edit {task_id} --input-type {NEW}")
+    assert res.data["input_type"] == NEW
+    res = await invoke_as_superuser(f"task edit {task_id} --output-type {NEW}")
+    assert res.data["output_type"] == NEW
+    # Test `file not found`
+    with pytest.raises(FileNotFoundError):
+        await invoke_as_superuser(
+            f"task edit {task_id} --default-args-file {NEW}"
+        )
+    with pytest.raises(FileNotFoundError):
+        await invoke_as_superuser(f"task edit {task_id} --meta-file {NEW}")

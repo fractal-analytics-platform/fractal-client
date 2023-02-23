@@ -295,6 +295,7 @@ task_edit_parser.add_argument(
     "task_id_or_name", help="ID or name of task to edit", type=str
 )
 task_edit_parser.add_argument("--name", help="New task name")
+task_edit_parser.add_argument("--command", help="New task command")
 task_edit_parser.add_argument(
     "--input-type",
     help="New input type",
@@ -304,7 +305,11 @@ task_edit_parser.add_argument(
     help="New resource type",
 )
 task_edit_parser.add_argument(
-    "--default-args", help="Filename containing JSON encoded default arguments"
+    "--default-args-file",
+    help="Filename containing JSON encoded default arguments",
+)
+task_edit_parser.add_argument(
+    "--meta-file", help="Filename containing JSON encoded default arguments"
 )
 
 # task delete

@@ -105,9 +105,31 @@ async def task_edit(
     client: AuthClient,
     *,
     task_id_or_name: str,
-    **task_update_dict,
+    name: Optional[str] = None,
+    command: Optional[str] = None,
+    input_type: Optional[str] = None,
+    output_type: Optional[str] = None,
+    default_args_file: Optional[str] = None,
+    meta_file: Optional[str] = None,
+    **kwargs,
 ) -> BaseInterface:
-    task_update = TaskUpdate(**task_update_dict)
+    update = {}
+    if name:
+        update["name"] = name
+    if command:
+        update["command"] = command
+    if input_type:
+        update["input_type"] = input_type
+    if output_type:
+        update["output_type"] = output_type
+    if default_args_file:
+        with open(default_args_file, "r") as f:
+            update["default_args"] = json.load(f)
+    if meta_file:
+        with open(meta_file, "r") as f:
+            update["meta"] = json.load(f)
+
+    task_update = TaskUpdate(**update)  # validation
     payload = task_update.dict(exclude_unset=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
