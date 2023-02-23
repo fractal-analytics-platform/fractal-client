@@ -295,16 +295,25 @@ task_edit_parser.add_argument(
     "task_id_or_name", help="ID or name of task to edit", type=str
 )
 task_edit_parser.add_argument("--name", help="New task name")
+task_edit_parser.add_argument("--command", help="New task command")
 task_edit_parser.add_argument(
     "--input-type",
     help="New input type",
 )
 task_edit_parser.add_argument(
     "--output-type",
-    help="New resource type",
+    help="New output type",
 )
 task_edit_parser.add_argument(
-    "--default-args", help="Filename containing JSON encoded default arguments"
+    "--default-args-file",
+    help=(
+        "Path to JSON serialised file containing "
+        "the task default arguments dictionary"
+    ),
+)
+task_edit_parser.add_argument(
+    "--meta-file",
+    help="Path to JSON serialised file containing the task meta dictionary",
 )
 
 # task delete
@@ -395,14 +404,14 @@ workflow_add_task_parser.add_argument(
     "--args-file",
     help=(
         "Path to json serialised file containing the arguments "
-        "ovverrides of the task"
+        "overrides of the task"
     ),
 )
 workflow_add_task_parser.add_argument(
     "--meta-file",
     help=(
-        "Path to json serialised file containing the meta"
-        "ovverrides of the task"
+        "Path to json serialised file containing the meta "
+        "overrides of the task"
     ),
 )
 
@@ -422,14 +431,14 @@ workflow_edit_task_parser.add_argument(
     "--args-file",
     help=(
         "Path to json serialised file containing the arguments "
-        "ovverrides of the task"
+        "overrides of the task"
     ),
 )
 workflow_edit_task_parser.add_argument(
     "--meta-file",
     help=(
         "Path to json serialised file containing the meta "
-        "ovverrides of the task"
+        "overrides of the task"
     ),
 )
 
