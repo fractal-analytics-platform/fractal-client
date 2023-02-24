@@ -62,12 +62,19 @@ async def task_collection_check(
     do_not_separate_logs: bool = False,
     **kwargs,
 ) -> BaseInterface:
+
     res = await client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
     )
     state = check_response(res, expected_status_code=200, coerce=StateRead)
 
     state_dict = state.sanitised_dict()
+
+    # Remove key-value pairs with None value
+    state_dict["data"] = {
+        key: val for (key, val) in state_dict["data"].items() if val
+    }
+
     if (not include_logs) or do_not_separate_logs:
         return RichJsonInterface(retcode=0, data=state_dict)
     else:
