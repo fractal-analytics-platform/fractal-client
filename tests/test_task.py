@@ -42,7 +42,7 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
-    assert res1.data["data"]["log"] is None
+    assert "log" not in res1.data["data"].keys()
 
     # Add --include-logs and --do-not-separate-logs flags
     res2 = await invoke(
@@ -52,7 +52,7 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     )
     assert res2.retcode == 0
     res2.show()
-    assert res2.data["data"]["log"] is not None
+    assert res2.data["data"]["log"]
     assert res2.data["data"]["status"] == "OK"
 
     # List tasks
