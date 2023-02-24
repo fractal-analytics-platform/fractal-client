@@ -55,13 +55,34 @@ async def task_collect_pip(
 
 
 async def task_collection_check(
-    client: AuthClient, *, state_id: int, include_logs: bool, **kwargs
+    client: AuthClient,
+    *,
+    state_id: int,
+    include_logs: bool,
+    do_not_separate_logs: bool = False,
+    **kwargs,
 ) -> BaseInterface:
+
     res = await client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
     )
     state = check_response(res, expected_status_code=200, coerce=StateRead)
-    return RichJsonInterface(retcode=0, data=state.sanitised_dict())
+
+    state_dict = state.sanitised_dict()
+
+    # Remove key-value pairs with None value
+    state_dict["data"] = {
+        key: val for (key, val) in state_dict["data"].items() if val
+    }
+
+    if (not include_logs) or do_not_separate_logs:
+        return RichJsonInterface(retcode=0, data=state_dict)
+    else:
+        log = state_dict["data"].pop("log")
+        extra_lines = ["\nThis is the task-collection log:\n", log]
+        return RichJsonInterface(
+            retcode=0, data=state_dict, extra_lines=extra_lines
+        )
 
 
 async def task_new(

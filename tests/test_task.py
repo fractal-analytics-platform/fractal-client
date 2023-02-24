@@ -42,21 +42,29 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
-    assert res1.data["data"]["log"] is None
+    assert "log" not in res1.data["data"].keys()
 
-    # Add --include-logs flag
-    res2 = await invoke(f"task check-collection {state_id} --include-logs")
+    # Add --include-logs and --do-not-separate-logs flags
+    res2 = await invoke(
+        f"task check-collection {state_id}"
+        " --include-logs"
+        " --do-not-separate-logs"
+    )
     assert res2.retcode == 0
     res2.show()
-    assert res2.data["data"]["log"] is not None
+    assert res2.data["data"]["log"]
     assert res2.data["data"]["status"] == "OK"
 
-    # LIST
-
+    # List tasks
     res = await invoke("task list")
     res.show()
     assert res.retcode == 0
     assert len(res.data) == 2
+
+    # Show again the check-collection output, without --do-not-separate-logs,
+    # for visual inspection
+    res = await invoke(f"task check-collection {state_id} --include-logs")
+    res.show()
 
 
 async def test_repeated_task_collection(register_user, invoke, testdata_path):

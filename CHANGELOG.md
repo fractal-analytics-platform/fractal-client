@@ -4,6 +4,7 @@
 * Drop support for python 3.8 (\#438).
 * Update `fractal task edit` command (\#439).
 * Disable `argparse` abbreviation for CLI commands (\#441).
+* Improve task-collection log formatting (\#443).
 
 # 1.0.5
 

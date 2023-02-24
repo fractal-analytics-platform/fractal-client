@@ -290,6 +290,14 @@ task_check_collection_parser.add_argument(
     action="store_true",
     help="Also include task-collection logs",
 )
+task_check_collection_parser.add_argument(
+    "--do-not-separate-logs",
+    dest="do_not_separate_logs",
+    help="Show the job logs in the main output, instead of a separate field",
+    action="store_true",
+    required=False,
+)
+
 
 # task new
 task_new_parser = task_subparsers.add_parser(
