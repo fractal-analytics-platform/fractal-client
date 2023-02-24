@@ -63,7 +63,8 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
 
     # Show again the check-collection output, without --do-not-separate-logs,
     # for visual inspection
-    res = await invoke(f"task check-collection {state_id}" " --include-logs")
+    res = await invoke(f"task check-collection {state_id} --include-logs")
+    res.show()
 
 
 async def test_repeated_task_collection(register_user, invoke, testdata_path):
