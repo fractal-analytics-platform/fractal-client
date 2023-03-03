@@ -85,7 +85,6 @@ async def dataset(
             project_id=kwargs.pop("project_id"),
             dataset_id=kwargs.pop("dataset_id"),
             path=kwargs.pop("path"),
-            glob_pattern=kwargs.pop("glob_pattern"),
             **kwargs,
         )
     elif subcmd == "rm-resource":

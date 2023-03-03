@@ -2,7 +2,6 @@ import json
 import os
 from typing import Any
 from typing import Dict
-from typing import Optional
 
 from rich.table import Table
 
@@ -26,7 +25,6 @@ async def dataset_add_resource(
     project_id: int,
     dataset_id: int,
     path: str,
-    glob_pattern: Optional[str] = "",
     **kwargs,
 ) -> BaseInterface:
 
@@ -36,7 +34,7 @@ async def dataset_add_resource(
         msg = f"{path=} is not an absolute path"
         raise ValueError(msg)
 
-    resource = ResourceCreate(path=path, glob_pattern=glob_pattern)
+    resource = ResourceCreate(path=path)
 
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/{dataset_id}",
@@ -125,13 +123,10 @@ async def dataset_show(
         )
         table_res = Table(title="Resources")
         table_res.add_column("Path", justify="center", style="yellow")
-        table_res.add_column("Glob pattern", justify="center", style="yellow")
         table_res.add_column("ID", justify="center", style="yellow")
         table_res.add_column("Dataset ID", justify="center", style="yellow")
         for r in dataset.resource_list:
-            table_res.add_row(
-                r.path, r.glob_pattern, str(r.id), str(r.dataset_id)
-            )
+            table_res.add_row(r.path, str(r.id), str(r.dataset_id))
         group = Group(table, table_res)
         return RichConsoleInterface(retcode=0, data=group)
 
