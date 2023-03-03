@@ -704,7 +704,7 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "534-align-with-refactored-task"
-resolved_reference = "aa69641f8c85ff8d239f7b58bc8b9d558a5e5987"
+resolved_reference = "3abca39cc3807db76b8628781920ec9bc7b27300"
 
 [[package]]
 name = "greenlet"
