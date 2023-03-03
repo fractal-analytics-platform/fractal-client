@@ -2,6 +2,7 @@
 
 # 1.1.0
 
+* Improve validation of API request payloads (\#447).
 * Align with fractal-server 1.1.0 (\#446).
 * Update `_TaskBase` schema from `fractal-common` (\#431).
 * Drop support for python 3.8 (\#438).
