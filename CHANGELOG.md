@@ -1,3 +1,5 @@
+**Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
+
 # 1.1.0
 
 * Align with fractal-server 1.1.0 (\#446).
