@@ -1,10 +1,11 @@
 import pytest
 
 
-async def test_add_resource(register_user, invoke):
+async def test_add_resource(register_user, invoke, tmp_path):
 
     # Create a project with its default dataset
-    res = await invoke("project new prj0 prj_path0")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
     assert res.data["dataset_list"][0]["resource_list"] == []
@@ -20,8 +21,9 @@ async def test_add_resource(register_user, invoke):
     assert res.data["dataset_id"] == dataset_id
 
 
-async def test_add_resource_relative_path(register_user, invoke):
-    res = await invoke("project new prj0 prj_path0")
+async def test_add_resource_relative_path(register_user, invoke, tmp_path):
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
     assert res.data["dataset_list"][0]["resource_list"] == []
@@ -39,8 +41,9 @@ async def test_add_resource_relative_path(register_user, invoke):
         )
 
 
-async def test_edit_dataset(register_user, invoke):
-    res = await invoke("project new prj0 prj_path0")
+async def test_edit_dataset(register_user, invoke, tmp_path):
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
 
@@ -55,9 +58,10 @@ async def test_edit_dataset(register_user, invoke):
     # provided are indeed not updated
 
 
-async def test_delete_dataset(register_user, invoke):
+async def test_delete_dataset(register_user, invoke, tmp_path):
     # Create a project with its default dataset
-    res = await invoke("project new prj0 prj_path0")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
 
@@ -69,9 +73,10 @@ async def test_delete_dataset(register_user, invoke):
         res = await invoke(f"dataset show {project_id} {dataset_id}")
 
 
-async def test_show_dataset(register_user, invoke):
+async def test_show_dataset(register_user, invoke, tmp_path):
     # Create a project with its default dataset
-    res = await invoke("project new prj0 prj_path0")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
 
@@ -80,10 +85,10 @@ async def test_show_dataset(register_user, invoke):
     assert res.retcode == 0
 
 
-async def test_delete_resource(register_user, invoke):
-
+async def test_delete_resource(register_user, invoke, tmp_path):
     # Create a project with its default dataset
-    res = await invoke("project new prj0 prj_path0")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
     assert res.data["dataset_list"][0]["resource_list"] == []
