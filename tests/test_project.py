@@ -2,19 +2,20 @@ import pytest
 from devtools import debug
 
 
-async def test_project_create(register_user, invoke):
+async def test_project_create(register_user, invoke, tmp_path):
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = "project_path"
+    PROJECT_PATH = str(tmp_path)
     res = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
     debug(res)
     assert res.data["name"] == PROJECT_NAME
     assert res.data["project_dir"] == PROJECT_PATH
 
 
-async def test_project_delete(register_user, invoke):
+async def test_project_delete(register_user, invoke, tmp_path):
 
     # Create project
-    res = await invoke("project new MyProj1 /some/path/1")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new MyProj1 {project_dir}")
     res.show()
     project_id_1 = res.data["id"]
 
@@ -31,8 +32,9 @@ async def test_project_delete(register_user, invoke):
         res = await invoke(f"project show {project_id_1}")
 
 
-async def test_project_create_batch(register_user, invoke):
-    res = await invoke("--batch project new project_name project_path")
+async def test_project_create_batch(register_user, invoke, tmp_path):
+    project_dir = str(tmp_path)
+    res = await invoke(f"--batch project new MyProj1 {project_dir}")
     debug(res)
     debug(res.data)
     project_id, dataset_id = map(int, res.data.split())
@@ -40,7 +42,7 @@ async def test_project_create_batch(register_user, invoke):
     assert dataset_id == 1
 
 
-async def test_project_list(register_user, invoke):
+async def test_project_list(register_user, invoke, tmp_path):
     res = await invoke("project list")
     debug(res)
     debug(vars(res.data))
@@ -48,8 +50,9 @@ async def test_project_list(register_user, invoke):
 
     res.show()
 
-    await invoke("--batch project new prj0 prj_path0")
-    await invoke("--batch project new prj1 prj_path1")
+    project_dir = str(tmp_path)
+    res = await invoke(f"--batch project new proj0 {project_dir}")
+    res = await invoke(f"--batch project new proj1 {project_dir}")
 
     res = await invoke("project list")
     debug(res)
@@ -58,10 +61,11 @@ async def test_project_list(register_user, invoke):
     assert len(res.data.rows) == 2
 
 
-async def test_add_dataset(register_user, invoke):
+async def test_add_dataset(register_user, invoke, tmp_path):
     DATASET_NAME = "new_ds_name"
 
-    res = await invoke("--batch project new prj0 prj_path0")
+    project_dir = str(tmp_path)
+    res = await invoke(f"--batch project new proj0 {project_dir}")
     assert res.retcode == 0
     debug(res.data)
     project_id, dataset_id = map(int, res.data.split())
