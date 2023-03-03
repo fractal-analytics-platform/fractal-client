@@ -1,5 +1,6 @@
-# Unreleased
+# 1.1.0
 
+* Align with fractal-server 1.1.0 (\#446).
 * Update `_TaskBase` schema from `fractal-common` (\#431).
 * Drop support for python 3.8 (\#438).
 * Update `fractal task edit` command (\#439).
