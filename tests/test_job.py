@@ -82,7 +82,8 @@ async def test_job_list(
     """
 
     # Create mock Project/Workflow/ApplyWorkflow objects
-    res = await invoke("project new prj0 prj_path0")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     wf_1 = await workflow_factory(project_id=project_id)
     wf_2 = await workflow_factory(project_id=project_id)
@@ -134,7 +135,8 @@ async def test_job_download_logs(
     """
 
     # Create mock Workflow/ApplyWorkflow objects
-    res = await invoke("project new prj0 prj_path0")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new prj0 {project_dir}")
     project_id = res.data["id"]
     wf = await workflow_factory(project_id=project_id)
     wd = tmp_path / f"workflow_{wf.id}"
