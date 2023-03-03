@@ -10,9 +10,9 @@ from devtools import debug
 TIMEOUT = 15.0
 
 
-async def test_workflow_new(register_user, invoke):
+async def test_workflow_new(register_user, invoke, tmp_path):
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = "project_path"
+    PROJECT_PATH = str(tmp_path)
     WORKFLOW_NAME = "mywf"
     res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
     assert res_pj.data["name"] == PROJECT_NAME
@@ -25,9 +25,10 @@ async def test_workflow_new(register_user, invoke):
     assert res_wf.data["project_id"] == res_pj.data["id"]
 
 
-async def test_workflow_delete(register_user, invoke):
+async def test_workflow_delete(register_user, invoke, tmp_path):
     # Create project
-    res_pj = await invoke("project new project_name /some/path")
+    project_dir = str(tmp_path)
+    res_pj = await invoke(f"project new project_name {project_dir}")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
@@ -53,9 +54,10 @@ async def test_workflow_delete(register_user, invoke):
     assert len(res_list.data) == 0
 
 
-async def test_workflow_edit(register_user, invoke):
+async def test_workflow_edit(register_user, invoke, tmp_path):
     # Create a project
-    res_pj = await invoke("project new project_name_1 /some/path")
+    project_dir = str(tmp_path)
+    res_pj = await invoke(f"project new project_name_1 {project_dir}")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
@@ -79,9 +81,9 @@ async def test_workflow_edit(register_user, invoke):
     assert res.data["name"] == NAME
 
 
-async def test_workflow_list(register_user, invoke):
+async def test_workflow_list(register_user, invoke, tmp_path):
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = "project_path"
+    PROJECT_PATH = str(tmp_path)
     res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
     project_id = res_pj.data["id"]
     debug(project_id)
@@ -104,8 +106,9 @@ async def test_workflow_list(register_user, invoke):
 async def test_workflow_list_when_two_projects_exist(
     register_user, invoke, tmp_path: Path
 ):
-    res_pj1 = await invoke(f"project new PRJ1 {str(tmp_path)}/prj1")
-    res_pj2 = await invoke(f"project new PRJ2 {str(tmp_path)}/prj2")
+    project_dir = str(tmp_path)
+    res_pj1 = await invoke(f"project new PRJ1 {project_dir}")
+    res_pj2 = await invoke(f"project new PRJ2 {project_dir}")
     project_id_1 = res_pj1.data["id"]
     project_id_2 = res_pj2.data["id"]
 
@@ -376,7 +379,8 @@ async def test_workflow_apply(
         await asyncio.sleep(1)
         assert time.perf_counter() - starting_time < TIMEOUT
 
-    res = await invoke("project new testproject prjpath")
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new testproject {project_dir}")
     debug(res)
     assert res.retcode == 0
 
@@ -386,35 +390,42 @@ async def test_workflow_apply(
 
     res = await invoke(f"project add-dataset {prj_id} {DATASET_NAME}")
     assert res.retcode == 0
-    debug(res.data)
-    output_dataset_id = res.data["id"]
+    dataset = res.data
+    debug(dataset)
+    output_dataset_id = dataset["id"]
 
     res = await invoke(
-        f"dataset add-resource {prj_id} {output_dataset_id} "
-        f"{testdata_path} -g 'out.json'"
+        f"dataset add-resource {prj_id} {output_dataset_id} " f"{(tmp_path)}"
     )
+    resource = res.data
+    debug(resource)
+    assert res.retcode == 0
 
     res = await invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
     workflow = res.data
     workflow_id = workflow["id"]
+    debug(workflow)
+    assert res.retcode == 0
 
     TASK_ID = 1
     res = await invoke(f"workflow add-task {workflow_id} {TASK_ID}")
+    workflow_task = res.data
+    debug(workflow_task)
     assert res.retcode == 0
-    debug(res.data)
     TASK_NAME = res.data["task"]["name"]
     debug(TASK_NAME)
 
     cmd = (
         f"workflow apply {workflow_id} {input_dataset_id} "
-        f"-o {output_dataset_id} -p {prj['id']}"
+        f"-o {output_dataset_id} -p {prj_id}"
     )
     debug(cmd)
     res = await invoke(cmd)
-    debug(res.data)
-    job_id = res.data["id"]
+    job = res.data
+    debug(job)
     assert res.retcode == 0
-    assert res.data["status"] == "submitted"
+    job_id = job["id"]
+    assert job["status"] == "submitted"
 
     # TODO: add an assertion about the output, instead of calling `job show`
 
@@ -424,9 +435,13 @@ async def test_workflow_apply(
     debug(cmd)
     while True:
         res = await invoke(cmd)
+        job = res.data
+        debug(job)
         assert res.retcode == 0
-        if res.data["status"] == "done":
+        if job["status"] == "done":
             break
+        elif job["status"] == "failed":
+            raise RuntimeError(job)
         await asyncio.sleep(1)
         assert time.perf_counter() - starting_time < TIMEOUT
     debug(res.data)
@@ -514,7 +529,7 @@ async def test_workflow_import(
 
     # create project
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = str(tmp_path / "project_path")
+    PROJECT_PATH = str(tmp_path)
     res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
