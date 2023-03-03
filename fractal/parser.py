@@ -150,9 +150,6 @@ dataset_add_resource_parser.add_argument(
     "dataset_id", type=int, help="Dataset ID"
 )
 dataset_add_resource_parser.add_argument("path", help="Path to resource")
-dataset_add_resource_parser.add_argument(
-    "-g", "--glob-pattern", help="Glob pattern"
-)
 
 # dataset rm-resource
 dataset_rm_resource_parser = dataset_subparsers.add_parser(
