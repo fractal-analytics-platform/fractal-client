@@ -25,10 +25,13 @@ async def project_create(
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
-    project = ProjectCreate(
-        name=name, project_dir=path, default_dataset_name=dataset
-    )
+    # Prepare a ProjectCreate request body
+    project_dict = dict(name=name, project_dir=path)
+    if dataset:
+        project_dict["default_dataset_name"] = dataset
+    project = ProjectCreate(**project_dict)
     logging.info(project)
+    # Send API request
     res = await client.post(
         f"{settings.BASE_URL}/project/",
         json=project.dict(),
@@ -106,9 +109,10 @@ async def project_add_dataset(
     else:
         meta = json.loads(metadata_filename)
 
-    dataset = DatasetCreate(
-        name=dataset_name, project_id=project_id, type=type, meta=meta
-    )
+    dataset_dict = dict(name=dataset_name, meta=meta)
+    if type:
+        dataset_dict["type"] = type
+    dataset = DatasetCreate(**dataset_dict)
 
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/",

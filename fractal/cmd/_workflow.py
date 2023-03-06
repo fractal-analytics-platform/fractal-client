@@ -102,7 +102,10 @@ async def workflow_add_task(
     except ValueError:
         task_id = await get_cached_task_by_name(task_id_or_name, client)
 
-    workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
+    if order is None:
+        workflow_task = WorkflowTaskCreate(task_id=task_id)
+    else:
+        workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
     if args_file:
         with Path(args_file).open("r") as f:
             args = json.load(f)
@@ -216,14 +219,18 @@ async def workflow_apply(
     worker_init: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
-    apply_wf_create = ApplyWorkflowCreate(
+    apply_wf_create_dict = dict(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
         output_dataset_id=output_dataset_id,
         overwrite_input=overwrite_input,
-        project_id=project_id,
-        worker_init=worker_init,
     )
+    # Prepare ApplyWorkflowCreate object, without None attributes
+    if project_id:
+        apply_wf_create_dict["project_id"] = project_id
+    if worker_init:
+        apply_wf_create_dict["worker_init"] = worker_init
+    apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
 
     res = await client.post(
         f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()

@@ -21,9 +21,13 @@ async def user_register(
     **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
 
-    new_user = UserCreate(
-        email=new_email, password=new_password, slurm_user=slurm_user
+    user_dict = dict(
+        email=new_email,
+        password=new_password,
     )
+    if slurm_user:
+        user_dict["slurm_user"] = slurm_user
+    new_user = UserCreate(**user_dict)
 
     from getpass import getpass
 
