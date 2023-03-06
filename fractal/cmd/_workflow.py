@@ -102,10 +102,10 @@ async def workflow_add_task(
     except ValueError:
         task_id = await get_cached_task_by_name(task_id_or_name, client)
 
-    if order:
-        workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
-    else:
+    if order is None:
         workflow_task = WorkflowTaskCreate(task_id=task_id)
+    else:
+        workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
     if args_file:
         with Path(args_file).open("r") as f:
             args = json.load(f)
