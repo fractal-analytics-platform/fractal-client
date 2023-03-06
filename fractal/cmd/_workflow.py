@@ -219,14 +219,18 @@ async def workflow_apply(
     worker_init: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
-    apply_wf_create = ApplyWorkflowCreate(
+    apply_wf_create_dict = dict(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
         output_dataset_id=output_dataset_id,
         overwrite_input=overwrite_input,
-        project_id=project_id,
-        worker_init=worker_init,
     )
+    # Prepare ApplyWorkflowCreate object, without None attributes
+    if project_id:
+        apply_wf_create_dict["project_id"] = project_id
+    if worker_init:
+        apply_wf_create_dict["worker_init"] = worker_init
+    apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
 
     res = await client.post(
         f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()
