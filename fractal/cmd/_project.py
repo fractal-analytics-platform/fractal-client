@@ -106,9 +106,7 @@ async def project_add_dataset(
     else:
         meta = json.loads(metadata_filename)
 
-    dataset = DatasetCreate(
-        name=dataset_name, project_id=project_id, type=type, meta=meta
-    )
+    dataset = DatasetCreate(name=dataset_name, type=type, meta=meta)
 
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/",
