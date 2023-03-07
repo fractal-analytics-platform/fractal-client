@@ -112,7 +112,7 @@ async def task_new(
         input_type=input_type,
         output_type=output_type,
         **optionals,
-    ).dict()
+    ).dict(exclude_unset=True)
     res = await client.post(f"{settings.BASE_URL}/task/", json=payload)
     new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
 

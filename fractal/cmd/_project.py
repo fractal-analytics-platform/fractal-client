@@ -34,7 +34,7 @@ async def project_create(
     # Send API request
     res = await client.post(
         f"{settings.BASE_URL}/project/",
-        json=project.dict(),
+        json=project.dict(exclude_unset=True),
     )
     project = check_response(res, expected_status_code=201, coerce=ProjectRead)
     if batch:
@@ -116,7 +116,7 @@ async def project_add_dataset(
 
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/",
-        json=dataset.dict(),
+        json=dataset.dict(exclude_unset=True),
     )
     new_dataset = check_response(
         res, expected_status_code=201, coerce=DatasetRead
