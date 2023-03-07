@@ -91,7 +91,7 @@ async def workflow_add_task(
     workflow_id: int,
     batch: bool = False,
     task_id_or_name: str,
-    order: int = None,
+    order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
     **kwargs,
