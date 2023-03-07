@@ -58,7 +58,6 @@ class AuthToken:
         try:
             jwt.decode(
                 jwt=self.token,
-                requires=["exp"],
                 options={
                     "verify_signature": False,
                     "verify_exp": True,
