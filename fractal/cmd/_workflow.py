@@ -117,7 +117,7 @@ async def workflow_add_task(
 
     res = await client.post(
         f"{settings.BASE_URL}/workflow/{workflow_id}/add-task/",
-        json=workflow_task.dict(),
+        json=workflow_task.dict(exclude_unset=True),
     )
     workflow_task = check_response(
         res, expected_status_code=201, coerce=WorkflowTaskRead
@@ -233,7 +233,8 @@ async def workflow_apply(
     apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
 
     res = await client.post(
-        f"{settings.BASE_URL}/project/apply/", json=apply_wf_create.dict()
+        f"{settings.BASE_URL}/project/apply/",
+        json=apply_wf_create.dict(exclude_unset=True),
     )
     apply_wf_read = check_response(
         res, expected_status_code=202, coerce=ApplyWorkflowRead
@@ -254,7 +255,7 @@ async def workflow_import(
     workflow = WorkflowImport(**workflow)
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/import-workflow/",
-        json=workflow.dict(),
+        json=workflow.dict(exclude_unset=True),
     )
     wf_read = check_response(
         res, expected_status_code=201, coerce=WorkflowRead
