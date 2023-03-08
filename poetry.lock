@@ -121,7 +121,7 @@ files = [
 name = "bcrypt"
 version = "4.0.1"
 description = "Modern password hashing for your software and your servers"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -188,7 +188,7 @@ files = [
 name = "cffi"
 version = "1.15.1"
 description = "Foreign Function Interface for Python calling C code."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -458,7 +458,7 @@ toml = ["tomli"]
 name = "cryptography"
 version = "39.0.2"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -523,7 +523,7 @@ pygments = ["pygments (>=2.2.0)"]
 name = "dnspython"
 version = "2.3.0"
 description = "DNS toolkit"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
@@ -556,7 +556,7 @@ files = [
 name = "email-validator"
 version = "1.3.1"
 description = "A robust email address syntax and deliverability validation library."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -599,7 +599,7 @@ files = [
 name = "fastapi"
 version = "0.89.1"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -621,7 +621,7 @@ test = ["anyio[trio] (>=3.2.1,<4.0.0)", "black (==22.10.0)", "coverage[toml] (>=
 name = "fastapi-users"
 version = "10.4.0"
 description = "Ready-to-use and customizable users management for FastAPI"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -830,7 +830,7 @@ socks = ["socksio (>=1.0.0,<2.0.0)"]
 name = "httpx-oauth"
 version = "0.11.0"
 description = "Async OAuth client using HTTPX"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -931,7 +931,7 @@ files = [
 name = "makefun"
 version = "1.15.1"
 description = "Small library to dynamically create python functions."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -1119,7 +1119,7 @@ files = [
 name = "passlib"
 version = "1.7.4"
 description = "comprehensive password hashing framework supporting over 30 schemes"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -1171,7 +1171,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
@@ -1345,7 +1345,7 @@ cli = ["click (>=5.0)"]
 name = "python-multipart"
 version = "0.0.5"
 description = "A streaming multipart parser for Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -1485,7 +1485,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
@@ -1836,7 +1836,7 @@ sqlalchemy2-stubs = "*"
 name = "starlette"
 version = "0.22.0"
 description = "The little ASGI library that shines."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1942,4 +1942,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e2407bac73142e3cef4ce64c9e0e4b7a8ccb142687630110f36b1d2ee72bc251"
+content-hash = "9972bdbe0c0117ae682a13540fd2413272d0f7253cee785e1555efd71b000d09"
