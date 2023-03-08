@@ -2,6 +2,7 @@
 
 # 1.1.0
 
+* Remove `fastapi-users` from main dependencies (\#455); note that it remains part of the `dev` dependencies, via `fractal-server`.
 * Improve validation of API request payloads (\#447).
 * Align with fractal-server 1.1.0 (\#446).
 * Update `_TaskBase` schema from `fractal-common` (\#431).
