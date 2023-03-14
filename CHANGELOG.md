@@ -10,6 +10,7 @@
 * Update `fractal task edit` command (\#439).
 * Disable `argparse` abbreviation for CLI commands (\#441).
 * Improve task-collection log formatting (\#443).
+* Update `DatasetUpdate` schema (\#461).
 
 # 1.0.5
 

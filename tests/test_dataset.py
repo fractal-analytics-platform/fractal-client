@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 
@@ -47,15 +49,61 @@ async def test_edit_dataset(register_user, invoke, tmp_path):
     project_id = res.data["id"]
     dataset_id = res.data["dataset_list"][0]["id"]
 
+    TYPE = "this_new_type"
+    NAME = "this_new_name"
+    META = {"something": "else"}
+    META_FILE = str(tmp_path / "meta.json")
+    with open(META_FILE, "w") as f:
+        json.dump(META, f)
+
     res = await invoke(
-        f"dataset edit {project_id} {dataset_id} --type newtype"
+        f"dataset edit {project_id} {dataset_id} --new-name {NAME}"
     )
     res.show()
-    assert res.data["type"] == "newtype"
+    assert res.data["name"] == NAME
     assert res.retcode == 0
 
-    # TODO more extensively test partial updates and test that arguments not
-    # provided are indeed not updated
+    res = await invoke(
+        f"dataset edit {project_id} {dataset_id} --new-type {TYPE}"
+    )
+    res.show()
+    assert res.data["name"] == NAME
+    assert res.data["type"] == TYPE
+    assert res.retcode == 0
+
+    res = await invoke(
+        f"dataset edit {project_id} {dataset_id} --make-read-only"
+    )
+    res.show()
+    assert res.data["name"] == NAME
+    assert res.data["type"] == TYPE
+    assert res.data["read_only"]
+    assert res.retcode == 0
+
+    res = await invoke(
+        f"dataset edit {project_id} {dataset_id} --remove-read-only"
+    )
+    res.show()
+    assert res.data["name"] == NAME
+    assert res.data["type"] == TYPE
+    assert not res.data["read_only"]
+    assert res.retcode == 0
+
+    res = await invoke(
+        f"dataset edit {project_id} {dataset_id} --meta-file {META_FILE}"
+    )
+    res.show()
+    assert res.data["name"] == NAME
+    assert res.data["type"] == TYPE
+    assert res.data["meta"] == META
+    assert not res.data["read_only"]
+    assert res.retcode == 0
+
+    with pytest.raises(SystemExit):
+        res = await invoke(
+            f"dataset edit {project_id} {dataset_id} "
+            "--make-read-only --remove-read-only"
+        )
 
 
 async def test_delete_dataset(register_user, invoke, tmp_path):

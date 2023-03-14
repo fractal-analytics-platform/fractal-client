@@ -176,28 +176,33 @@ dataset_edit_parser = dataset_subparsers.add_parser(
 )
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID")
-dataset_edit_parser.add_argument("--name", help="New name of dataset")
-dataset_edit_parser.add_argument("--path", help="New path of dataset")
 dataset_edit_parser.add_argument(
-    "--metadata",
-    help=(
-        "Path to file containing dataset metadata in JSON format. "
-        "(Set to `none` to clear)"
-    ),
+    "--new-name",
+    help="New name of dataset",
+    type=str,
 )
 dataset_edit_parser.add_argument(
-    "--read-only",
-    dest="read_only",
+    "--new-type",
+    help="Dataset type",
+    type=str,
+)
+dataset_edit_parser.add_argument(
+    "--meta-file",
+    help="Path to JSON file with new metadata to replace the current ones",
+)
+dataset_edit_parser_read = dataset_edit_parser.add_mutually_exclusive_group()
+dataset_edit_parser_read.add_argument(
+    "--make-read-only",
     help="Set read-only flag of dataset",
     action="store_true",
+    required=False,
 )
-dataset_edit_parser.add_argument(
-    "--read-write",
-    dest="read_only",
-    help="Set read-only flag of dataset (0 for False, 1 for True)",
-    action="store_false",
+dataset_edit_parser_read.add_argument(
+    "--remove-read-only",
+    help="Remove read-only flag of dataset",
+    action="store_true",
+    required=False,
 )
-dataset_edit_parser.add_argument("-t", "--type", help="Dataset type")
 
 # dataset show
 dataset_show_parser = dataset_subparsers.add_parser(

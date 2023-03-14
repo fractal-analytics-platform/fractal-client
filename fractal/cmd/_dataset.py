@@ -1,7 +1,6 @@
 import json
 import os
-from typing import Any
-from typing import Dict
+from typing import Optional
 
 from rich.table import Table
 
@@ -69,18 +68,31 @@ async def dataset_edit(
     *,
     project_id: int,
     dataset_id: int,
-    dataset_update_dict: Dict[str, Any],
+    new_name: Optional[str] = None,
+    new_type: Optional[str] = None,
+    meta_file: Optional[str] = None,
+    make_read_only: bool = False,
+    remove_read_only: bool = False,
+    **kwargs,
 ) -> BaseInterface:
 
-    metadata_filename = dataset_update_dict.get("metadata")
-    if metadata_filename == "none":
-        dataset_update_dict.update(meta={})
-    elif metadata_filename is not None:
-        meta = json.loads(metadata_filename)
+    # Prepare payload
+    dataset_update_dict = {}
+    if new_name:
+        dataset_update_dict["name"] = new_name
+    if new_type:
+        dataset_update_dict["type"] = new_type
+    if meta_file:
+        with open(meta_file, "r") as f:
+            meta = json.load(f)
         dataset_update_dict.update(meta=meta)
-
+    if make_read_only:
+        dataset_update_dict["read_only"] = True
+    if remove_read_only:
+        dataset_update_dict["read_only"] = False
     dataset_update = DatasetUpdate(**dataset_update_dict)
     payload = dataset_update.dict(exclude_unset=True)
+
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 

@@ -99,13 +99,11 @@ async def dataset(
     elif subcmd == "edit":
         project_id = int(kwargs.pop("project_id"))
         dataset_id = int(kwargs.pop("dataset_id"))
-
-        dataset_update_dict = kwargs
         iface = await dataset_edit(
             client,
             project_id=project_id,
             dataset_id=dataset_id,
-            dataset_update_dict=dataset_update_dict,
+            **kwargs,
         )
     elif subcmd == "delete":
         iface = await dataset_delete(client, **kwargs)
