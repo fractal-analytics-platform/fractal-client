@@ -143,8 +143,8 @@ async def project_delete(
 async def project_edit(
     client: AuthClient,
     project_id: int,
-    new_name: Optional[str],
-    new_project_dir: Optional[str],
+    new_name: Optional[str] = None,
+    new_project_dir: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
 ) -> Union[RichJsonInterface, PrintInterface]:
