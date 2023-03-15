@@ -147,6 +147,7 @@ async def project_edit(
     new_project_dir: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
+    **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
     update = {}
     if new_name:
