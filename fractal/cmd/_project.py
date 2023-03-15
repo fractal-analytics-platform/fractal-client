@@ -117,7 +117,7 @@ async def project_add_dataset(
     dataset = DatasetCreate(**dataset_dict)
 
     res = await client.post(
-        f"{settings.BASE_URL}/project/{project_id}/",
+        f"{settings.BASE_URL}/project/{project_id}",
         json=dataset.dict(exclude_unset=True),
     )
     new_dataset = check_response(
@@ -165,7 +165,7 @@ async def project_edit(
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        f"{settings.BASE_URL}/project/{project_id}/", json=payload
+        f"{settings.BASE_URL}/project/{project_id}", json=payload
     )
     new_project = check_response(
         res, expected_status_code=200, coerce=ProjectRead
