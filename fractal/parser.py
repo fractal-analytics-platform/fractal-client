@@ -129,7 +129,7 @@ project_add_dataset_parser.add_argument(
 # project edit
 project_edit_parser = project_subparsers.add_parser(
     "edit",
-    description="Edit details of single project",
+    description="Edit details of a single project",
     allow_abbrev=False,
 )
 project_edit_parser.add_argument(
