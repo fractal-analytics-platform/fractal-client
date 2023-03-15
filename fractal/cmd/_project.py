@@ -117,7 +117,7 @@ async def project_add_dataset(
     dataset = DatasetCreate(**dataset_dict)
 
     res = await client.post(
-        f"{settings.BASE_URL}/project/{project_id}",
+        f"{settings.BASE_URL}/project/{project_id}/",
         json=dataset.dict(exclude_unset=True),
     )
     new_dataset = check_response(
