@@ -133,6 +133,9 @@ project_edit_parser = project_subparsers.add_parser(
     allow_abbrev=False,
 )
 project_edit_parser.add_argument(
+    "project_id", type=int, help="ID of the project to edit"
+)
+project_edit_parser.add_argument(
     "--new-name", help="New project name", type=str, required=False
 )
 project_edit_parser.add_argument(

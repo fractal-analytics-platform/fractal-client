@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Optional
+from typing import Union
 
 from rich.table import Table
 
@@ -9,6 +10,7 @@ from ..common.schemas import DatasetCreate
 from ..common.schemas import DatasetRead
 from ..common.schemas import ProjectCreate
 from ..common.schemas import ProjectRead
+from ..common.schemas import ProjectUpdate
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
@@ -136,3 +138,36 @@ async def project_delete(
     )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
+
+
+async def project_edit(
+    client: AuthClient,
+    project_id: int,
+    new_name: Optional[str],
+    new_project_dir: Optional[str],
+    make_read_only: bool = False,
+    remove_read_only: bool = False,
+) -> Union[RichJsonInterface, PrintInterface]:
+    update = {}
+    if new_name:
+        update["name"] = new_name
+    if new_project_dir:
+        update["project_dir"] = new_project_dir
+    if make_read_only:
+        update["read_only"] = True
+    if remove_read_only:
+        update["read_only"] = False
+
+    project_update = ProjectUpdate(**update)  # validation
+    payload = project_update.dict(exclude_unset=True)
+
+    if not payload:
+        return PrintInterface(retcode=1, data="Nothing to update")
+
+    res = await client.patch(
+        f"{settings.BASE_URL}/project/{project_id}/", json=payload
+    )
+    new_project = check_response(
+        res, expected_status_code=200, coerce=ProjectRead
+    )
+    return RichJsonInterface(retcode=0, data=new_project.dict())
