@@ -133,7 +133,7 @@ project_edit_parser = project_subparsers.add_parser(
     allow_abbrev=False,
 )
 project_edit_parser.add_argument(
-    "--new-name", help="New name", type=str, required=False
+    "--new-name", help="New project name", type=str, required=False
 )
 project_edit_parser.add_argument(
     "--new-project-dir", help="New project directory", type=str, required=False
@@ -143,13 +143,13 @@ project_edit_parser_read_only = (
 )
 project_edit_parser_read_only.add_argument(
     "--make-read-only",
-    help="---",  # FIXME
+    help="Set the read-only flag for this project",
     action="store_true",
     required=False,
 )
 project_edit_parser_read_only.add_argument(
     "--remove-read-only",
-    help="---",  # FIXME
+    help="Remove the read-only flag for this project",
     action="store_true",
     required=False,
 )
