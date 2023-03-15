@@ -126,6 +126,37 @@ project_add_dataset_parser.add_argument(
     help="Path to file containing dataset metadata in JSON format.",
 )
 
+# project edit
+project_edit_parser = project_subparsers.add_parser(
+    "edit",
+    description="Edit details of a single project",
+    allow_abbrev=False,
+)
+project_edit_parser.add_argument(
+    "project_id", type=int, help="ID of the project to edit"
+)
+project_edit_parser.add_argument(
+    "--new-name", help="New project name", type=str, required=False
+)
+project_edit_parser.add_argument(
+    "--new-project-dir", help="New project directory", type=str, required=False
+)
+project_edit_parser_read_only = (
+    project_edit_parser.add_mutually_exclusive_group()
+)
+project_edit_parser_read_only.add_argument(
+    "--make-read-only",
+    help="Set the read-only flag for this project",
+    action="store_true",
+    required=False,
+)
+project_edit_parser_read_only.add_argument(
+    "--remove-read-only",
+    help="Remove the read-only flag for this project",
+    action="store_true",
+    required=False,
+)
+
 
 # DATASET GROUP
 dataset_parser = subparsers_main.add_parser(

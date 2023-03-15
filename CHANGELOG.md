@@ -2,15 +2,16 @@
 
 # 1.1.0
 
-* Remove `fastapi-users` from main dependencies (\#455); note that it remains part of the `dev` dependencies, via `fractal-server`.
-* Improve validation of API request payloads (\#447).
 * Align with fractal-server 1.1.0 (\#446).
-* Update `_TaskBase` schema from `fractal-common` (\#431).
+* Improve validation of API request payloads (\#447).
 * Drop support for python 3.8 (\#438).
-* Update `fractal task edit` command (\#439).
-* Disable `argparse` abbreviation for CLI commands (\#441).
-* Improve task-collection log formatting (\#443).
+* Update `_TaskBase` schema from `fractal-common` (\#431).
 * Update `DatasetUpdate` schema (\#461).
+* Update `fractal task edit` command (\#439).
+* Add `fractal project edit` command (\#465).
+* Improve task-collection log formatting (\#443).
+* Disable `argparse` abbreviation for CLI commands (\#441).
+* Remove `fastapi-users` from main dependencies (\#455); note that it remains part of the `dev` dependencies, via `fractal-server`.
 
 # 1.0.5
 

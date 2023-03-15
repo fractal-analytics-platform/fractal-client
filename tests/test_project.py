@@ -74,3 +74,54 @@ async def test_add_dataset(register_user, invoke, tmp_path):
     assert res.retcode == 0
     res.show()
     assert res.data["name"] == DATASET_NAME
+
+
+@pytest.mark.parametrize("new_name", ["new_name", None])
+@pytest.mark.parametrize("new_project_dir", ["/tmp", None])
+@pytest.mark.parametrize("read_only", [True, False, None])
+async def test_edit_project(
+    register_user,
+    invoke,
+    new_name,
+    new_project_dir,
+    read_only,
+    tmp_path,
+):
+    name = "name"
+    project_dir = str(tmp_path)
+    res = await invoke(f"project new {name} {project_dir}")
+    project = res.data
+    project_id = project["id"]
+
+    cmd = f"project edit {project_id}"
+    if new_name:
+        cmd += f" --new-name {new_name}"
+    if new_project_dir:
+        cmd += f" --new-project-dir {new_project_dir}"
+    if read_only is True:
+        cmd += " --make-read-only"
+    elif read_only is False:
+        cmd += " --remove-read-only"
+
+    res = await invoke(cmd)
+    debug(res)
+
+    if (not new_name) and (not new_project_dir) and (read_only is None):
+        assert res.retcode == 1
+    else:
+        assert res.retcode == 0
+        new_project = res.data
+        if new_name:
+            assert new_project["name"] == new_name
+        else:
+            assert new_project["name"] == name
+        if new_project_dir:
+            assert new_project["project_dir"] == new_project_dir
+        else:
+            assert new_project["project_dir"] == project_dir
+        if read_only is True:
+            assert new_project["read_only"] is True
+        if read_only is False:
+            assert new_project["read_only"] is False
+        if read_only is None:
+            assert new_project["read_only"] == project["read_only"]

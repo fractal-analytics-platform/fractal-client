@@ -16,6 +16,7 @@ from ._job import job_show
 from ._project import project_add_dataset
 from ._project import project_create
 from ._project import project_delete
+from ._project import project_edit
 from ._project import project_list
 from ._project import project_show
 from ._task import task_collect_pip
@@ -56,6 +57,8 @@ async def project(
         iface = await project_show(client, **kwargs)
     elif subcmd == "list":
         iface = await project_list(client, **kwargs)
+    elif subcmd == "edit":
+        iface = await project_edit(client, **kwargs)
     elif subcmd == "add-dataset":
         iface = await project_add_dataset(
             client,
