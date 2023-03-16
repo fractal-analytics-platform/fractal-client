@@ -11,7 +11,6 @@
 * Add `fractal project edit` command (\#465).
 * Improve task-collection log formatting (\#443).
 * Disable `argparse` abbreviation for CLI commands (\#441).
-* Remove `fastapi-users` from main dependencies (\#455); note that it remains part of the `dev` dependencies, via `fractal-server`.
 
 # 1.0.5
 
