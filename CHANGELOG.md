@@ -7,7 +7,7 @@
 * Drop support for python 3.8 (\#438).
 * Update `_TaskBase` schema from `fractal-common` (\#431).
 * Update `DatasetUpdate` schema (\#461).
-* Update `fractal task edit` command (\#439).
+* Update `fractal task edit` command (\#439 and \#461).
 * Add `fractal project edit` command (\#465).
 * Improve task-collection log formatting (\#443).
 * Disable `argparse` abbreviation for CLI commands (\#441).
