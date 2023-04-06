@@ -1,8 +1,11 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 1.2.0
+* Align with [fractal-server 1.2.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#120) (\#472).
+
 # 1.1.0
 
-* Align with fractal-server 1.1.0 (\#446).
+* Align with [fractal-server 1.1.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#110) (\#446).
 * Improve validation of API request payloads (\#447).
 * Drop support for python 3.8 (\#438).
 * Update `_TaskBase` schema from `fractal-common` (\#431).

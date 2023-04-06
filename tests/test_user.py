@@ -2,7 +2,7 @@ from os import environ
 
 import pytest
 from devtools import debug
-
+from pydantic.error_wrappers import ValidationError
 
 EMAIL_USER = "test@testmail.com"
 PWD_USER = "testpassword"
@@ -26,7 +26,8 @@ async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
         assert res.data["is_superuser"]
     else:
         res = await invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} --slurm-user SOMETHING"
+            f"user register {EMAIL_USER} {PWD_USER} "
+            "--slurm-user SOMETHING --cache-dir /absolute"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -111,12 +112,14 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     user_id = res.data["id"]
     # Call fractal user edit
     NEW_EMAIL = "asd@asd.new"
+    NEW_CACHE_DIR = "/tmp/xxx"
     NEW_SLURM_USER = "new_slurm"
     cmd = (
         f"user edit {user_id} "
         f"--new-email {NEW_EMAIL} "
         f"--new-password SOMETHING "
         f"--new-slurm-user {NEW_SLURM_USER} "
+        f"--new-cache-dir {NEW_CACHE_DIR}"
     )
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
@@ -125,8 +128,14 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     debug(res.data)
     assert res.retcode == 0
     assert res.data["email"] == NEW_EMAIL
+    assert res.data["cache_dir"] == NEW_CACHE_DIR
     assert res.data["slurm_user"] == NEW_SLURM_USER
     assert res.data["is_superuser"] == new_is_superuser
+
+    BAD_CACHE_DIR = "not_absolute"
+    with pytest.raises(ValidationError):
+        cmd = f"user edit {user_id} --new-cache-dir {BAD_CACHE_DIR}"
+        await invoke_as_superuser(cmd)
 
     # If the user was made a superuser, check that we can go back to normal
     # user

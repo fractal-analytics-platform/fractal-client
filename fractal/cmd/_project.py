@@ -22,13 +22,12 @@ from ..response import check_response
 async def project_create(
     client: AuthClient,
     name: str,
-    path: str,
     dataset: Optional[str] = None,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
     # Prepare a ProjectCreate request body
-    project_dict = dict(name=name, project_dir=path)
+    project_dict = dict(name=name)
     if dataset:
         project_dict["default_dataset_name"] = dataset
     project = ProjectCreate(**project_dict)
@@ -78,7 +77,6 @@ async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
         table.add_row(
             str(p.id),
             p.name,
-            p.project_dir,
             str(p_dataset_list),
             read_only_icon,
         )
@@ -144,7 +142,6 @@ async def project_edit(
     client: AuthClient,
     project_id: int,
     new_name: Optional[str] = None,
-    new_project_dir: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
     **kwargs,
@@ -152,8 +149,6 @@ async def project_edit(
     update = {}
     if new_name:
         update["name"] = new_name
-    if new_project_dir:
-        update["project_dir"] = new_project_dir
     if make_read_only:
         update["read_only"] = True
     if remove_read_only:
