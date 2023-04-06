@@ -687,8 +687,8 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "553-project-directory-creation-user-specific-base-path-for-project-directories"
-resolved_reference = "2c7a1ef05b4e985be9ca6e2c114666925f2fee04"
+reference = "main"
+resolved_reference = "8a91816e8ff07235718a38f6e5b7df3c137e65ff"
 
 [[package]]
 name = "greenlet"
@@ -1939,4 +1939,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "26509306f3118cf01f55a38bffa575eb265e463d8c58c6288e852c128f59f7a7"
+content-hash = "48ee9ddcbd049212554034c7d045621078316f020017c81f2a9a67467cb54a98"
