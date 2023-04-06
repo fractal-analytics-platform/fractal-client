@@ -26,7 +26,8 @@ async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
         assert res.data["is_superuser"]
     else:
         res = await invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} --slurm-user SOMETHING"
+            f"user register {EMAIL_USER} {PWD_USER} "
+            "--slurm-user SOMETHING --cache-dir /absolute"
         )
         debug(res.data)
         assert res.retcode == 0

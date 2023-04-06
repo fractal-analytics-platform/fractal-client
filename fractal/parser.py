@@ -711,6 +711,11 @@ user_register_parser.add_argument(
     "new_password", help="Password for the new user"
 )
 user_register_parser.add_argument(
+    "--cache-dir",
+    help="---",  # FIXME
+    required=False,
+)
+user_register_parser.add_argument(
     "--slurm-user",
     help="Username to login into SLURM cluster",
     required=False,
@@ -752,7 +757,7 @@ user_edit_parser.add_argument(
 )
 user_edit_parser.add_argument(
     "--new-cache-dir",
-    help="New cache directory path",
+    help="---",  # FIXME
     type=str,
     required=False,
 )
