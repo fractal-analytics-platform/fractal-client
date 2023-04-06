@@ -22,7 +22,6 @@ from ..response import check_response
 async def project_create(
     client: AuthClient,
     name: str,
-    path: str,
     dataset: Optional[str] = None,
     batch: bool = False,
     **kwargs,
