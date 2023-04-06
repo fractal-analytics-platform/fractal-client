@@ -16,6 +16,7 @@ async def user_register(
     new_email: str,
     new_password: Optional[str] = None,
     slurm_user: Optional[str] = None,
+    cache_dir: Optional[str] = None,
     superuser: bool = False,
     batch: bool = False,
     **kwargs,
@@ -27,6 +28,8 @@ async def user_register(
     )
     if slurm_user:
         user_dict["slurm_user"] = slurm_user
+    if cache_dir:
+        user_dict["cache_dir"] = cache_dir
     new_user = UserCreate(**user_dict)
 
     from getpass import getpass
@@ -86,6 +89,7 @@ async def user_edit(
     new_email: Optional[str] = None,
     new_password: Optional[str] = None,
     new_slurm_user: Optional[str] = None,
+    new_cache_dir: Optional[str] = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
     **kwargs,
@@ -95,6 +99,7 @@ async def user_edit(
         email=new_email,
         password=new_password,
         slurm_user=new_slurm_user,
+        cache_dir=new_cache_dir,
     )
 
     if make_superuser:
