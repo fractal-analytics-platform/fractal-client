@@ -751,6 +751,12 @@ user_edit_parser.add_argument(
     "--new-password", help="New password", type=str, required=False
 )
 user_edit_parser.add_argument(
+    "--new-cache-dir",
+    help="New cache directory path",
+    type=str,
+    required=False,
+)
+user_edit_parser.add_argument(
     "--new-slurm-user", help="New SLURM username", type=str, required=False
 )
 
