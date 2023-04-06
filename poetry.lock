@@ -688,7 +688,7 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "553-project-directory-creation-user-specific-base-path-for-project-directories"
-resolved_reference = "0fc963c45f1f314ebedfc66c37a41e2307e66f5b"
+resolved_reference = "2c7a1ef05b4e985be9ca6e2c114666925f2fee04"
 
 [[package]]
 name = "greenlet"
