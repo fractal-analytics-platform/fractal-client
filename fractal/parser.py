@@ -67,13 +67,6 @@ project_new_parser = project_subparsers.add_parser(
 )
 project_new_parser.add_argument("name", help="Name of new project", type=str)
 project_new_parser.add_argument(
-    "path",
-    help=(
-        "Project directory of new project. "
-        "New datasets will be written here."
-    ),
-)
-project_new_parser.add_argument(
     "-d",
     "--dataset",
     help=(
@@ -137,9 +130,6 @@ project_edit_parser.add_argument(
 )
 project_edit_parser.add_argument(
     "--new-name", help="New project name", type=str, required=False
-)
-project_edit_parser.add_argument(
-    "--new-project-dir", help="New project directory", type=str, required=False
 )
 project_edit_parser_read_only = (
     project_edit_parser.add_mutually_exclusive_group()
