@@ -94,13 +94,15 @@ async def user_edit(
     remove_superuser: bool = False,
     **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
-
-    user_update = UserUpdate(
+    user_dict = dict(
         email=new_email,
         password=new_password,
-        slurm_user=new_slurm_user,
-        cache_dir=new_cache_dir,
     )
+    if new_cache_dir is not None:
+        user_dict["cache_dir"] = new_cache_dir
+    if new_slurm_user is not None:
+        user_dict["slurm_user"] = new_slurm_user
+    user_update = UserUpdate(**user_dict)
 
     if make_superuser:
         user_update.is_superuser = True
