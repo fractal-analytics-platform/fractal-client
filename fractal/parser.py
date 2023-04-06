@@ -712,7 +712,10 @@ user_register_parser.add_argument(
 )
 user_register_parser.add_argument(
     "--cache-dir",
-    help="---",  # FIXME
+    help=(
+        "User's cache directory "
+        "(necessary for workflow execution when using the SLURM backend)."
+    ),
     required=False,
 )
 user_register_parser.add_argument(
@@ -757,7 +760,10 @@ user_edit_parser.add_argument(
 )
 user_edit_parser.add_argument(
     "--new-cache-dir",
-    help="---",  # FIXME
+    help=(
+        "New user's cache directory "
+        "(necessary for workflow execution when using the SLURM backend)."
+    ),
     type=str,
     required=False,
 )
