@@ -10,13 +10,11 @@ from devtools import debug
 TIMEOUT = 15.0
 
 
-async def test_workflow_new(register_user, invoke, tmp_path):
+async def test_workflow_new(register_user, invoke):
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = str(tmp_path)
     WORKFLOW_NAME = "mywf"
-    res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
+    res_pj = await invoke(f"project new {PROJECT_NAME}")
     assert res_pj.data["name"] == PROJECT_NAME
-    assert res_pj.data["project_dir"] == PROJECT_PATH
 
     res_wf = await invoke(f"workflow new {WORKFLOW_NAME} {res_pj.data['id']}")
     res_wf.show()
@@ -25,10 +23,9 @@ async def test_workflow_new(register_user, invoke, tmp_path):
     assert res_wf.data["project_id"] == res_pj.data["id"]
 
 
-async def test_workflow_delete(register_user, invoke, tmp_path):
+async def test_workflow_delete(register_user, invoke):
     # Create project
-    project_dir = str(tmp_path)
-    res_pj = await invoke(f"project new project_name {project_dir}")
+    res_pj = await invoke("project new project_name")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
@@ -54,10 +51,9 @@ async def test_workflow_delete(register_user, invoke, tmp_path):
     assert len(res_list.data) == 0
 
 
-async def test_workflow_edit(register_user, invoke, tmp_path):
+async def test_workflow_edit(register_user, invoke):
     # Create a project
-    project_dir = str(tmp_path)
-    res_pj = await invoke(f"project new project_name_1 {project_dir}")
+    res_pj = await invoke("project new project_name_1")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
@@ -81,10 +77,9 @@ async def test_workflow_edit(register_user, invoke, tmp_path):
     assert res.data["name"] == NAME
 
 
-async def test_workflow_list(register_user, invoke, tmp_path):
+async def test_workflow_list(register_user, invoke):
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = str(tmp_path)
-    res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
+    res_pj = await invoke(f"project new {PROJECT_NAME}")
     project_id = res_pj.data["id"]
     debug(project_id)
 
@@ -103,12 +98,9 @@ async def test_workflow_list(register_user, invoke, tmp_path):
     assert len(res_list.data) == 2
 
 
-async def test_workflow_list_when_two_projects_exist(
-    register_user, invoke, tmp_path: Path
-):
-    project_dir = str(tmp_path)
-    res_pj1 = await invoke(f"project new PRJ1 {project_dir}")
-    res_pj2 = await invoke(f"project new PRJ2 {project_dir}")
+async def test_workflow_list_when_two_projects_exist(register_user, invoke):
+    res_pj1 = await invoke("project new PRJ1")
+    res_pj2 = await invoke("project new PRJ2")
     project_id_1 = res_pj1.data["id"]
     project_id_2 = res_pj2.data["id"]
 
@@ -379,8 +371,7 @@ async def test_workflow_apply(
         await asyncio.sleep(1)
         assert time.perf_counter() - starting_time < TIMEOUT
 
-    project_dir = str(tmp_path)
-    res = await invoke(f"project new testproject {project_dir}")
+    res = await invoke("project new testproject")
     debug(res)
     assert res.retcode == 0
 
@@ -529,8 +520,7 @@ async def test_workflow_import(
 
     # create project
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = str(tmp_path)
-    res_pj = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
+    res_pj = await invoke(f"project new {PROJECT_NAME}")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 

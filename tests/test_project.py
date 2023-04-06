@@ -2,20 +2,17 @@ import pytest
 from devtools import debug
 
 
-async def test_project_create(register_user, invoke, tmp_path):
+async def test_project_create(register_user, invoke):
     PROJECT_NAME = "project_name"
-    PROJECT_PATH = str(tmp_path)
-    res = await invoke(f"project new {PROJECT_NAME} {PROJECT_PATH}")
+    res = await invoke(f"project new {PROJECT_NAME}")
     debug(res)
     assert res.data["name"] == PROJECT_NAME
-    assert res.data["project_dir"] == PROJECT_PATH
 
 
-async def test_project_delete(register_user, invoke, tmp_path):
+async def test_project_delete(register_user, invoke):
 
     # Create project
-    project_dir = str(tmp_path)
-    res = await invoke(f"project new MyProj1 {project_dir}")
+    res = await invoke("project new MyProj1")
     res.show()
     project_id_1 = res.data["id"]
 
@@ -32,9 +29,8 @@ async def test_project_delete(register_user, invoke, tmp_path):
         res = await invoke(f"project show {project_id_1}")
 
 
-async def test_project_create_batch(register_user, invoke, tmp_path):
-    project_dir = str(tmp_path)
-    res = await invoke(f"--batch project new MyProj1 {project_dir}")
+async def test_project_create_batch(register_user, invoke):
+    res = await invoke("--batch project new MyProj1")
     debug(res)
     debug(res.data)
     project_id, dataset_id = map(int, res.data.split())
@@ -42,7 +38,7 @@ async def test_project_create_batch(register_user, invoke, tmp_path):
     assert dataset_id == 1
 
 
-async def test_project_list(register_user, invoke, tmp_path):
+async def test_project_list(register_user, invoke):
     res = await invoke("project list")
     debug(res)
     debug(vars(res.data))
@@ -50,9 +46,8 @@ async def test_project_list(register_user, invoke, tmp_path):
 
     res.show()
 
-    project_dir = str(tmp_path)
-    res = await invoke(f"--batch project new proj0 {project_dir}")
-    res = await invoke(f"--batch project new proj1 {project_dir}")
+    res = await invoke("--batch project new proj0")
+    res = await invoke("--batch project new proj1")
 
     res = await invoke("project list")
     debug(res)
@@ -61,11 +56,10 @@ async def test_project_list(register_user, invoke, tmp_path):
     assert len(res.data.rows) == 2
 
 
-async def test_add_dataset(register_user, invoke, tmp_path):
+async def test_add_dataset(register_user, invoke):
     DATASET_NAME = "new_ds_name"
 
-    project_dir = str(tmp_path)
-    res = await invoke(f"--batch project new proj0 {project_dir}")
+    res = await invoke("--batch project new proj0")
     assert res.retcode == 0
     debug(res.data)
     project_id, dataset_id = map(int, res.data.split())
@@ -77,27 +71,22 @@ async def test_add_dataset(register_user, invoke, tmp_path):
 
 
 @pytest.mark.parametrize("new_name", ["new_name", None])
-@pytest.mark.parametrize("new_project_dir", ["/tmp", None])
 @pytest.mark.parametrize("read_only", [True, False, None])
 async def test_edit_project(
     register_user,
     invoke,
     new_name,
-    new_project_dir,
     read_only,
     tmp_path,
 ):
     name = "name"
-    project_dir = str(tmp_path)
-    res = await invoke(f"project new {name} {project_dir}")
+    res = await invoke(f"project new {name}")
     project = res.data
     project_id = project["id"]
 
     cmd = f"project edit {project_id}"
     if new_name:
         cmd += f" --new-name {new_name}"
-    if new_project_dir:
-        cmd += f" --new-project-dir {new_project_dir}"
     if read_only is True:
         cmd += " --make-read-only"
     elif read_only is False:
@@ -106,7 +95,7 @@ async def test_edit_project(
     res = await invoke(cmd)
     debug(res)
 
-    if (not new_name) and (not new_project_dir) and (read_only is None):
+    if (not new_name) and (read_only is None):
         assert res.retcode == 1
     else:
         assert res.retcode == 0
@@ -115,10 +104,6 @@ async def test_edit_project(
             assert new_project["name"] == new_name
         else:
             assert new_project["name"] == name
-        if new_project_dir:
-            assert new_project["project_dir"] == new_project_dir
-        else:
-            assert new_project["project_dir"] == project_dir
         if read_only is True:
             assert new_project["read_only"] is True
         if read_only is False:

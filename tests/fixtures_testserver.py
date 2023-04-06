@@ -116,7 +116,7 @@ async def project_factory(db):
     from fractal_server.app.models.project import Project
 
     async def _project_factory(user_id=None, **project_args_override):
-        project_args = dict(name="name", project_dir="project/dir")
+        project_args = dict(name="name")
         project_args.update(project_args_override)
         p = Project(**project_args)
         if user_id:
