@@ -25,7 +25,7 @@ async def test_job_show(
     # Create mock Workflow/ApplyWorkflow objects
     wf = await workflow_factory()
     debug(wf)
-    log = None if status == "done" else LOG
+    log = LOG
     workflow_path = tmp_path / f"workflow_{wf.id}"
     workflow_path.mkdir()
     job = await job_factory(
@@ -43,12 +43,9 @@ async def test_job_show(
     assert res.retcode == 0
     assert res.data["status"] == status
     debug(res.data)
-    if status == "done":
-        assert res.data["log"] is None
-    elif status == "failed":
-        assert "log" not in res.data
-        assert LOG in res.extra_lines
-        res.show()
+    assert "log" not in res.data
+    assert LOG in res.extra_lines
+    res.show()
 
     # Check `job show` output with --batch
     cmd = f"--batch job show {job.id}"
@@ -57,14 +54,13 @@ async def test_job_show(
     assert res.data == status
 
     # Check `job show` output with `--do-not-separate-logs`
-    if status == "failed":
-        cmd = f"job show {job.id} --do-not-separate-logs"
-        res = await invoke(cmd)
-        debug(res.data)
-        assert res.retcode == 0
-        assert res.data["status"] == status
-        debug(res.data)
-        assert res.data["log"] == LOG
+    cmd = f"job show {job.id} --do-not-separate-logs"
+    res = await invoke(cmd)
+    debug(res.data)
+    assert res.retcode == 0
+    assert res.data["status"] == status
+    debug(res.data)
+    assert res.data["log"] == LOG
 
 
 async def test_job_list(
