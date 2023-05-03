@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 from pathlib import Path
 
 import jwt
@@ -37,9 +38,14 @@ class AuthToken:
             f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
         )
         if res.status_code != 200:
+            try:
+                data = res.json()
+            except JSONDecodeError:
+                data = {}
+
             raise AuthenticationError(
                 "Error: could not obtain token. Is the user registered?\n"
-                f"{res.json()}\n"
+                f"{data}\n"
             )
         raw_token = res.json()
         self.token = raw_token["access_token"]
