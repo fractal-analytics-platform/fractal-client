@@ -212,9 +212,8 @@ async def workflow_apply(
     *,
     workflow_id: int,
     input_dataset_id: int,
-    output_dataset_id: int,
-    # output_dataset_id: Optional[int] = None,
     overwrite_input: bool = False,
+    output_dataset_id: Optional[int] = None,
     project_id: Optional[int] = None,
     worker_init: Optional[str] = None,
     **kwargs,
@@ -222,10 +221,11 @@ async def workflow_apply(
     apply_wf_create_dict = dict(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
-        output_dataset_id=output_dataset_id,
         overwrite_input=overwrite_input,
     )
     # Prepare ApplyWorkflowCreate object, without None attributes
+    if output_dataset_id:
+        apply_wf_create_dict["output_dataset_id"] = output_dataset_id
     if project_id:
         apply_wf_create_dict["project_id"] = project_id
     if worker_init:
