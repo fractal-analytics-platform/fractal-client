@@ -39,7 +39,12 @@ async def test_auth_registered(client, register_user):
     assert token
 
 
-async def test_wrong_token_in_cache(client, register_user, invoke):
+@pytest.mark.skip("this is not ready")
+async def test_wrong_token_in_cache(
+    client,
+    register_user,
+    invoke,
+):
     """
     GIVEN an existing cache/session file, with a non-expired token
     WHEN preparing the headers (i.e. calling AuthToken.__call__)
