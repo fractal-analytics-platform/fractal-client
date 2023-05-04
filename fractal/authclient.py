@@ -60,7 +60,7 @@ class AuthToken:
             f.write(self.token)
 
     @property
-    def expired(self):
+    def valid(self):
         try:
             jwt.decode(
                 jwt=self.token,
@@ -70,18 +70,18 @@ class AuthToken:
                     "verify_exp": True,
                 },
             )
-            return False
+            return True
         except AttributeError:
-            return True
+            return False
         except ExpiredSignatureError:
-            return True
+            return False
 
     async def header(self):
         token = await self.__call__()
         return dict(Authorization=f"Bearer {token}")
 
     async def __call__(self):
-        if self.expired:
+        if not self.valid:
             await self._get_fresh_token()
         return self.token
 
