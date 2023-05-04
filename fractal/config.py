@@ -12,6 +12,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import logging
+import os
 from os import getenv
 from typing import Optional
 
@@ -43,7 +44,7 @@ class Settings(BaseSettings):
     FRACTAL_SERVER: str = getenv("FRACTAL_SERVER", "http://localhost:8000")
 
     BASE_URL: str = f"{FRACTAL_SERVER}/api/v1"
-    FRACTAL_CACHE_PATH: str = "~/.cache/fractal"
+    FRACTAL_CACHE_PATH: str = os.path.expanduser("~/.cache/fractal")
 
 
 settings = Settings()
