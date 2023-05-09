@@ -640,7 +640,7 @@ sqlmodel = "*"
 
 [[package]]
 name = "fractal-server"
-version = "1.2.0"
+version = "1.2.5"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -669,7 +669,7 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "6f8ad3727365ba899ae58e5f2ff5a1afe7f6dc30"
+resolved_reference = "0579f8eaebe055edd0d44fc7941a9f9d3b728773"
 
 [[package]]
 name = "greenlet"
