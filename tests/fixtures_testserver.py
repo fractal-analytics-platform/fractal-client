@@ -20,7 +20,7 @@ def override_server_settings(tmp_path):
     tmp_db_path = tmp_path / "db/test.db"
     tmp_db_path.parent.mkdir()
     settings.DB_ENGINE = "sqlite"
-    settings.SQLITE_PATH = tmp_db_path
+    settings.SQLITE_PATH = str(tmp_db_path) + "?mode=memory&cache=shared"
 
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
