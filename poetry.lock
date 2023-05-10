@@ -640,7 +640,7 @@ sqlmodel = "*"
 
 [[package]]
 name = "fractal-server"
-version = "1.2.3"
+version = "1.2.5"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -668,8 +668,8 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "1.2.3"
-resolved_reference = "9e6e8a0cd593d78c325e9d8f745a6be23d4a99d7"
+reference = "1.2.5"
+resolved_reference = "0579f8eaebe055edd0d44fc7941a9f9d3b728773"
 
 [[package]]
 name = "greenlet"
@@ -1920,4 +1920,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "10a5ee6f8227a952ad0335346037ac1c2633a961188d99c0eff26b76f7b35ab9"
+content-hash = "08aec035d022064d32ab6be0dacab985dc2aa48911650b1f762f062525b2b434"
