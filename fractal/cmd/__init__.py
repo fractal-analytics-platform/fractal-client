@@ -15,16 +15,16 @@ from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
 from ._project import delete_project
+from ._project import get_project
 from ._project import get_project_list
 from ._project import patch_project
 from ._project import post_project
-from ._project import project_show
+from ._task import delete_task
+from ._task import get_task_list
+from ._task import patch_task
+from ._task import post_task
 from ._task import task_collect_pip
 from ._task import task_collection_check
-from ._task import task_delete
-from ._task import task_edit
-from ._task import task_list
-from ._task import task_new
 from ._user import user_delete
 from ._user import user_edit
 from ._user import user_list
@@ -54,7 +54,7 @@ async def project(
     if subcmd == "new":
         iface = await post_project(client, batch=batch, **kwargs)
     elif subcmd == "show":
-        iface = await project_show(client, **kwargs)
+        iface = await get_project(client, **kwargs)
     elif subcmd == "list":
         iface = await get_project_list(client, **kwargs)
     elif subcmd == "edit":
@@ -119,17 +119,17 @@ async def task(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "list":
-        iface = await task_list(client, **kwargs)
+        iface = await get_task_list(client, **kwargs)
     elif subcmd == "collect":
         iface = await task_collect_pip(client, batch=batch, **kwargs)
     elif subcmd == "check-collection":
         iface = await task_collection_check(client, **kwargs)
     elif subcmd == "new":
-        iface = await task_new(client, batch=batch, **kwargs)
+        iface = await post_task(client, batch=batch, **kwargs)
     elif subcmd == "edit":
-        iface = await task_edit(client, **kwargs)
+        iface = await patch_task(client, **kwargs)
     elif subcmd == "delete":
-        iface = await task_delete(client, **kwargs)
+        iface = await delete_task(client, **kwargs)
     else:
         raise NoCommandError(f"Command task {subcmd} not found")
     return iface
