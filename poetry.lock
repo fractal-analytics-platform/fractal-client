@@ -669,7 +669,7 @@ slurm = ["clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "550-review-endpoint-urls"
-resolved_reference = "1a21837db882e0f1a5172dab05f8cf3d27f6240d"
+resolved_reference = "ac1e51179743595dbe18326d52df89505e5f1c77"
 
 [[package]]
 name = "greenlet"
