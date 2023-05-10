@@ -20,7 +20,7 @@ def override_server_settings(tmp_path):
     tmp_db_path = tmp_path / "db/test.db"
     tmp_db_path.parent.mkdir()
     settings.DB_ENGINE = "sqlite"
-    settings.SQLITE_PATH = str(tmp_db_path) + "?mode=memory&cache=shared"
+    settings.SQLITE_PATH = tmp_db_path
 
     settings.JWT_SECRET_KEY = "secret_key"
     settings.DEPLOYMENT_TYPE = "development"
@@ -83,9 +83,9 @@ async def db(testserver):
     """
     NOTE: Only use this fixture within other fixtures!!!
     """
-    from fractal_server.app.db import get_sync_db
+    from fractal_server.app.db import get_db
 
-    for db in get_sync_db():
+    async for db in get_db():
         yield db
 
 
@@ -104,8 +104,8 @@ async def task_factory(db):
         task_args.update(task_args_override)
         t = Task(**task_args)
         db.add(t)
-        db.commit()
-        db.refresh(t)
+        await db.commit()
+        await db.refresh(t)
         return t
 
     return _task_factory
@@ -122,11 +122,11 @@ async def project_factory(db):
         if user_id:
             from fractal_server.app.security import User
 
-            user = db.get(User, user_id)
+            user = await db.get(User, user_id)
             p.user_member_list.append(user)
         db.add(p)
-        db.commit()
-        db.refresh(p)
+        await db.commit()
+        await db.refresh(p)
         return p
 
     return _project_factory
@@ -147,8 +147,8 @@ async def workflow_factory(db, project_factory, register_user):
         wf_args.update(wf_args_override)
         wf = Workflow(**wf_args)
         db.add(wf)
-        db.commit()
-        db.refresh(wf)
+        await db.commit()
+        await db.refresh(wf)
         return wf
 
     return _workflow_factory
@@ -170,8 +170,8 @@ async def job_factory(db):
         job_args.update(job_args_override)
         j = ApplyWorkflow(**job_args)
         db.add(j)
-        db.commit()
-        db.refresh(j)
+        await db.commit()
+        await db.refresh(j)
         return j
 
     return _job_factory
