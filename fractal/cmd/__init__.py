@@ -5,19 +5,19 @@ from ..config import __VERSION__
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
-from ._dataset import dataset_add_resource
-from ._dataset import dataset_delete
-from ._dataset import dataset_delete_resource
-from ._dataset import dataset_edit
-from ._dataset import dataset_show
-from ._job import job_download_logs
-from ._job import job_list
-from ._job import job_show
-from ._project import project_add_dataset
-from ._project import project_create
-from ._project import project_delete
-from ._project import project_edit
-from ._project import project_list
+from ._dataset import delete_dataset
+from ._dataset import delete_resource
+from ._dataset import get_dataset
+from ._dataset import patch_dataset
+from ._dataset import post_dataset
+from ._dataset import post_resource
+from ._job import get_job
+from ._job import get_job_list
+from ._job import get_job_logs
+from ._project import delete_project
+from ._project import get_project_list
+from ._project import patch_project
+from ._project import post_project
 from ._project import project_show
 from ._task import task_collect_pip
 from ._task import task_collection_check
@@ -52,15 +52,15 @@ async def project(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "new":
-        iface = await project_create(client, batch=batch, **kwargs)
+        iface = await post_project(client, batch=batch, **kwargs)
     elif subcmd == "show":
         iface = await project_show(client, **kwargs)
     elif subcmd == "list":
-        iface = await project_list(client, **kwargs)
+        iface = await get_project_list(client, **kwargs)
     elif subcmd == "edit":
-        iface = await project_edit(client, **kwargs)
+        iface = await patch_project(client, **kwargs)
     elif subcmd == "add-dataset":
-        iface = await project_add_dataset(
+        iface = await post_dataset(
             client,
             batch=batch,
             project_id=kwargs.pop("project_id"),
@@ -69,7 +69,7 @@ async def project(
             **kwargs,
         )
     elif subcmd == "delete":
-        iface = await project_delete(client, **kwargs)
+        iface = await delete_project(client, **kwargs)
     else:
         raise NoCommandError(f"Command project {subcmd} not found")
 
@@ -80,9 +80,9 @@ async def dataset(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "show":
-        iface = await dataset_show(client, **kwargs)
+        iface = await get_dataset(client, **kwargs)
     elif subcmd == "add-resource":
-        iface = await dataset_add_resource(
+        iface = await post_resource(
             client,
             batch=batch,
             project_id=kwargs.pop("project_id"),
@@ -91,7 +91,7 @@ async def dataset(
             **kwargs,
         )
     elif subcmd == "rm-resource":
-        iface = await dataset_delete_resource(
+        iface = await delete_resource(
             client,
             batch=batch,
             project_id=kwargs.pop("project_id"),
@@ -102,14 +102,14 @@ async def dataset(
     elif subcmd == "edit":
         project_id = int(kwargs.pop("project_id"))
         dataset_id = int(kwargs.pop("dataset_id"))
-        iface = await dataset_edit(
+        iface = await patch_dataset(
             client,
             project_id=project_id,
             dataset_id=dataset_id,
             **kwargs,
         )
     elif subcmd == "delete":
-        iface = await dataset_delete(client, **kwargs)
+        iface = await delete_dataset(client, **kwargs)
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
@@ -169,11 +169,11 @@ async def job(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "list":
-        iface = await job_list(client, batch=batch, **kwargs)
+        iface = await get_job_list(client, batch=batch, **kwargs)
     elif subcmd == "show":
-        iface = await job_show(client, batch=batch, **kwargs)
+        iface = await get_job(client, batch=batch, **kwargs)
     elif subcmd == "download-logs":
-        iface = await job_download_logs(client, **kwargs)
+        iface = await get_job_logs(client, **kwargs)
     else:
         raise NoCommandError(f"Command job {subcmd} not found")
     return iface

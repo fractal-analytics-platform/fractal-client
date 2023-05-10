@@ -16,7 +16,7 @@ from .utils import get_cached_task_by_name
 from .utils import refresh_task_cache
 
 
-async def task_list(client: AuthClient, **kwargs) -> RichJsonInterface:
+async def get_task_list(client: AuthClient, **kwargs) -> RichJsonInterface:
     task_list = await refresh_task_cache(client=client, **kwargs)
     return RichJsonInterface(retcode=0, data=task_list)
 
@@ -85,7 +85,7 @@ async def task_collection_check(
         )
 
 
-async def task_new(
+async def post_task(
     client: AuthClient,
     *,
     name: str,
@@ -122,7 +122,7 @@ async def task_new(
         return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
-async def task_edit(
+async def patch_task(
     client: AuthClient,
     *,
     task_id_or_name: str,
@@ -169,7 +169,7 @@ async def task_edit(
     return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
-async def task_delete(
+async def delete_task(
     client: AuthClient, task_id: int, **kwargs
 ) -> PrintInterface:
 

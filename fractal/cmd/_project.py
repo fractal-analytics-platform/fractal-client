@@ -16,7 +16,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def create_project(
+async def post_project(
     client: AuthClient,
     name: str,
     dataset: Optional[str] = None,
@@ -83,7 +83,7 @@ async def get_project_list(
     return RichConsoleInterface(retcode=0, data=table)
 
 
-async def read_project(
+async def get_project(
     client: AuthClient, project_id: int, **kwargs
 ) -> RichJsonInterface:
     res = await client.get(
@@ -104,7 +104,7 @@ async def delete_project(
     return PrintInterface(retcode=0, data="")
 
 
-async def update_project(
+async def patch_project(
     client: AuthClient,
     project_id: int,
     new_name: Optional[str] = None,

@@ -18,7 +18,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def create_dataset(
+async def post_dataset(
     client: AuthClient,
     project_id: int,
     dataset_name: str,
@@ -51,7 +51,7 @@ async def create_dataset(
         return RichJsonInterface(retcode=0, data=new_dataset.dict())
 
 
-async def create_resource(
+async def post_resource(
     client: AuthClient,
     *,
     batch: bool = False,
@@ -103,7 +103,7 @@ async def delete_resource(
     return PrintInterface(retcode=0, data="")
 
 
-async def update_dataset(
+async def patch_dataset(
     client: AuthClient,
     *,
     project_id: int,
@@ -146,7 +146,7 @@ async def update_dataset(
     return RichJsonInterface(retcode=0, data=new_dataset.dict())
 
 
-async def read_dataset(
+async def get_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int, **kwargs
 ) -> BaseInterface:
     res = await client.get(

@@ -226,12 +226,11 @@ async def update_workflow(
 async def workflow_apply(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     input_dataset_id: int,
-    output_dataset_id: int,
-    # output_dataset_id: Optional[int] = None,
+    output_dataset_id: Optional[int] = None,
     overwrite_input: bool = False,
-    project_id: Optional[int] = None,
     worker_init: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
@@ -242,14 +241,20 @@ async def workflow_apply(
         overwrite_input=overwrite_input,
     )
     # Prepare ApplyWorkflowCreate object, without None attributes
-    if project_id:
-        apply_wf_create_dict["project_id"] = project_id
     if worker_init:
         apply_wf_create_dict["worker_init"] = worker_init
     apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
 
+    # Prepare query parameters
+    query_parameters = f"{input_dataset_id=}"
+    if output_dataset_id is not None:
+        query_parameters = f"{query_parameters}&{output_dataset_id=}"
+
     res = await client.post(
-        f"{settings.BASE_URL}/project/apply/",  # FIXME: update this
+        (
+            f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
+            f"?{query_parameters}"
+        ),
         json=apply_wf_create.dict(exclude_unset=True),
     )
     apply_wf_read = check_response(
@@ -270,7 +275,7 @@ async def workflow_import(
         workflow = json.load(f)
     workflow = WorkflowImport(**workflow)
     res = await client.post(
-        f"{settings.BASE_URL}/project/{project_id}/import-workflow/",  # FIXME
+        f"{settings.BASE_URL}/project/{project_id}/workflow/import/",
         json=workflow.dict(exclude_unset=True),
     )
     wf_read = check_response(
@@ -288,12 +293,16 @@ async def workflow_import(
 async def workflow_export(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     json_file: str,
     **kwargs,
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/workflow/{workflow_id}/export/"  # FIXME
+        (
+            f"{settings.BASE_URL}/project/{project_id}/"
+            f"workflow/{workflow_id}/export/"
+        ),
     )
     workflow = check_response(
         res, expected_status_code=200, coerce=WorkflowExport

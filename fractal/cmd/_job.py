@@ -15,7 +15,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def read_job(
+async def get_job(
     client: AuthClient,
     project_id: int,
     job_id: int,
