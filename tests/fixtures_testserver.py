@@ -69,7 +69,7 @@ async def testserver(override_server_settings):
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
 
-    time.sleep(1)  # NOTE required to let the server comes up
+    time.sleep(2)  # NOTE required to let the server comes up
     logger.debug(environ["FRACTAL_SERVER"])
     yield environ["FRACTAL_SERVER"]
     proc.kill()
