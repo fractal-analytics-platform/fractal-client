@@ -174,7 +174,7 @@ async def patch_workflowtask(
     res = await client.patch(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
-            f"workflow/{workflow_id}/wftask/{workflow_task_id}",
+            f"workflow/{workflow_id}/wftask/{workflow_task_id}"
         ),
         json=payload_update.dict(exclude_unset=True),
     )
