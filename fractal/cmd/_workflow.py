@@ -110,9 +110,9 @@ async def post_workflowtask(
         task_id = await get_cached_task_by_name(task_id_or_name, client)
 
     if order is None:
-        workflow_task = WorkflowTaskCreate(task_id=task_id)
+        workflow_task = WorkflowTaskCreate()
     else:
-        workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
+        workflow_task = WorkflowTaskCreate(order=order)
     if args_file:
         with Path(args_file).open("r") as f:
             args = json.load(f)
@@ -126,6 +126,7 @@ async def post_workflowtask(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
             f"workflow/{workflow_id}/wftask/"
+            f"?{task_id=}"
         ),
         json=workflow_task.dict(exclude_unset=True),
     )
