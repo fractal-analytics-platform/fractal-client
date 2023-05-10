@@ -125,7 +125,7 @@ async def post_workflowtask(
     res = await client.post(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
-            f"workflow/{workflow_id}/wftask/",
+            f"workflow/{workflow_id}/wftask/"
         ),
         json=workflow_task.dict(exclude_unset=True),
     )
