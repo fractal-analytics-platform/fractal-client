@@ -122,7 +122,7 @@ async def project_factory(db):
         if user_id:
             from fractal_server.app.security import User
 
-            user = await db.get(User, user_id)
+            user = db.get(User, user_id)
             p.user_member_list.append(user)
         db.add(p)
         db.commit()
