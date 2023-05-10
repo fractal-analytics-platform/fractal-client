@@ -15,8 +15,9 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def job_show(
+async def read_job(
     client: AuthClient,
+    project_id: int,
     job_id: int,
     batch: bool = False,
     do_not_separate_logs: bool = False,
@@ -26,7 +27,9 @@ async def job_show(
     Query the status of a workflow-execution job
     """
 
-    res = await client.get(f"{settings.BASE_URL}/job/{job_id}")
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}"
+    )
     job = check_response(
         res, expected_status_code=200, coerce=ApplyWorkflowRead
     )
@@ -44,14 +47,14 @@ async def job_show(
             )
 
 
-async def job_list(
+async def get_job_list(
     client: AuthClient,
     project_id: int,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
 
-    res = await client.get(f"{settings.BASE_URL}/project/{project_id}/jobs/")
+    res = await client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
     jobs = check_response(res, expected_status_code=200)
 
     # Coerce to a list of ApplyWorkflowRead objects
@@ -81,8 +84,9 @@ async def job_list(
         return RichConsoleInterface(retcode=0, data=table)
 
 
-async def job_download_logs(
+async def get_job_logs(
     client: AuthClient,
+    project_id: int,
     job_id: int,
     output_folder: str,
     **kwargs,
@@ -95,7 +99,9 @@ async def job_download_logs(
         )
 
     # Send request to server
-    res = await client.get(f"{settings.BASE_URL}/job/download/{job_id}")
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/download/"
+    )
 
     # NOTE: We cannot use our default check_response here, because res._content
     # is binary. Therefore we check the status code by hand
