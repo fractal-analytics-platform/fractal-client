@@ -4,6 +4,13 @@ from os import environ
 from typing import Optional
 
 import pytest
+from fractal_server.config import get_settings
+from fractal_server.config import Settings
+from fractal_server.syringe import Inject
+from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 
 logger = logging.getLogger("fractal-client")
@@ -12,8 +19,6 @@ logger.setLevel(logging.DEBUG)
 
 @pytest.fixture
 def override_server_settings(tmp_path):
-    from fractal_server.config import Settings, get_settings
-    from fractal_server.syringe import Inject
 
     settings = Settings()
 
@@ -50,8 +55,28 @@ async def testserver(override_server_settings):
     from fractal_server.app.db import DB
     from fractal_server.app.models import SQLModel
 
+    # NOTE: Instead of calling DB.set_db(), we set the db by hand. This is
+    # needed to avoid using StaticPool, ref
+    # https://github.com/fractal-analytics-platform/fractal/pull/481
+    settings = Inject(get_settings)
+    DB._engine_async = create_async_engine(
+        settings.DATABASE_URL,
+        echo=settings.DB_ECHO,
+        future=True,
+    )
+    DB._engine_sync = create_engine(
+        settings.DATABASE_SYNC_URL,
+        echo=settings.DB_ECHO,
+        future=True,
+    )
+    DB._async_session_maker = sessionmaker(
+        DB._engine_async, class_=AsyncSession, expire_on_commit=False
+    )
+    DB._sync_session_maker = sessionmaker(
+        bind=DB._engine_sync, autocommit=False, autoflush=False
+    )
+
     # INIT DB
-    DB.set_db()
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
