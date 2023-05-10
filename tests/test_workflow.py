@@ -386,7 +386,14 @@ async def test_workflow_apply(
     output_dataset_id = dataset["id"]
 
     res = await invoke(
-        f"dataset add-resource {prj_id} {output_dataset_id} " f"{(tmp_path)}"
+        f"dataset add-resource {prj_id} {input_dataset_id} {str(tmp_path)}"
+    )
+    resource = res.data
+    debug(resource)
+    assert res.retcode == 0
+
+    res = await invoke(
+        f"dataset add-resource {prj_id} {output_dataset_id} {str(tmp_path)}"
     )
     resource = res.data
     debug(resource)
