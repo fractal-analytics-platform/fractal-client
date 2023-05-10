@@ -201,7 +201,7 @@ async def delete_workflowtask(
     return PrintInterface(retcode=0, data="")
 
 
-async def update_workflow(
+async def patch_workflow(
     client: AuthClient,
     *,
     project_id: int,

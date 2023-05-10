@@ -31,17 +31,17 @@ from ._user import user_list
 from ._user import user_register
 from ._user import user_show
 from ._user import user_whoami
-from ._workflow import workflow_add_task
+from ._workflow import delete_workflow
+from ._workflow import delete_workflowtask
+from ._workflow import get_workflow
+from ._workflow import get_workflow_list
+from ._workflow import patch_workflow
+from ._workflow import patch_workflowtask
+from ._workflow import post_workflow
+from ._workflow import post_workflowtask
 from ._workflow import workflow_apply
-from ._workflow import workflow_delete
-from ._workflow import workflow_edit
-from ._workflow import workflow_edit_task
 from ._workflow import workflow_export
 from ._workflow import workflow_import
-from ._workflow import workflow_list
-from ._workflow import workflow_new
-from ._workflow import workflow_remove_task
-from ._workflow import workflow_show
 
 
 class NoCommandError(ValueError):
@@ -139,21 +139,21 @@ async def workflow(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "show":
-        iface = await workflow_show(client, **kwargs)
+        iface = await get_workflow(client, **kwargs)
     elif subcmd == "new":
-        iface = await workflow_new(client, batch=batch, **kwargs)
+        iface = await post_workflow(client, batch=batch, **kwargs)
     elif subcmd == "list":
-        iface = await workflow_list(client, batch=batch, **kwargs)
+        iface = await get_workflow_list(client, batch=batch, **kwargs)
     elif subcmd == "edit":
-        iface = await workflow_edit(client, **kwargs)
+        iface = await patch_workflow(client, **kwargs)
     elif subcmd == "delete":
-        iface = await workflow_delete(client, **kwargs)
+        iface = await delete_workflow(client, **kwargs)
     elif subcmd == "add-task":
-        iface = await workflow_add_task(client, batch=batch, **kwargs)
+        iface = await post_workflowtask(client, batch=batch, **kwargs)
     elif subcmd == "edit-task":
-        iface = await workflow_edit_task(client, **kwargs)
+        iface = await patch_workflowtask(client, **kwargs)
     elif subcmd == "rm-task":
-        iface = await workflow_remove_task(client, **kwargs)
+        iface = await delete_workflowtask(client, **kwargs)
     elif subcmd == "apply":
         iface = await workflow_apply(client, **kwargs)
     elif subcmd == "import":
