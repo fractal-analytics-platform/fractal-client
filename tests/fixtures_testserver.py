@@ -68,6 +68,7 @@ async def testserver(override_server_settings):
         settings.DATABASE_SYNC_URL,
         echo=settings.DB_ECHO,
         future=True,
+        connect_args={"check_same_thread": False},
     )
     DB._async_session_maker = sessionmaker(
         DB._engine_async, class_=AsyncSession, expire_on_commit=False
