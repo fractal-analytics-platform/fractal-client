@@ -83,9 +83,9 @@ async def db(testserver):
     """
     NOTE: Only use this fixture within other fixtures!!!
     """
-    from fractal_server.app.db import get_db
+    from fractal_server.app.db import get_sync_db
 
-    async for db in get_db():
+    for db in get_sync_db():
         yield db
 
 
@@ -104,8 +104,8 @@ async def task_factory(db):
         task_args.update(task_args_override)
         t = Task(**task_args)
         db.add(t)
-        await db.commit()
-        await db.refresh(t)
+        db.commit()
+        db.refresh(t)
         return t
 
     return _task_factory
@@ -125,8 +125,8 @@ async def project_factory(db):
             user = await db.get(User, user_id)
             p.user_member_list.append(user)
         db.add(p)
-        await db.commit()
-        await db.refresh(p)
+        db.commit()
+        db.refresh(p)
         return p
 
     return _project_factory
@@ -147,8 +147,8 @@ async def workflow_factory(db, project_factory, register_user):
         wf_args.update(wf_args_override)
         wf = Workflow(**wf_args)
         db.add(wf)
-        await db.commit()
-        await db.refresh(wf)
+        db.commit()
+        db.refresh(wf)
         return wf
 
     return _workflow_factory
@@ -170,8 +170,8 @@ async def job_factory(db):
         job_args.update(job_args_override)
         j = ApplyWorkflow(**job_args)
         db.add(j)
-        await db.commit()
-        await db.refresh(j)
+        db.commit()
+        db.refresh(j)
         return j
 
     return _job_factory
