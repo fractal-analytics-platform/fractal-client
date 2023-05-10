@@ -41,7 +41,7 @@ async def test_workflow_delete(register_user, invoke):
     assert len(res_list.data) == 1
 
     # Delete workflow
-    res_delete = await invoke(f"workflow delete {workflow_id}")
+    res_delete = await invoke(f"workflow delete {project_id} {workflow_id}")
     assert res_delete.retcode == 0
 
     # List workflows
@@ -64,14 +64,14 @@ async def test_workflow_edit(register_user, invoke):
 
     # Edit workflow name
     NAME = "new-workflow-name"
-    cmd = f"workflow edit {workflow_id} --name {NAME}"
+    cmd = f"workflow edit {project_id} {workflow_id} --name {NAME}"
     debug(cmd)
     res_edit = await invoke(cmd)
     assert res_edit.retcode == 0
     debug(res_edit.data)
 
     # List workflows, and check edit
-    res = await invoke(f"workflow show {workflow_id}")
+    res = await invoke(f"workflow show {project_id} {workflow_id}")
     debug(res.data)
     assert res.retcode == 0
     assert res.data["name"] == NAME
@@ -140,7 +140,9 @@ async def test_workflow_add_task(
         the WorkflowTask's are correctly registered in the db, and the returned
         object has the right properties
     """
-    wf = await workflow_factory()
+    res = await invoke("project new MyProject")
+    project_id = res.data["id"]
+    wf = await workflow_factory(project_id=project_id)
     t = await task_factory()
 
     # Add a WorkflowTask with --args-file and --meta-file arguments
@@ -153,7 +155,7 @@ async def test_workflow_add_task(
     with meta_file.open("w") as f:
         json.dump(META, f)
     cmd = (
-        f"workflow add-task {wf.id} {t.id} "
+        f"workflow add-task {project_id} {wf.id} {t.id} "
         f"--args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
@@ -166,7 +168,7 @@ async def test_workflow_add_task(
     assert workflow_task["meta"] == META
 
     # Add a WorkflowTask with the --batch option
-    cmd = f"--batch workflow add-task {wf.id} {t.id}"
+    cmd = f"--batch workflow add-task {project_id} {wf.id} {t.id}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
@@ -174,7 +176,7 @@ async def test_workflow_add_task(
     workflow_task_id_2 = int(res.data)
 
     # Check that the WorkflowTask's in Workflow.task_list have the correct IDs
-    cmd = f"workflow show {wf.id}"
+    cmd = f"workflow show {project_id} {wf.id}"
     res = await invoke(cmd)
     assert res.retcode == 0
     workflow = res.data
@@ -196,11 +198,13 @@ async def test_workflow_add_task_by_name(
     WHEN the client is invoked to add a task *by name*
     THEN the WorkflowTask is correctly registered in the db
     """
-    wf = await workflow_factory()
+    res = await invoke("project new MyProject")
+    project_id = res.data["id"]
+    wf = await workflow_factory(project_id=project_id)
     task = await task_factory()
     debug(task)
 
-    cmd = f"workflow add-task {wf.id} {task.name}"
+    cmd = f"workflow add-task {project_id} {wf.id} {task.name}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
@@ -225,6 +229,9 @@ async def test_task_cache_with_non_unique_names(
         * Addressing tasks by name raises a FileNotFoundError
     """
 
+    res = await invoke("project new MyProject")
+    project_id = res.data["id"]
+
     # Create two tasks with the same name
     task1 = await task_factory()
     task2 = await task_factory()
@@ -239,8 +246,8 @@ async def test_task_cache_with_non_unique_names(
 
     # Verify that adding tasks to a worfklow by name (as opposed to "by id")
     # fails because of missing cache file
-    wf = await workflow_factory()
-    cmd = f"workflow add-task {wf.id} {task1.name}"
+    wf = await workflow_factory(project_id=project_id)
+    cmd = f"workflow add-task {project_id} {wf.id} {task1.name}"
     debug(cmd)
     with pytest.raises(FileNotFoundError):
         res = await invoke(cmd)
@@ -253,12 +260,14 @@ async def test_workflow_rm_task(
     workflow_factory,
     tmp_path: Path,
 ):
-    # Create workflow and task
-    wf = await workflow_factory()
+    # Create project, workflow and task
+    res = await invoke("project new MyProject")
+    project_id = res.data["id"]
+    wf = await workflow_factory(project_id=project_id)
     t = await task_factory()
 
     # Add task to workflow, twice
-    cmd = f"workflow add-task {wf.id} {t.id}"
+    cmd = f"workflow add-task {project_id} {wf.id} {t.id}"
     res = await invoke(cmd)
     assert res.retcode == 0
     res = await invoke(cmd)
@@ -266,7 +275,7 @@ async def test_workflow_rm_task(
     workflow_task_id_1 = res.data["id"]
 
     # Remove task 1 from workflow
-    cmd = f"workflow rm-task {wf.id} {workflow_task_id_1}"
+    cmd = f"workflow rm-task {project_id} {wf.id} {workflow_task_id_1}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
@@ -287,11 +296,14 @@ async def test_workflow_edit_task(
         the WorkflowTask is correctly registered in the db, including custom
         gargs
     """
-    wf = await workflow_factory()
+
+    res = await invoke("project new MyProject")
+    project_id = res.data["id"]
+    wf = await workflow_factory(project_id=project_id)
     t = await task_factory()
 
     # Create task, without overriding arguments
-    cmd = f"workflow add-task {wf.id} {t.id}"
+    cmd = f"workflow add-task {project_id} {wf.id} {t.id}"
     res = await invoke(cmd)
     assert res.retcode == 0
 
@@ -310,7 +322,7 @@ async def test_workflow_edit_task(
     debug(res.data)
     workflow_task_id = res.data["id"]
     cmd = (
-        f"workflow edit-task {wf.id} {workflow_task_id} "
+        f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
         f"--args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
@@ -320,7 +332,7 @@ async def test_workflow_edit_task(
     assert res.data["meta"] == META
 
     # Check that also the workflow in the db was correctly updated
-    res = await invoke(f"workflow show {wf.id}")
+    res = await invoke(f"workflow show {project_id} {wf.id}")
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task_list"][0]["args"] == ARGS
@@ -335,7 +347,7 @@ async def test_workflow_edit_task(
 
     workflow_task_id = res.data["task_list"][0]["id"]
     cmd = (
-        f"workflow edit-task {wf.id} {workflow_task_id} "
+        f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
         f"--meta-file {meta_file}"
     )
     debug(cmd)
@@ -399,14 +411,14 @@ async def test_workflow_apply(
     debug(resource)
     assert res.retcode == 0
 
-    res = await invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
+    res = await invoke(f"workflow new {prj_id} {WORKFLOW_NAME} {prj_id}")
     workflow = res.data
     workflow_id = workflow["id"]
     debug(workflow)
     assert res.retcode == 0
 
     TASK_ID = 1
-    res = await invoke(f"workflow add-task {workflow_id} {TASK_ID}")
+    res = await invoke(f"workflow add-task {prj_id} {workflow_id} {TASK_ID}")
     workflow_task = res.data
     debug(workflow_task)
     assert res.retcode == 0
@@ -414,7 +426,7 @@ async def test_workflow_apply(
     debug(TASK_NAME)
 
     cmd = (
-        f"workflow apply {workflow_id} {input_dataset_id} "
+        f"workflow apply {prj_id} {workflow_id} {input_dataset_id} "
         f"-o {output_dataset_id} -p {prj_id}"
     )
     debug(cmd)
@@ -428,7 +440,7 @@ async def test_workflow_apply(
     # TODO: add an assertion about the output, instead of calling `job show`
 
     # Check that job completed successfully
-    cmd = f"job show {job_id}"
+    cmd = f"job show {prj_id} {job_id}"
     starting_time = time.perf_counter()
     debug(cmd)
     while True:
@@ -450,12 +462,12 @@ async def test_workflow_apply(
     with open(args_file, "w") as f:
         json.dump({"raise_error": True}, f)
     res = await invoke(
-        f"workflow add-task {workflow_id} {TASK_ID}"
+        f"workflow add-task {prj_id} {workflow_id} {TASK_ID}"
         f" --args-file {args_file}"
     )
     assert res.retcode == 0
     cmd = (
-        f"workflow apply {workflow_id} {input_dataset_id} "
+        f"workflow apply {prj_id} {workflow_id} {input_dataset_id} "
         f"-o {output_dataset_id} -p {prj['id']}"
     )
     debug(cmd)
@@ -464,7 +476,7 @@ async def test_workflow_apply(
     job_id = res.data["id"]
 
     # Verify that status is failed, and that there is a log
-    cmd = f"job show {job_id} --do-not-separate-logs"
+    cmd = f"job show {prj_id} {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     while True:
         res = await invoke(cmd)
