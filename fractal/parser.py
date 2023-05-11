@@ -431,6 +431,7 @@ workflow_new_parser = workflow_subparsers.add_parser(
 workflow_new_parser.add_argument(
     "name",
     help="Workflow name (must be unique, and not only made of numbers only)",
+    type=str,
 )
 workflow_new_parser.add_argument("project_id", type=int, help="Project ID")
 
@@ -560,22 +561,11 @@ workflow_apply_parser = workflow_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
+
+workflow_apply_parser.add_argument("project_id")
 workflow_apply_parser.add_argument("workflow_id")
 workflow_apply_parser.add_argument("input_dataset_id")
-workflow_apply_parser.add_argument(
-    "-o", "--output_dataset_id", help="Output dataset ID"
-)
-workflow_apply_parser.add_argument(
-    "--overwrite-input",
-    default=False,
-    action="store_true",
-    help="Allow overwriting the content of the input dataset",
-)
-workflow_apply_parser.add_argument(
-    "-p",
-    "--project-id",
-    help="ID of project the workflow and dataset belong to",
-)
+workflow_apply_parser.add_argument("output_dataset_id")
 workflow_apply_parser.add_argument(
     "-w",
     "--worker-init",
