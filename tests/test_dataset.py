@@ -31,6 +31,10 @@ async def test_create_dataset(register_user, invoke, tmp_path):
     assert res.data["meta"] == METADATA
     assert res.data["type"] == TYPE
 
+    res = await invoke(f"--batch project add-dataset {project_id} MyNewDS")
+    debug(res.data)
+    assert res.retcode == 0
+
 
 async def test_add_resource(register_user, invoke):
 

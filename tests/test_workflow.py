@@ -168,7 +168,7 @@ async def test_workflow_add_task(
     assert workflow_task["meta"] == META
 
     # Add a WorkflowTask with the --batch option
-    cmd = f"--batch workflow add-task {project_id} {wf.id} {t.id}"
+    cmd = f"--batch workflow add-task {project_id} {wf.id} {t.id} --order 0"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
