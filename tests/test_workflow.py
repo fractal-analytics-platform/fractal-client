@@ -30,7 +30,7 @@ async def test_workflow_delete(register_user, invoke):
     project_id = res_pj.data["id"]
 
     # Create workflow
-    res_wf = await invoke(f"workflow new {project_id} MyWorkflow")
+    res_wf = await invoke(f"workflow new MyWorkflow {project_id}")
     workflow_id = res_wf.data["id"]
     assert res_wf.retcode == 0
 
