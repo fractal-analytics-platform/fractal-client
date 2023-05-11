@@ -31,7 +31,8 @@ async def post_dataset(
     if metadata_filename is None:
         meta = {}
     else:
-        meta = json.loads(metadata_filename)
+        with open(metadata_filename, "r") as f:
+            meta = json.load(f)
 
     dataset_dict = dict(name=dataset_name, meta=meta)
     if type:
