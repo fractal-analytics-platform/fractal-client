@@ -428,11 +428,12 @@ workflow_new_parser = workflow_subparsers.add_parser(
     description="Create new workflow",
     allow_abbrev=False,
 )
+workflow_new_parser.add_argument("project_id", type=int, help="Project ID")
 workflow_new_parser.add_argument(
     "name",
     help="Workflow name (must be unique, and not only made of numbers only)",
+    type=str,
 )
-workflow_new_parser.add_argument("project_id", type=int, help="Project ID")
 
 # workflow show
 workflow_show_parser = workflow_subparsers.add_parser(

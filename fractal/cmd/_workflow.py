@@ -24,8 +24,8 @@ from .utils import get_cached_task_by_name
 
 async def post_workflow(
     client: AuthClient,
-    name: str,
     project_id: int,
+    name: str,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
