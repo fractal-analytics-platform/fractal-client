@@ -66,6 +66,7 @@ async def project(
             project_id=kwargs.pop("project_id"),
             dataset_name=kwargs.pop("dataset_name"),
             metadata_filename=kwargs.pop("metadata"),
+            type=kwargs.pop("type"),
             **kwargs,
         )
     elif subcmd == "delete":

@@ -118,6 +118,11 @@ project_add_dataset_parser.add_argument(
     "--metadata",
     help="Path to file containing dataset metadata in JSON format.",
 )
+project_add_dataset_parser.add_argument(
+    "--type",
+    help="Dataset type",
+)
+
 
 # project edit
 project_edit_parser = project_subparsers.add_parser(

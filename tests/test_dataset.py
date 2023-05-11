@@ -12,17 +12,24 @@ async def test_create_dataset(register_user, invoke, tmp_path):
     res = await invoke("project new prj0")
     project_id = res.data["id"]
 
-    file_metadata = str(tmp_path / "metadata.json")
     METADATA = {"some": "value"}
+    TYPE = "sometype"
+
+    file_metadata = str(tmp_path / "metadata.json")
     with open(file_metadata, "w") as f:
         json.dump(METADATA, f)
 
     res = await invoke(
-        f"project add-dataset {project_id} MyDS --metadata {file_metadata}"
+        (
+            f"project add-dataset {project_id} MyDS "
+            f"--metadata {file_metadata} "
+            f"--type {TYPE}"
+        )
     )
     debug(res.data)
     assert res.retcode == 0
     assert res.data["meta"] == METADATA
+    assert res.data["type"] == TYPE
 
 
 async def test_add_resource(register_user, invoke):
