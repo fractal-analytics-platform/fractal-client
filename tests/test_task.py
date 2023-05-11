@@ -184,3 +184,16 @@ async def test_task_edit(
     debug(res)
     debug(res.data)
     assert res.retcode == 0
+
+
+async def test_task_delete(register_user, invoke):
+    """
+    This is currently a placeholder test, since task-delete is not implemented
+    """
+    res = await invoke("task new _name _command _source")
+    debug(res.data)
+    assert res.retcode == 0
+    task_id = res.data["id"]
+    with pytest.raises(NotImplementedError):
+        debug(f"task delete {task_id}")
+        res = await invoke(f"task delete {task_id}")

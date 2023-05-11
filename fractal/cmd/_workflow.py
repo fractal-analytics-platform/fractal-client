@@ -22,7 +22,7 @@ from ..response import check_response
 from .utils import get_cached_task_by_name
 
 
-async def workflow_new(
+async def post_workflow(
     client: AuthClient,
     name: str,
     project_id: int,
@@ -35,7 +35,7 @@ async def workflow_new(
     )
     logging.info(workflow)
     res = await client.post(
-        f"{settings.BASE_URL}/workflow/",
+        f"{settings.BASE_URL}/project/{project_id}/workflow/",
         json=workflow.dict(),
     )
     workflow = check_response(
@@ -47,7 +47,7 @@ async def workflow_new(
         return RichJsonInterface(retcode=0, data=workflow.dict())
 
 
-async def workflow_list(
+async def get_workflow_list(
     client: AuthClient,
     project_id: int,
     batch: bool = False,
@@ -55,39 +55,46 @@ async def workflow_list(
 ) -> RichJsonInterface:
 
     res = await client.get(
-        f"{settings.BASE_URL}/project/{project_id}/workflows/"
+        f"{settings.BASE_URL}/project/{project_id}/workflow/"
     )
     workflow_list = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=workflow_list)
 
 
-async def workflow_delete(
+async def delete_workflow(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     **kwargs,
 ) -> BaseInterface:
-    res = await client.delete(f"{settings.BASE_URL}/workflow/{workflow_id}")
+    res = await client.delete(
+        f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}"
+    )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
 
 
-async def workflow_show(
+async def get_workflow(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     **kwargs,
 ) -> RichJsonInterface:
-    res = await client.get(f"{settings.BASE_URL}/workflow/{workflow_id}")
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}"
+    )
     workflow = check_response(
         res, expected_status_code=200, coerce=WorkflowRead
     )
     return RichJsonInterface(retcode=0, data=workflow.dict())
 
 
-async def workflow_add_task(
+async def post_workflowtask(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     batch: bool = False,
     task_id_or_name: str,
@@ -103,9 +110,9 @@ async def workflow_add_task(
         task_id = await get_cached_task_by_name(task_id_or_name, client)
 
     if order is None:
-        workflow_task = WorkflowTaskCreate(task_id=task_id)
+        workflow_task = WorkflowTaskCreate()
     else:
-        workflow_task = WorkflowTaskCreate(task_id=task_id, order=order)
+        workflow_task = WorkflowTaskCreate(order=order)
     if args_file:
         with Path(args_file).open("r") as f:
             args = json.load(f)
@@ -116,7 +123,11 @@ async def workflow_add_task(
             workflow_task.meta = meta
 
     res = await client.post(
-        f"{settings.BASE_URL}/workflow/{workflow_id}/add-task/",
+        (
+            f"{settings.BASE_URL}/project/{project_id}/"
+            f"workflow/{workflow_id}/wftask/"
+            f"?{task_id=}"
+        ),
         json=workflow_task.dict(exclude_unset=True),
     )
     workflow_task = check_response(
@@ -129,9 +140,10 @@ async def workflow_add_task(
         return RichJsonInterface(retcode=0, data=workflow_task.dict())
 
 
-async def workflow_edit_task(
+async def patch_workflowtask(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     workflow_task_id: int,
     args_file: Optional[str] = None,
@@ -160,8 +172,10 @@ async def workflow_edit_task(
 
     payload_update = WorkflowTaskUpdate(**payload)
     res = await client.patch(
-        f"{settings.BASE_URL}/"
-        f"workflow/{workflow_id}/edit-task/{workflow_task_id}",
+        (
+            f"{settings.BASE_URL}/project/{project_id}/"
+            f"workflow/{workflow_id}/wftask/{workflow_task_id}"
+        ),
         json=payload_update.dict(exclude_unset=True),
     )
     workflow_task = check_response(
@@ -171,25 +185,27 @@ async def workflow_edit_task(
     return RichJsonInterface(retcode=0, data=workflow_task.dict())
 
 
-async def workflow_remove_task(
+async def delete_workflowtask(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     workflow_task_id: int,
     **kwargs,
 ) -> BaseInterface:
 
     res = await client.delete(
-        f"{settings.BASE_URL}/"
-        f"workflow/{workflow_id}/rm-task/{workflow_task_id}"
+        f"{settings.BASE_URL}/project/{project_id}/"
+        f"workflow/{workflow_id}/wftask/{workflow_task_id}"
     )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
 
 
-async def workflow_edit(
+async def patch_workflow(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     **workflow_update_dict,
 ) -> BaseInterface:
@@ -199,7 +215,8 @@ async def workflow_edit(
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        f"{settings.BASE_URL}/workflow/{workflow_id}", json=payload
+        f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}",
+        json=payload,
     )
     new_workflow = check_response(
         res, expected_status_code=200, coerce=WorkflowRead
@@ -210,12 +227,10 @@ async def workflow_edit(
 async def workflow_apply(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     input_dataset_id: int,
-    output_dataset_id: int,
-    # output_dataset_id: Optional[int] = None,
-    overwrite_input: bool = False,
-    project_id: Optional[int] = None,
+    output_dataset_id: Optional[int] = None,
     worker_init: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
@@ -223,17 +238,24 @@ async def workflow_apply(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
         output_dataset_id=output_dataset_id,
-        overwrite_input=overwrite_input,
     )
     # Prepare ApplyWorkflowCreate object, without None attributes
-    if project_id:
-        apply_wf_create_dict["project_id"] = project_id
     if worker_init:
         apply_wf_create_dict["worker_init"] = worker_init
     apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
 
+    # Prepare query parameters
+    query_parameters = f"input_dataset_id={input_dataset_id}"
+    if output_dataset_id is not None:
+        query_parameters = (
+            f"{query_parameters}&output_dataset_id={output_dataset_id}"
+        )
+
     res = await client.post(
-        f"{settings.BASE_URL}/project/apply/",
+        (
+            f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
+            f"apply/?{query_parameters}"
+        ),
         json=apply_wf_create.dict(exclude_unset=True),
     )
     apply_wf_read = check_response(
@@ -254,7 +276,7 @@ async def workflow_import(
         workflow = json.load(f)
     workflow = WorkflowImport(**workflow)
     res = await client.post(
-        f"{settings.BASE_URL}/project/{project_id}/import-workflow/",
+        f"{settings.BASE_URL}/project/{project_id}/workflow/import/",
         json=workflow.dict(exclude_unset=True),
     )
     wf_read = check_response(
@@ -272,12 +294,16 @@ async def workflow_import(
 async def workflow_export(
     client: AuthClient,
     *,
+    project_id: int,
     workflow_id: int,
     json_file: str,
     **kwargs,
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/workflow/{workflow_id}/export/"
+        (
+            f"{settings.BASE_URL}/project/{project_id}/"
+            f"workflow/{workflow_id}/export/"
+        ),
     )
     workflow = check_response(
         res, expected_status_code=200, coerce=WorkflowExport
