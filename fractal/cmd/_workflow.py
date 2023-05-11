@@ -231,7 +231,6 @@ async def workflow_apply(
     workflow_id: int,
     input_dataset_id: int,
     output_dataset_id: Optional[int] = None,
-    overwrite_input: bool = False,
     worker_init: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
@@ -239,7 +238,6 @@ async def workflow_apply(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
         output_dataset_id=output_dataset_id,
-        overwrite_input=overwrite_input,
     )
     # Prepare ApplyWorkflowCreate object, without None attributes
     if worker_init:
@@ -247,14 +245,16 @@ async def workflow_apply(
     apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
 
     # Prepare query parameters
-    query_parameters = f"{input_dataset_id=}"
+    query_parameters = f"input_dataset_id={input_dataset_id}"
     if output_dataset_id is not None:
-        query_parameters = f"{query_parameters}&{output_dataset_id=}"
+        query_parameters = (
+            f"{query_parameters}&output_dataset_id={output_dataset_id}"
+        )
 
     res = await client.post(
         (
             f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
-            f"?{query_parameters}"
+            f"apply/?{query_parameters}"
         ),
         json=apply_wf_create.dict(exclude_unset=True),
     )

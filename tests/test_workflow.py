@@ -411,14 +411,14 @@ async def test_workflow_apply(
     debug(resource)
     assert res.retcode == 0
 
-    res = await invoke(
-        f"dataset add-resource {prj_id} {output_dataset_id} {str(tmp_path)}"
-    )
-    resource = res.data
-    debug(resource)
-    assert res.retcode == 0
+    # res = await invoke(
+    #     f"dataset add-resource {prj_id} {output_dataset_id} {str(tmp_path)}"
+    # )
+    # resource = res.data
+    # debug(resource)
+    # assert res.retcode == 0
 
-    res = await invoke(f"workflow new {prj_id} {WORKFLOW_NAME}")
+    res = await invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
     workflow = res.data
     workflow_id = workflow["id"]
     debug(workflow)
@@ -433,8 +433,8 @@ async def test_workflow_apply(
     debug(TASK_NAME)
 
     cmd = (
-        f"workflow apply {prj_id} {workflow_id} {input_dataset_id} "
-        f"-o {output_dataset_id} -p {prj_id}"
+        f"workflow apply "
+        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
     )
     debug(cmd)
     res = await invoke(cmd)
@@ -474,8 +474,8 @@ async def test_workflow_apply(
     )
     assert res.retcode == 0
     cmd = (
-        f"workflow apply {prj_id} {workflow_id} {input_dataset_id} "
-        f"-o {output_dataset_id} -p {prj['id']}"
+        f"workflow apply "
+        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
     )
     debug(cmd)
     res = await invoke(cmd)
@@ -507,9 +507,12 @@ async def test_workflow_export(
 ):
     NAME = "WorkFlow"
     wf = await workflow_factory(name=NAME)
+    prj_id = wf.project_id
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")
-    res = await invoke(f"workflow export {wf_id} --json-file {filename}")
+    res = await invoke(
+        f"workflow export {prj_id} {wf_id} --json-file {filename}"
+    )
     debug(res.data)
     assert res.retcode == 0
     with open(filename, "r") as f:
@@ -561,6 +564,6 @@ async def test_workflow_import(
 
     # get the workflow from the server, and check that it is the same
     workflow_id = res.data["id"]
-    res = await invoke(f"workflow show {workflow_id}")
+    res = await invoke(f"workflow show {project_id} {workflow_id}")
     assert res.retcode == 0
     assert res.data == imported_workflow
