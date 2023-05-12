@@ -44,10 +44,9 @@ def override_server_settings(tmp_path):
 @pytest.fixture(scope="function", autouse=True)
 async def testserver(override_server_settings):
     import uvicorn
-    from fractal_server.main import start_application
-    from fractal_server.main import _create_user
     from multiprocessing import Process
     from fractal_server.app.db import DB
+    import time
     from fractal_server.app.models import SQLModel
 
     # INIT DB
@@ -55,24 +54,22 @@ async def testserver(override_server_settings):
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
-    # We are explicitly calling start_application() to bypass the task
-    # collection routine
-    app = start_application()
-    await _create_user("admin@fractal.xy", "1234", is_superuser=True)
-
-    config = uvicorn.Config(app, port=10080, log_level="debug")
-    server = uvicorn.Server(config)
-
-    def run_server():
-        asyncio.run(server.serve())
-
     # Running testserver in a separate process
     # cf. https://stackoverflow.com/a/57816608/283972
+
+    def run_server():
+        asyncio.run(
+            uvicorn.run(
+                "fractal_server.main:app",
+                port=10080,
+                log_level="debug",
+            )
+        )
+
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
-    import time
 
-    time.sleep(0.2)  # NOTE required to let the server comes up
+    time.sleep(2)  # NOTE required to let the server comes up
     logger.debug(environ["FRACTAL_SERVER"])
     yield environ["FRACTAL_SERVER"]
     proc.kill()
@@ -123,7 +120,7 @@ async def project_factory(db):
             from fractal_server.app.security import User
 
             user = await db.get(User, user_id)
-            p.user_member_list.append(user)
+            p.user_list.append(user)
         db.add(p)
         await db.commit()
         await db.refresh(p)

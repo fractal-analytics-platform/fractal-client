@@ -42,7 +42,6 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
-    assert "log" not in res1.data["data"].keys()
 
     # Add --include-logs and --do-not-separate-logs flags
     res2 = await invoke(
@@ -185,3 +184,16 @@ async def test_task_edit(
     debug(res)
     debug(res.data)
     assert res.retcode == 0
+
+
+async def test_task_delete(register_user, invoke):
+    """
+    This is currently a placeholder test, since task-delete is not implemented
+    """
+    res = await invoke("task new _name _command _source")
+    debug(res.data)
+    assert res.retcode == 0
+    task_id = res.data["id"]
+    with pytest.raises(NotImplementedError):
+        debug(f"task delete {task_id}")
+        res = await invoke(f"task delete {task_id}")

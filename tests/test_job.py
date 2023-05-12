@@ -14,6 +14,7 @@ async def test_job_show(
     tmp_path: Path,
     status: str,
     workflow_factory,
+    project_factory,
     job_factory,
 ):
     """
@@ -23,9 +24,11 @@ async def test_job_show(
     """
 
     # Create mock Workflow/ApplyWorkflow objects
-    wf = await workflow_factory()
+    res = await invoke("project new prj0")
+    project_id = res.data["id"]
+    wf = await workflow_factory(project_id=project_id)
     debug(wf)
-    log = None if status == "done" else LOG
+    log = LOG
     workflow_path = tmp_path / f"workflow_{wf.id}"
     workflow_path.mkdir()
     job = await job_factory(
@@ -37,34 +40,30 @@ async def test_job_show(
     debug(job)
 
     # Check `job show` output
-    cmd = f"job show {job.id}"
+    cmd = f"job show {project_id} {job.id}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
     assert res.data["status"] == status
     debug(res.data)
-    if status == "done":
-        assert res.data["log"] is None
-    elif status == "failed":
-        assert "log" not in res.data
-        assert LOG in res.extra_lines
-        res.show()
+    assert "log" not in res.data
+    assert LOG in res.extra_lines
+    res.show()
 
     # Check `job show` output with --batch
-    cmd = f"--batch job show {job.id}"
+    cmd = f"--batch job show {project_id} {job.id}"
     res = await invoke(cmd)
     assert res.retcode == 0
     assert res.data == status
 
     # Check `job show` output with `--do-not-separate-logs`
-    if status == "failed":
-        cmd = f"job show {job.id} --do-not-separate-logs"
-        res = await invoke(cmd)
-        debug(res.data)
-        assert res.retcode == 0
-        assert res.data["status"] == status
-        debug(res.data)
-        assert res.data["log"] == LOG
+    cmd = f"job show {project_id} {job.id} --do-not-separate-logs"
+    res = await invoke(cmd)
+    debug(res.data)
+    assert res.retcode == 0
+    assert res.data["status"] == status
+    debug(res.data)
+    assert res.data["log"] == LOG
 
 
 async def test_job_list(
@@ -153,14 +152,20 @@ async def test_job_download_logs(
     # Check that download-logs fails if the output folder already exists
     output_fail = tmp_path / "output_dir_for_logs_fail"
     output_fail.mkdir()
-    cmd = f"job download-logs {job.project_id} --output {str(output_fail)}"
+    cmd = (
+        f"job download-logs {job.project_id} {job.id} "
+        f"--output {str(output_fail)}"
+    )
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 1
 
     # Check standard `job download-logs` output
     output = tmp_path / "output_dir_for_logs"
-    cmd = f"job download-logs {job.project_id} --output {str(output)}"
+    cmd = (
+        f"job download-logs {job.project_id} {job.id} "
+        f"--output {str(output)}"
+    )
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0

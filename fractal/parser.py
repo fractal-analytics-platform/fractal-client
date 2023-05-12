@@ -118,6 +118,11 @@ project_add_dataset_parser.add_argument(
     "--metadata",
     help="Path to file containing dataset metadata in JSON format.",
 )
+project_add_dataset_parser.add_argument(
+    "--type",
+    help="Dataset type",
+)
+
 
 # project edit
 project_edit_parser = project_subparsers.add_parser(
@@ -420,10 +425,7 @@ workflow_list_parser = workflow_subparsers.add_parser(
     description="List workflows for given project",
     allow_abbrev=False,
 )
-workflow_list_parser.add_argument(
-    "project_id",
-    help="Project ID",
-)
+workflow_list_parser.add_argument("project_id", type=int, help="Project ID")
 
 # workflow new
 workflow_new_parser = workflow_subparsers.add_parser(
@@ -434,22 +436,18 @@ workflow_new_parser = workflow_subparsers.add_parser(
 workflow_new_parser.add_argument(
     "name",
     help="Workflow name (must be unique, and not only made of numbers only)",
+    type=str,
 )
-workflow_new_parser.add_argument(
-    "project_id",
-    help="Project ID",
-)
+workflow_new_parser.add_argument("project_id", type=int, help="Project ID")
 
 # workflow show
-workflow_new_parser = workflow_subparsers.add_parser(
+workflow_show_parser = workflow_subparsers.add_parser(
     "show",
     description="Show workflow",
     allow_abbrev=False,
 )
-workflow_new_parser.add_argument(
-    "workflow_id",
-    help="Workflow ID",
-)
+workflow_show_parser.add_argument("project_id", type=int, help="Project ID")
+workflow_show_parser.add_argument("workflow_id", type=int, help="Workflow ID")
 
 # workflow edit
 workflow_edit_parser = workflow_subparsers.add_parser(
@@ -458,11 +456,8 @@ workflow_edit_parser = workflow_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
-workflow_edit_parser.add_argument(
-    "workflow_id",
-    type=int,
-    help="Workflow ID",
-)
+workflow_edit_parser.add_argument("project_id", type=int, help="Project ID")
+workflow_edit_parser.add_argument("workflow_id", type=int, help="Workflow ID")
 workflow_edit_parser.add_argument("--name", type=str, help="New workflow name")
 
 # workflow delete
@@ -471,9 +466,9 @@ workflow_delete_parser = workflow_subparsers.add_parser(
     description="Delete workflow",
     allow_abbrev=False,
 )
+workflow_delete_parser.add_argument("project_id", type=int, help="Project ID")
 workflow_delete_parser.add_argument(
-    "workflow_id",
-    help="Workflow ID",
+    "workflow_id", type=int, help="Workflow ID"
 )
 
 
@@ -484,7 +479,11 @@ workflow_add_task_parser = workflow_subparsers.add_parser(
     allow_abbrev=False,
 )
 workflow_add_task_parser.add_argument(
+    "project_id", type=int, help="Project ID"
+)
+workflow_add_task_parser.add_argument(
     "workflow_id",
+    type=int,
     help="Workflow ID",
 )
 workflow_add_task_parser.add_argument(
@@ -515,7 +514,11 @@ workflow_edit_task_parser = workflow_subparsers.add_parser(
     allow_abbrev=False,
 )
 workflow_edit_task_parser.add_argument(
+    "project_id", type=int, help="Project ID"
+)
+workflow_edit_task_parser.add_argument(
     "workflow_id",
+    type=int,
     help="Workflow ID",
 )
 workflow_edit_task_parser.add_argument(
@@ -544,7 +547,11 @@ workflow_remove_task_parser = workflow_subparsers.add_parser(
     allow_abbrev=False,
 )
 workflow_remove_task_parser.add_argument(
+    "project_id", type=int, help="Project ID"
+)
+workflow_remove_task_parser.add_argument(
     "workflow_id",
+    type=int,
     help="Workflow ID",
 )
 workflow_remove_task_parser.add_argument(
@@ -559,22 +566,11 @@ workflow_apply_parser = workflow_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
+
+workflow_apply_parser.add_argument("project_id")
 workflow_apply_parser.add_argument("workflow_id")
 workflow_apply_parser.add_argument("input_dataset_id")
-workflow_apply_parser.add_argument(
-    "-o", "--output_dataset_id", help="Output dataset ID"
-)
-workflow_apply_parser.add_argument(
-    "--overwrite-input",
-    default=False,
-    action="store_true",
-    help="Allow overwriting the content of the input dataset",
-)
-workflow_apply_parser.add_argument(
-    "-p",
-    "--project-id",
-    help="ID of project the workflow and dataset belong to",
-)
+workflow_apply_parser.add_argument("output_dataset_id")
 workflow_apply_parser.add_argument(
     "-w",
     "--worker-init",
@@ -604,7 +600,13 @@ workflow_export_parser = workflow_subparsers.add_parser(
     allow_abbrev=False,
 )
 workflow_export_parser.add_argument(
+    "project_id",
+    type=int,
+    help="Project ID",
+)
+workflow_export_parser.add_argument(
     "workflow_id",
+    type=int,
     help="Workflow ID",
 )
 workflow_export_parser.add_argument(
@@ -632,6 +634,7 @@ job_list_parser = job_subparsers.add_parser(
 )
 job_list_parser.add_argument(
     "project_id",
+    type=int,
     help="Project ID",
 )
 
@@ -642,10 +645,8 @@ job_show_parser = job_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
-job_show_parser.add_argument(
-    "job_id",
-    help="ID of the job",
-)
+job_show_parser.add_argument("project_id", type=int, help="Project ID")
+job_show_parser.add_argument("job_id", type=int, help="Job ID")
 job_show_parser.add_argument(
     "--do-not-separate-logs",
     dest="do_not_separate_logs",
@@ -661,9 +662,9 @@ job_download_logs_parser = job_subparsers.add_parser(
     allow_abbrev=False,
 )
 job_download_logs_parser.add_argument(
-    "job_id",
-    help="ID of the job",
+    "project_id", type=int, help="Project ID"
 )
+job_download_logs_parser.add_argument("job_id", type=int, help="Job ID")
 job_download_logs_parser.add_argument(
     "--output",
     dest="output_folder",

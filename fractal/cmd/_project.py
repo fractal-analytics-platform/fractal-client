@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Optional
 from typing import Union
@@ -6,8 +5,6 @@ from typing import Union
 from rich.table import Table
 
 from ..authclient import AuthClient
-from ..common.schemas import DatasetCreate
-from ..common.schemas import DatasetRead
 from ..common.schemas import ProjectCreate
 from ..common.schemas import ProjectRead
 from ..common.schemas import ProjectUpdate
@@ -19,7 +16,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def project_create(
+async def post_project(
     client: AuthClient,
     name: str,
     dataset: Optional[str] = None,
@@ -51,7 +48,9 @@ async def project_create(
         return RichJsonInterface(retcode=0, data=project.dict())
 
 
-async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
+async def get_project_list(
+    client: AuthClient, **kwargs
+) -> RichConsoleInterface:
 
     res = await client.get(f"{settings.BASE_URL}/project/")
     res = check_response(res, expected_status_code=200)
@@ -84,7 +83,7 @@ async def project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
     return RichConsoleInterface(retcode=0, data=table)
 
 
-async def project_show(
+async def get_project(
     client: AuthClient, project_id: int, **kwargs
 ) -> RichJsonInterface:
     res = await client.get(
@@ -94,40 +93,7 @@ async def project_show(
     return RichJsonInterface(retcode=0, data=project.dict())
 
 
-async def project_add_dataset(
-    client: AuthClient,
-    project_id: int,
-    dataset_name: str,
-    metadata_filename: Optional[str] = None,
-    type: Optional[str] = None,
-    batch: bool = False,
-    **kwargs,
-) -> RichJsonInterface:
-
-    if metadata_filename is None:
-        meta = {}
-    else:
-        meta = json.loads(metadata_filename)
-
-    dataset_dict = dict(name=dataset_name, meta=meta)
-    if type:
-        dataset_dict["type"] = type
-    dataset = DatasetCreate(**dataset_dict)
-
-    res = await client.post(
-        f"{settings.BASE_URL}/project/{project_id}/",
-        json=dataset.dict(exclude_unset=True),
-    )
-    new_dataset = check_response(
-        res, expected_status_code=201, coerce=DatasetRead
-    )
-    if batch:
-        return PrintInterface(retcode=0, data=new_dataset.id)
-    else:
-        return RichJsonInterface(retcode=0, data=new_dataset.dict())
-
-
-async def project_delete(
+async def delete_project(
     client: AuthClient, project_id: int, **kwargs
 ) -> PrintInterface:
 
@@ -138,7 +104,7 @@ async def project_delete(
     return PrintInterface(retcode=0, data="")
 
 
-async def project_edit(
+async def patch_project(
     client: AuthClient,
     project_id: int,
     new_name: Optional[str] = None,

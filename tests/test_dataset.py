@@ -1,6 +1,39 @@
 import json
 
 import pytest
+from devtools import debug
+
+
+async def test_create_dataset(register_user, invoke, tmp_path):
+    """
+    Test some specific branches of the post_dataset function and parser.
+    """
+
+    res = await invoke("project new prj0")
+    project_id = res.data["id"]
+
+    METADATA = {"some": "value"}
+    TYPE = "sometype"
+
+    file_metadata = str(tmp_path / "metadata.json")
+    with open(file_metadata, "w") as f:
+        json.dump(METADATA, f)
+
+    res = await invoke(
+        (
+            f"project add-dataset {project_id} MyDS "
+            f"--metadata {file_metadata} "
+            f"--type {TYPE}"
+        )
+    )
+    debug(res.data)
+    assert res.retcode == 0
+    assert res.data["meta"] == METADATA
+    assert res.data["type"] == TYPE
+
+    res = await invoke(f"--batch project add-dataset {project_id} MyNewDS")
+    debug(res.data)
+    assert res.retcode == 0
 
 
 async def test_add_resource(register_user, invoke):
