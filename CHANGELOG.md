@@ -7,7 +7,7 @@
 * Add `--type` optional argument to `fractal dataset new` command (\#479).
 * Make `output_dataset_id` a required positional argument of `fractal workflow apply` (\#483).
 * Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
-* Add `fractal job stop` command (IN PROGRESS).
+* Add `fractal job stop` command (\#485).
 
 # 1.2.0
 
