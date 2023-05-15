@@ -14,6 +14,7 @@ from ._dataset import post_resource
 from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
+from ._job import stop_job
 from ._project import delete_project
 from ._project import get_project
 from ._project import get_project_list
@@ -175,6 +176,8 @@ async def job(
         iface = await get_job(client, batch=batch, **kwargs)
     elif subcmd == "download-logs":
         iface = await get_job_logs(client, **kwargs)
+    elif subcmd == "stop":
+        iface = await stop_job(client, batch=batch, **kwargs)
     else:
         raise NoCommandError(f"Command job {subcmd} not found")
     return iface

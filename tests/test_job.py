@@ -177,3 +177,47 @@ async def test_job_download_logs(
     with logfile.open("r") as f:
         contents = f.read()
     assert contents == LOG
+
+
+async def test_job_stop(
+    register_user,
+    invoke,
+    tmp_path: Path,
+    workflow_factory,
+    project_factory,
+    job_factory,
+    caplog,
+):
+    """
+    GIVEN a job entry in the database
+    WHEN calling the `job stop` command
+    THEN the client response has the expected status
+
+    NOTE 1: This is a test of the client command, not a test of the
+    corresponding fractal-server feature
+
+    NOTE 2: We don't have a fractal-server instance with SLURM backend in the
+    fractal client CI, so this command can be tested for consistency but not
+    for functionality.
+    """
+
+    # Create mock Workflow/ApplyWorkflow objects
+    res = await invoke("project new prj0")
+    project_id = res.data["id"]
+    wf = await workflow_factory(project_id=project_id)
+    workflow_path = tmp_path / f"workflow_{wf.id}"
+    workflow_path.mkdir()
+    job = await job_factory(
+        working_dir=workflow_path.as_posix(),
+        worfklow_id=wf.id,
+    )
+    debug(job)
+
+    # Call `job stop` (this will fail because FRACTAL_RUNNER_BACKEND="local"
+    cmd = f"job stop {project_id} {job.id}"
+    debug(cmd)
+    with pytest.raises(SystemExit):
+        res = await invoke(cmd)
+    debug(caplog.text)
+    assert "Stopping a job execution is not implemented" in caplog.text
+    caplog.clear()

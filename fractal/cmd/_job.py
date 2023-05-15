@@ -150,3 +150,22 @@ async def get_job_logs(
     return PrintInterface(
         retcode=0, data=f"Logs downloaded to {output_folder=}"
     )
+
+
+async def stop_job(
+    client: AuthClient,
+    project_id: int,
+    job_id: int,
+    **kwargs,
+) -> BaseInterface:
+    """
+    Stop a workflow-execution job
+    """
+
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/stop/"
+    )
+    check_response(res, expected_status_code=200)
+    return PrintInterface(
+        retcode=0, data="Correctly called the job-stopping endpoint"
+    )

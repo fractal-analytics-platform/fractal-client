@@ -321,7 +321,10 @@ task_check_collection_parser.add_argument(
 task_check_collection_parser.add_argument(
     "--do-not-separate-logs",
     dest="do_not_separate_logs",
-    help="Show the job logs in the main output, instead of a separate field",
+    help=(
+        "Show the task-collection logs in the main output, "
+        "instead of a separate field"
+    ),
     action="store_true",
     required=False,
 )
@@ -671,6 +674,15 @@ job_download_logs_parser.add_argument(
     help="Path of the output folder",
     required=True,
 )
+
+# job stop
+job_stop_parser = job_subparsers.add_parser(
+    "stop",
+    description="Stop workflow-execution job",
+    allow_abbrev=False,
+)
+job_stop_parser.add_argument("project_id", type=int, help="Project ID")
+job_stop_parser.add_argument("job_id", type=int, help="Job ID")
 
 
 # VERSION GROUP
