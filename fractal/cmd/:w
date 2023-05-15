@@ -166,6 +166,4 @@ async def stop_job(
         f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/stop/"
     )
     check_response(res, expected_status_code=200)
-    return PrintInterface(
-        retcode=0, data="Correctly called the job-stopping endpoint"
-    )
+    return PrintInterface(retcode=0, data="OK")
