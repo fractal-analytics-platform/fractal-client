@@ -4,10 +4,10 @@
 
 * Align with [fractal-server 1.2.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#130), by updating all relevant endpoint path/query/body parameters (\#479).
 * Make `project_id` a required positional argument of `fractal {workflow,dataset,job}` commands (\#479).
+* Add `fractal job stop` command (\#485).
 * Add `--type` optional argument to `fractal dataset new` command (\#479).
 * Make `output_dataset_id` a required positional argument of `fractal workflow apply` (\#483).
 * Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
-* Add `fractal job stop` command (\#485).
 
 # 1.2.0
 
