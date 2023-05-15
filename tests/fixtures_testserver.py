@@ -161,7 +161,6 @@ async def job_factory(db):
             input_dataset_id=1,
             output_dataset_id=2,
             workflow_id=1,
-            overwrite_input=False,
             worker_init="WORKER_INIT string",
         )
         job_args.update(job_args_override)
