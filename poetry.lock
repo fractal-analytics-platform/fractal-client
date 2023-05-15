@@ -651,7 +651,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "7d5692f5a88196e5b1cd0fd41d4c58697116c66b"
+resolved_reference = "038d66488e9b65bbdfc81a2cc42fb5c1b94b70f8"
 
 [[package]]
 name = "greenlet"
