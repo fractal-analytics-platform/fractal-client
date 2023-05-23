@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -22,9 +21,14 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
         await refresh_task_cache(client)
         cache_up_to_date = True
 
-    # Read cache
+    # Read task list and create cache of (name, id) pairs
+    # FIMXE: this step will be modified in view of
+    # https://github.com/fractal-analytics-platform/fractal/issues/345
     with cache_file.open("r") as f:
-        task_cache = json.load(f)
+        task_list = json.load(f)
+    task_cache = {}
+    for task in task_list:
+        task_cache[task["name"]] = task["id"]
 
     # Look for name in cache
     # Case 1: name exists in cache
@@ -52,22 +56,6 @@ async def refresh_task_cache(
     res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
 
-    # Check that there are no name clashes
-    names = [task["name"] for task in task_list]
-    if len(set(names)) < len(names):
-        msg = (
-            "Cannot write task-list cache if task names are not unique "
-            "(version-based disambiguation will be added in the future).\n"
-            f"Current task list includes: {names}"
-        )
-        logging.warning(msg)
-        return task_list
-
-    # Refresh cache of (name,id) pairs
-    task_cache = {}
-    for task in task_list:
-        task_cache[task["name"]] = task["id"]
-
     # Set paths and create cache folder (if needed)
     cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
     cache_file = cache_dir / "tasks"
@@ -75,6 +63,6 @@ async def refresh_task_cache(
 
     # Write task cache
     with cache_file.open("w") as f:
-        json.dump(task_cache, f, indent=4)
+        json.dump(task_list, f, indent=4)
 
     return task_list
