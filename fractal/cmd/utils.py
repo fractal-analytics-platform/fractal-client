@@ -28,6 +28,8 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
         task_list = json.load(f)
     task_cache = {}
     for task in task_list:
+        if task["name"] in task_cache.keys():
+            raise ValueError("Cannot parse task_list")
         task_cache[task["name"]] = task["id"]
 
     # Look for name in cache
