@@ -20,7 +20,7 @@ python-dotenv = "^0.20.0"
 rich = "^12.5.1"
 httpx = "^0.23.0"
 PyJWT = "^2.4.0"
-pydantic = "^1.10.1"
+pydantic = ">=1.10.8"
 sqlmodel = "^0.0.8"
 fastapi-users = "^10.4.1"
 
