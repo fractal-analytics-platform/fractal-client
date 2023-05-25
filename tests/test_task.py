@@ -113,6 +113,7 @@ async def test_task_new(register_user, invoke):
     assert res.data["input_type"] == res.data["output_type"] == "Any"
     assert res.data["version"] == "_version"
     assert res.data["default_args"] == res.data["meta"] == {}
+    assert "owner" in res.data.keys()
     first_task_id = int(res.data["id"])
 
     # create a new task with batch option
