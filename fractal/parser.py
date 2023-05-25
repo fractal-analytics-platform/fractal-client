@@ -351,6 +351,11 @@ task_new_parser.add_argument(
     default="Any",
 )
 task_new_parser.add_argument(
+    "--version",
+    type=str,
+    help="Task version",
+)
+task_new_parser.add_argument(
     "--default-args-file",
     help="Path to JSON file with default task arguments",
     type=str,
@@ -371,18 +376,21 @@ task_edit_parser = task_subparsers.add_parser(
 task_edit_parser.add_argument(
     "task_id_or_name", help="ID or name of task to edit", type=str
 )
-task_edit_parser.add_argument("--name", help="New task name")
-task_edit_parser.add_argument("--command", help="New task command")
+task_edit_parser.add_argument("--name", help="New task name", type=str)
+task_edit_parser.add_argument("--command", help="New task command", type=str)
 task_edit_parser.add_argument(
     "--input-type",
+    type=str,
     help="New input type",
 )
 task_edit_parser.add_argument(
     "--output-type",
+    type=str,
     help="New output type",
 )
 task_edit_parser.add_argument(
     "--default-args-file",
+    type=str,
     help=(
         "Path to JSON serialised file containing "
         "the task default arguments dictionary"
@@ -390,8 +398,15 @@ task_edit_parser.add_argument(
 )
 task_edit_parser.add_argument(
     "--meta-file",
+    type=str,
     help="Path to JSON serialised file containing the task meta dictionary",
 )
+task_edit_parser.add_argument(
+    "--version",
+    type=str,
+    help="New version",
+)
+
 
 # task delete
 task_delete_parser = task_subparsers.add_parser(

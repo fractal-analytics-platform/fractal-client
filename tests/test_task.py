@@ -104,13 +104,14 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
 async def test_task_new(register_user, invoke):
 
     # create a new task with just positional required args
-    res = await invoke("task new _name _command _source")
+    res = await invoke("task new _name _command _source --version _version")
     res.show()
     assert res.retcode == 0
     assert res.data["name"] == "_name"
     assert res.data["command"] == "_command"
     assert res.data["source"] == "_source"
     assert res.data["input_type"] == res.data["output_type"] == "Any"
+    assert res.data["version"] == "_version"
     assert res.data["default_args"] == res.data["meta"] == {}
     first_task_id = int(res.data["id"])
 
@@ -159,6 +160,9 @@ async def test_task_edit(
     assert res.retcode == 0
     res = await invoke_as_superuser(f"task edit {task_id} --output-type {NEW}")
     assert res.data["output_type"] == NEW
+    assert res.retcode == 0
+    res = await invoke_as_superuser(f"task edit {task_id} --version {NEW}")
+    assert res.data["version"] == NEW
     assert res.retcode == 0
 
     # Test `file not found` errors

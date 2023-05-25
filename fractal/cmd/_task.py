@@ -95,13 +95,16 @@ async def post_task(
     command: str,
     source: str,
     batch: bool = False,
-    input_type: Optional[str] = "Any",
-    output_type: Optional[str] = "Any",
-    default_args_file: Optional[str] = None,
+    input_type: str = "Any",
+    output_type: str = "Any",
+    version: Optional[str] = None,
     meta_file: Optional[str] = None,
+    default_args_file: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
     optionals = {}
+    if version:
+        optionals["version"] = version
     if default_args_file:
         with open(default_args_file, "r") as f:
             optionals["default_args"] = json.load(f)
@@ -133,6 +136,7 @@ async def patch_task(
     command: Optional[str] = None,
     input_type: Optional[str] = None,
     output_type: Optional[str] = None,
+    version: Optional[str] = None,
     default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
     **kwargs,
@@ -142,6 +146,8 @@ async def patch_task(
         update["name"] = name
     if command:
         update["command"] = command
+    if version:
+        update["version"] = version
     if input_type:
         update["input_type"] = input_type
     if output_type:
@@ -153,7 +159,7 @@ async def patch_task(
         with open(meta_file, "r") as f:
             update["meta"] = json.load(f)
 
-    task_update = TaskUpdate(**update)  # validation
+    task_update = TaskUpdate(**update)
     payload = task_update.dict(exclude_unset=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
@@ -177,9 +183,3 @@ async def delete_task(
 ) -> PrintInterface:
 
     raise NotImplementedError("task_delete")
-
-    # res = await client.delete(
-    #    f"{settings.BASE_URL}/xxxx"
-    # )
-    # check_response(res, expected_status_code=204)
-    # return PrintInterface(retcode=0, data="")

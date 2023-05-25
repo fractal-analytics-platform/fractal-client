@@ -12,6 +12,7 @@
 * Require pydantic version to be `>=1.10.8` (\#486, \#490).
 * Remove `--private` option for `fractal task collect` (\#493).
 * Add `--username/--new-username` to `fractal user` subcommands (\#493).
+* Add `--version` to `fractal task` subcommands (\#493).
 
 # 1.2.0
 
