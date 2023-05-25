@@ -26,22 +26,26 @@ async def task_collect_pip(
     *,
     package: str,
     package_version: Optional[str] = None,
-    python_version: Optional[str],
+    python_version: Optional[str] = None,
     package_extras: Optional[str] = None,
     private: Optional[bool] = False,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
-    task_collect = TaskCollectPip(
-        package=package,
-        version=package_version,
-        python_version=python_version,
-        package_extras=package_extras,
-    )
+
+    # Construct TaskCollectPip object
+    attributes = dict(package=package)
+    if package_version:
+        attributes["package_version"] = package_version
+    if python_version:
+        attributes["python_version"] = python_version
+    if package_extras:
+        attributes["package_extras"] = package_extras
+    task_collect = TaskCollectPip(**attributes)
 
     res = await client.post(
         f"{settings.BASE_URL}/task/collect/pip/?public={not private}",
-        json=task_collect.dict(),
+        json=task_collect.dict(exclude_unset=True),
     )
 
     state = check_response(
