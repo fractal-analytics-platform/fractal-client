@@ -68,6 +68,8 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     state_id = res0.data["id"]
     debug(state_id)
 
+    time.sleep(0.5)
+
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
