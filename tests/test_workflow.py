@@ -411,13 +411,6 @@ async def test_workflow_apply(
     debug(resource)
     assert res.retcode == 0
 
-    # res = await invoke(
-    #     f"dataset add-resource {prj_id} {output_dataset_id} {str(tmp_path)}"
-    # )
-    # resource = res.data
-    # debug(resource)
-    # assert res.retcode == 0
-
     res = await invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
     workflow = res.data
     workflow_id = workflow["id"]
@@ -443,6 +436,8 @@ async def test_workflow_apply(
     assert res.retcode == 0
     job_id = job["id"]
     assert job["status"] == "submitted"
+
+    time.sleep(1)
 
     # TODO: add an assertion about the output, instead of calling `job show`
 
