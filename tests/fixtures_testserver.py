@@ -177,11 +177,16 @@ async def job_factory(db):
 @pytest.fixture
 async def user_factory(client_superuser, testserver):
     async def __register_user(
-        email: str, password: str, slurm_user: Optional[str] = None
+        email: str,
+        password: str,
+        slurm_user: Optional[str] = None,
+        username: Optional[str] = None,
     ):
         payload = dict(email=email, password=password)
         if slurm_user:
             payload["slurm_user"] = slurm_user
+        if username:
+            payload["username"] = username
         res = await client_superuser.post(
             f"{testserver}/auth/register",
             json=payload,
@@ -197,4 +202,5 @@ async def register_user(user_factory):
     return await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
+        username="some_username",
     )

@@ -20,7 +20,7 @@
                 "meta": {},
                 "name": "dummy",
                 "output_type": "Any",
-                "source": "pip-local:fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+                "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy"
             }
         },
         {
@@ -38,7 +38,7 @@
                 "meta": {"parallelization_level": "index"},
                 "name": "dummy parallel",
                 "output_type": "Any",
-                "source": "pip-local:fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+                "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy_parallel"
             }
         }
     ]

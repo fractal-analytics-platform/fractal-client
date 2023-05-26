@@ -34,7 +34,7 @@ def event_loop():
 
 @pytest.fixture
 async def client():
-    async with AsyncClient() as client:
+    async with AsyncClient(timeout=10) as client:
         yield client
 
 

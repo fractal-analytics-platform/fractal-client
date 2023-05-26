@@ -1,4 +1,5 @@
 import asyncio
+import json
 import time
 from pathlib import Path
 
@@ -7,6 +8,41 @@ from devtools import debug
 
 
 COLLECTION_TIMEOUT = 15.0
+
+
+async def test_task_collection_command(register_user, invoke, caplog):
+    """
+    Test that all `task collect` options are correctly parsed and included in
+    the the payload for the API request.
+    """
+    PACKAGE = "devtools"
+    PACKAGE_VERSION = "0.11.0"
+    PYTHON_VERSION = "1.2"
+    PACKAGE_EXTRAS = "a,b,c"
+    with pytest.raises(SystemExit):
+        await invoke(
+            (
+                "task collect "
+                f"{PACKAGE} "
+                f"--package-version {PACKAGE_VERSION} "
+                f"--python-version {PYTHON_VERSION} "
+                f"--package-extras {PACKAGE_EXTRAS}"
+            )
+        )
+
+    # Check that payload was prepared correctly
+    log_lines = [record.message for record in caplog.records]
+    debug(log_lines)
+    payload_line = next(
+        line for line in log_lines if line.startswith("Original payload: ")
+    )
+    assert payload_line
+    payload = json.loads(payload_line.strip("Original payload: "))
+    debug(payload)
+    assert payload["package"] == PACKAGE
+    assert payload["package_version"] == PACKAGE_VERSION
+    assert payload["package_extras"] == PACKAGE_EXTRAS
+    assert payload["python_version"] == PYTHON_VERSION
 
 
 async def test_task_collection_and_list(register_user, invoke, testdata_path):
@@ -31,6 +67,8 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     debug(venv_path)
     state_id = res0.data["id"]
     debug(state_id)
+
+    time.sleep(0.5)
 
     # Wait until collection is complete
     starting_time = time.perf_counter()
@@ -86,6 +124,8 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     debug(venv_path)
     debug(state_id)
 
+    time.sleep(0.5)
+
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
@@ -104,14 +144,16 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
 async def test_task_new(register_user, invoke):
 
     # create a new task with just positional required args
-    res = await invoke("task new _name _command _source")
+    res = await invoke("task new _name _command _source --version _version")
     res.show()
     assert res.retcode == 0
     assert res.data["name"] == "_name"
     assert res.data["command"] == "_command"
     assert res.data["source"] == "_source"
     assert res.data["input_type"] == res.data["output_type"] == "Any"
+    assert res.data["version"] == "_version"
     assert res.data["default_args"] == res.data["meta"] == {}
+    assert "owner" in res.data.keys()
     first_task_id = int(res.data["id"])
 
     # create a new task with batch option
@@ -159,6 +201,9 @@ async def test_task_edit(
     assert res.retcode == 0
     res = await invoke_as_superuser(f"task edit {task_id} --output-type {NEW}")
     assert res.data["output_type"] == NEW
+    assert res.retcode == 0
+    res = await invoke_as_superuser(f"task edit {task_id} --version {NEW}")
+    assert res.data["version"] == NEW
     assert res.retcode == 0
 
     # Test `file not found` errors
