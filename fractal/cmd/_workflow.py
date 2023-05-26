@@ -19,7 +19,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from .utils import get_cached_task_by_name
+from ._aux_task_caching import get_cached_task_by_name
 
 
 async def post_workflow(
