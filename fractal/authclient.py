@@ -1,3 +1,4 @@
+import logging
 from json import JSONDecodeError
 from pathlib import Path
 
@@ -80,8 +81,12 @@ class AuthToken:
         return dict(Authorization=f"Bearer {token}")
 
     async def __call__(self):
+        logging.critical("NOW AuthToken.__call__ 1")
         if self.expired:
+            logging.critical("NOW AuthToken.__call__ 2")
             await self._get_fresh_token()
+            logging.critical("NOW AuthToken.__call__ 3")
+        logging.critical("NOW AuthToken.__call__ 4")
         return self.token
 
 
@@ -98,15 +103,19 @@ class AuthClient:
 
     async def __aenter__(self):
         self.client = AsyncClient()
+        logging.critical("NOW __aenter__ 1")
         self.auth = AuthToken(
             client=self.client,
             username=self.username,
             password=self.password,
         )
+        logging.critical("NOW __aenter__ 2")
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
+        logging.critical("NOW __aexit__ 1")
         await self.client.aclose()
+        logging.critical("NOW __aexit__ 2")
 
     async def get(self, *args, **kwargs):
         return await self.client.get(
