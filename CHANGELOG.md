@@ -3,16 +3,20 @@
 # 1.3.0
 
 * Align with [fractal-server 1.3.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#130), by updating all relevant endpoint path/query/body parameters (\#479).
-* Make `project_id` a required positional argument of `fractal {workflow,dataset,job}` commands (\#479).
-* For `fractal workflow apply`, transform `project_id` from option to positional argument (\#479).
 * Add `fractal job stop` command (\#485).
-* Add `--type` optional argument to `fractal dataset new` command (\#479).
-* Make `output_dataset_id` a required positional argument of `fractal workflow apply` (\#483).
-* Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
-* Require pydantic version to be `>=1.10.8` (\#486, \#490).
-* Remove `--private` option for `fractal task collect` (\#493).
-* Add `--username/--new-username` to `fractal user` subcommands (\#493).
-* Add `--version` to `fractal task` subcommands (\#493).
+* Specific changes to existing commands:
+    * Make `project_id` a required positional argument of `fractal {workflow,dataset,job}` commands (\#479).
+    * Add `--type` optional argument to `fractal dataset new` command (\#479).
+    * For `fractal workflow apply`:
+        * Ttransform `project_id` from option to positional argument (\#479).
+        * Make `output_dataset_id` a required positional argument (\#483).
+    * Add `--username/--new-username` to `fractal user` subcommands (\#493).
+    * Remove `--private` option for `fractal task collect` (\#493).
+    * Add `--version` to `fractal task {new,edit}` subcommands (\#493).
+* Package and repository:
+    * Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
+    * Require pydantic version to be `>=1.10.8` (\#486, \#490).
+    * Make `sqlmodel` a development depedency (\#493).
 
 # 1.2.0
 
