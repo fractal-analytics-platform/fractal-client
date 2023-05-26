@@ -1,19 +1,51 @@
 import json
 from pathlib import Path
 from typing import Any
-from typing import Dict
-from typing import List
 
 from ..authclient import AuthClient
 from ..config import settings
 from ..response import check_response
+
+TASKS_CACHE_FILENAME = "tasks"
+
+
+# Define a useful type
+_TaskList = list[dict[str, Any]]
+
+
+async def _fetch_task_list(client: AuthClient) -> _TaskList:
+    """
+    Make an API request to get the task list
+    """
+    res = await client.get(f"{settings.BASE_URL}/task/")
+    task_list = check_response(res, expected_status_code=200)
+    return task_list
+
+
+def _write_task_list(task_list: _TaskList) -> None:
+    """
+    Write `task_list` to the cache file
+    """
+    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    with (cache_dir / TASKS_CACHE_FILENAME).open("w") as f:
+        json.dump(task_list, f, indent=4)
+
+
+async def refresh_task_cache(client: AuthClient) -> list[dict[str, Any]]:
+    """
+    Fetch task list, write cache file, return task list.
+    """
+    task_list = await _fetch_task_list(client)
+    _write_task_list(task_list)
+    return task_list
 
 
 async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
 
     # Set paths
     cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
-    cache_file = cache_dir / "tasks"
+    cache_file = cache_dir / TASKS_CACHE_FILENAME
 
     # If cache is missing, create it
     cache_up_to_date = False
@@ -48,23 +80,3 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
             return task_cache[name]
         except KeyError as e:
             raise KeyError(f'Task "{name}" not in {cache_file}\n', str(e))
-
-
-async def refresh_task_cache(
-    client: AuthClient, **kwargs
-) -> List[Dict[str, Any]]:
-
-    # Get task_list
-    res = await client.get(f"{settings.BASE_URL}/task/")
-    task_list = check_response(res, expected_status_code=200)
-
-    # Set paths and create cache folder (if needed)
-    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
-    cache_file = cache_dir / "tasks"
-    cache_dir.mkdir(parents=True, exist_ok=True)
-
-    # Write task cache
-    with cache_file.open("w") as f:
-        json.dump(task_list, f, indent=4)
-
-    return task_list
