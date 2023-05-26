@@ -658,7 +658,7 @@ resolved_reference = "267d86f7ab572d1baace520c1391c18cb6838662"
 name = "greenlet"
 version = "2.0.2"
 description = "Lightweight in-process concurrent programming"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 files = [
@@ -1665,7 +1665,7 @@ test = ["pytest"]
 name = "sqlalchemy"
 version = "1.4.41"
 description = "Database Abstraction Library"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 files = [
@@ -1769,7 +1769,7 @@ url = ["furl (>=0.4.1)"]
 name = "sqlalchemy2-stubs"
 version = "0.0.2a34"
 description = "Typing Stubs for SQLAlchemy 1.4"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -1784,7 +1784,7 @@ typing-extensions = ">=3.7.4"
 name = "sqlmodel"
 version = "0.0.8"
 description = "SQLModel, SQL databases in Python, designed for simplicity, compatibility, and robustness."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6.1,<4.0.0"
 files = [
@@ -1908,4 +1908,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "668600818f0e41c8fcea2bf9f4752197333ccecdb7c15ca96b9d2da86b6d7611"
+content-hash = "98f9e4a28968a155c038521f5d337d0ad09be32f5bd24a8294ff150d2b02b263"
