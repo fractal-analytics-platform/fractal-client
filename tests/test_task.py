@@ -124,6 +124,8 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     debug(venv_path)
     debug(state_id)
 
+    time.sleep(0.5)
+
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
