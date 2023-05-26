@@ -15,7 +15,7 @@ _TaskList = list[dict[str, Any]]
 
 async def _fetch_task_list(client: AuthClient) -> _TaskList:
     """
-    Make an API request to get the task list
+    Fetch task list through an API request.
     """
     res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
@@ -24,7 +24,7 @@ async def _fetch_task_list(client: AuthClient) -> _TaskList:
 
 def _write_task_list(task_list: _TaskList) -> None:
     """
-    Write `task_list` to the cache file
+    Write task list to cache file
     """
     cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
     cache_dir.mkdir(parents=True, exist_ok=True)
