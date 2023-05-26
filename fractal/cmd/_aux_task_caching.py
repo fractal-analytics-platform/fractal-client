@@ -14,11 +14,11 @@ TASKS_CACHE_FILENAME = "tasks"
 _TaskList = list[dict[str, Any]]
 
 
-async def _fetch_task_list(client: AuthClient) -> _TaskList:
+def _fetch_task_list(client: AuthClient) -> _TaskList:
     """
     Fetch task list through an API request.
     """
-    res = await client.get(f"{settings.BASE_URL}/task/")
+    res = client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
     return task_list
 
@@ -48,11 +48,11 @@ def _write_task_list(task_list: _TaskList) -> None:
         json.dump(task_list, f, indent=4)
 
 
-async def refresh_task_cache(client: AuthClient) -> list[dict[str, Any]]:
+def refresh_task_cache(client: AuthClient) -> list[dict[str, Any]]:
     """
     Return task list after fetching it, sorting it and writing to cache file.
     """
-    task_list = await _fetch_task_list(client)
+    task_list = _fetch_task_list(client)
     task_list = _sort_task_list(task_list)
     _write_task_list(task_list)
     return task_list
@@ -96,7 +96,7 @@ def _get_task_id(
     return tasks[0]["id"]
 
 
-async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
+def get_cached_task_by_name(name: str, client: AuthClient) -> int:
 
     """ """
 
@@ -107,7 +107,7 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
     # If cache is missing, create it
     cache_up_to_date = False
     if not cache_file.exists():
-        await refresh_task_cache(client)
+        refresh_task_cache(client)
         cache_up_to_date = True
 
     # Read task list and create cache of (name, id) pairs
@@ -130,7 +130,7 @@ async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
         raise KeyError(f'Task "{name}" not in {cache_file}\n')
     # Case 3: name is missing but cache may be out of date
     else:
-        await refresh_task_cache(client)
+        refresh_task_cache(client)
         with cache_file.open("r") as f:
             task_cache = json.load(f)
         try:

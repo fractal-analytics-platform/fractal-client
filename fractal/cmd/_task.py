@@ -16,12 +16,12 @@ from ._aux_task_caching import get_cached_task_by_name
 from ._aux_task_caching import refresh_task_cache
 
 
-async def get_task_list(client: AuthClient) -> RichJsonInterface:
-    task_list = await refresh_task_cache(client=client)
+def get_task_list(client: AuthClient) -> RichJsonInterface:
+    task_list = refresh_task_cache(client=client)
     return RichJsonInterface(retcode=0, data=task_list)
 
 
-async def task_collect_pip(
+def task_collect_pip(
     client: AuthClient,
     *,
     package: str,
@@ -42,7 +42,7 @@ async def task_collect_pip(
         attributes["package_extras"] = package_extras
     task_collect = TaskCollectPip(**attributes)
 
-    res = await client.post(
+    res = client.post(
         f"{settings.BASE_URL}/task/collect/pip/",
         json=task_collect.dict(exclude_unset=True),
     )
@@ -57,7 +57,7 @@ async def task_collect_pip(
         return RichJsonInterface(retcode=0, data=state.sanitised_dict())
 
 
-async def task_collection_check(
+def task_collection_check(
     client: AuthClient,
     *,
     state_id: int,
@@ -66,7 +66,7 @@ async def task_collection_check(
     **kwargs,
 ) -> BaseInterface:
 
-    res = await client.get(
+    res = client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
     )
     state = check_response(res, expected_status_code=200, coerce=StateRead)
@@ -88,7 +88,7 @@ async def task_collection_check(
         )
 
 
-async def post_task(
+def post_task(
     client: AuthClient,
     *,
     name: str,
@@ -119,7 +119,7 @@ async def post_task(
         output_type=output_type,
         **optionals,
     ).dict(exclude_unset=True)
-    res = await client.post(f"{settings.BASE_URL}/task/", json=payload)
+    res = client.post(f"{settings.BASE_URL}/task/", json=payload)
     new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
 
     if batch:
@@ -128,7 +128,7 @@ async def post_task(
         return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
-async def patch_task(
+def patch_task(
     client: AuthClient,
     *,
     task_id_or_name: str,
@@ -167,18 +167,14 @@ async def patch_task(
     try:
         task_id = int(task_id_or_name)
     except ValueError:
-        task_id = await get_cached_task_by_name(
-            name=task_id_or_name, client=client
-        )
+        task_id = get_cached_task_by_name(name=task_id_or_name, client=client)
 
-    res = await client.patch(
-        f"{settings.BASE_URL}/task/{task_id}", json=payload
-    )
+    res = client.patch(f"{settings.BASE_URL}/task/{task_id}", json=payload)
     new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
     return RichJsonInterface(retcode=0, data=new_task.dict())
 
 
-async def delete_task(
+def delete_task(
     client: AuthClient, *, task_id: int = None, **kwargs
 ) -> PrintInterface:
 

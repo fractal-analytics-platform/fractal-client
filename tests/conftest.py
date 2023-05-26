@@ -4,7 +4,7 @@ from os import environ
 from pathlib import Path
 
 import pytest
-from httpx import AsyncClient
+from httpx import Client
 
 
 environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
@@ -34,7 +34,7 @@ def event_loop():
 
 @pytest.fixture
 async def client():
-    async with AsyncClient(timeout=10) as client:
+    with Client(timeout=10) as client:
         yield client
 
 
@@ -42,7 +42,7 @@ async def client():
 async def client_superuser():
     from fractal.authclient import AuthClient
 
-    async with AuthClient(
+    with AuthClient(
         username="admin@fractal.xy",
         password="1234",
     ) as client_superuser:
@@ -62,7 +62,7 @@ async def invoke(clisplit):
     from fractal.client import handle
 
     async def __invoke(args: str):
-        return await handle(clisplit(args))
+        return handle(clisplit(args))
 
     return __invoke
 
@@ -73,7 +73,7 @@ async def invoke_as_superuser(clisplit):
 
     async def __invoke(args: str):
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
-        return await handle(clisplit(new_args))
+        return handle(clisplit(new_args))
 
     return __invoke
 

@@ -18,7 +18,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def post_dataset(
+def post_dataset(
     client: AuthClient,
     project_id: int,
     dataset_name: str,
@@ -39,7 +39,7 @@ async def post_dataset(
         dataset_dict["type"] = type
     dataset = DatasetCreate(**dataset_dict)
 
-    res = await client.post(
+    res = client.post(
         f"{settings.BASE_URL}/project/{project_id}/dataset/",
         json=dataset.dict(exclude_unset=True),
     )
@@ -52,7 +52,7 @@ async def post_dataset(
         return RichJsonInterface(retcode=0, data=new_dataset.dict())
 
 
-async def post_resource(
+def post_resource(
     client: AuthClient,
     *,
     batch: bool = False,
@@ -70,7 +70,7 @@ async def post_resource(
 
     resource = ResourceCreate(path=path)
 
-    res = await client.post(
+    res = client.post(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
             f"dataset/{dataset_id}/resource/"
@@ -86,7 +86,7 @@ async def post_resource(
         return RichJsonInterface(retcode=0, data=new_resource.dict())
 
 
-async def delete_resource(
+def delete_resource(
     client: AuthClient,
     *,
     project_id: int,
@@ -94,7 +94,7 @@ async def delete_resource(
     resource_id: int,
     **kwargs,
 ) -> BaseInterface:
-    res = await client.delete(
+    res = client.delete(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
             f"dataset/{dataset_id}/resource/{resource_id}"
@@ -104,7 +104,7 @@ async def delete_resource(
     return PrintInterface(retcode=0, data="")
 
 
-async def patch_dataset(
+def patch_dataset(
     client: AuthClient,
     *,
     project_id: int,
@@ -137,7 +137,7 @@ async def patch_dataset(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = await client.patch(
+    res = client.patch(
         (f"{settings.BASE_URL}/project/{project_id}/" f"dataset/{dataset_id}"),
         json=payload,
     )
@@ -147,10 +147,10 @@ async def patch_dataset(
     return RichJsonInterface(retcode=0, data=new_dataset.dict())
 
 
-async def get_dataset(
+def get_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int, **kwargs
 ) -> BaseInterface:
-    res = await client.get(
+    res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}"
     )
     from rich.console import Group
@@ -184,11 +184,11 @@ async def get_dataset(
         return RichConsoleInterface(retcode=0, data=group)
 
 
-async def delete_dataset(
+def delete_dataset(
     client: AuthClient, project_id: int, dataset_id: int, **kwargs
 ) -> PrintInterface:
 
-    res = await client.delete(
+    res = client.delete(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}"
     )
     check_response(res, expected_status_code=204)

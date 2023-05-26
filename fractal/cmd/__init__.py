@@ -1,4 +1,4 @@
-from httpx import AsyncClient
+from httpx import Client
 
 from ..authclient import AuthClient
 from ..config import __VERSION__
@@ -49,19 +49,19 @@ class NoCommandError(ValueError):
     pass
 
 
-async def project(
+def project(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "new":
-        iface = await post_project(client, batch=batch, **kwargs)
+        iface = post_project(client, batch=batch, **kwargs)
     elif subcmd == "show":
-        iface = await get_project(client, **kwargs)
+        iface = get_project(client, **kwargs)
     elif subcmd == "list":
-        iface = await get_project_list(client, **kwargs)
+        iface = get_project_list(client, **kwargs)
     elif subcmd == "edit":
-        iface = await patch_project(client, **kwargs)
+        iface = patch_project(client, **kwargs)
     elif subcmd == "add-dataset":
-        iface = await post_dataset(
+        iface = post_dataset(
             client,
             batch=batch,
             project_id=kwargs.pop("project_id"),
@@ -71,20 +71,20 @@ async def project(
             **kwargs,
         )
     elif subcmd == "delete":
-        iface = await delete_project(client, **kwargs)
+        iface = delete_project(client, **kwargs)
     else:
         raise NoCommandError(f"Command project {subcmd} not found")
 
     return iface
 
 
-async def dataset(
+def dataset(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "show":
-        iface = await get_dataset(client, **kwargs)
+        iface = get_dataset(client, **kwargs)
     elif subcmd == "add-resource":
-        iface = await post_resource(
+        iface = post_resource(
             client,
             batch=batch,
             project_id=kwargs.pop("project_id"),
@@ -93,7 +93,7 @@ async def dataset(
             **kwargs,
         )
     elif subcmd == "rm-resource":
-        iface = await delete_resource(
+        iface = delete_resource(
             client,
             batch=batch,
             project_id=kwargs.pop("project_id"),
@@ -104,87 +104,87 @@ async def dataset(
     elif subcmd == "edit":
         project_id = int(kwargs.pop("project_id"))
         dataset_id = int(kwargs.pop("dataset_id"))
-        iface = await patch_dataset(
+        iface = patch_dataset(
             client,
             project_id=project_id,
             dataset_id=dataset_id,
             **kwargs,
         )
     elif subcmd == "delete":
-        iface = await delete_dataset(client, **kwargs)
+        iface = delete_dataset(client, **kwargs)
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
 
 
-async def task(
+def task(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "list":
-        iface = await get_task_list(client)
+        iface = get_task_list(client)
     elif subcmd == "collect":
-        iface = await task_collect_pip(client, batch=batch, **kwargs)
+        iface = task_collect_pip(client, batch=batch, **kwargs)
     elif subcmd == "check-collection":
-        iface = await task_collection_check(client, **kwargs)
+        iface = task_collection_check(client, **kwargs)
     elif subcmd == "new":
-        iface = await post_task(client, batch=batch, **kwargs)
+        iface = post_task(client, batch=batch, **kwargs)
     elif subcmd == "edit":
-        iface = await patch_task(client, **kwargs)
+        iface = patch_task(client, **kwargs)
     elif subcmd == "delete":
-        iface = await delete_task(client, **kwargs)
+        iface = delete_task(client, **kwargs)
     else:
         raise NoCommandError(f"Command task {subcmd} not found")
     return iface
 
 
-async def workflow(
+def workflow(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "show":
-        iface = await get_workflow(client, **kwargs)
+        iface = get_workflow(client, **kwargs)
     elif subcmd == "new":
-        iface = await post_workflow(client, batch=batch, **kwargs)
+        iface = post_workflow(client, batch=batch, **kwargs)
     elif subcmd == "list":
-        iface = await get_workflow_list(client, batch=batch, **kwargs)
+        iface = get_workflow_list(client, batch=batch, **kwargs)
     elif subcmd == "edit":
-        iface = await patch_workflow(client, **kwargs)
+        iface = patch_workflow(client, **kwargs)
     elif subcmd == "delete":
-        iface = await delete_workflow(client, **kwargs)
+        iface = delete_workflow(client, **kwargs)
     elif subcmd == "add-task":
-        iface = await post_workflowtask(client, batch=batch, **kwargs)
+        iface = post_workflowtask(client, batch=batch, **kwargs)
     elif subcmd == "edit-task":
-        iface = await patch_workflowtask(client, **kwargs)
+        iface = patch_workflowtask(client, **kwargs)
     elif subcmd == "rm-task":
-        iface = await delete_workflowtask(client, **kwargs)
+        iface = delete_workflowtask(client, **kwargs)
     elif subcmd == "apply":
-        iface = await workflow_apply(client, **kwargs)
+        iface = workflow_apply(client, **kwargs)
     elif subcmd == "import":
-        iface = await workflow_import(client, batch=batch, **kwargs)
+        iface = workflow_import(client, batch=batch, **kwargs)
     elif subcmd == "export":
-        iface = await workflow_export(client, **kwargs)
+        iface = workflow_export(client, **kwargs)
     else:
         raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface
 
 
-async def job(
+def job(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "list":
-        iface = await get_job_list(client, batch=batch, **kwargs)
+        iface = get_job_list(client, batch=batch, **kwargs)
     elif subcmd == "show":
-        iface = await get_job(client, batch=batch, **kwargs)
+        iface = get_job(client, batch=batch, **kwargs)
     elif subcmd == "download-logs":
-        iface = await get_job_logs(client, **kwargs)
+        iface = get_job_logs(client, **kwargs)
     elif subcmd == "stop":
-        iface = await stop_job(client, batch=batch, **kwargs)
+        iface = stop_job(client, batch=batch, **kwargs)
     else:
         raise NoCommandError(f"Command job {subcmd} not found")
     return iface
 
 
-async def version(client: AsyncClient, **kwargs) -> PrintInterface:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
+def version(client: Client, **kwargs) -> PrintInterface:
+    res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
     data = res.json()
 
     return PrintInterface(
@@ -199,21 +199,21 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
     )
 
 
-async def user(
+def user(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "register":
-        iface = await user_register(client, batch=batch, **kwargs)
+        iface = user_register(client, batch=batch, **kwargs)
     elif subcmd == "list":
-        iface = await user_list(client, **kwargs)
+        iface = user_list(client, **kwargs)
     elif subcmd == "show":
-        iface = await user_show(client, **kwargs)
+        iface = user_show(client, **kwargs)
     elif subcmd == "edit":
-        iface = await user_edit(client, **kwargs)
+        iface = user_edit(client, **kwargs)
     elif subcmd == "delete":
-        iface = await user_delete(client, **kwargs)
+        iface = user_delete(client, **kwargs)
     elif subcmd == "whoami":
-        iface = await user_whoami(client, batch=batch, **kwargs)
+        iface = user_whoami(client, batch=batch, **kwargs)
     else:
         raise NoCommandError(f"Command user {subcmd} not found")
 

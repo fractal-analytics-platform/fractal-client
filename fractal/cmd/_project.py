@@ -16,7 +16,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def post_project(
+def post_project(
     client: AuthClient,
     name: str,
     dataset: Optional[str] = None,
@@ -30,7 +30,7 @@ async def post_project(
     project = ProjectCreate(**project_dict)
     logging.info(project)
     # Send API request
-    res = await client.post(
+    res = client.post(
         f"{settings.BASE_URL}/project/",
         json=project.dict(exclude_unset=True),
     )
@@ -48,11 +48,9 @@ async def post_project(
         return RichJsonInterface(retcode=0, data=project.dict())
 
 
-async def get_project_list(
-    client: AuthClient, **kwargs
-) -> RichConsoleInterface:
+def get_project_list(client: AuthClient, **kwargs) -> RichConsoleInterface:
 
-    res = await client.get(f"{settings.BASE_URL}/project/")
+    res = client.get(f"{settings.BASE_URL}/project/")
     res = check_response(res, expected_status_code=200)
 
     projects = [ProjectRead(**item) for item in res]
@@ -83,28 +81,28 @@ async def get_project_list(
     return RichConsoleInterface(retcode=0, data=table)
 
 
-async def get_project(
+def get_project(
     client: AuthClient, project_id: int, **kwargs
 ) -> RichJsonInterface:
-    res = await client.get(
+    res = client.get(
         f"{settings.BASE_URL}/project/{project_id}",
     )
     project = check_response(res, expected_status_code=200, coerce=ProjectRead)
     return RichJsonInterface(retcode=0, data=project.dict())
 
 
-async def delete_project(
+def delete_project(
     client: AuthClient, project_id: int, **kwargs
 ) -> PrintInterface:
 
-    res = await client.delete(
+    res = client.delete(
         f"{settings.BASE_URL}/project/{project_id}",
     )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
 
 
-async def patch_project(
+def patch_project(
     client: AuthClient,
     project_id: int,
     new_name: Optional[str] = None,
@@ -126,7 +124,7 @@ async def patch_project(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = await client.patch(
+    res = client.patch(
         f"{settings.BASE_URL}/project/{project_id}", json=payload
     )
     new_project = check_response(

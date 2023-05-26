@@ -1,10 +1,8 @@
-import asyncio
-
 from fractal.client import main
 
 
 def run():
-    asyncio.run(main())
+    main()
 
 
 if __name__ == "__main__":
