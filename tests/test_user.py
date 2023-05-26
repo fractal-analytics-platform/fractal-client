@@ -27,7 +27,7 @@ async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
     else:
         res = await invoke_as_superuser(
             f"user register {EMAIL_USER} {PWD_USER} "
-            "--slurm-user SOMETHING --cache-dir /absolute"
+            "--slurm-user SOMETHING --cache-dir /absolute --username X"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -114,11 +114,13 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     NEW_EMAIL = "asd@asd.new"
     NEW_CACHE_DIR = "/tmp/xxx"
     NEW_SLURM_USER = "new_slurm"
+    NEW_USERNAME = "new_username"
     cmd = (
         f"user edit {user_id} "
         f"--new-email {NEW_EMAIL} "
         f"--new-password SOMETHING "
         f"--new-slurm-user {NEW_SLURM_USER} "
+        f"--new-username {NEW_USERNAME} "
         f"--new-cache-dir {NEW_CACHE_DIR}"
     )
     if new_is_superuser:
@@ -130,6 +132,7 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     assert res.data["email"] == NEW_EMAIL
     assert res.data["cache_dir"] == NEW_CACHE_DIR
     assert res.data["slurm_user"] == NEW_SLURM_USER
+    assert res.data["username"] == NEW_USERNAME
     assert res.data["is_superuser"] == new_is_superuser
 
     BAD_CACHE_DIR = "not_absolute"
