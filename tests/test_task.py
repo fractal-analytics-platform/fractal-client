@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 from pathlib import Path
@@ -45,17 +44,13 @@ async def test_task_collection_command(register_user, invoke, caplog):
     assert payload["python_version"] == PYTHON_VERSION
 
 
-async def test_task_collection_and_list(register_user, invoke, testdata_path):
+async def test_task_collection(register_user, invoke, testdata_path):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
-
     WHEN the collection subcommand is called
     THEN
         * the collection is initiated in the background
         * the server returns immediately
-
-    WHEN the list command is called
-    THEN the tasks collected are shown
     """
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
@@ -76,7 +71,7 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
         res1 = await invoke(f"task check-collection {state_id}")
         assert res1.retcode == 0
         res1.show()
-        await asyncio.sleep(1)
+        time.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
@@ -91,12 +86,6 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     res2.show()
     assert res2.data["data"]["log"]
     assert res2.data["data"]["status"] == "OK"
-
-    # List tasks
-    res = await invoke("task list")
-    res.show()
-    assert res.retcode == 0
-    assert len(res.data) == 2
 
     # Show again the check-collection output, without --do-not-separate-logs,
     # for visual inspection
@@ -130,7 +119,7 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     starting_time = time.perf_counter()
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
-        await asyncio.sleep(1)
+        time.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
@@ -242,3 +231,41 @@ async def test_task_delete(register_user, invoke):
     with pytest.raises(NotImplementedError):
         debug(f"task delete {task_id}")
         res = await invoke(f"task delete {task_id}")
+
+
+async def test_task_list(register_user, invoke, testdata_path):
+    """
+    Install tasks from a package
+    Add a custom task with an owner
+    List tasks in the appropriate way
+    """
+
+    # Task collection
+    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    res = await invoke(f"task collect {PACKAGE_NAME}")
+    assert res.retcode == 0
+    state_id = res.data["id"]
+
+    # Wait until collection is complete
+    time.sleep(1)
+    starting_time = time.perf_counter()
+    while True:
+        res = await invoke(f"task check-collection {state_id}")
+        assert res.retcode == 0
+        if res.data["data"]["status"] == "OK":
+            break
+        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+        time.sleep(1)
+
+    # Add custom task
+    task_name = "custom_task"
+    task_command = "ls"
+    task_source = "custom_task_source"
+    res = await invoke(f"task new {task_name} {task_command} {task_source}")
+    debug(res)
+    assert res.retcode == 0
+
+    # List tasks
+    res = await invoke("task list")
+    assert res.retcode == 0
+    debug(res.data)
