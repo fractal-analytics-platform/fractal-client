@@ -1,4 +1,5 @@
 import asyncio
+import json
 import time
 from pathlib import Path
 
@@ -7,6 +8,41 @@ from devtools import debug
 
 
 COLLECTION_TIMEOUT = 15.0
+
+
+async def test_task_collection_command(register_user, invoke, caplog):
+    """
+    Test that all `task collect` options are correctly parsed and included in
+    the the payload for the API request.
+    """
+    PACKAGE = "devtools"
+    PACKAGE_VERSION = "0.11.0"
+    PYTHON_VERSION = "1.2"
+    PACKAGE_EXTRAS = "a,b,c"
+    with pytest.raises(SystemExit):
+        await invoke(
+            (
+                "task collect "
+                f"{PACKAGE} "
+                f"--package-version {PACKAGE_VERSION} "
+                f"--python-version {PYTHON_VERSION} "
+                f"--package-extras {PACKAGE_EXTRAS}"
+            )
+        )
+
+    # Check that payload was prepared correctly
+    log_lines = [record.message for record in caplog.records]
+    debug(log_lines)
+    payload_line = next(
+        line for line in log_lines if line.startswith("Original payload: ")
+    )
+    assert payload_line
+    payload = json.loads(payload_line.strip("Original payload: "))
+    debug(payload)
+    assert payload["package"] == PACKAGE
+    assert payload["package_version"] == PACKAGE_VERSION
+    assert payload["package_extras"] == PACKAGE_EXTRAS
+    assert payload["python_version"] == PYTHON_VERSION
 
 
 async def test_task_collection_and_list(register_user, invoke, testdata_path):
