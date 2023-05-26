@@ -52,9 +52,9 @@ async def test_task_collection(register_user, invoke, testdata_path):
         * the collection is initiated in the background
         * the server returns immediately
     """
-    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    PACKAGE = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = await invoke(f"task collect {PACKAGE}")
     debug(res0)
     res0.show()
 
@@ -102,9 +102,9 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     THEN
         * TBD..
     """
-    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    PACKAGE = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = await invoke(f"task collect {PACKAGE}")
     debug(res0)
     res0.show()
 
@@ -125,7 +125,7 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Second collection
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = await invoke(f"task collect {PACKAGE}")
     res0.show()
     assert res0.data["data"]["info"] == "Already installed"
 
@@ -240,32 +240,68 @@ async def test_task_list(register_user, invoke, testdata_path):
     List tasks in the appropriate way
     """
 
-    # Task collection
-    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
-    res = await invoke(f"task collect {PACKAGE_NAME}")
-    assert res.retcode == 0
-    state_id = res.data["id"]
-
-    # Wait until collection is complete
-    time.sleep(1)
-    starting_time = time.perf_counter()
-    while True:
-        res = await invoke(f"task check-collection {state_id}")
+    for version in ["0.1.0", "0.2.0"]:
+        # Task collection
+        PACKAGE = (
+            testdata_path / f"fractal_tasks_dummy-{version}-py3-none-any.whl"
+        )
+        res = await invoke(f"task collect {PACKAGE}")
         assert res.retcode == 0
-        if res.data["data"]["status"] == "OK":
-            break
-        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+        state_id = res.data["id"]
+
+        # Wait until collection is complete
         time.sleep(1)
+        starting_time = time.perf_counter()
+        while True:
+            res = await invoke(f"task check-collection {state_id}")
+            assert res.retcode == 0
+            if res.data["data"]["status"] == "OK":
+                break
+            assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+            time.sleep(1)
 
     # Add custom task
-    task_name = "custom_task"
-    task_command = "ls"
-    task_source = "custom_task_source"
-    res = await invoke(f"task new {task_name} {task_command} {task_source}")
+    custom_task_name = "custom_task_name"
+    custom_task_command = "custom_task_command"
+    custom_task_source = "custom_task_source"
+    custom_task_version = "9.9"
+    res = await invoke(
+        f"task new {custom_task_name} {custom_task_command} "
+        f"{custom_task_source} --version {custom_task_version}"
+    )
     debug(res)
     assert res.retcode == 0
 
     # List tasks
     res = await invoke("task list")
     assert res.retcode == 0
-    debug(res.data)
+    task_list = res.data
+
+    # Remove some attributes, to de-clutter output
+    for task in task_list:
+        for key in [
+            "command",
+            "default_args",
+            "meta",
+            "input_type",
+            "output_type",
+        ]:
+            task.pop(key)
+    debug(task_list)
+
+    # Check that tasks are sorted as expected
+    assert task_list[0]["name"] == "dummy"
+    assert task_list[0]["version"] == "0.1.0"
+    assert task_list[0]["owner"] is None
+    assert task_list[1]["name"] == "dummy"
+    assert task_list[1]["version"] == "0.2.0"
+    assert task_list[1]["owner"] is None
+    assert task_list[2]["name"] == "dummy parallel"
+    assert task_list[2]["version"] == "0.1.0"
+    assert task_list[2]["owner"] is None
+    assert task_list[3]["name"] == "dummy parallel"
+    assert task_list[3]["version"] == "0.2.0"
+    assert task_list[3]["owner"] is None
+    assert task_list[4]["name"] == custom_task_name
+    assert task_list[4]["version"] == custom_task_version
+    assert task_list[4]["owner"] is not None

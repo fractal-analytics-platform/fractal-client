@@ -32,11 +32,25 @@ def _write_task_list(task_list: _TaskList) -> None:
         json.dump(task_list, f, indent=4)
 
 
+def _sort_task_list(task_list: _TaskList) -> _TaskList:
+
+    new_task_list = sorted(
+        task_list,
+        key=lambda task: (
+            task["owner"] or "",
+            task["name"],
+            task["version"] or "",
+        ),
+    )
+    return new_task_list
+
+
 async def refresh_task_cache(client: AuthClient) -> list[dict[str, Any]]:
     """
     Fetch task list, write cache file, return task list.
     """
     task_list = await _fetch_task_list(client)
+    task_list = _sort_task_list(task_list)
     _write_task_list(task_list)
     return task_list
 
