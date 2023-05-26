@@ -11,7 +11,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-def user_register(
+async def user_register(
     client: AuthClient,
     new_email: str,
     new_password: Optional[str] = None,
@@ -45,7 +45,7 @@ def user_register(
         else:
             return PrintInterface(retcode=1, data="Passwords do not match.")
 
-    res = client.post(
+    res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register",
         json=new_user.dict(exclude_unset=True, exclude_none=True),
     )
@@ -53,7 +53,7 @@ def user_register(
 
     if superuser:
         user_id = data.id
-        res = client.patch(
+        res = await client.patch(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}",
             json={"is_superuser": True},
         )
@@ -65,8 +65,8 @@ def user_register(
         return RichJsonInterface(retcode=0, data=data.dict())
 
 
-def user_list(client: AuthClient, **kwargs) -> RichJsonInterface:
-    res = client.get(f"{settings.FRACTAL_SERVER}/auth/userlist")
+async def user_list(client: AuthClient, **kwargs) -> RichJsonInterface:
+    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/userlist")
     users = check_response(res, expected_status_code=200)
     users = [UserRead(**user).dict() for user in users]
     return RichJsonInterface(
@@ -75,8 +75,10 @@ def user_list(client: AuthClient, **kwargs) -> RichJsonInterface:
     )
 
 
-def user_show(client: AuthClient, user_id: str, **kwargs) -> RichJsonInterface:
-    res = client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}")
+async def user_show(
+    client: AuthClient, user_id: str, **kwargs
+) -> RichJsonInterface:
+    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}")
     user = check_response(res, expected_status_code=200, coerce=UserRead)
     return RichJsonInterface(
         retcode=0,
@@ -84,7 +86,7 @@ def user_show(client: AuthClient, user_id: str, **kwargs) -> RichJsonInterface:
     )
 
 
-def user_edit(
+async def user_edit(
     client: AuthClient,
     user_id: str,
     new_email: Optional[str] = None,
@@ -117,7 +119,7 @@ def user_edit(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = client.patch(
+    res = await client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}", json=payload
     )
     new_user = check_response(res, expected_status_code=200, coerce=UserRead)
@@ -128,17 +130,21 @@ def user_edit(
     )
 
 
-def user_delete(client: AuthClient, user_id: str, **kwargs) -> PrintInterface:
+async def user_delete(
+    client: AuthClient, user_id: str, **kwargs
+) -> PrintInterface:
 
-    res = client.delete(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}")
+    res = await client.delete(
+        f"{settings.FRACTAL_SERVER}/auth/users/{user_id}"
+    )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
 
 
-def user_whoami(
+async def user_whoami(
     client: AuthClient, batch: bool, **kwargs
 ) -> Union[RichJsonInterface, PrintInterface]:
-    res = client.get(f"{settings.FRACTAL_SERVER}/auth/whoami")
+    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/whoami")
     user = check_response(res, expected_status_code=200, coerce=UserRead)
 
     if batch:

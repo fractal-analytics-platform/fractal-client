@@ -12,13 +12,14 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+import asyncio
 import logging
 from sys import argv
 from typing import List
 from typing import Tuple
 from typing import Union
 
-from httpx import Client
+from httpx import AsyncClient
 from httpx import ConnectError
 
 from . import cmd
@@ -67,7 +68,7 @@ def _check_credentials(
     return (username, password)
 
 
-def handle(cli_args: List[str] = argv):
+async def handle(cli_args: List[str] = argv):
     args = parser_main.parse_args(cli_args[1:])
 
     # Set logging level
@@ -88,8 +89,8 @@ def handle(cli_args: List[str] = argv):
     try:
         kwargs = vars(args)
         if args.cmd == "version":
-            with Client() as client:
-                interface = handler(client, **kwargs)
+            async with AsyncClient() as client:
+                interface = await handler(client, **kwargs)
         else:
             # Extract (and remove) username/password for AuthClient from kwargs
             username = kwargs.pop("user") or settings.FRACTAL_USER
@@ -97,8 +98,10 @@ def handle(cli_args: List[str] = argv):
             username, password = _check_credentials(
                 username=username, password=password
             )
-            with AuthClient(username=username, password=password) as client:
-                interface = handler(client, **kwargs)
+            async with AuthClient(
+                username=username, password=password
+            ) as client:
+                interface = await handler(client, **kwargs)
     except AuthenticationError as e:
         return PrintInterface(retcode=1, data=e.args[0])
     except ConnectError as e:
@@ -107,11 +110,11 @@ def handle(cli_args: List[str] = argv):
     return interface
 
 
-def main():
-    interface = handle()
+async def main():
+    interface = await handle()
     interface.show()
     exit(interface.retcode)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -2,7 +2,7 @@ from json import JSONDecodeError
 from pathlib import Path
 
 import jwt
-from httpx import Client
+from httpx import AsyncClient
 from jwt.exceptions import ExpiredSignatureError
 
 from .config import settings
@@ -15,7 +15,7 @@ class AuthenticationError(ValueError):
 class AuthToken:
     def __init__(
         self,
-        client: Client,
+        client: AsyncClient,
         username: str,
         password: str,
     ):
@@ -29,12 +29,12 @@ class AuthToken:
         except FileNotFoundError:
             pass
 
-    def _get_fresh_token(self):
+    async def _get_fresh_token(self):
         data = dict(
             username=self.username,
             password=self.password,
         )
-        res = self.client.post(
+        res = await self.client.post(
             f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
         )
         if res.status_code != 200:
@@ -75,13 +75,13 @@ class AuthToken:
         except ExpiredSignatureError:
             return True
 
-    def header(self):
-        token = self.__call__()
+    async def header(self):
+        token = await self.__call__()
         return dict(Authorization=f"Bearer {token}")
 
-    def __call__(self):
+    async def __call__(self):
         if self.expired:
-            self._get_fresh_token()
+            await self._get_fresh_token()
         return self.token
 
 
@@ -96,8 +96,8 @@ class AuthClient:
         self.username = username
         self.password = password
 
-    def __enter__(self):
-        self.client = Client()
+    async def __aenter__(self):
+        self.client = AsyncClient()
         self.auth = AuthToken(
             client=self.client,
             username=self.username,
@@ -105,17 +105,25 @@ class AuthClient:
         )
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.client.close()
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.client.aclose()
 
-    def get(self, *args, **kwargs):
-        return self.client.get(headers=self.auth.header(), *args, **kwargs)
+    async def get(self, *args, **kwargs):
+        return await self.client.get(
+            headers=await self.auth.header(), *args, **kwargs
+        )
 
-    def post(self, *args, **kwargs):
-        return self.client.post(headers=self.auth.header(), *args, **kwargs)
+    async def post(self, *args, **kwargs):
+        return await self.client.post(
+            headers=await self.auth.header(), *args, **kwargs
+        )
 
-    def patch(self, *args, **kwargs):
-        return self.client.patch(headers=self.auth.header(), *args, **kwargs)
+    async def patch(self, *args, **kwargs):
+        return await self.client.patch(
+            headers=await self.auth.header(), *args, **kwargs
+        )
 
-    def delete(self, *args, **kwargs):
-        return self.client.delete(headers=self.auth.header(), *args, **kwargs)
+    async def delete(self, *args, **kwargs):
+        return await self.client.delete(
+            headers=await self.auth.header(), *args, **kwargs
+        )

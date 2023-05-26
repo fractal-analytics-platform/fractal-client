@@ -188,7 +188,7 @@ async def user_factory(client_superuser, testserver):
             payload["slurm_user"] = slurm_user
         if username:
             payload["username"] = username
-        res = client_superuser.post(
+        res = await client_superuser.post(
             f"{testserver}/auth/register",
             json=payload,
         )
