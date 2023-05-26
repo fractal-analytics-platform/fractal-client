@@ -22,18 +22,10 @@ async def _fetch_task_list(client: AuthClient) -> _TaskList:
     return task_list
 
 
-def _write_task_list(task_list: _TaskList) -> None:
-    """
-    Write task list to cache file
-    """
-    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    with (cache_dir / TASKS_CACHE_FILENAME).open("w") as f:
-        json.dump(task_list, f, indent=4)
-
-
 def _sort_task_list(task_list: _TaskList) -> _TaskList:
-
+    """
+    Sort tasks according to their (owner, name, version) attributes.
+    """
     new_task_list = sorted(
         task_list,
         key=lambda task: (
@@ -45,9 +37,19 @@ def _sort_task_list(task_list: _TaskList) -> _TaskList:
     return new_task_list
 
 
+def _write_task_list(task_list: _TaskList) -> None:
+    """
+    Write task list to cache file
+    """
+    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    with (cache_dir / TASKS_CACHE_FILENAME).open("w") as f:
+        json.dump(task_list, f, indent=4)
+
+
 async def refresh_task_cache(client: AuthClient) -> list[dict[str, Any]]:
     """
-    Fetch task list, write cache file, return task list.
+    Return task list after fetching it, sorting it and writing to cache file.
     """
     task_list = await _fetch_task_list(client)
     task_list = _sort_task_list(task_list)
