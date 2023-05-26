@@ -121,7 +121,7 @@ async def task(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "list":
-        iface = await get_task_list(client, **kwargs)
+        iface = await get_task_list(client)
     elif subcmd == "collect":
         iface = await task_collect_pip(client, batch=batch, **kwargs)
     elif subcmd == "check-collection":
