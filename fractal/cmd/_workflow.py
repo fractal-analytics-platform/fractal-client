@@ -208,6 +208,7 @@ async def patch_workflow(
     project_id: int,
     workflow_id: int,
     new_name: str,
+    **kwargs,
 ) -> BaseInterface:
 
     workflow_update = WorkflowUpdate(name=new_name)
