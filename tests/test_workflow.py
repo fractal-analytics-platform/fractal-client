@@ -69,7 +69,7 @@ async def test_workflow_edit(register_user, invoke):
 
     # Edit workflow name
     NAME = "new-workflow-name"
-    cmd = f"workflow edit {project_id} {workflow_id} --new-name {NAME}"
+    cmd = f"workflow edit {project_id} {workflow_id} {NAME}"
     debug(cmd)
     res_edit = await invoke(cmd)
     assert res_edit.retcode == 0
