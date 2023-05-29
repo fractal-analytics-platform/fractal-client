@@ -20,6 +20,7 @@ async def _fetch_task_list(client: AuthClient) -> _TaskList:
     """
     res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
+
     return task_list
 
 
@@ -94,46 +95,3 @@ def _get_task_id(
             f"Multiple tasks ({len(tasks)}) match required attributes"
         )
     return tasks[0]["id"]
-
-
-async def get_cached_task_by_name(name: str, client: AuthClient) -> int:
-
-    """ """
-
-    # Set paths
-    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
-    cache_file = cache_dir / TASKS_CACHE_FILENAME
-
-    # If cache is missing, create it
-    cache_up_to_date = False
-    if not cache_file.exists():
-        await refresh_task_cache(client)
-        cache_up_to_date = True
-
-    # Read task list and create cache of (name, id) pairs
-    # FIMXE: this step will be modified in view of
-    # https://github.com/fractal-analytics-platform/fractal/issues/345
-    with cache_file.open("r") as f:
-        task_list = json.load(f)
-    task_cache = {}
-    for task in task_list:
-        if task["name"] in task_cache.keys():
-            raise ValueError("Cannot parse task_list")
-        task_cache[task["name"]] = task["id"]
-
-    # Look for name in cache
-    # Case 1: name exists in cache
-    if name in task_cache.keys():
-        return task_cache[name]
-    # Case 2: name is missing, and cache was just updated
-    elif cache_up_to_date:
-        raise KeyError(f'Task "{name}" not in {cache_file}\n')
-    # Case 3: name is missing but cache may be out of date
-    else:
-        await refresh_task_cache(client)
-        with cache_file.open("r") as f:
-            task_cache = json.load(f)
-        try:
-            return task_cache[name]
-        except KeyError as e:
-            raise KeyError(f'Task "{name}" not in {cache_file}\n', str(e))
