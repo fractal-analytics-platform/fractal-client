@@ -176,22 +176,26 @@ async def test_task_edit(
 
     # Test that regular user is not authorized
     with pytest.raises(SystemExit):
-        res = await invoke(f"task edit {task_id} --name {NEW}")
+        res = await invoke(f"task edit {task_id} --new-name {NEW}")
 
     # Test successful edit of string attributes
-    res = await invoke_as_superuser(f"task edit {task_id} --name {NEW}")
+    res = await invoke_as_superuser(f"task edit {task_id} --new-name {NEW}")
     assert res.data["name"] == NEW
     assert res.retcode == 0
-    res = await invoke_as_superuser(f"task edit {task_id} --command {NEW}")
+    res = await invoke_as_superuser(f"task edit {task_id} --new-command {NEW}")
     assert res.data["command"] == NEW
     assert res.retcode == 0
-    res = await invoke_as_superuser(f"task edit {task_id} --input-type {NEW}")
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --new-input-type {NEW}"
+    )
     assert res.data["input_type"] == NEW
     assert res.retcode == 0
-    res = await invoke_as_superuser(f"task edit {task_id} --output-type {NEW}")
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --new-output-type {NEW}"
+    )
     assert res.data["output_type"] == NEW
     assert res.retcode == 0
-    res = await invoke_as_superuser(f"task edit {task_id} --version {NEW}")
+    res = await invoke_as_superuser(f"task edit {task_id} --new-version {NEW}")
     assert res.data["version"] == NEW
     assert res.retcode == 0
 

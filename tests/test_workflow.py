@@ -62,9 +62,14 @@ async def test_workflow_edit(register_user, invoke):
     workflow_id = res_wf.data["id"]
     assert res_wf.retcode == 0
 
+    # Fail editing with no edits
+    cmd = f"workflow edit {project_id} {workflow_id}"
+    with pytest.raises(ValueError):
+        res = await invoke(cmd)
+
     # Edit workflow name
     NAME = "new-workflow-name"
-    cmd = f"workflow edit {project_id} {workflow_id} --name {NAME}"
+    cmd = f"workflow edit {project_id} {workflow_id} {NAME}"
     debug(cmd)
     res_edit = await invoke(cmd)
     assert res_edit.retcode == 0
