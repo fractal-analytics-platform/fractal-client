@@ -12,12 +12,12 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from .utils import get_cached_task_by_name
-from .utils import refresh_task_cache
+from ._aux_task_caching import get_cached_task_by_name
+from ._aux_task_caching import refresh_task_cache
 
 
-async def get_task_list(client: AuthClient, **kwargs) -> RichJsonInterface:
-    task_list = await refresh_task_cache(client=client, **kwargs)
+async def get_task_list(client: AuthClient) -> RichJsonInterface:
+    task_list = await refresh_task_cache(client=client)
     return RichJsonInterface(retcode=0, data=task_list)
 
 

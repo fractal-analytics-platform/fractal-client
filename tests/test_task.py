@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 from pathlib import Path
@@ -45,21 +44,17 @@ async def test_task_collection_command(register_user, invoke, caplog):
     assert payload["python_version"] == PYTHON_VERSION
 
 
-async def test_task_collection_and_list(register_user, invoke, testdata_path):
+async def test_task_collection(register_user, invoke, testdata_path):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
-
     WHEN the collection subcommand is called
     THEN
         * the collection is initiated in the background
         * the server returns immediately
-
-    WHEN the list command is called
-    THEN the tasks collected are shown
     """
-    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    PACKAGE = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = await invoke(f"task collect {PACKAGE}")
     debug(res0)
     res0.show()
 
@@ -76,7 +71,7 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
         res1 = await invoke(f"task check-collection {state_id}")
         assert res1.retcode == 0
         res1.show()
-        await asyncio.sleep(1)
+        time.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
@@ -91,12 +86,6 @@ async def test_task_collection_and_list(register_user, invoke, testdata_path):
     res2.show()
     assert res2.data["data"]["log"]
     assert res2.data["data"]["status"] == "OK"
-
-    # List tasks
-    res = await invoke("task list")
-    res.show()
-    assert res.retcode == 0
-    assert len(res.data) == 2
 
     # Show again the check-collection output, without --do-not-separate-logs,
     # for visual inspection
@@ -113,9 +102,9 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     THEN
         * TBD..
     """
-    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    PACKAGE = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = await invoke(f"task collect {PACKAGE}")
     debug(res0)
     res0.show()
 
@@ -130,13 +119,13 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     starting_time = time.perf_counter()
     while True:
         res1 = await invoke(f"task check-collection {state_id}")
-        await asyncio.sleep(1)
+        time.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Second collection
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = await invoke(f"task collect {PACKAGE}")
     res0.show()
     assert res0.data["data"]["info"] == "Already installed"
 
@@ -242,3 +231,77 @@ async def test_task_delete(register_user, invoke):
     with pytest.raises(NotImplementedError):
         debug(f"task delete {task_id}")
         res = await invoke(f"task delete {task_id}")
+
+
+async def test_task_list(register_user, invoke, testdata_path):
+    """
+    Install tasks from a package
+    Add a custom task with an owner
+    List tasks in the appropriate way
+    """
+
+    for version in ["0.1.0", "0.2.0"]:
+        # Task collection
+        PACKAGE = (
+            testdata_path / f"fractal_tasks_dummy-{version}-py3-none-any.whl"
+        )
+        res = await invoke(f"task collect {PACKAGE}")
+        assert res.retcode == 0
+        state_id = res.data["id"]
+
+        # Wait until collection is complete
+        time.sleep(1)
+        starting_time = time.perf_counter()
+        while True:
+            res = await invoke(f"task check-collection {state_id}")
+            assert res.retcode == 0
+            if res.data["data"]["status"] == "OK":
+                break
+            assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+            time.sleep(1)
+
+    # Add custom task
+    custom_task_name = "custom_task_name"
+    custom_task_command = "custom_task_command"
+    custom_task_source = "custom_task_source"
+    custom_task_version = "9.9"
+    res = await invoke(
+        f"task new {custom_task_name} {custom_task_command} "
+        f"{custom_task_source} --version {custom_task_version}"
+    )
+    debug(res)
+    assert res.retcode == 0
+
+    # List tasks
+    res = await invoke("task list")
+    assert res.retcode == 0
+    task_list = res.data
+
+    # Remove some attributes, to de-clutter output
+    for task in task_list:
+        for key in [
+            "command",
+            "default_args",
+            "meta",
+            "input_type",
+            "output_type",
+        ]:
+            task.pop(key)
+    debug(task_list)
+
+    # Check that tasks are sorted as expected
+    assert task_list[0]["name"] == "dummy"
+    assert task_list[0]["version"] == "0.1.0"
+    assert task_list[0]["owner"] is None
+    assert task_list[1]["name"] == "dummy"
+    assert task_list[1]["version"] == "0.2.0"
+    assert task_list[1]["owner"] is None
+    assert task_list[2]["name"] == "dummy parallel"
+    assert task_list[2]["version"] == "0.1.0"
+    assert task_list[2]["owner"] is None
+    assert task_list[3]["name"] == "dummy parallel"
+    assert task_list[3]["version"] == "0.2.0"
+    assert task_list[3]["owner"] is None
+    assert task_list[4]["name"] == custom_task_name
+    assert task_list[4]["version"] == custom_task_version
+    assert task_list[4]["owner"] is not None

@@ -64,6 +64,7 @@ async def testserver(override_server_settings):
                 "fractal_server.main:app",
                 port=10080,
                 log_level="debug",
+                timeout_keep_alive=10,
             )
         )
 
