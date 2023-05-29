@@ -473,7 +473,7 @@ workflow_edit_parser = workflow_subparsers.add_parser(
 workflow_edit_parser.add_argument("project_id", type=int, help="Project ID")
 workflow_edit_parser.add_argument("workflow_id", type=int, help="Workflow ID")
 workflow_edit_parser.add_argument(
-    "--new-name", type=str, help="New workflow name"
+    "new_name", type=str, help="New workflow name"
 )
 
 # workflow delete

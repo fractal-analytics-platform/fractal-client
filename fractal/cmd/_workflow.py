@@ -207,18 +207,11 @@ async def patch_workflow(
     *,
     project_id: int,
     workflow_id: int,
-    new_name: Optional[str] = None,
-    **update,
+    new_name: str,
 ) -> BaseInterface:
 
-    if new_name:
-        update["name"] = new_name
-
-    workflow_update = WorkflowUpdate(**update)
+    workflow_update = WorkflowUpdate(name=new_name)
     payload = workflow_update.dict(exclude_unset=True)
-
-    if not payload:
-        return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}",
