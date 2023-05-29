@@ -132,26 +132,26 @@ async def patch_task(
     client: AuthClient,
     *,
     task_id_or_name: str,
-    name: Optional[str] = None,
-    command: Optional[str] = None,
-    input_type: Optional[str] = None,
-    output_type: Optional[str] = None,
-    version: Optional[str] = None,
+    new_name: Optional[str] = None,
+    new_command: Optional[str] = None,
+    new_input_type: Optional[str] = None,
+    new_output_type: Optional[str] = None,
+    new_version: Optional[str] = None,
     default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
     **kwargs,
 ) -> BaseInterface:
     update = {}
-    if name:
-        update["name"] = name
-    if command:
-        update["command"] = command
-    if version:
-        update["version"] = version
-    if input_type:
-        update["input_type"] = input_type
-    if output_type:
-        update["output_type"] = output_type
+    if new_name:
+        update["name"] = new_name
+    if new_command:
+        update["command"] = new_command
+    if new_version:
+        update["version"] = new_version
+    if new_input_type:
+        update["input_type"] = new_input_type
+    if new_output_type:
+        update["output_type"] = new_output_type
     if default_args_file:
         with open(default_args_file, "r") as f:
             update["default_args"] = json.load(f)
