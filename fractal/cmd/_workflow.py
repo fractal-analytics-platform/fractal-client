@@ -207,10 +207,16 @@ async def patch_workflow(
     *,
     project_id: int,
     workflow_id: int,
-    **workflow_update_dict,
+    new_name: Optional[str] = None,
+    **update,
 ) -> BaseInterface:
-    workflow_update = WorkflowUpdate(**workflow_update_dict)
+
+    if new_name:
+        update["name"] = new_name
+
+    workflow_update = WorkflowUpdate(**update)
     payload = workflow_update.dict(exclude_unset=True)
+
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
