@@ -64,7 +64,7 @@ async def test_workflow_edit(register_user, invoke):
 
     # Fail editing with no edits
     cmd = f"workflow edit {project_id} {workflow_id}"
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         res = await invoke(cmd)
 
     # Edit workflow name
