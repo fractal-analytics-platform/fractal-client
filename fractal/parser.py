@@ -376,15 +376,17 @@ task_edit_parser = task_subparsers.add_parser(
 task_edit_parser.add_argument(
     "task_id_or_name", help="ID or name of task to edit", type=str
 )
-task_edit_parser.add_argument("--name", help="New task name", type=str)
-task_edit_parser.add_argument("--command", help="New task command", type=str)
+task_edit_parser.add_argument("--new-name", help="New task name", type=str)
 task_edit_parser.add_argument(
-    "--input-type",
+    "--new-command", help="New task command", type=str
+)
+task_edit_parser.add_argument(
+    "--new-input-type",
     type=str,
     help="New input type",
 )
 task_edit_parser.add_argument(
-    "--output-type",
+    "--new-output-type",
     type=str,
     help="New output type",
 )
@@ -402,7 +404,7 @@ task_edit_parser.add_argument(
     help="Path to JSON serialised file containing the task meta dictionary",
 )
 task_edit_parser.add_argument(
-    "--version",
+    "--new-version",
     type=str,
     help="New version",
 )
@@ -470,7 +472,9 @@ workflow_edit_parser = workflow_subparsers.add_parser(
 )
 workflow_edit_parser.add_argument("project_id", type=int, help="Project ID")
 workflow_edit_parser.add_argument("workflow_id", type=int, help="Workflow ID")
-workflow_edit_parser.add_argument("--name", type=str, help="New workflow name")
+workflow_edit_parser.add_argument(
+    "--new-name", type=str, help="New workflow name"
+)
 
 # workflow delete
 workflow_delete_parser = workflow_subparsers.add_parser(
