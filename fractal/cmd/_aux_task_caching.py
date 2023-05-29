@@ -20,8 +20,16 @@ async def _fetch_task_list(client: AuthClient) -> _TaskList:
     """
     res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
-
-    return task_list
+    return [
+        dict(
+            id=task["id"],
+            name=task["name"],
+            version=task["version"],
+            owner=task["owner"],
+            source=task["source"],
+        )
+        for task in task_list
+    ]
 
 
 def _sort_task_list(task_list: _TaskList) -> _TaskList:
