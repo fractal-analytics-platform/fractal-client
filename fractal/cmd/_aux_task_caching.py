@@ -81,3 +81,81 @@ def _get_matching_tasks(
             return False
 
     return [_task for _task in task_list if _condition(_task)]
+
+
+async def _search_in_task_list(
+    *,
+    client: AuthClient,
+    task_list,
+    name: str,
+    version: Optional[str] = None,
+    allow_cache_refresh: bool = True,
+) -> int:
+
+    task_list = _get_matching_tasks(task_list, name=name, version=version)
+
+    if len(task_list) == 0:
+        if allow_cache_refresh:
+            task_list = await refresh_task_cache(client)
+            return await _search_in_task_list(
+                client=client,
+                task_list=task_list,
+                name=name,
+                version=version,
+                allow_cache_refresh=False,
+            )
+        else:
+            raise ValueError(
+                f"There is no task with (name, version)=({name},{version}) "
+                "in the cache"
+            )
+    elif len(task_list) == 1:
+        return task_list[0]["id"]
+    else:
+        if version is None:
+            for task in task_list:
+                if task["version"] is None:
+                    raise ValueError(
+                        "Cannot determine max version among this list\n"
+                        f"{task_list}"
+                    )
+            max_version = max(task_list, key=lambda x: x["version"])["version"]
+            return await _search_in_task_list(
+                client=client,
+                task_list=task_list,
+                name=name,
+                version=max_version,
+                allow_cache_refresh=False,
+            )
+        else:
+            raise ValueError(
+                "Cannot find a unique task with "
+                f"name={name}, version={version} among this list\n"
+                f"{task_list}"
+            )
+
+
+async def get_task_id_from_cache(
+    client: AuthClient, task_id_or_name: str, version: Optional[str] = None
+):
+    if str(task_id_or_name).isdigit():
+        _id = int(task_id_or_name)
+        if version:
+            raise Exception("---")  # FIXME
+        return _id
+    else:
+        # Set paths
+        cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+        cache_file = cache_dir / TASKS_CACHE_FILENAME
+        # If cache is missing, create it
+        if not cache_file.exists():
+            task_list = await refresh_task_cache(client)
+
+        task_id = _search_in_task_list(
+            client=client,
+            task_list=task_list,
+            name=task_id_or_name,
+            version=version,
+            allow_cache_refresh=True,
+        )
+        return task_id
