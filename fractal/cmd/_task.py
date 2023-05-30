@@ -132,6 +132,7 @@ async def patch_task(
     client: AuthClient,
     *,
     task_id_or_name: str,
+    version: Optional[str] = None,
     new_name: Optional[str] = None,
     new_command: Optional[str] = None,
     new_input_type: Optional[str] = None,
