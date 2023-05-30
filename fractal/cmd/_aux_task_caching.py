@@ -151,11 +151,11 @@ async def get_task_id_from_cache(
         if not cache_file.exists():
             task_list = await refresh_task_cache(client)
 
-        task_id = _search_in_task_list(
+        task_id = await _search_in_task_list(
             client=client,
             task_list=task_list,
             name=task_id_or_name,
             version=version,
-            allow_cache_refresh=True,
+            allow_cache_refresh=False,
         )
         return task_id
