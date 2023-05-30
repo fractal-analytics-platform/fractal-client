@@ -147,7 +147,6 @@ async def patch_workflowtask(
     workflow_task_id: int,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-    **kwargs,
 ) -> RichJsonInterface:
 
     # Check that at least one of args_file or meta_file was given (note: it
