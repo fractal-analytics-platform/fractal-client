@@ -10,6 +10,10 @@ from ..response import check_response
 TASKS_CACHE_FILENAME = "tasks"
 
 
+class FractalCacheError(RuntimeError):
+    pass
+
+
 # Define a useful type
 _TaskList = list[dict[str, Any]]
 
@@ -83,54 +87,72 @@ def _get_matching_tasks(
     return [_task for _task in task_list if _condition(_task)]
 
 
-async def _search_in_task_list(
+def _get_task_id_by_version(task_list, version: str):
+    version_tasks = []
+    for task in task_list:
+        if task["version"] == version:
+            version_tasks.append(task)
+    if len(version_tasks) == 0:
+        raise FractalCacheError(
+            f"No task with version {version} in this list\n" f"{task_list}"
+        )
+    if len(version_tasks) == 1:
+        return version_tasks[0]["id"]
+    else:
+        raise FractalCacheError(
+            f"Multiple tasks with version {version} in this list\n"
+            f"{task_list}"
+        )
+
+
+def _search_in_task_list(
     *,
     client: AuthClient,
     task_list,
     name: str,
     version: Optional[str] = None,
-    allow_cache_refresh: bool = True,
 ) -> int:
 
-    task_list = _get_matching_tasks(task_list, name=name, version=version)
+    matching_task_list = _get_matching_tasks(
+        task_list, name=name, version=version
+    )
 
-    if len(task_list) == 0:
-        if allow_cache_refresh:
-            task_list = await refresh_task_cache(client)
-            return await _search_in_task_list(
-                client=client,
-                task_list=task_list,
-                name=name,
-                version=version,
-                allow_cache_refresh=False,
-            )
-        else:
-            raise ValueError(
-                f"There is no task with (name, version)=({name},{version}) "
-                "in the cache"
-            )
-    elif len(task_list) == 1:
-        return task_list[0]["id"]
-    else:
+    if len(matching_task_list) == 0:
+        raise FractalCacheError(
+            f"There is no task with (name, version)=({name},{version}) "
+            "in the cache"
+        )
+    elif len(matching_task_list) == 1:
+        return matching_task_list[0]["id"]
+    else:  # len(matching_task_list) > 1
         if version is None:
+            if any(task["version"] is None for task in matching_task_list):
+                raise FractalCacheError(
+                    "Cannot determine max version among this list\n"
+                    f"{matching_task_list}"
+                )
+            max_version = max(matching_task_list, key=lambda x: x["version"])[
+                "version"
+            ]
+            max_version_tasks = []
             for task in task_list:
-                if task["version"] is None:
-                    raise ValueError(
-                        "Cannot determine max version among this list\n"
-                        f"{task_list}"
-                    )
-            max_version = max(task_list, key=lambda x: x["version"])["version"]
-            return await _search_in_task_list(
-                client=client,
-                task_list=task_list,
-                name=name,
-                version=max_version,
-                allow_cache_refresh=False,
-            )
+                if task["version"] == max_version:
+                    max_version_tasks.append(task)
+            if len(max_version_tasks) == 0:
+                raise FractalCacheError(
+                    f"No task with version {version} in this list\n"
+                    f"{max_version_tasks}"
+                )
+            if len(max_version_tasks) == 1:
+                return max_version_tasks[0]["id"]
+            else:
+                raise FractalCacheError(
+                    f"Multiple tasks with version {version} in this list\n"
+                    f"{max_version_tasks}"
+                )
         else:
-            raise ValueError(
-                "Cannot find a unique task with "
-                f"name={name}, version={version} among this list\n"
+            raise FractalCacheError(
+                f"Multiple tasks with version {version} in this list\n"
                 f"{task_list}"
             )
 
@@ -138,7 +160,7 @@ async def _search_in_task_list(
 async def get_task_id_from_cache(
     client: AuthClient, task_id_or_name: str, version: Optional[str] = None
 ):
-    if str(task_id_or_name).isdigit():
+    if task_id_or_name.isdigit():
         _id = int(task_id_or_name)
         if version:
             raise Exception("---")  # FIXME
@@ -150,12 +172,19 @@ async def get_task_id_from_cache(
         # If cache is missing, create it
         if not cache_file.exists():
             task_list = await refresh_task_cache(client)
-
-        task_id = await _search_in_task_list(
-            client=client,
-            task_list=task_list,
-            name=task_id_or_name,
-            version=version,
-            allow_cache_refresh=False,
-        )
+        try:
+            task_id = _search_in_task_list(
+                client=client,
+                task_list=task_list,
+                name=task_id_or_name,
+                version=version,
+            )
+        except FractalCacheError:
+            task_list = await refresh_task_cache(client)
+            task_id = _search_in_task_list(
+                client=client,
+                task_list=task_list,
+                name=task_id_or_name,
+                version=version,
+            )
         return task_id

@@ -1,7 +1,7 @@
 import pytest
 from devtools import debug
 
-from fractal.cmd._aux_task_caching import _get_task_id
+from fractal.cmd._aux_task_caching import _get_matching_tasks
 
 
 TASK_LIST = [
@@ -20,15 +20,15 @@ NOTSET = "__THIS_VALUE_IS_NOT_SET__"
 RAISE = "__THIS_MUST_FAIL__"
 
 CASES = [
-    (NOTSET, NOTSET, NOTSET, 1, 1),
-    (NOTSET, NOTSET, "User1", NOTSET, 7),
-    (NOTSET, NOTSET, NOTSET, 999, RAISE),
+    (NOTSET, NOTSET, 1, 1),
+    (NOTSET, NOTSET, NOTSET, 7),
+    (NOTSET, NOTSET, 999, RAISE),
     # FIXME: add more cases
 ]
 
 
-def test_get_task_id():
-    for (name, version, owner, _id, expected_id) in CASES:
+def test_get_task_id(clear_task_cache):
+    for (name, version, _id, expected_id) in CASES:
         kwargs = {}
         if name != NOTSET:
             kwargs["name"] = name
@@ -36,12 +36,10 @@ def test_get_task_id():
             kwargs["version"] = version
         if _id != NOTSET:
             kwargs["_id"] = _id
-        if owner != NOTSET:
-            kwargs["owner"] = owner
         debug(kwargs)
 
         if expected_id == RAISE:
             with pytest.raises(ValueError):
-                _get_task_id(TASK_LIST, **kwargs)
+                _get_matching_tasks(TASK_LIST, **kwargs)
         else:
-            assert _get_task_id(TASK_LIST, **kwargs) == expected_id
+            assert _get_matching_tasks(TASK_LIST, **kwargs) == expected_id
