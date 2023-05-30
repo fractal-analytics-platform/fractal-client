@@ -19,7 +19,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from ._aux_task_caching import get_cached_task_by_name
+from ._aux_task_caching import get_task_id_from_cache
 
 
 async def post_workflow(
@@ -104,10 +104,9 @@ async def post_workflowtask(
     meta_file: Optional[str] = None,
 ) -> RichJsonInterface:
 
-    try:
-        task_id = int(task_id_or_name)
-    except ValueError:
-        task_id = await get_cached_task_by_name(task_id_or_name, client)
+    task_id = await get_task_id_from_cache(
+        client=client, task_id_or_name=task_id_or_name, version=version
+    )
 
     if order is None:
         workflow_task = WorkflowTaskCreate()

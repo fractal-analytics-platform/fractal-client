@@ -12,7 +12,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from ._aux_task_caching import get_cached_task_by_name
+from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
 
 
@@ -164,12 +164,9 @@ async def patch_task(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    try:
-        task_id = int(task_id_or_name)
-    except ValueError:
-        task_id = await get_cached_task_by_name(
-            name=task_id_or_name, client=client
-        )
+    task_id = await get_task_id_from_cache(
+        client=client, task_id_or_name=task_id_or_name, version=version
+    )
 
     res = await client.patch(
         f"{settings.BASE_URL}/task/{task_id}", json=payload
