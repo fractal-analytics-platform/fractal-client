@@ -6,6 +6,7 @@
 * Add `fractal job stop` command (\#485).
 * Specific changes to existing commands:
     * Make `project_id` a required positional argument of `fractal {workflow,dataset,job}` commands (\#479).
+    * For `edit` commands, always prepend the new arguments with `new`, e.g. as in `task edit ... --new-version` (\#498).
     * Add `--type` optional argument to `fractal dataset new` command (\#479).
     * For `fractal workflow apply`:
         * Ttransform `project_id` from option to positional argument (\#479).

@@ -101,7 +101,6 @@ async def post_workflowtask(
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-    **kwargs,
 ) -> RichJsonInterface:
 
     try:
@@ -148,7 +147,6 @@ async def patch_workflowtask(
     workflow_task_id: int,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-    **kwargs,
 ) -> RichJsonInterface:
 
     # Check that at least one of args_file or meta_file was given (note: it
@@ -207,12 +205,11 @@ async def patch_workflow(
     *,
     project_id: int,
     workflow_id: int,
-    **workflow_update_dict,
+    new_name: str,
 ) -> BaseInterface:
-    workflow_update = WorkflowUpdate(**workflow_update_dict)
+
+    workflow_update = WorkflowUpdate(name=new_name)
     payload = workflow_update.dict(exclude_unset=True)
-    if not payload:
-        return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}",

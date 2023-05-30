@@ -118,8 +118,13 @@ async def dataset(
 
 
 async def task(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+    client: AuthClient,
+    subcmd: str,
+    batch: bool = False,
+    verbose: bool = False,
+    **kwargs,
 ) -> BaseInterface:
+
     if subcmd == "list":
         iface = await get_task_list(client)
     elif subcmd == "collect":
@@ -138,7 +143,11 @@ async def task(
 
 
 async def workflow(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+    client: AuthClient,
+    subcmd: str,
+    batch: bool = False,
+    verbose: bool = False,
+    **kwargs,
 ) -> BaseInterface:
     if subcmd == "show":
         iface = await get_workflow(client, **kwargs)
