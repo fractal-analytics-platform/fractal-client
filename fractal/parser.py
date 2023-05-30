@@ -394,14 +394,17 @@ task_edit_parser.add_argument(
     "--default-args-file",
     type=str,
     help=(
-        "Path to JSON serialised file containing "
-        "the task default arguments dictionary"
+        "Path to JSON serialised file containing updates to the current"
+        "`default_args` dictionary"
     ),
 )
 task_edit_parser.add_argument(
     "--meta-file",
     type=str,
-    help="Path to JSON serialised file containing the task meta dictionary",
+    help=(
+        "Path to JSON serialised file containing updates to the current "
+        "`meta` dictionary"
+    ),
 )
 task_edit_parser.add_argument(
     "--new-version",
@@ -473,7 +476,10 @@ workflow_edit_parser = workflow_subparsers.add_parser(
 workflow_edit_parser.add_argument("project_id", type=int, help="Project ID")
 workflow_edit_parser.add_argument("workflow_id", type=int, help="Workflow ID")
 workflow_edit_parser.add_argument(
-    "new_name", type=str, help="New workflow name"
+    "--new-name",
+    type=str,
+    help="New workflow name",
+    required=True,
 )
 
 # workflow delete

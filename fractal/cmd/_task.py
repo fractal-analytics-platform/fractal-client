@@ -139,7 +139,6 @@ async def patch_task(
     new_version: Optional[str] = None,
     default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-    **kwargs,
 ) -> BaseInterface:
     update = {}
     if new_name:

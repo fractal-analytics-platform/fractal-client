@@ -101,7 +101,6 @@ async def post_workflowtask(
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-    **kwargs,
 ) -> RichJsonInterface:
 
     try:
@@ -148,7 +147,6 @@ async def patch_workflowtask(
     workflow_task_id: int,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-    **kwargs,
 ) -> RichJsonInterface:
 
     # Check that at least one of args_file or meta_file was given (note: it
@@ -208,7 +206,6 @@ async def patch_workflow(
     project_id: int,
     workflow_id: int,
     new_name: str,
-    **kwargs,
 ) -> BaseInterface:
 
     workflow_update = WorkflowUpdate(name=new_name)
