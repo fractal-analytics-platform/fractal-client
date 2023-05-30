@@ -101,7 +101,6 @@ async def post_workflowtask(
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-    **kwargs,
 ) -> RichJsonInterface:
 
     try:
