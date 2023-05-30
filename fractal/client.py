@@ -87,7 +87,11 @@ async def handle(cli_args: List[str] = argv):
         exit(1)
 
     try:
-        kwargs = vars(args)
+        # Make a copy of vars(args), and remove cmd (which is not a relevant
+        # argument for functions called with **kwargs)
+        kwargs = vars(args).copy()
+        kwargs.pop("cmd")
+
         if args.cmd == "version":
             async with AsyncClient() as client:
                 interface = await handler(client, **kwargs)
