@@ -394,14 +394,17 @@ task_edit_parser.add_argument(
     "--default-args-file",
     type=str,
     help=(
-        "Path to JSON serialised file containing "
-        "the task default arguments dictionary"
+        "Path to JSON serialised file containing updates to the current"
+        "`default_args` dictionary"
     ),
 )
 task_edit_parser.add_argument(
     "--meta-file",
     type=str,
-    help="Path to JSON serialised file containing the task meta dictionary",
+    help=(
+        "Path to JSON serialised file containing updates to the current "
+        "`meta` dictionary"
+    ),
 )
 task_edit_parser.add_argument(
     "--new-version",
