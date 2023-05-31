@@ -3,6 +3,7 @@ import logging
 from os import environ
 from typing import Optional
 
+import httpx
 import pytest
 
 
@@ -55,14 +56,16 @@ async def testserver(override_server_settings):
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
-    # Running testserver in a separate process
+    # Run testserver in a separate process
     # cf. https://stackoverflow.com/a/57816608/283972
+
+    PORT = 10080
 
     def run_server():
         asyncio.run(
             uvicorn.run(
                 "fractal_server.main:app",
-                port=10080,
+                port=PORT,
                 log_level="debug",
                 timeout_keep_alive=10,
             )
@@ -71,7 +74,24 @@ async def testserver(override_server_settings):
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
 
-    time.sleep(2)  # NOTE required to let the server comes up
+    # Wait until the server is up
+    TIMEOUT = 8
+    time_used = 0
+    while True:
+        try:
+            res = httpx.get(f"http://localhost:{PORT}/api/alive/")
+            assert res.status_code == 200
+            break
+        except httpx.ConnectError:
+            logger.debug("Fractal server not ready, wait one more second.")
+            time.sleep(1)
+            time_used += 1
+            if time_used > TIMEOUT:
+                raise RuntimeError(
+                    f"Could not start up server within {TIMEOUT} seconds,"
+                    " in `testserver` fixture."
+                )
+
     logger.debug(environ["FRACTAL_SERVER"])
     yield environ["FRACTAL_SERVER"]
     proc.kill()
