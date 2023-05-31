@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -141,6 +142,17 @@ async def patch_task(
     default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
 ) -> BaseInterface:
+
+    try:
+        task_id = int(task_id_or_name)
+        if version:
+            logging.warning("Task Version is ignored because Task ID provided")
+    except ValueError:
+        task_name = task_id_or_name
+        task_id = await get_task_id_from_cache(
+            client=client, task_name=task_name, version=version
+        )
+
     update = {}
     if new_name:
         update["name"] = new_name
@@ -163,10 +175,6 @@ async def patch_task(
     payload = task_update.dict(exclude_unset=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
-
-    task_id = await get_task_id_from_cache(
-        client=client, task_id_or_name=task_id_or_name, version=version
-    )
 
     res = await client.patch(
         f"{settings.BASE_URL}/task/{task_id}", json=payload
