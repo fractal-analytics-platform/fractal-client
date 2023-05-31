@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient
 
-from fractal.cmd._aux_task_caching import TASKS_CACHE_FILENAME
+TASKS_CACHE_FILENAME = "tasks"
 
 
 environ["FRACTAL_USER"] = "test@fake-exact-lab.it"

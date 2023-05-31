@@ -107,7 +107,6 @@ def _get_task_id_by_version(task_list, version: str):
 
 def _search_in_task_list(
     *,
-    client: AuthClient,
     task_list,
     name: str,
     version: Optional[str] = None,
@@ -160,6 +159,8 @@ def _search_in_task_list(
 async def get_task_id_from_cache(
     client: AuthClient, task_id_or_name: str, version: Optional[str] = None
 ):
+    """"""
+
     if task_id_or_name.isdigit():
         _id = int(task_id_or_name)
         if version:
@@ -174,7 +175,6 @@ async def get_task_id_from_cache(
             task_list = await refresh_task_cache(client)
         try:
             task_id = _search_in_task_list(
-                client=client,
                 task_list=task_list,
                 name=task_id_or_name,
                 version=version,
@@ -182,7 +182,6 @@ async def get_task_id_from_cache(
         except FractalCacheError:
             task_list = await refresh_task_cache(client)
             task_id = _search_in_task_list(
-                client=client,
                 task_list=task_list,
                 name=task_id_or_name,
                 version=version,
