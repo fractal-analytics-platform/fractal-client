@@ -56,10 +56,10 @@ async def testserver(override_server_settings):
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
-    PORT = 10080
-
-    # Running testserver in a separate process
+    # Run testserver in a separate process
     # cf. https://stackoverflow.com/a/57816608/283972
+
+    PORT = 10080
 
     def run_server():
         asyncio.run(
@@ -74,20 +74,23 @@ async def testserver(override_server_settings):
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
 
-    time_left = 7
-    success = False
-    while time_left > 0:
+    # Wait until the server is up
+    TIMEOUT = 8
+    time_used = 0
+    while True:
         try:
             res = httpx.get(f"http://localhost:{PORT}/api/alive/")
             assert res.status_code == 200
-            success = True
             break
         except httpx.ConnectError:
-            logger.debug("Server not ready. Wait one more second.")
+            logger.debug("Fractal server not ready, wait one more second.")
             time.sleep(1)
-            time_left -= 1
-    if not success:
-        raise RuntimeError("Test server fixture failed.")
+            time_used += 1
+            if time_used > TIMEOUT:
+                raise RuntimeError(
+                    f"Could not start up server within {TIMEOUT} seconds,"
+                    " in `testserver` fixture."
+                )
 
     logger.debug(environ["FRACTAL_SERVER"])
     yield environ["FRACTAL_SERVER"]
