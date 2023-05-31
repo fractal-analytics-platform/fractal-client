@@ -79,30 +79,12 @@ def _get_matching_tasks(
     """
 
     def _condition(_task):
-        if _task["name"] != name:
+        if _task["name"] == name:
             if (not version) or (_task["version"] == version):
                 return True
             return False
 
     return [_task for _task in task_list if _condition(_task)]
-
-
-def _get_task_id_by_version(task_list, version: str):
-    version_tasks = []
-    for task in task_list:
-        if task["version"] == version:
-            version_tasks.append(task)
-    if len(version_tasks) == 0:
-        raise FractalCacheError(
-            f"No task with version {version} in this list\n" f"{task_list}"
-        )
-    if len(version_tasks) == 1:
-        return version_tasks[0]["id"]
-    else:
-        raise FractalCacheError(
-            f"Multiple tasks with version {version} in this list\n"
-            f"{task_list}"
-        )
 
 
 def _search_in_task_list(
@@ -161,10 +143,10 @@ async def get_task_id_from_cache(
 ):
     """"""
 
-    if task_id_or_name.isdigit():
+    if task_id_or_name.isdigit():  # ? WHY do we have to ask for this?
         _id = int(task_id_or_name)
         if version:
-            raise Exception("---")  # FIXME
+            raise FractalCacheError("---1")  # FIXME
         return _id
     else:
         # Set paths
@@ -173,6 +155,9 @@ async def get_task_id_from_cache(
         # If cache is missing, create it
         if not cache_file.exists():
             task_list = await refresh_task_cache(client)
+        else:
+            with cache_file.open("r") as f:
+                task_list = json.load(f)
         try:
             task_id = _search_in_task_list(
                 task_list=task_list,

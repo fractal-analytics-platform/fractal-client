@@ -2,7 +2,8 @@ import pytest
 from devtools import debug
 
 from fractal.cmd._aux_task_caching import _get_matching_tasks
-
+from fractal.cmd._aux_task_caching import FractalCacheError
+from fractal.cmd._aux_task_caching import get_task_id_from_cache
 
 TASK_LIST = [
     # Common tasks (with owner=None)
@@ -43,3 +44,37 @@ def test_get_task_id(clear_task_cache):
                 _get_matching_tasks(TASK_LIST, **kwargs)
         else:
             assert _get_matching_tasks(TASK_LIST, **kwargs) == expected_id
+
+
+async def test_yuri(
+    clear_task_cache,
+    register_user,
+    client_superuser,
+    invoke,
+):
+    await invoke("task new name1 command source1")
+
+    await invoke("task new name2 command source2")
+    await invoke("task new name2 command source4 --version 2")
+
+    with pytest.raises(FractalCacheError) as e:
+        await get_task_id_from_cache(
+            client_superuser, task_id_or_name="123456", version=3
+        )
+    assert "---1" in e.value.args[0]
+
+    with pytest.raises(FractalCacheError) as e:
+        await get_task_id_from_cache(
+            client_superuser, task_id_or_name="unknown name"
+        )
+    assert "There is no task with" in e.value.args[0]
+
+    _id = await get_task_id_from_cache(
+        client_superuser, task_id_or_name="name1"
+    )
+    assert _id == 1
+
+    _id = await get_task_id_from_cache(
+        client_superuser, task_id_or_name="name2"
+    )
+    assert _id == 1
