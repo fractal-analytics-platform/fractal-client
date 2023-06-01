@@ -163,6 +163,7 @@ async def test_task_new(register_user, invoke):
 
 
 async def test_task_edit(
+    caplog,
     register_user,
     invoke,
     invoke_as_superuser,
@@ -185,6 +186,15 @@ async def test_task_edit(
     res = await invoke_as_superuser(f"task edit {task_id} --new-command {NEW}")
     assert res.data["command"] == NEW
     assert res.retcode == 0
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --version 1.2.3.4.5.6"
+    )
+    assert caplog.records[-1].msg == (
+        "Task Version is ignored because Task ID provided"
+    )
+    assert res.retcode == 1
+    assert res.data == "Nothing to update"
+
     res = await invoke_as_superuser(
         f"task edit {task_id} --new-input-type {NEW}"
     )
