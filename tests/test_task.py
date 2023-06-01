@@ -290,7 +290,8 @@ async def test_task_list(register_user, invoke, testdata_path):
             "input_type",
             "output_type",
         ]:
-            task.pop(key)
+            if key in task:
+                task.pop(key)
     debug(task_list)
 
     # Check that tasks are sorted as expected

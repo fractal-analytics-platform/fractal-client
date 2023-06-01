@@ -96,17 +96,20 @@ async def post_workflowtask(
     *,
     project_id: int,
     workflow_id: int,
-    batch: bool = False,
     task_id_or_name: str,
+    batch: bool = False,
     version: Optional[str] = None,
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
 ) -> RichJsonInterface:
 
-    task_id = await get_task_id_from_cache(
-        client=client, task_id_or_name=task_id_or_name, version=version
-    )
+    try:
+        task_id = int(task_id_or_name)
+    except ValueError:
+        task_id = await get_task_id_from_cache(
+            client=client, task_name=task_id_or_name, version=version
+        )
 
     if order is None:
         workflow_task = WorkflowTaskCreate()

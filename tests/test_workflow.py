@@ -159,6 +159,7 @@ async def test_workflow_add_task(
     meta_file = tmp_path / "meta_file.json"
     with meta_file.open("w") as f:
         json.dump(META, f)
+
     cmd = (
         f"workflow add-task {project_id} {wf.id} {t.id} "
         f"--args-file {args_file} --meta-file {meta_file}"
@@ -166,6 +167,7 @@ async def test_workflow_add_task(
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
+
     workflow_task = res.data
     workflow_task_id_1 = workflow_task["id"]
     debug(workflow_task)
