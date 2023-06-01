@@ -200,9 +200,7 @@ async def test_task_edit(
     )
     assert res.data["input_type"] == NEW
     assert res.retcode == 0
-    res = await invoke_as_superuser(
-        f"task edit {task_id} --new-output-type {NEW}"
-    )
+    res = await invoke_as_superuser(f"task edit {NEW} --new-output-type {NEW}")
     assert res.data["output_type"] == NEW
     assert res.retcode == 0
     res = await invoke_as_superuser(f"task edit {task_id} --new-version {NEW}")
