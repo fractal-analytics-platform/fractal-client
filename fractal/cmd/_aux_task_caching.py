@@ -72,7 +72,10 @@ async def refresh_task_cache(client: AuthClient) -> list[dict[str, Any]]:
 
 
 def _get_matching_tasks(
-    task_list: list[dict], *, name: str, version: Optional[str] = None
+    task_list: list[dict[str, Any]],
+    *,
+    name: str,
+    version: Optional[str] = None,
 ):
     """
     Given a task list, extract all the tasks matching some conditions.
@@ -93,7 +96,13 @@ def _search_in_task_list(
     name: str,
     version: Optional[str] = None,
 ) -> int:
-
+    """
+    Searches for a single task in the `task_list` based on the provided `name`
+    and `version`.
+    If `version` is not provided, the maximum available version is used.
+    Returns the `id` of the single matching task, if found.
+    If the task is not found or is not unique, raises a `FractalCacheError`.
+    """
     matching_task_list = _get_matching_tasks(
         task_list, name=name, version=version
     )
@@ -134,7 +143,15 @@ def _search_in_task_list(
 
 async def get_task_id_from_cache(
     client: AuthClient, task_name: str, version: Optional[str] = None
-):
+) -> int:
+    """
+    Retrieves the `id` of a task from the cache based on the provided
+    `task_name` and `version`.
+    If `version` is not provided, the maximum available version is used.
+    Returns the `id` of the single matching task, if found.
+    If the task is not found or is not unique, raises a `FractalCacheError`.
+    """
+
     # Set paths
     cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
     cache_file = cache_dir / TASKS_CACHE_FILENAME
