@@ -186,6 +186,8 @@ async def test_task_edit(
     res = await invoke_as_superuser(f"task edit {task_id} --new-command {NEW}")
     assert res.data["command"] == NEW
     assert res.retcode == 0
+
+    # Test version ignored
     res = await invoke_as_superuser(
         f"task edit {task_id} --version 1.2.3.4.5.6"
     )
@@ -195,6 +197,7 @@ async def test_task_edit(
     assert res.retcode == 1
     assert res.data == "Nothing to update"
 
+    # Test regular updates (both by id and name)
     res = await invoke_as_superuser(
         f"task edit {task_id} --new-input-type {NEW}"
     )

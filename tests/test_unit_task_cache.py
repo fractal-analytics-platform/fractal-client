@@ -6,13 +6,15 @@ from fractal.cmd._aux_task_caching import FractalCacheError
 
 
 def test_get_matching_tasks(clear_task_cache):
+    """Test all possible cases for function `_get_matching_tasks`"""
 
     a = dict(name="bob", id=1, version="0.1.1")
     b = dict(name="bob", id=2, version="1.2.0")
     c = dict(name="bob", id=3, version="1.3.1")
     d = dict(name="bar", id=4, version="0.0.0")
+    e = dict(name="bar", id=5, version=None)
 
-    TASK_LIST = [a, b, c, d]
+    TASK_LIST = [a, b, c, d, e]
 
     res = _get_matching_tasks(TASK_LIST, name="alice")
     assert res == []
@@ -24,13 +26,14 @@ def test_get_matching_tasks(clear_task_cache):
     assert res == [b]
 
     res = _get_matching_tasks(TASK_LIST, name="bar")
-    assert res == [d]
+    assert res == [d, e]
 
     res = _get_matching_tasks(TASK_LIST, name="bar", version="3.1.4")
     assert res == []
 
 
 async def test_search_in_task_list(clear_task_cache):
+    """Test all possible cases for function `_search_in_task_list`"""
 
     TASK_LIST = [
         dict(name="dummy1", id=101, version="1.0.1"),
