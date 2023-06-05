@@ -4,6 +4,7 @@
 
 * Align with [fractal-server 1.3.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#130), by updating all relevant endpoint path/query/body parameters (\#479).
 * Add `fractal job stop` command (\#485).
+* Add task disambiguation to `task edit` and `workflow add-task` (\#499).
 * Specific changes to existing commands:
     * Make `project_id` a required positional argument of `fractal {workflow,dataset,job}` commands (\#479).
     * For `edit` commands, always prepend the new arguments with `new`, e.g. as in `task edit ... --new-version` (\#498).
