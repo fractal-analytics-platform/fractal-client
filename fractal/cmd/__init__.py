@@ -56,7 +56,6 @@ def get_kwargs(_parameters, _kwargs):
 async def project(
     client: AuthClient,
     subcmd: str,
-    verbose: bool = False,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
@@ -98,7 +97,6 @@ async def dataset(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
     if subcmd == "show":
@@ -138,7 +136,6 @@ async def task(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
 
@@ -169,7 +166,7 @@ async def task(
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_task(client, **function_kwargs)
+        iface = await post_task(client, batch=batch, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
             "task_id_or_name",
@@ -197,7 +194,6 @@ async def workflow(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
     if subcmd == "show":
@@ -273,7 +269,6 @@ async def job(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
     if subcmd == "list":
@@ -317,17 +312,41 @@ async def user(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "register":
-        iface = await user_register(client, batch=batch, **kwargs)
+        parameters = [
+            "new_email",
+            "new_password",
+            "cache_dir",
+            "slurm_user",
+            "username",
+            "superuser",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await user_register(client, batch=batch, **function_kwargs)
     elif subcmd == "list":
-        iface = await user_list(client, **kwargs)
+        iface = await user_list(client)
     elif subcmd == "show":
-        iface = await user_show(client, **kwargs)
+        parameters = ["user_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await user_show(client, **function_kwargs)
     elif subcmd == "edit":
-        iface = await user_edit(client, **kwargs)
+        parameters = [
+            "user_id",
+            "new_email",
+            "new_password",
+            "new_cache_dir",
+            "new_slurm_user",
+            "new_username",
+            "make_superuser",
+            "remove_superuser",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await user_edit(client, **function_kwargs)
     elif subcmd == "delete":
-        iface = await user_delete(client, **kwargs)
+        parameters = ["user_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await user_delete(client, **function_kwargs)
     elif subcmd == "whoami":
-        iface = await user_whoami(client, batch=batch, **kwargs)
+        iface = await user_whoami(client, batch=batch)
     else:
         raise NoCommandError(f"Command user {subcmd} not found")
 
