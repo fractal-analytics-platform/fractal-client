@@ -166,7 +166,7 @@ async def task(
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_task(client, **function_kwargs)
+        iface = await post_task(client, batch=batch, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
             "task_id_or_name",
