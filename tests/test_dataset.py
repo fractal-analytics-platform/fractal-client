@@ -179,6 +179,10 @@ async def test_delete_resource(register_user, invoke):
     assert res.data["dataset_id"] == dataset_id
     resource_id = res.data["id"]
 
+    # Show dataset
+    res = await invoke(f"dataset show {project_id} {dataset_id}")
+    res.show()
+
     # Remove a resource
     res = await invoke(
         f"dataset rm-resource {project_id} {dataset_id} {resource_id}"

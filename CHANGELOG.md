@@ -20,6 +20,7 @@
     * Require pydantic version to be `>=1.10.8` (\#486, \#490).
     * Make `sqlmodel` a development depedency (\#493).
     * Improve handling of a `ConnectError` in the CI (\#502).
+    * Remove arbitrary `kwargs` from internal functions (\#503).
 
 # 1.2.0
 

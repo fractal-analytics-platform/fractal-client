@@ -17,11 +17,11 @@ from ..response import check_response
 
 async def get_job(
     client: AuthClient,
+    *,
     project_id: int,
     job_id: int,
-    batch: bool = False,
     do_not_separate_logs: bool = False,
-    **kwargs,
+    batch: bool = False,
 ) -> BaseInterface:
     """
     Query the status of a workflow-execution job
@@ -48,10 +48,7 @@ async def get_job(
 
 
 async def get_job_list(
-    client: AuthClient,
-    project_id: int,
-    batch: bool = False,
-    **kwargs,
+    client: AuthClient, *, project_id: int, batch: bool = False
 ) -> BaseInterface:
 
     res = await client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
@@ -86,10 +83,10 @@ async def get_job_list(
 
 async def get_job_logs(
     client: AuthClient,
+    *,
     project_id: int,
     job_id: int,
     output_folder: str,
-    **kwargs,
 ) -> BaseInterface:
 
     # Check that output_folder does not already exist
@@ -153,10 +150,7 @@ async def get_job_logs(
 
 
 async def stop_job(
-    client: AuthClient,
-    project_id: int,
-    job_id: int,
-    **kwargs,
+    client: AuthClient, *, project_id: int, job_id: int
 ) -> BaseInterface:
     """
     Stop a workflow-execution job

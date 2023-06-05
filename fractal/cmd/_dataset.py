@@ -20,18 +20,24 @@ from ..response import check_response
 
 async def post_dataset(
     client: AuthClient,
+    *,
     project_id: int,
     dataset_name: str,
-    metadata_filename: Optional[str] = None,
+    metadata: Optional[str] = None,
     type: Optional[str] = None,
     batch: bool = False,
-    **kwargs,
 ) -> RichJsonInterface:
-
-    if metadata_filename is None:
+    """
+    Arguments:
+        project_id: ID of project to add the new dataset to
+        dataset_name: Name of new dataset
+        metadata: Path to file containing dataset metadata in JSON format.
+        type: Dataset type.
+    """
+    if metadata is None:
         meta = {}
     else:
-        with open(metadata_filename, "r") as f:
+        with open(metadata, "r") as f:
             meta = json.load(f)
 
     dataset_dict = dict(name=dataset_name, meta=meta)
@@ -55,11 +61,10 @@ async def post_dataset(
 async def post_resource(
     client: AuthClient,
     *,
-    batch: bool = False,
     project_id: int,
     dataset_id: int,
     path: str,
-    **kwargs,
+    batch: bool = False,
 ) -> BaseInterface:
 
     # Check that path is absolute, which is needed for when the server submits
@@ -92,7 +97,6 @@ async def delete_resource(
     project_id: int,
     dataset_id: int,
     resource_id: int,
-    **kwargs,
 ) -> BaseInterface:
     res = await client.delete(
         (
@@ -114,7 +118,6 @@ async def patch_dataset(
     meta_file: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
-    **kwargs,
 ) -> BaseInterface:
 
     # Prepare payload
@@ -148,7 +151,7 @@ async def patch_dataset(
 
 
 async def get_dataset(
-    client: AuthClient, *, project_id: int, dataset_id: int, **kwargs
+    client: AuthClient, *, project_id: int, dataset_id: int
 ) -> BaseInterface:
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}"
@@ -157,35 +160,32 @@ async def get_dataset(
 
     dataset = check_response(res, expected_status_code=200, coerce=DatasetRead)
 
-    if kwargs.get("json", False):
-        return RichJsonInterface(retcode=0, data=dataset.dict())
-    else:
-        table = Table(title="Dataset")
-        table.add_column("ID", style="cyan", no_wrap=True)
-        table.add_column("Name", justify="right", style="green")
-        table.add_column("Type", style="white")
-        table.add_column("Meta", justify="center")
-        table.add_column("Read only", justify="center")
+    table = Table(title="Dataset")
+    table.add_column("ID", style="cyan", no_wrap=True)
+    table.add_column("Name", justify="right", style="green")
+    table.add_column("Type", style="white")
+    table.add_column("Meta", justify="center")
+    table.add_column("Read only", justify="center")
 
-        table.add_row(
-            str(dataset.id),
-            dataset.name,
-            dataset.type,
-            json.dumps(dataset.meta, indent=2),
-            "✅" if dataset.read_only else "❌",
-        )
-        table_res = Table(title="Resources")
-        table_res.add_column("Path", justify="center", style="yellow")
-        table_res.add_column("ID", justify="center", style="yellow")
-        table_res.add_column("Dataset ID", justify="center", style="yellow")
-        for r in dataset.resource_list:
-            table_res.add_row(r.path, str(r.id), str(r.dataset_id))
-        group = Group(table, table_res)
-        return RichConsoleInterface(retcode=0, data=group)
+    table.add_row(
+        str(dataset.id),
+        dataset.name,
+        dataset.type,
+        json.dumps(dataset.meta, indent=2),
+        "✅" if dataset.read_only else "❌",
+    )
+    table_res = Table(title="Resources")
+    table_res.add_column("Path", justify="center", style="yellow")
+    table_res.add_column("ID", justify="center", style="yellow")
+    table_res.add_column("Dataset ID", justify="center", style="yellow")
+    for r in dataset.resource_list:
+        table_res.add_row(r.path, str(r.id), str(r.dataset_id))
+    group = Group(table, table_res)
+    return RichConsoleInterface(retcode=0, data=group)
 
 
 async def delete_dataset(
-    client: AuthClient, project_id: int, dataset_id: int, **kwargs
+    client: AuthClient, *, project_id: int, dataset_id: int
 ) -> PrintInterface:
 
     res = await client.delete(

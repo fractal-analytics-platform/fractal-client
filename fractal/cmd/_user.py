@@ -13,6 +13,7 @@ from ..response import check_response
 
 async def user_register(
     client: AuthClient,
+    *,
     new_email: str,
     new_password: Optional[str] = None,
     slurm_user: Optional[str] = None,
@@ -20,7 +21,6 @@ async def user_register(
     username: Optional[str] = None,
     superuser: bool = False,
     batch: bool = False,
-    **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
 
     user_dict = dict(
@@ -65,7 +65,7 @@ async def user_register(
         return RichJsonInterface(retcode=0, data=data.dict())
 
 
-async def user_list(client: AuthClient, **kwargs) -> RichJsonInterface:
+async def user_list(client: AuthClient) -> RichJsonInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/userlist")
     users = check_response(res, expected_status_code=200)
     users = [UserRead(**user).dict() for user in users]
@@ -75,9 +75,7 @@ async def user_list(client: AuthClient, **kwargs) -> RichJsonInterface:
     )
 
 
-async def user_show(
-    client: AuthClient, user_id: str, **kwargs
-) -> RichJsonInterface:
+async def user_show(client: AuthClient, *, user_id: str) -> RichJsonInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}")
     user = check_response(res, expected_status_code=200, coerce=UserRead)
     return RichJsonInterface(
@@ -88,6 +86,7 @@ async def user_show(
 
 async def user_edit(
     client: AuthClient,
+    *,
     user_id: str,
     new_email: Optional[str] = None,
     new_password: Optional[str] = None,
@@ -96,18 +95,20 @@ async def user_edit(
     new_username: Optional[str] = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
-    **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
+
     user_dict = dict(
         email=new_email,
         password=new_password,
     )
+
     if new_cache_dir is not None:
         user_dict["cache_dir"] = new_cache_dir
     if new_slurm_user is not None:
         user_dict["slurm_user"] = new_slurm_user
     if new_username is not None:
         user_dict["username"] = new_username
+
     user_update = UserUpdate(**user_dict)
 
     if make_superuser:
@@ -118,7 +119,6 @@ async def user_edit(
     payload = user_update.dict(exclude_unset=True, exclude_none=True)
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
-
     res = await client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}", json=payload
     )
@@ -130,9 +130,7 @@ async def user_edit(
     )
 
 
-async def user_delete(
-    client: AuthClient, user_id: str, **kwargs
-) -> PrintInterface:
+async def user_delete(client: AuthClient, *, user_id: str) -> PrintInterface:
 
     res = await client.delete(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}"
@@ -142,7 +140,7 @@ async def user_delete(
 
 
 async def user_whoami(
-    client: AuthClient, batch: bool, **kwargs
+    client: AuthClient, *, batch: bool
 ) -> Union[RichJsonInterface, PrintInterface]:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/whoami")
     user = check_response(res, expected_status_code=200, coerce=UserRead)

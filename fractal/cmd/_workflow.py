@@ -24,11 +24,7 @@ from ._aux_task_caching import get_task_id_from_cache
 
 
 async def post_workflow(
-    client: AuthClient,
-    name: str,
-    project_id: int,
-    batch: bool = False,
-    **kwargs,
+    client: AuthClient, *, name: str, project_id: int, batch: bool = False
 ) -> BaseInterface:
     workflow = WorkflowCreate(
         name=name,
@@ -48,10 +44,7 @@ async def post_workflow(
 
 
 async def get_workflow_list(
-    client: AuthClient,
-    project_id: int,
-    batch: bool = False,
-    **kwargs,
+    client: AuthClient, *, project_id: int, batch: bool = False
 ) -> RichJsonInterface:
 
     res = await client.get(
@@ -62,11 +55,7 @@ async def get_workflow_list(
 
 
 async def delete_workflow(
-    client: AuthClient,
-    *,
-    project_id: int,
-    workflow_id: int,
-    **kwargs,
+    client: AuthClient, *, project_id: int, workflow_id: int
 ) -> BaseInterface:
     res = await client.delete(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}"
@@ -76,11 +65,7 @@ async def delete_workflow(
 
 
 async def get_workflow(
-    client: AuthClient,
-    *,
-    project_id: int,
-    workflow_id: int,
-    **kwargs,
+    client: AuthClient, *, project_id: int, workflow_id: int
 ) -> RichJsonInterface:
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}"
@@ -196,7 +181,6 @@ async def delete_workflowtask(
     project_id: int,
     workflow_id: int,
     workflow_task_id: int,
-    **kwargs,
 ) -> BaseInterface:
 
     res = await client.delete(
@@ -236,7 +220,6 @@ async def workflow_apply(
     input_dataset_id: int,
     output_dataset_id: int,
     worker_init: Optional[str] = None,
-    **kwargs,
 ) -> BaseInterface:
     apply_wf_create_dict = dict(
         workflow_id=workflow_id,
@@ -268,12 +251,7 @@ async def workflow_apply(
 
 
 async def workflow_import(
-    client: AuthClient,
-    *,
-    project_id: int,
-    json_file: str,
-    batch: bool = False,
-    **kwargs,
+    client: AuthClient, *, project_id: int, json_file: str, batch: bool = False
 ) -> BaseInterface:
     with Path(json_file).open("r") as f:
         workflow = json.load(f)
@@ -300,7 +278,6 @@ async def workflow_export(
     project_id: int,
     workflow_id: int,
     json_file: str,
-    **kwargs,
 ) -> BaseInterface:
     res = await client.get(
         (
