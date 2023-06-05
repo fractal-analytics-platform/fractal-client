@@ -227,10 +227,19 @@ async def test_task_edit(
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
 
+    # Test failed update by name, after deleting cache
+    cache_file.unlink(missing_ok=True)
+    NEW_TYPE = "something-here"
+    with pytest.raises(SystemExit):
+        res = await invoke_as_superuser(
+            f"task edit INVALID_NAME --new-output-type {NEW_TYPE}"
+        )
+
     # Test regular update by name, after creating an invalid cache
     with cache_file.open("w") as f:
         json.dump([], f)
     NEW_TYPE = "something-else"
+    debug(f"task edit {NAME} --new-output-type {NEW_TYPE}")
     res = await invoke_as_superuser(
         f"task edit {NAME} --new-output-type {NEW_TYPE}"
     )
