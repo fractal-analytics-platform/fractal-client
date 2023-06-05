@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -13,6 +14,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
 
@@ -149,9 +151,13 @@ async def patch_task(
             logging.warning("Task Version is ignored because Task ID provided")
     except ValueError:
         task_name = task_id_or_name
-        task_id = await get_task_id_from_cache(
-            client=client, task_name=task_name, version=version
-        )
+        try:
+            task_id = await get_task_id_from_cache(
+                client=client, task_name=task_name, version=version
+            )
+        except FractalCacheError as e:
+            print(e)
+            sys.exit(1)
 
     update = {}
     if new_name:

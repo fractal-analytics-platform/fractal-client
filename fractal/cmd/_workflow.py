@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -18,6 +19,7 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
+from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
 
 
@@ -105,9 +107,13 @@ async def post_workflowtask(
     try:
         task_id = int(task_id_or_name)
     except ValueError:
-        task_id = await get_task_id_from_cache(
-            client=client, task_name=task_id_or_name, version=version
-        )
+        try:
+            task_id = await get_task_id_from_cache(
+                client=client, task_name=task_id_or_name, version=version
+            )
+        except FractalCacheError as e:
+            print(e)
+            sys.exit(1)
 
     if order is None:
         workflow_task = WorkflowTaskCreate()
