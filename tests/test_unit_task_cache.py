@@ -61,7 +61,7 @@ async def test_search_in_task_list(clear_task_cache):
         )
     print(err.value.args[0])
     assert (
-        'There is no task with (name, version)=("dummy1",3.1.4)'
+        'There is no task with (name, version)=("dummy1", 3.1.4)'
         in err.value.args[0]
     )  # noqa
 

@@ -24,21 +24,11 @@ _TaskList = list[dict[str, Any]]
 
 async def _fetch_task_list(client: AuthClient) -> _TaskList:
     """
-    Fetch task list through an API request, and only select a few relevant
-    attributes of each task.
+    Fetch task list through an API request.
     """
     res = await client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
-    return [
-        dict(
-            id=task["id"],
-            name=task["name"],
-            version=task["version"],
-            owner=task["owner"],
-            source=task["source"],
-        )
-        for task in task_list
-    ]
+    return task_list
 
 
 def _sort_task_list(task_list: _TaskList) -> _TaskList:
@@ -99,20 +89,20 @@ def _get_matching_tasks(
 
 def _format_task_list(task_list: _TaskList) -> str:
     """
-    Helper function to print a formatted task list
+    Helper function to print a formatted task list with only a few task
+    attributes, to be used in error messages.
     """
-    header = "  ID, Name, Version, Owner, Source\n"
-    formatted_task_list = (
-        header
-        + "\n".join(
-            [
-                f'  {task["id"]}, "{task["name"]}", {task["version"]}, {task.get("owner")}, {task["source"]}'  # noqa
-                for task in task_list
-            ]
-        )
-        + "\n"
+    header = "  ID, Name, Version, Owner, Source"
+    formatted_list = "\n".join(
+        [
+            (
+                f'  {task["id"]}, "{task["name"]}", {task["version"]}, '
+                f'{task.get("owner")}, {task["source"]}'
+            )
+            for task in task_list
+        ]
     )
-    return formatted_task_list
+    return f"{header}\n{formatted_list}"
 
 
 def _search_in_task_list(
@@ -139,7 +129,7 @@ def _search_in_task_list(
         formatted_task_list = _format_task_list(task_list)
         if version is not None:
             raise FractalCacheError(
-                f'There is no task with (name, version)=("{name}",{version}) '
+                f'There is no task with (name, version)=("{name}", {version}) '
                 f"in the following task list:\n{formatted_task_list}\n"
             )
         else:
