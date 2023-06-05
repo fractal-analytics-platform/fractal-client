@@ -20,6 +20,7 @@ from ..response import check_response
 
 async def post_dataset(
     client: AuthClient,
+    *,
     project_id: int,
     dataset_name: str,
     metadata: Optional[str] = None,
@@ -188,7 +189,7 @@ async def get_dataset(
 
 
 async def delete_dataset(
-    client: AuthClient, project_id: int, dataset_id: int
+    client: AuthClient, *, project_id: int, dataset_id: int
 ) -> PrintInterface:
 
     res = await client.delete(

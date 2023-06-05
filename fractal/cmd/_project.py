@@ -17,6 +17,7 @@ from ..response import check_response
 
 async def post_project(
     client: AuthClient,
+    *,
     name: str,
     dataset: Optional[str] = None,
     batch: bool = False,
@@ -79,7 +80,7 @@ async def get_project_list(client: AuthClient) -> RichConsoleInterface:
 
 
 async def get_project(
-    client: AuthClient, project_id: int
+    client: AuthClient, *, project_id: int
 ) -> RichJsonInterface:
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}",
@@ -89,7 +90,7 @@ async def get_project(
 
 
 async def delete_project(
-    client: AuthClient, project_id: int
+    client: AuthClient, *, project_id: int
 ) -> PrintInterface:
 
     res = await client.delete(
@@ -101,6 +102,7 @@ async def delete_project(
 
 async def patch_project(
     client: AuthClient,
+    *,
     project_id: int,
     new_name: Optional[str] = None,
     make_read_only: bool = False,
