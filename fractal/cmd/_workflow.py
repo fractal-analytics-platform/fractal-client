@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 from typing import Optional
 
@@ -33,7 +32,6 @@ async def post_workflow(
         name=name,
         project_id=project_id,
     )
-    logging.info(workflow)
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/workflow/",
         json=workflow.dict(),
