@@ -201,27 +201,69 @@ async def workflow(
     **kwargs,
 ) -> BaseInterface:
     if subcmd == "show":
-        iface = await get_workflow(client, **kwargs)
+        parameters = ["project_id", "workflow_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_workflow(client, **function_kwargs)
     elif subcmd == "new":
-        iface = await post_workflow(client, batch=batch, **kwargs)
+        parameters = ["name", "project_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await post_workflow(client, batch=batch, **function_kwargs)
     elif subcmd == "list":
-        iface = await get_workflow_list(client, batch=batch, **kwargs)
+        parameters = ["project_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_workflow_list(client, batch=batch, **function_kwargs)
     elif subcmd == "edit":
-        iface = await patch_workflow(client, **kwargs)
+        parameters = ["project_id", "workflow_id", "new_name"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await patch_workflow(client, **function_kwargs)
     elif subcmd == "delete":
-        iface = await delete_workflow(client, **kwargs)
+        parameters = ["project_id", "workflow_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await delete_workflow(client, **function_kwargs)
     elif subcmd == "add-task":
-        iface = await post_workflowtask(client, batch=batch, **kwargs)
+        parameters = [
+            "project_id",
+            "workflow_id",
+            "task_id_or_name",
+            "version",
+            "order",
+            "args_file",
+            "meta_file",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await post_workflowtask(client, batch=batch, **function_kwargs)
     elif subcmd == "edit-task":
-        iface = await patch_workflowtask(client, **kwargs)
+        parameters = [
+            "project_id",
+            "workflow_id",
+            "workflow_task_id",
+            "args_file",
+            "meta_file",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await patch_workflowtask(client, **function_kwargs)
     elif subcmd == "rm-task":
-        iface = await delete_workflowtask(client, **kwargs)
+        parameters = ["project_id", "workflow_id", "workflow_task_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await delete_workflowtask(client, **function_kwargs)
     elif subcmd == "apply":
-        iface = await workflow_apply(client, **kwargs)
+        parameters = [
+            "project_id",
+            "workflow_id",
+            "input_dataset_id",
+            "output_dataset_id",
+            "worker_init",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await workflow_apply(client, **function_kwargs)
     elif subcmd == "import":
-        iface = await workflow_import(client, batch=batch, **kwargs)
+        parameters = ["project_id", "json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await workflow_import(client, batch=batch, **function_kwargs)
     elif subcmd == "export":
-        iface = await workflow_export(client, **kwargs)
+        parameters = ["project_id", "workflow_id", "json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await workflow_export(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface
