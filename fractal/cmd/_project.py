@@ -20,7 +20,6 @@ async def post_project(
     name: str,
     dataset: Optional[str] = None,
     batch: bool = False,
-    **kwargs,
 ) -> BaseInterface:
     # Prepare a ProjectCreate request body
     project_dict = dict(name=name)
@@ -46,9 +45,7 @@ async def post_project(
         return RichJsonInterface(retcode=0, data=project.dict())
 
 
-async def get_project_list(
-    client: AuthClient, **kwargs
-) -> RichConsoleInterface:
+async def get_project_list(client: AuthClient) -> RichConsoleInterface:
 
     res = await client.get(f"{settings.BASE_URL}/project/")
     res = check_response(res, expected_status_code=200)
@@ -82,7 +79,7 @@ async def get_project_list(
 
 
 async def get_project(
-    client: AuthClient, project_id: int, **kwargs
+    client: AuthClient, project_id: int
 ) -> RichJsonInterface:
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}",
@@ -92,7 +89,7 @@ async def get_project(
 
 
 async def delete_project(
-    client: AuthClient, project_id: int, **kwargs
+    client: AuthClient, project_id: int
 ) -> PrintInterface:
 
     res = await client.delete(
@@ -108,7 +105,6 @@ async def patch_project(
     new_name: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
-    **kwargs,
 ) -> Union[RichJsonInterface, PrintInterface]:
     update = {}
     if new_name:

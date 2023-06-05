@@ -25,7 +25,6 @@ async def post_dataset(
     metadata_filename: Optional[str] = None,
     type: Optional[str] = None,
     batch: bool = False,
-    **kwargs,
 ) -> RichJsonInterface:
 
     if metadata_filename is None:
