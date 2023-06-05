@@ -5,6 +5,9 @@ from pathlib import Path
 import pytest
 from devtools import debug
 
+from fractal.cmd._aux_task_caching import TASKS_CACHE_FILENAME
+from fractal.config import settings
+
 
 COLLECTION_TIMEOUT = 15.0
 
@@ -180,8 +183,9 @@ async def test_task_edit(
         res = await invoke(f"task edit {task_id} --new-name {NEW}")
 
     # Test successful edit of string attributes
-    res = await invoke_as_superuser(f"task edit {task_id} --new-name {NEW}")
-    assert res.data["name"] == NEW
+    NAME = "new-name"
+    res = await invoke_as_superuser(f"task edit {task_id} --new-name {NAME}")
+    assert res.data["name"] == NAME
     assert res.retcode == 0
     res = await invoke_as_superuser(f"task edit {task_id} --new-command {NEW}")
     assert res.data["command"] == NEW
@@ -203,11 +207,34 @@ async def test_task_edit(
     )
     assert res.data["input_type"] == NEW
     assert res.retcode == 0
-    res = await invoke_as_superuser(f"task edit {NEW} --new-output-type {NEW}")
+    res = await invoke_as_superuser(
+        f"task edit {NAME} --new-output-type {NEW}"
+    )
     assert res.data["output_type"] == NEW
     assert res.retcode == 0
     res = await invoke_as_superuser(f"task edit {task_id} --new-version {NEW}")
     assert res.data["version"] == NEW
+    assert res.retcode == 0
+
+    # Test regular update by name, after deleting cache
+    cache_dir = Path(settings.FRACTAL_CACHE_PATH).expanduser()
+    cache_file = cache_dir / TASKS_CACHE_FILENAME
+    cache_file.unlink(missing_ok=True)
+    NEW_TYPE = "something"
+    res = await invoke_as_superuser(
+        f"task edit {NAME} --new-output-type {NEW_TYPE}"
+    )
+    assert res.data["output_type"] == NEW_TYPE
+    assert res.retcode == 0
+
+    # Test regular update by name, after creating an invalid cache
+    with cache_file.open("w") as f:
+        json.dump([], f)
+    NEW_TYPE = "something-else"
+    res = await invoke_as_superuser(
+        f"task edit {NAME} --new-output-type {NEW_TYPE}"
+    )
+    assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
 
     # Test `file not found` errors
