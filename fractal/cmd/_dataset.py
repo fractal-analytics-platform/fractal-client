@@ -22,15 +22,25 @@ async def post_dataset(
     client: AuthClient,
     project_id: int,
     dataset_name: str,
-    metadata_filename: Optional[str] = None,
+    metadata: Optional[str] = None,
     type: Optional[str] = None,
     batch: bool = False,
 ) -> RichJsonInterface:
-
-    if metadata_filename is None:
+    """
+    Args:
+        - project_id (int):
+            ID of project to add the new dataset to.
+        - dataset_name (str):
+            Name of new dataset.
+        - metadata (Optional[str]):
+            Path to file containing dataset metadata in JSON format.
+        - type (Optional[str]):
+            Dataset type.
+    """
+    if metadata is None:
         meta = {}
     else:
-        with open(metadata_filename, "r") as f:
+        with open(metadata, "r") as f:
             meta = json.load(f)
 
     dataset_dict = dict(name=dataset_name, meta=meta)

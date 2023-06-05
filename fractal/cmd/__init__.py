@@ -51,15 +51,8 @@ class NoCommandError(ValueError):
     pass
 
 
-class Kwargs(dict):
-    def exclude_none(self):
-        to_remove = []
-        for k, v in self.items():
-            if v is None:
-                to_remove.append(k)
-        for k in to_remove:
-            del self[k]
-        return self
+def get_kwargs(_parameters, _kwargs):
+    return {k: _kwargs.get(k) for k in _parameters if k in _kwargs}
 
 
 async def project(
@@ -71,46 +64,32 @@ async def project(
 ) -> BaseInterface:
 
     if subcmd == "new":
-        iface = await post_project(
-            client,
-            batch=batch,
-            **Kwargs(
-                name=kwargs.get("name"), dataset=kwargs.get("dataset")
-            ).exclude_none(),
-        )
+        parameters = ["name", "dataset"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await post_project(client, batch=batch, **function_kwargs)
     elif subcmd == "show":
-        iface = await get_project(
-            client,
-            **Kwargs(project_id=kwargs.get("project_id")).exclude_none(),
-        )
+        parameters = ["project_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_project(client, **function_kwargs)
     elif subcmd == "list":
         iface = await get_project_list(client)
     elif subcmd == "edit":
-        iface = await patch_project(
-            client,
-            **Kwargs(
-                project_id=kwargs.get("project_id"),
-                new_name=kwargs.get("new_name"),
-                make_read_only=kwargs.get("make_read_only"),
-                remove_read_only=kwargs.get("remove_read_only"),
-            ).exclude_none(),
-        )
+        parameters = [
+            "project_id",
+            "new_name",
+            "make_read_only",
+            "remove_read_only",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await patch_project(client, **function_kwargs)
     elif subcmd == "add-dataset":
-        iface = await post_dataset(
-            client,
-            batch=batch,
-            **Kwargs(
-                project_id=kwargs.get("project_id"),
-                dataset_name=kwargs.get("dataset_name"),
-                metadata_filename=kwargs.get("metadata"),
-                type=kwargs.get("type"),
-            ).exclude_none(),
-        )
+        parameters = ["project_id", "dataset_name", "metadata", "type"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await post_dataset(client, batch=batch, **function_kwargs)
     elif subcmd == "delete":
-        iface = await delete_project(
-            client,
-            **Kwargs(project_id=kwargs.get("project_id")).exclude_none(),
-        )
+        parameters = ["project_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await delete_project(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command project {subcmd} not found")
 
@@ -120,52 +99,38 @@ async def project(
 async def dataset(
     client: AuthClient,
     subcmd: str,
-    project_id: int,
-    dataset_id: int,
-    resource_id: Optional[int] = None,
-    path: Optional[str] = None,
-    new_name: Optional[str] = None,
-    new_type: Optional[str] = None,
-    meta_file: Optional[str] = None,
-    make_read_only: bool = False,
-    remove_read_only: bool = False,
-    verbose: bool = False,
     batch: bool = False,
+    verbose: bool = False,
+    **kwargs,
 ) -> BaseInterface:
     if subcmd == "show":
-        iface = await get_dataset(
-            client, project_id=project_id, dataset_id=dataset_id
-        )
+        parameters = ["project_id", "dataset_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_dataset(client, **function_kwargs)
     elif subcmd == "add-resource":
-        iface = await post_resource(
-            client,
-            project_id=project_id,
-            dataset_id=dataset_id,
-            path=path,
-            batch=batch,
-        )
+        parameters = ["project_id", "dataset_id", "path"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await post_resource(client, batch=batch, **function_kwargs)
     elif subcmd == "rm-resource":
-        iface = await delete_resource(
-            client,
-            project_id=project_id,
-            dataset_id=dataset_id,
-            resource_id=resource_id,
-        )
+        parameters = ["project_id", "dataset_id", "resource_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await delete_resource(client, **function_kwargs)
     elif subcmd == "edit":
-        iface = await patch_dataset(
-            client,
-            project_id=project_id,
-            dataset_id=dataset_id,
-            new_name=new_name,
-            new_type=new_type,
-            meta_file=meta_file,
-            make_read_only=make_read_only,
-            remove_read_only=remove_read_only,
-        )
+        parameters = [
+            "project_id",
+            "dataset_id",
+            "new_name",
+            "new_type",
+            "meta_file",
+            "make_read_only",
+            "remove_read_only",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await patch_dataset(client, **function_kwargs)
     elif subcmd == "delete":
-        iface = await delete_dataset(
-            client, project_id=project_id, dataset_id=dataset_id
-        )
+        parameters = ["project_id", "dataset_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await delete_dataset(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
