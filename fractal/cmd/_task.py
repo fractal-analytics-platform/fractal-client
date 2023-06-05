@@ -32,7 +32,6 @@ async def task_collect_pip(
     python_version: Optional[str] = None,
     package_extras: Optional[str] = None,
     batch: bool = False,
-    **kwargs,
 ) -> BaseInterface:
 
     # Construct TaskCollectPip object
@@ -97,13 +96,12 @@ async def post_task(
     name: str,
     command: str,
     source: str,
-    batch: bool = False,
     input_type: str = "Any",
     output_type: str = "Any",
     version: Optional[str] = None,
-    meta_file: Optional[str] = None,
     default_args_file: Optional[str] = None,
-    **kwargs,
+    meta_file: Optional[str] = None,
+    batch: bool = False,
 ) -> BaseInterface:
     optionals = {}
     if version:
@@ -190,7 +188,9 @@ async def patch_task(
 
 
 async def delete_task(
-    client: AuthClient, *, task_id: int = None, **kwargs
+    client: AuthClient,
+    *,
+    task_id: int = None,
 ) -> PrintInterface:
 
     raise NotImplementedError("task_delete")
