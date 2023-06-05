@@ -270,16 +270,28 @@ async def workflow(
 
 
 async def job(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+    client: AuthClient,
+    subcmd: str,
+    batch: bool = False,
+    verbose: bool = False,
+    **kwargs,
 ) -> BaseInterface:
     if subcmd == "list":
-        iface = await get_job_list(client, batch=batch, **kwargs)
+        parameters = ["project_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_job_list(client, batch=batch, **function_kwargs)
     elif subcmd == "show":
-        iface = await get_job(client, batch=batch, **kwargs)
+        parameters = ["project_id", "job_id", "do_not_separate_logs"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_job(client, batch=batch, **function_kwargs)
     elif subcmd == "download-logs":
-        iface = await get_job_logs(client, **kwargs)
+        parameters = ["project_id", "job_id", "output_folder"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_job_logs(client, **function_kwargs)
     elif subcmd == "stop":
-        iface = await stop_job(client, batch=batch, **kwargs)
+        parameters = ["project_id", "job_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await stop_job(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command job {subcmd} not found")
     return iface
