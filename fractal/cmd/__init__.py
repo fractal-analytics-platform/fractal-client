@@ -1,5 +1,3 @@
-from typing import Optional
-
 from httpx import AsyncClient
 
 from ..authclient import AuthClient
@@ -139,77 +137,57 @@ async def dataset(
 async def task(
     client: AuthClient,
     subcmd: str,
-    package: Optional[str] = None,
-    python_version: Optional[str] = None,
-    package_version: Optional[str] = None,
-    package_extras: Optional[str] = None,
-    state_id: Optional[str] = None,
-    name: Optional[str] = None,
-    command: Optional[str] = None,
-    source: Optional[str] = None,
-    input_type: Optional[str] = None,
-    output_type: Optional[str] = None,
-    version: Optional[str] = None,
-    default_args_file: Optional[str] = None,
-    meta_file: Optional[str] = None,
-    task_id_or_name: Optional[str] = None,
-    new_name: Optional[str] = None,
-    new_command: Optional[str] = None,
-    new_input_type: Optional[str] = None,
-    new_output_type: Optional[str] = None,
-    new_version: Optional[str] = None,
-    include_logs: bool = False,
-    do_not_separate_logs: bool = False,
     batch: bool = False,
     verbose: bool = False,
+    **kwargs,
 ) -> BaseInterface:
 
     if subcmd == "list":
         iface = await get_task_list(client)
     elif subcmd == "collect":
-        iface = await task_collect_pip(
-            client,
-            package=package,
-            package_version=package_version,
-            python_version=python_version,
-            package_extras=package_extras,
-            batch=batch,
-        )
+        parameters = [
+            "package",
+            "package_version",
+            "python_version",
+            "package_extras",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await task_collect_pip(client, batch=batch, **function_kwargs)
     elif subcmd == "check-collection":
-        iface = await task_collection_check(
-            client,
-            state_id=state_id,
-            include_logs=include_logs,
-            do_not_separate_logs=do_not_separate_logs,
-        )
+        parameters = ["state_id", "include_logs", "do_not_separate_logs"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await task_collection_check(client, **function_kwargs)
     elif subcmd == "new":
-        iface = await post_task(
-            client,
-            name=name,
-            command=command,
-            source=source,
-            input_type=input_type,
-            output_type=output_type,
-            version=version,
-            default_args_file=default_args_file,
-            meta_file=meta_file,
-            batch=batch,
-        )
+        parameters = [
+            "name",
+            "command",
+            "source",
+            "input_type",
+            "output_type",
+            "version",
+            "default_args_file",
+            "meta_file",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await post_task(client, **function_kwargs)
     elif subcmd == "edit":
-        iface = await patch_task(
-            client,
-            task_id_or_name=task_id_or_name,
-            version=version,
-            new_name=new_name,
-            new_command=new_command,
-            new_input_type=new_input_type,
-            new_output_type=new_output_type,
-            new_version=new_version,
-            default_args_file=default_args_file,
-            meta_file=meta_file,
-        )
+        parameters = [
+            "task_id_or_name",
+            "version",
+            "new_name",
+            "new_command",
+            "new_input_type",
+            "new_output_type",
+            "new_version",
+            "default_args_file",
+            "meta_file",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await patch_task(client, **function_kwargs)
     elif subcmd == "delete":
-        iface = await delete_task(client, task_id=task_id_or_name)
+        parameters = ["task_id_or_name"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await delete_task(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command task {subcmd} not found")
     return iface

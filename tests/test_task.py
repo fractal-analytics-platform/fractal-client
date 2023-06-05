@@ -152,7 +152,7 @@ async def test_task_new(register_user, invoke):
     res = await invoke("--batch task new _name2 _command2 _source2")
     res.show()
     assert res.retcode == 0
-    assert res.data == str(first_task_id + 1)
+    assert res.data["id"] == first_task_id + 1
 
     # create a new task with same source as before. Note that in check_response
     # we have sys.exit(1) when status code is not the expecte one

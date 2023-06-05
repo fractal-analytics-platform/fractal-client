@@ -190,7 +190,7 @@ async def patch_task(
 async def delete_task(
     client: AuthClient,
     *,
-    task_id: int = None,
+    task_id_or_name: str,
 ) -> PrintInterface:
 
     raise NotImplementedError("task_delete")
