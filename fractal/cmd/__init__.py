@@ -56,7 +56,6 @@ def get_kwargs(_parameters, _kwargs):
 async def project(
     client: AuthClient,
     subcmd: str,
-    verbose: bool = False,
     batch: bool = False,
     **kwargs,
 ) -> BaseInterface:
@@ -98,7 +97,6 @@ async def dataset(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
     if subcmd == "show":
@@ -138,7 +136,6 @@ async def task(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
 
@@ -197,7 +194,6 @@ async def workflow(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
     if subcmd == "show":
@@ -273,7 +269,6 @@ async def job(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> BaseInterface:
     if subcmd == "list":
