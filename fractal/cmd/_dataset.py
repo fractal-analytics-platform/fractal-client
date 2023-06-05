@@ -28,15 +28,11 @@ async def post_dataset(
     batch: bool = False,
 ) -> RichJsonInterface:
     """
-    Args:
-        - project_id (int):
-            ID of project to add the new dataset to.
-        - dataset_name (str):
-            Name of new dataset.
-        - metadata (Optional[str]):
-            Path to file containing dataset metadata in JSON format.
-        - type (Optional[str]):
-            Dataset type.
+    Arguments:
+        project_id: ID of project to add the new dataset to
+        dataset_name: Name of new dataset
+        metadata: Path to file containing dataset metadata in JSON format.
+        type: Dataset type.
     """
     if metadata is None:
         meta = {}
