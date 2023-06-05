@@ -159,6 +159,7 @@ async def test_workflow_add_task(
     meta_file = tmp_path / "meta_file.json"
     with meta_file.open("w") as f:
         json.dump(META, f)
+
     cmd = (
         f"workflow add-task {project_id} {wf.id} {t.id} "
         f"--args-file {args_file} --meta-file {meta_file}"
@@ -166,6 +167,7 @@ async def test_workflow_add_task(
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
+
     workflow_task = res.data
     workflow_task_id_1 = workflow_task["id"]
     debug(workflow_task)
@@ -201,7 +203,8 @@ async def test_workflow_add_task_by_name(
     """
     GIVEN a workflow and a task
     WHEN the client is invoked to add a task *by name*
-    THEN the WorkflowTask is correctly registered in the db
+    THEN the WorkflowTask is added (for a valid name) or an error is raised
+    (for invalid name)
     """
     res = await invoke("project new MyProject")
     project_id = res.data["id"]
@@ -215,6 +218,12 @@ async def test_workflow_add_task_by_name(
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task"]["id"] == task.id
+
+    # Fail when adding task via a wrong name
+    with pytest.raises(SystemExit):
+        cmd = f"workflow add-task {project_id} {wf.id} INVALID_NAME"
+        debug(cmd)
+        res = await invoke(cmd)
 
 
 @pytest.mark.skip(reason="Definition of expected behavior is ongoing")

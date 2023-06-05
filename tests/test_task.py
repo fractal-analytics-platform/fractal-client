@@ -5,6 +5,9 @@ from pathlib import Path
 import pytest
 from devtools import debug
 
+from fractal.cmd._aux_task_caching import TASKS_CACHE_FILENAME
+from fractal.config import settings
+
 
 COLLECTION_TIMEOUT = 15.0
 
@@ -163,6 +166,7 @@ async def test_task_new(register_user, invoke):
 
 
 async def test_task_edit(
+    caplog,
     register_user,
     invoke,
     invoke_as_superuser,
@@ -179,24 +183,67 @@ async def test_task_edit(
         res = await invoke(f"task edit {task_id} --new-name {NEW}")
 
     # Test successful edit of string attributes
-    res = await invoke_as_superuser(f"task edit {task_id} --new-name {NEW}")
-    assert res.data["name"] == NEW
+    NAME = "new-name"
+    res = await invoke_as_superuser(f"task edit {task_id} --new-name {NAME}")
+    assert res.data["name"] == NAME
     assert res.retcode == 0
     res = await invoke_as_superuser(f"task edit {task_id} --new-command {NEW}")
     assert res.data["command"] == NEW
     assert res.retcode == 0
+
+    # Test version ignored
+    res = await invoke_as_superuser(
+        f"task edit {task_id} --version 1.2.3.4.5.6"
+    )
+    assert caplog.records[-1].msg == (
+        "Task Version is ignored because Task ID provided"
+    )
+    assert res.retcode == 1
+    assert res.data == "Nothing to update"
+
+    # Test regular updates (both by id and name)
     res = await invoke_as_superuser(
         f"task edit {task_id} --new-input-type {NEW}"
     )
     assert res.data["input_type"] == NEW
     assert res.retcode == 0
     res = await invoke_as_superuser(
-        f"task edit {task_id} --new-output-type {NEW}"
+        f"task edit {NAME} --new-output-type {NEW}"
     )
     assert res.data["output_type"] == NEW
     assert res.retcode == 0
     res = await invoke_as_superuser(f"task edit {task_id} --new-version {NEW}")
     assert res.data["version"] == NEW
+    assert res.retcode == 0
+
+    # Test regular update by name, after deleting cache
+    cache_dir = Path(settings.FRACTAL_CACHE_PATH).expanduser()
+    cache_file = cache_dir / TASKS_CACHE_FILENAME
+    cache_file.unlink(missing_ok=True)
+    NEW_TYPE = "something"
+    res = await invoke_as_superuser(
+        f"task edit {NAME} --new-output-type {NEW_TYPE}"
+    )
+    assert res.data["output_type"] == NEW_TYPE
+    assert res.retcode == 0
+
+    # Test failed update by name, after deleting cache
+    cache_file.unlink(missing_ok=True)
+    NEW_TYPE = "something-here"
+    with pytest.raises(SystemExit):
+        res = await invoke_as_superuser(
+            f"task edit INVALID_NAME --new-output-type {NEW_TYPE}"
+        )
+
+    # Test regular update by name, after creating an invalid cache
+    with cache_file.open("w") as f:
+        json.dump([], f)
+    NEW_TYPE = "something-else"
+    debug(f"task edit {NAME} --new-output-type {NEW_TYPE}")
+    res = await invoke_as_superuser(
+        f"task edit {NAME} --new-output-type {NEW_TYPE}"
+    )
+    assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
 
     # Test `file not found` errors
@@ -290,7 +337,8 @@ async def test_task_list(register_user, invoke, testdata_path):
             "input_type",
             "output_type",
         ]:
-            task.pop(key)
+            if key in task:
+                task.pop(key)
     debug(task_list)
 
     # Check that tasks are sorted as expected

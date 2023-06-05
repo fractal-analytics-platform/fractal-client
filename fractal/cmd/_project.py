@@ -1,4 +1,3 @@
-import logging
 from typing import Optional
 from typing import Union
 
@@ -28,7 +27,6 @@ async def post_project(
     if dataset:
         project_dict["default_dataset_name"] = dataset
     project = ProjectCreate(**project_dict)
-    logging.info(project)
     # Send API request
     res = await client.post(
         f"{settings.BASE_URL}/project/",

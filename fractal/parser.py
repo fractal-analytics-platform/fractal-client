@@ -376,6 +376,9 @@ task_edit_parser = task_subparsers.add_parser(
 task_edit_parser.add_argument(
     "task_id_or_name", help="ID or name of task to edit", type=str
 )
+task_edit_parser.add_argument(
+    "--version", type=str, help="Version of the task to edit"
+)
 task_edit_parser.add_argument("--new-name", help="New task name", type=str)
 task_edit_parser.add_argument(
     "--new-command", help="New task command", type=str
@@ -510,6 +513,9 @@ workflow_add_task_parser.add_argument(
 )
 workflow_add_task_parser.add_argument(
     "task_id_or_name", help="ID or name of the new task", type=str
+)
+workflow_add_task_parser.add_argument(
+    "--version", type=str, help="Version of the new task"
 )
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list"

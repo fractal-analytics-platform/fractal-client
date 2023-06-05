@@ -1,5 +1,5 @@
 import json
-import logging
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -19,7 +19,8 @@ from ..interface import BaseInterface
 from ..interface import PrintInterface
 from ..interface import RichJsonInterface
 from ..response import check_response
-from ._aux_task_caching import get_cached_task_by_name
+from ._aux_task_caching import FractalCacheError
+from ._aux_task_caching import get_task_id_from_cache
 
 
 async def post_workflow(
@@ -33,7 +34,6 @@ async def post_workflow(
         name=name,
         project_id=project_id,
     )
-    logging.info(workflow)
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/workflow/",
         json=workflow.dict(),
@@ -96,8 +96,9 @@ async def post_workflowtask(
     *,
     project_id: int,
     workflow_id: int,
-    batch: bool = False,
     task_id_or_name: str,
+    batch: bool = False,
+    version: Optional[str] = None,
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
@@ -106,7 +107,13 @@ async def post_workflowtask(
     try:
         task_id = int(task_id_or_name)
     except ValueError:
-        task_id = await get_cached_task_by_name(task_id_or_name, client)
+        try:
+            task_id = await get_task_id_from_cache(
+                client=client, task_name=task_id_or_name, version=version
+            )
+        except FractalCacheError as e:
+            print(e)
+            sys.exit(1)
 
     if order is None:
         workflow_task = WorkflowTaskCreate()
