@@ -51,48 +51,66 @@ class NoCommandError(ValueError):
     pass
 
 
+class Kwargs(dict):
+    def exclude_none(self):
+        to_remove = []
+        for k, v in self.items():
+            if v is None:
+                to_remove.append(k)
+        for k in to_remove:
+            del self[k]
+        return self
+
+
 async def project(
     client: AuthClient,
     subcmd: str,
-    name: Optional[str] = None,
-    dataset: Optional[str] = None,
-    project_id: Optional[int] = None,
-    dataset_name: Optional[str] = None,
-    metadata: Optional[str] = None,
-    type: Optional[str] = None,
-    new_name: Optional[str] = None,
-    make_read_only: bool = False,
-    remove_read_only: bool = False,
     verbose: bool = False,
     batch: bool = False,
+    **kwargs,
 ) -> BaseInterface:
+
     if subcmd == "new":
         iface = await post_project(
-            client, name=name, dataset=dataset, batch=batch
+            client,
+            batch=batch,
+            **Kwargs(
+                name=kwargs.get("name"), dataset=kwargs.get("dataset")
+            ).exclude_none(),
         )
     elif subcmd == "show":
-        iface = await get_project(client, project_id=project_id)
+        iface = await get_project(
+            client,
+            **Kwargs(project_id=kwargs.get("project_id")).exclude_none(),
+        )
     elif subcmd == "list":
         iface = await get_project_list(client)
     elif subcmd == "edit":
         iface = await patch_project(
             client,
-            project_id=project_id,
-            new_name=new_name,
-            make_read_only=make_read_only,
-            remove_read_only=remove_read_only,
+            **Kwargs(
+                project_id=kwargs.get("project_id"),
+                new_name=kwargs.get("new_name"),
+                make_read_only=kwargs.get("make_read_only"),
+                remove_read_only=kwargs.get("remove_read_only"),
+            ).exclude_none(),
         )
     elif subcmd == "add-dataset":
         iface = await post_dataset(
             client,
-            project_id=project_id,
-            dataset_name=dataset_name,
-            metadata_filename=metadata,
-            type=type,
             batch=batch,
+            **Kwargs(
+                project_id=kwargs.get("project_id"),
+                dataset_name=kwargs.get("dataset_name"),
+                metadata_filename=kwargs.get("metadata"),
+                type=kwargs.get("type"),
+            ).exclude_none(),
         )
     elif subcmd == "delete":
-        iface = await delete_project(client, project_id=project_id)
+        iface = await delete_project(
+            client,
+            **Kwargs(project_id=kwargs.get("project_id")).exclude_none(),
+        )
     else:
         raise NoCommandError(f"Command project {subcmd} not found")
 
