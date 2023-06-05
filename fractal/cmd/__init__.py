@@ -100,39 +100,54 @@ async def project(
 
 
 async def dataset(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+    client: AuthClient,
+    subcmd: str,
+    project_id: int,
+    dataset_id: int,
+    resource_id: Optional[int] = None,
+    path: Optional[str] = None,
+    new_name: Optional[str] = None,
+    new_type: Optional[str] = None,
+    meta_file: Optional[str] = None,
+    make_read_only: bool = False,
+    remove_read_only: bool = False,
+    verbose: bool = False,
+    batch: bool = False,
 ) -> BaseInterface:
     if subcmd == "show":
-        iface = await get_dataset(client, **kwargs)
+        iface = await get_dataset(
+            client, project_id=project_id, dataset_id=dataset_id
+        )
     elif subcmd == "add-resource":
         iface = await post_resource(
             client,
+            project_id=project_id,
+            dataset_id=dataset_id,
+            path=path,
             batch=batch,
-            project_id=kwargs.pop("project_id"),
-            dataset_id=kwargs.pop("dataset_id"),
-            path=kwargs.pop("path"),
-            **kwargs,
         )
     elif subcmd == "rm-resource":
         iface = await delete_resource(
             client,
-            batch=batch,
-            project_id=kwargs.pop("project_id"),
-            dataset_id=kwargs.pop("dataset_id"),
-            resource_id=kwargs.pop("resource_id"),
-            **kwargs,
+            project_id=project_id,
+            dataset_id=dataset_id,
+            resource_id=resource_id,
         )
     elif subcmd == "edit":
-        project_id = int(kwargs.pop("project_id"))
-        dataset_id = int(kwargs.pop("dataset_id"))
         iface = await patch_dataset(
             client,
             project_id=project_id,
             dataset_id=dataset_id,
-            **kwargs,
+            new_name=new_name,
+            new_type=new_type,
+            meta_file=meta_file,
+            make_read_only=make_read_only,
+            remove_read_only=remove_read_only,
         )
     elif subcmd == "delete":
-        iface = await delete_dataset(client, **kwargs)
+        iface = await delete_dataset(
+            client, project_id=project_id, dataset_id=dataset_id
+        )
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
