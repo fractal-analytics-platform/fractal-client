@@ -166,7 +166,6 @@ async def test_task_new(register_user, invoke):
 
 
 async def test_task_edit(
-    caplog,
     register_user,
     invoke,
     invoke_as_superuser,
@@ -176,23 +175,24 @@ async def test_task_edit(
     task.show()
     assert task.retcode == 0
     task_id = task.data["id"]
-    NEW = "new"
+    NEW_NAME = "1234"
 
     # Test that regular user is not authorized
     with pytest.raises(SystemExit):
-        res = await invoke(f"task edit {task_id} --new-name {NEW}")
+        res = await invoke(f"task edit {task_id} --new-name {NEW_NAME}")
 
     # Test successful edit of string attributes
-    NAME = "new-name"
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-name {NAME}"
+        f"task edit --task-id {task_id} --new-name {NEW_NAME}"
     )
-    assert res.data["name"] == NAME
+    assert res.data["name"] == NEW_NAME
     assert res.retcode == 0
+
+    NEW_COMMAND = "run"
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-command {NEW}"
+        f"task edit --task-id {task_id} --new-command {NEW_COMMAND}"
     )
-    assert res.data["command"] == NEW
+    assert res.data["command"] == NEW_COMMAND
     assert res.retcode == 0
 
     # Test fail with no task_id nor task_name
@@ -209,21 +209,24 @@ async def test_task_edit(
             f"task edit --task-id {task_id} --version 1.2.3.4.5.6"
         )
 
+    NEW_TYPE = "zip"
     # Test regular updates (both by id and name)
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-input-type {NEW}"
+        f"task edit --task-id {task_id} --new-input-type {NEW_TYPE}"
     )
-    assert res.data["input_type"] == NEW
+    assert res.data["input_type"] == NEW_TYPE
     assert res.retcode == 0
     res = await invoke_as_superuser(
-        f"task edit --task-name {NAME} --new-output-type {NEW}"
+        f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
-    assert res.data["output_type"] == NEW
+    assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
+
+    NEW_VERSION = "3.14"
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-version {NEW}"
+        f"task edit --task-id {task_id} --new-version {NEW_VERSION}"
     )
-    assert res.data["version"] == NEW
+    assert res.data["version"] == NEW_VERSION
     assert res.retcode == 0
 
     # Test regular update by name, after deleting cache
@@ -232,7 +235,7 @@ async def test_task_edit(
     cache_file.unlink(missing_ok=True)
     NEW_TYPE = "something"
     res = await invoke_as_superuser(
-        f"task edit --task-name {NAME} --new-output-type {NEW_TYPE}"
+        f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
@@ -249,21 +252,22 @@ async def test_task_edit(
     with cache_file.open("w") as f:
         json.dump([], f)
     NEW_TYPE = "something-else"
-    debug(f"task edit --task-name {NAME} --new-output-type {NEW_TYPE}")
+    debug(f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}")
     res = await invoke_as_superuser(
-        f"task edit --task-name {NAME} --new-output-type {NEW_TYPE}"
+        f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
 
     # Test `file not found` errors
+    NEW_FILE = "foo.json"
     with pytest.raises(FileNotFoundError):
         res = await invoke_as_superuser(
-            f"task edit --task-id {task_id} --default-args-file {NEW}"
+            f"task edit --task-id {task_id} --default-args-file {NEW_FILE}"
         )
     with pytest.raises(FileNotFoundError):
         await invoke_as_superuser(
-            f"task edit --task-id {task_id} --meta-file {NEW}"
+            f"task edit --task-id {task_id} --meta-file {NEW_FILE}"
         )
 
     # Test successful edit of dictionary attributes
