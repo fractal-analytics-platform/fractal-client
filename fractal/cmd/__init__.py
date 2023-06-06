@@ -169,7 +169,8 @@ async def task(
         iface = await post_task(client, batch=batch, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
-            "task_id_or_name",
+            "task_id",
+            "task_name",
             "version",
             "new_name",
             "new_command",
@@ -182,7 +183,7 @@ async def task(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await patch_task(client, **function_kwargs)
     elif subcmd == "delete":
-        parameters = ["task_id_or_name"]
+        parameters = ["task_id", "task_name"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await delete_task(client, **function_kwargs)
     else:
@@ -220,7 +221,8 @@ async def workflow(
         parameters = [
             "project_id",
             "workflow_id",
-            "task_id_or_name",
+            "task_id",
+            "task_name",
             "version",
             "order",
             "args_file",

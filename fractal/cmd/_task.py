@@ -1,5 +1,4 @@
 import json
-import logging
 import sys
 from typing import Optional
 
@@ -132,7 +131,8 @@ async def post_task(
 async def patch_task(
     client: AuthClient,
     *,
-    task_id_or_name: str,
+    task_id: Optional[int] = None,
+    task_name: Optional[str] = None,
     version: Optional[str] = None,
     new_name: Optional[str] = None,
     new_command: Optional[str] = None,
@@ -143,12 +143,24 @@ async def patch_task(
     meta_file: Optional[str] = None,
 ) -> BaseInterface:
 
-    try:
-        task_id = int(task_id_or_name)
-        if version:
-            logging.warning("Task Version is ignored because Task ID provided")
-    except ValueError:
-        task_name = task_id_or_name
+    if not (task_id or task_name):
+        print(
+            "Missing arguments: provide one between `task_id` and `task_name`."
+        )
+        sys.exit(1)
+    elif task_id and task_name:
+        print(
+            "Too many arguments: cannot provide both "
+            "`task_id` and `task_name`."
+        )
+        sys.exit(1)
+    elif task_id and version:
+        print(
+            "Too many arguments: cannot provide both `task_id` and `version`."
+        )
+        sys.exit(1)
+
+    if task_name:
         try:
             task_id = await get_task_id_from_cache(
                 client=client, task_name=task_name, version=version
@@ -190,7 +202,8 @@ async def patch_task(
 async def delete_task(
     client: AuthClient,
     *,
-    task_id_or_name: str,
+    task_id: Optional[int] = None,
+    task_name: Optional[str] = None,
 ) -> PrintInterface:
 
     raise NotImplementedError("task_delete")

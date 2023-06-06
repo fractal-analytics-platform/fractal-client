@@ -160,11 +160,22 @@ async def test_workflow_add_task(
     with meta_file.open("w") as f:
         json.dump(META, f)
 
-    cmd = (
-        f"workflow add-task {project_id} {wf.id} {t.id} "
-        f"--args-file {args_file} --meta-file {meta_file}"
+    cmd = f"workflow add-task {project_id} {wf.id}"
+    # Test fail with no task_id nor task_name
+    with pytest.raises(SystemExit):
+        res = await invoke(cmd)
+    # Test fail with both task_id and task_name
+    with pytest.raises(SystemExit):
+        res = await invoke(cmd + f" --task-id {t.id} --task-name {t.name}")
+    # Test fail with both task_id and version
+    with pytest.raises(SystemExit):
+        res = await invoke(cmd + f" --task-id {t.id} --version 1.2.3.4.5.6")
+
+    cmd = cmd + (
+        f" --task-id {t.id} --args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
+    # Test success
     res = await invoke(cmd)
     assert res.retcode == 0
 
@@ -174,8 +185,11 @@ async def test_workflow_add_task(
     assert workflow_task["args"] == ARGS
     assert workflow_task["meta"] == META
 
-    # Add a WorkflowTask with the --batch option
-    cmd = f"--batch workflow add-task {project_id} {wf.id} {t.id} --order 1"
+    # Add a WorkflowTask by Task.name with the --batch option
+    cmd = (
+        f"--batch workflow add-task {project_id} {wf.id} "
+        f"--task-name {t.name} --order 1"
+    )
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
@@ -212,7 +226,7 @@ async def test_workflow_add_task_by_name(
     task = await task_factory()
     debug(task)
 
-    cmd = f"workflow add-task {project_id} {wf.id} {task.name}"
+    cmd = f"workflow add-task {project_id} {wf.id} --task-name {task.name}"
     debug(cmd)
     res = await invoke(cmd)
     assert res.retcode == 0
@@ -221,7 +235,9 @@ async def test_workflow_add_task_by_name(
 
     # Fail when adding task via a wrong name
     with pytest.raises(SystemExit):
-        cmd = f"workflow add-task {project_id} {wf.id} INVALID_NAME"
+        cmd = (
+            f"workflow add-task {project_id} {wf.id} --task-name INVALID_NAME"
+        )
         debug(cmd)
         res = await invoke(cmd)
 
@@ -262,7 +278,7 @@ async def test_task_cache_with_non_unique_names(
     # Verify that adding tasks to a worfklow by name (as opposed to "by id")
     # fails because of missing cache file
     wf = await workflow_factory(project_id=project_id)
-    cmd = f"workflow add-task {project_id} {wf.id} {task1.name}"
+    cmd = f"workflow add-task {project_id} {wf.id} --task-name {task1.name}"
     debug(cmd)
     with pytest.raises(FileNotFoundError):
         res = await invoke(cmd)
@@ -282,7 +298,7 @@ async def test_workflow_rm_task(
     t = await task_factory()
 
     # Add task to workflow, twice
-    cmd = f"workflow add-task {project_id} {wf.id} {t.id}"
+    cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
     res = await invoke(cmd)
     assert res.retcode == 0
     res = await invoke(cmd)
@@ -318,7 +334,7 @@ async def test_workflow_edit_task(
     t = await task_factory()
 
     # Create task, without overriding arguments
-    cmd = f"workflow add-task {project_id} {wf.id} {t.id}"
+    cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
     res = await invoke(cmd)
     assert res.retcode == 0
 
@@ -426,7 +442,9 @@ async def test_workflow_apply(
     debug(workflow)
     assert res.retcode == 0
     TASK_ID = 1
-    res = await invoke(f"workflow add-task {prj_id} {workflow_id} {TASK_ID}")
+    res = await invoke(
+        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+    )
     workflow_task = res.data
     debug(workflow_task)
     assert res.retcode == 0
@@ -471,7 +489,7 @@ async def test_workflow_apply(
     with open(args_file, "w") as f:
         json.dump({"raise_error": True}, f)
     res = await invoke(
-        f"workflow add-task {prj_id} {workflow_id} {TASK_ID}"
+        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
         f" --args-file {args_file}"
     )
     assert res.retcode == 0

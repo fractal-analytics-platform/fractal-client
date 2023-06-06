@@ -373,8 +373,9 @@ task_edit_parser = task_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
+task_edit_parser.add_argument("--task-id", help="ID of task to edit", type=int)
 task_edit_parser.add_argument(
-    "task_id_or_name", help="ID or name of task to edit", type=str
+    "--task-name", help="Name of task to edit", type=str
 )
 task_edit_parser.add_argument(
     "--version", type=str, help="Version of the task to edit"
@@ -424,7 +425,10 @@ task_delete_parser = task_subparsers.add_parser(
     allow_abbrev=False,
 )
 task_delete_parser.add_argument(
-    "task_id_or_name", help="ID or name of task to delete", type=str
+    "--task-id", help="ID of the task to delete", type=int
+)
+task_delete_parser.add_argument(
+    "--task-name", help="Name of the task to delete", type=str
 )
 
 
@@ -512,7 +516,10 @@ workflow_add_task_parser.add_argument(
     help="Workflow ID",
 )
 workflow_add_task_parser.add_argument(
-    "task_id_or_name", help="ID or name of the new task", type=str
+    "--task-id", help="ID of the new task", type=int
+)
+workflow_add_task_parser.add_argument(
+    "--task-name", help="Name of the new task", type=str
 )
 workflow_add_task_parser.add_argument(
     "--version", type=str, help="Version of the new task"
