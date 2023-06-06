@@ -373,9 +373,11 @@ task_edit_parser = task_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
-task_edit_parser.add_argument("--task-id", help="ID of task to edit", type=int)
 task_edit_parser.add_argument(
-    "--task-name", help="Name of task to edit", type=str
+    "--task-id", help="ID of the task to edit", type=int
+)
+task_edit_parser.add_argument(
+    "--task-name", help="Name of the task to edit", type=str
 )
 task_edit_parser.add_argument(
     "--version", type=str, help="Version of the task to edit"
