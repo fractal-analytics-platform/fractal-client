@@ -90,18 +90,7 @@ async def post_workflowtask(
     meta_file: Optional[str] = None,
 ) -> RichJsonInterface:
 
-    if not (task_id or task_name):
-        print(
-            "Missing arguments: provide one between `task_id` and `task_name`."
-        )
-        sys.exit(1)
-    elif task_id and task_name:
-        print(
-            "Too many arguments: cannot provide both "
-            "`task_id` and `task_name`."
-        )
-        sys.exit(1)
-    elif task_id and version:
+    if task_id and version:
         print(
             "Too many arguments: cannot provide both `task_id` and `version`."
         )
