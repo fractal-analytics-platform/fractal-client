@@ -15,6 +15,7 @@
     * Add `--username/--new-username` to `fractal user` subcommands (\#493).
     * Remove `--private` option for `fractal task collect` (\#493).
     * Add `--version` to `fractal task {new,edit}` subcommands (\#493).
+    * Split `--task-id-or-name` in `task edit` and `workflow add-task` (\#504)
 * Package and repository:
     * Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
     * Require pydantic version to be `>=1.10.8` (\#486, \#490).
