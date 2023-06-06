@@ -166,13 +166,14 @@ async def test_workflow_add_task(
         res = await invoke(cmd)
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
-        res = await invoke(cmd + f" --task-id {t.id} --task-name {t.name}")
+        res = await invoke(f"{cmd} --task-id {t.id} --task-name {t.name}")
     # Test fail with both task_id and version
     with pytest.raises(SystemExit):
-        res = await invoke(cmd + f" --task-id {t.id} --version 1.2.3.4.5.6")
+        res = await invoke(f"{cmd} --task-id {t.id} --version 1.2.3.4.5.6")
 
-    cmd = cmd + (
-        f" --task-id {t.id} --args-file {args_file} --meta-file {meta_file}"
+    cmd = (
+        f"{cmd} --task-id {t.id} "
+        f"--args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
     # Test success
