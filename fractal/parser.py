@@ -385,7 +385,12 @@ task_edit_id_or_name_group.add_argument(
 )
 
 task_edit_parser.add_argument(
-    "--version", type=str, help="Version of the task to edit"
+    "--version",
+    type=str,
+    help=(
+        "Version of the task to edit "
+        "(only accepted in combination with --name)"
+    ),
 )
 task_edit_parser.add_argument("--new-name", help="New task name", type=str)
 task_edit_parser.add_argument(
@@ -441,7 +446,12 @@ task_delete_id_or_name_group.add_argument(
     "--name", help="Name of the task to delete", type=str
 )
 task_delete_parser.add_argument(
-    "--version", help="Version of the task to delete", type=str
+    "--version",
+    type=str,
+    help=(
+        "Version of the task to delete "
+        "(only accepted in combination with --name)"
+    ),
 )
 
 
@@ -540,7 +550,12 @@ workflow_add_task_id_or_name_group.add_argument(
 )
 
 workflow_add_task_parser.add_argument(
-    "--task-version", type=str, help="Version of task to add"
+    "--task-version",
+    type=str,
+    help=(
+        "Version of task to add "
+        "(only accepted in combination with --task-name)"
+    ),
 )
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list"
