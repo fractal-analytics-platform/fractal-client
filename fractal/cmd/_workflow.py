@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Optional
@@ -81,20 +82,26 @@ async def post_workflowtask(
     *,
     project_id: int,
     workflow_id: int,
-    task_id_or_name: str,
+    task_id: Optional[int] = None,
+    task_name: Optional[str] = None,
+    task_version: Optional[str] = None,
     batch: bool = False,
-    version: Optional[str] = None,
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
 ) -> RichJsonInterface:
 
-    try:
-        task_id = int(task_id_or_name)
-    except ValueError:
+    if task_id:
+        if task_version:
+            logging.error(
+                "Too many arguments: cannot provide both "
+                "`task_id` and `task_version`."
+            )
+            sys.exit(1)
+    else:
         try:
             task_id = await get_task_id_from_cache(
-                client=client, task_name=task_id_or_name, version=version
+                client=client, task_name=task_name, version=task_version
             )
         except FractalCacheError as e:
             print(e)

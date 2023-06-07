@@ -132,7 +132,8 @@ async def post_task(
 async def patch_task(
     client: AuthClient,
     *,
-    task_id_or_name: str,
+    id: Optional[int] = None,
+    name: Optional[str] = None,
     version: Optional[str] = None,
     new_name: Optional[str] = None,
     new_command: Optional[str] = None,
@@ -143,15 +144,16 @@ async def patch_task(
     meta_file: Optional[str] = None,
 ) -> BaseInterface:
 
-    try:
-        task_id = int(task_id_or_name)
+    if id:
         if version:
-            logging.warning("Task Version is ignored because Task ID provided")
-    except ValueError:
-        task_name = task_id_or_name
+            logging.error(
+                "Too many arguments: cannot provide both `id` and `version`."
+            )
+            sys.exit(1)
+    else:
         try:
-            task_id = await get_task_id_from_cache(
-                client=client, task_name=task_name, version=version
+            id = await get_task_id_from_cache(
+                client=client, task_name=name, version=version
             )
         except FractalCacheError as e:
             print(e)
@@ -180,9 +182,7 @@ async def patch_task(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = await client.patch(
-        f"{settings.BASE_URL}/task/{task_id}", json=payload
-    )
+    res = await client.patch(f"{settings.BASE_URL}/task/{id}", json=payload)
     new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
     return RichJsonInterface(retcode=0, data=new_task.dict())
 
@@ -190,7 +190,9 @@ async def patch_task(
 async def delete_task(
     client: AuthClient,
     *,
-    task_id_or_name: str,
+    id: Optional[int] = None,
+    name: Optional[str] = None,
+    version: Optional[str] = None,
 ) -> PrintInterface:
 
     raise NotImplementedError("task_delete")

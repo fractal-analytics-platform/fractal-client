@@ -373,11 +373,24 @@ task_edit_parser = task_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
-task_edit_parser.add_argument(
-    "task_id_or_name", help="ID or name of task to edit", type=str
+
+task_edit_id_or_name_group = task_edit_parser.add_mutually_exclusive_group(
+    required=True
 )
+task_edit_id_or_name_group.add_argument(
+    "--id", help="ID of the task to edit", type=int
+)
+task_edit_id_or_name_group.add_argument(
+    "--name", help="Name of the task to edit", type=str
+)
+
 task_edit_parser.add_argument(
-    "--version", type=str, help="Version of the task to edit"
+    "--version",
+    type=str,
+    help=(
+        "Version of the task to edit "
+        "(only accepted in combination with --name)"
+    ),
 )
 task_edit_parser.add_argument("--new-name", help="New task name", type=str)
 task_edit_parser.add_argument(
@@ -423,8 +436,22 @@ task_delete_parser = task_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
+task_delete_id_or_name_group = task_delete_parser.add_mutually_exclusive_group(
+    required=True
+)
+task_delete_id_or_name_group.add_argument(
+    "--id", help="ID of the task to delete", type=int
+)
+task_delete_id_or_name_group.add_argument(
+    "--name", help="Name of the task to delete", type=str
+)
 task_delete_parser.add_argument(
-    "task_id_or_name", help="ID or name of task to delete", type=str
+    "--version",
+    type=str,
+    help=(
+        "Version of the task to delete "
+        "(only accepted in combination with --name)"
+    ),
 )
 
 
@@ -511,11 +538,24 @@ workflow_add_task_parser.add_argument(
     type=int,
     help="Workflow ID",
 )
-workflow_add_task_parser.add_argument(
-    "task_id_or_name", help="ID or name of the new task", type=str
+
+workflow_add_task_id_or_name_group = (
+    workflow_add_task_parser.add_mutually_exclusive_group(required=True)
 )
+workflow_add_task_id_or_name_group.add_argument(
+    "--task-id", help="ID of the task to add", type=int
+)
+workflow_add_task_id_or_name_group.add_argument(
+    "--task-name", help="Name of the task to add", type=str
+)
+
 workflow_add_task_parser.add_argument(
-    "--version", type=str, help="Version of the new task"
+    "--task-version",
+    type=str,
+    help=(
+        "Version of task to add "
+        "(only accepted in combination with --task-name)"
+    ),
 )
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list"
