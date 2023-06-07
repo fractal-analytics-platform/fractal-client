@@ -84,14 +84,14 @@ async def post_workflowtask(
     workflow_id: int,
     task_id: Optional[int] = None,
     task_name: Optional[str] = None,
+    task_version: Optional[str] = None,
     batch: bool = False,
-    version: Optional[str] = None,
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
 ) -> RichJsonInterface:
 
-    if task_id and version:
+    if task_id and task_version:
         logging.warning(
             "Too many arguments: cannot provide both "
             "`task_id` and `task_version`."
@@ -100,7 +100,7 @@ async def post_workflowtask(
     elif task_name:
         try:
             task_id = await get_task_id_from_cache(
-                client=client, task_name=task_name, version=version
+                client=client, task_name=task_name, version=task_version
             )
         except FractalCacheError as e:
             print(e)
