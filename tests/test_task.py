@@ -166,6 +166,7 @@ async def test_task_new(register_user, invoke):
 
 
 async def test_task_edit(
+    caplog,
     register_user,
     invoke,
     invoke_as_superuser,
@@ -183,14 +184,14 @@ async def test_task_edit(
 
     # Test successful edit of string attributes
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-name {NEW_NAME}"
+        f"task edit --id {task_id} --new-name {NEW_NAME}"
     )
     assert res.data["name"] == NEW_NAME
     assert res.retcode == 0
 
     NEW_COMMAND = "run"
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-command {NEW_COMMAND}"
+        f"task edit --id {task_id} --new-command {NEW_COMMAND}"
     )
     assert res.data["command"] == NEW_COMMAND
     assert res.retcode == 0
@@ -201,30 +202,33 @@ async def test_task_edit(
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
         res = await invoke_as_superuser(
-            f"task edit --task-id {task_id} --task-name {task.data['name']}"
+            f"task edit --id {task_id} --name {task.data['name']}"
         )
     # Test fail with both task_id and task_version
     with pytest.raises(SystemExit):
         res = await invoke_as_superuser(
-            f"task edit --task-id {task_id} --version 1.2.3.4.5.6"
+            f"task edit --id {task_id} --version 1.2.3.4.5.6"
         )
+    assert caplog.records[-1].msg == (
+        "Too many arguments: cannot provide both `task_id` and `version`."
+    )
 
     NEW_TYPE = "zip"
     # Test regular updates (both by id and name)
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-input-type {NEW_TYPE}"
+        f"task edit --id {task_id} --new-input-type {NEW_TYPE}"
     )
     assert res.data["input_type"] == NEW_TYPE
     assert res.retcode == 0
     res = await invoke_as_superuser(
-        f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}"
+        f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
 
     NEW_VERSION = "3.14"
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --new-version {NEW_VERSION}"
+        f"task edit --id {task_id} --new-version {NEW_VERSION}"
     )
     assert res.data["version"] == NEW_VERSION
     assert res.retcode == 0
@@ -235,7 +239,7 @@ async def test_task_edit(
     cache_file.unlink(missing_ok=True)
     NEW_TYPE = "something"
     res = await invoke_as_superuser(
-        f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}"
+        f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
@@ -245,16 +249,16 @@ async def test_task_edit(
     NEW_TYPE = "something-here"
     with pytest.raises(SystemExit):
         res = await invoke_as_superuser(
-            f"task edit --task-name INVALID_NAME --new-output-type {NEW_TYPE}"
+            f"task edit --name INVALID_NAME --new-output-type {NEW_TYPE}"
         )
 
     # Test regular update by name, after creating an invalid cache
     with cache_file.open("w") as f:
         json.dump([], f)
     NEW_TYPE = "something-else"
-    debug(f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}")
+    debug(f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}")
     res = await invoke_as_superuser(
-        f"task edit --task-name {NEW_NAME} --new-output-type {NEW_TYPE}"
+        f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
@@ -263,24 +267,24 @@ async def test_task_edit(
     NEW_FILE = "foo.json"
     with pytest.raises(FileNotFoundError):
         res = await invoke_as_superuser(
-            f"task edit --task-id {task_id} --default-args-file {NEW_FILE}"
+            f"task edit --id {task_id} --default-args-file {NEW_FILE}"
         )
     with pytest.raises(FileNotFoundError):
         await invoke_as_superuser(
-            f"task edit --task-id {task_id} --meta-file {NEW_FILE}"
+            f"task edit --id {task_id} --meta-file {NEW_FILE}"
         )
 
     # Test successful edit of dictionary attributes
     args_file = str(testdata_path / "task_edit_json/default_args.json")
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --default-args-file {args_file}"
+        f"task edit --id {task_id} --default-args-file {args_file}"
     )
     debug(res)
     debug(res.data)
     assert res.retcode == 0
     meta_file = str(testdata_path / "task_edit_json/meta.json")
     res = await invoke_as_superuser(
-        f"task edit --task-id {task_id} --meta-file {meta_file}"
+        f"task edit --id {task_id} --meta-file {meta_file}"
     )
     debug(res)
     debug(res.data)
@@ -296,8 +300,8 @@ async def test_task_delete(register_user, invoke):
     assert res.retcode == 0
     task_id = res.data["id"]
     with pytest.raises(NotImplementedError):
-        debug(f"task delete --task-id {task_id}")
-        res = await invoke(f"task delete --task-id {task_id}")
+        debug(f"task delete --id {task_id}")
+        res = await invoke(f"task delete --id {task_id}")
 
 
 async def test_task_list(register_user, invoke, testdata_path):

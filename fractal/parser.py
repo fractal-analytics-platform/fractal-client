@@ -378,10 +378,10 @@ task_edit_id_or_name_group = task_edit_parser.add_mutually_exclusive_group(
     required=True
 )
 task_edit_id_or_name_group.add_argument(
-    "--task-id", help="ID of the task to edit", type=int
+    "--id", help="ID of the task to edit", type=int, dest="task_id"
 )
 task_edit_id_or_name_group.add_argument(
-    "--task-name", help="Name of the task to edit", type=str
+    "--name", help="Name of the task to edit", type=str, dest="task_name"
 )
 
 task_edit_parser.add_argument(
@@ -435,10 +435,13 @@ task_delete_id_or_name_group = task_delete_parser.add_mutually_exclusive_group(
     required=True
 )
 task_delete_id_or_name_group.add_argument(
-    "--task-id", help="ID of the task to edit", type=int
+    "--id", help="ID of the task to delete", type=int
 )
 task_delete_id_or_name_group.add_argument(
-    "--task-name", help="Name of the task to edit", type=str
+    "--name", help="Name of the task to delete", type=str
+)
+task_delete_parser.add_argument(
+    "--version", help="Version of the task to delete", type=str
 )
 
 
@@ -530,15 +533,14 @@ workflow_add_task_id_or_name_group = (
     workflow_add_task_parser.add_mutually_exclusive_group(required=True)
 )
 workflow_add_task_id_or_name_group.add_argument(
-    "--task-id", help="ID of the task to edit", type=int
+    "--task-id", help="ID of the task to add", type=int
 )
 workflow_add_task_id_or_name_group.add_argument(
-    "--task-name", help="Name of the task to edit", type=str
+    "--task-name", help="Name of the task to add", type=str
 )
 
-
 workflow_add_task_parser.add_argument(
-    "--version", type=str, help="Version of the new task"
+    "--task-version", type=str, help="Version of task to add"
 )
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list"

@@ -183,7 +183,7 @@ async def task(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await patch_task(client, **function_kwargs)
     elif subcmd == "delete":
-        parameters = ["task_id", "task_name"]
+        parameters = ["id", "name", "version"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await delete_task(client, **function_kwargs)
     else:
@@ -223,7 +223,7 @@ async def workflow(
             "workflow_id",
             "task_id",
             "task_name",
-            "version",
+            "task_version",
             "order",
             "args_file",
             "meta_file",

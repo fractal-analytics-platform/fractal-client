@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from typing import Optional
 
@@ -144,12 +145,11 @@ async def patch_task(
 ) -> BaseInterface:
 
     if task_id and version:
-        print(
+        logging.warning(
             "Too many arguments: cannot provide both `task_id` and `version`."
         )
         sys.exit(1)
-
-    if task_name:
+    elif task_name:
         try:
             task_id = await get_task_id_from_cache(
                 client=client, task_name=task_name, version=version
@@ -191,8 +191,9 @@ async def patch_task(
 async def delete_task(
     client: AuthClient,
     *,
-    task_id: Optional[int] = None,
-    task_name: Optional[str] = None,
+    id: Optional[int] = None,
+    name: Optional[str] = None,
+    version: Optional[str] = None,
 ) -> PrintInterface:
 
     raise NotImplementedError("task_delete")

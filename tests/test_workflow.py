@@ -130,6 +130,7 @@ async def test_workflow_list_when_two_projects_exist(register_user, invoke):
 
 
 async def test_workflow_add_task(
+    caplog,
     invoke,
     register_user,
     task_factory,
@@ -170,6 +171,9 @@ async def test_workflow_add_task(
     # Test fail with both task_id and version
     with pytest.raises(SystemExit):
         res = await invoke(f"{cmd} --task-id {t.id} --version 1.2.3.4.5.6")
+    assert caplog.records[-1].msg == (
+        "Too many arguments: cannot provide both `task_id` and `task_version`."
+    )
 
     cmd = (
         f"{cmd} --task-id {t.id} "

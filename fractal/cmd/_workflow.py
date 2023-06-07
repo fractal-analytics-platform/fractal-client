@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Optional
@@ -91,12 +92,12 @@ async def post_workflowtask(
 ) -> RichJsonInterface:
 
     if task_id and version:
-        print(
-            "Too many arguments: cannot provide both `task_id` and `version`."
+        logging.warning(
+            "Too many arguments: cannot provide both "
+            "`task_id` and `task_version`."
         )
         sys.exit(1)
-
-    if task_name:
+    elif task_name:
         try:
             task_id = await get_task_id_from_cache(
                 client=client, task_name=task_name, version=version
