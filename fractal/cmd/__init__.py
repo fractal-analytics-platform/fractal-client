@@ -169,8 +169,8 @@ async def task(
         iface = await post_task(client, batch=batch, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
-            "task_id",
-            "task_name",
+            "id",
+            "name",
             "version",
             "new_name",
             "new_command",

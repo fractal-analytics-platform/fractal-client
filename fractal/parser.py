@@ -378,10 +378,10 @@ task_edit_id_or_name_group = task_edit_parser.add_mutually_exclusive_group(
     required=True
 )
 task_edit_id_or_name_group.add_argument(
-    "--id", help="ID of the task to edit", type=int, dest="task_id"
+    "--id", help="ID of the task to edit", type=int
 )
 task_edit_id_or_name_group.add_argument(
-    "--name", help="Name of the task to edit", type=str, dest="task_name"
+    "--name", help="Name of the task to edit", type=str
 )
 
 task_edit_parser.add_argument(

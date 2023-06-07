@@ -91,13 +91,14 @@ async def post_workflowtask(
     meta_file: Optional[str] = None,
 ) -> RichJsonInterface:
 
-    if task_id and task_version:
-        logging.warning(
-            "Too many arguments: cannot provide both "
-            "`task_id` and `task_version`."
-        )
-        sys.exit(1)
-    elif task_name:
+    if task_id:
+        if task_version:
+            logging.error(
+                "Too many arguments: cannot provide both "
+                "`task_id` and `task_version`."
+            )
+            sys.exit(1)
+    else:
         try:
             task_id = await get_task_id_from_cache(
                 client=client, task_name=task_name, version=task_version

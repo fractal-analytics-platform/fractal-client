@@ -210,7 +210,7 @@ async def test_task_edit(
             f"task edit --id {task_id} --version 1.2.3.4.5.6"
         )
     assert caplog.records[-1].msg == (
-        "Too many arguments: cannot provide both `task_id` and `version`."
+        "Too many arguments: cannot provide both `id` and `version`."
     )
 
     NEW_TYPE = "zip"

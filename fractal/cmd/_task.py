@@ -132,8 +132,8 @@ async def post_task(
 async def patch_task(
     client: AuthClient,
     *,
-    task_id: Optional[int] = None,
-    task_name: Optional[str] = None,
+    id: Optional[int] = None,
+    name: Optional[str] = None,
     version: Optional[str] = None,
     new_name: Optional[str] = None,
     new_command: Optional[str] = None,
@@ -144,15 +144,16 @@ async def patch_task(
     meta_file: Optional[str] = None,
 ) -> BaseInterface:
 
-    if task_id and version:
-        logging.warning(
-            "Too many arguments: cannot provide both `task_id` and `version`."
-        )
-        sys.exit(1)
-    elif task_name:
+    if id:
+        if version:
+            logging.error(
+                "Too many arguments: cannot provide both `id` and `version`."
+            )
+            sys.exit(1)
+    else:
         try:
-            task_id = await get_task_id_from_cache(
-                client=client, task_name=task_name, version=version
+            id = await get_task_id_from_cache(
+                client=client, task_name=name, version=version
             )
         except FractalCacheError as e:
             print(e)
@@ -181,9 +182,7 @@ async def patch_task(
     if not payload:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = await client.patch(
-        f"{settings.BASE_URL}/task/{task_id}", json=payload
-    )
+    res = await client.patch(f"{settings.BASE_URL}/task/{id}", json=payload)
     new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
     return RichJsonInterface(retcode=0, data=new_task.dict())
 
