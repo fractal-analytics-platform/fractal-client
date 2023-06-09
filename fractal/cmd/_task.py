@@ -65,7 +65,6 @@ async def task_collection_check(
     state_id: int,
     include_logs: bool,
     do_not_separate_logs: bool = False,
-    **kwargs,
 ) -> BaseInterface:
 
     res = await client.get(
