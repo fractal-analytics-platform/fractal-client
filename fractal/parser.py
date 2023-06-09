@@ -295,6 +295,11 @@ task_collect_parser.add_argument(
         "`fractal-tasks-core[torch,tensorflow]`"
     ),
 )
+task_collect_parser.add_argument(
+    "--pinned-dependency",
+    action="append",
+    help="List of 'package_name:package_version' to be pinned",  # FIXME
+)
 
 # task check-collection
 task_check_collection_parser = task_subparsers.add_parser(

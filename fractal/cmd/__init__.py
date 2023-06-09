@@ -147,6 +147,7 @@ async def task(
             "package_version",
             "python_version",
             "package_extras",
+            "pinned_dependency",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await task_collect_pip(client, batch=batch, **function_kwargs)

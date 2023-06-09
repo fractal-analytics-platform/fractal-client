@@ -31,6 +31,7 @@ async def task_collect_pip(
     package_version: Optional[str] = None,
     python_version: Optional[str] = None,
     package_extras: Optional[str] = None,
+    pinned_dependency: Optional[list[str]] = None,
     batch: bool = False,
 ) -> BaseInterface:
 
@@ -42,6 +43,11 @@ async def task_collect_pip(
         attributes["python_version"] = python_version
     if package_extras:
         attributes["package_extras"] = package_extras
+    if pinned_dependency:
+        attributes["pinned_dependency"] = {
+            _name: _version
+            for _name, _version in (x.split("=") for x in pinned_dependency)
+        }
     task_collect = TaskCollectPip(**attributes)
 
     res = await client.post(

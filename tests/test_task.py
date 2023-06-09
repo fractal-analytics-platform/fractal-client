@@ -377,3 +377,7 @@ async def test_task_list(register_user, invoke, testdata_path):
     assert task_list[4]["name"] == custom_task_name
     assert task_list[4]["version"] == custom_task_version
     assert task_list[4]["owner"] is not None
+
+
+async def test_pin():
+    raise NotImplementedError
