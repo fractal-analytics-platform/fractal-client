@@ -44,7 +44,7 @@ async def task_collect_pip(
     if package_extras:
         attributes["package_extras"] = package_extras
     if pinned_dependency:
-        attributes["pinned_dependency"] = {
+        attributes["pinned_package_versions"] = {
             _name: _version
             for _name, _version in (x.split("=") for x in pinned_dependency)
         }

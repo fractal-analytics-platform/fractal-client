@@ -379,5 +379,9 @@ async def test_task_list(register_user, invoke, testdata_path):
     assert task_list[4]["owner"] is not None
 
 
-async def test_pin():
-    raise NotImplementedError
+async def test_pin(register_user, invoke):
+    res = await invoke(
+        "task collect fractal-tasks-core --pinned-dependency 'torch=1.11.0'"
+    )
+    debug(res.data)
+    time.sleep(400)
