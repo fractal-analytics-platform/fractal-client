@@ -141,10 +141,13 @@ async def test_task_new(register_user, invoke):
     assert res.retcode == 0
     assert res.data["name"] == "_name"
     assert res.data["command"] == "_command"
-    assert res.data["source"] == "_source"
+    assert res.data["source"] == f"{register_user['username']}:_source"
     assert res.data["input_type"] == res.data["output_type"] == "Any"
     assert res.data["version"] == "_version"
-    assert res.data["default_args"] == res.data["meta"] == {}
+    assert res.data["meta"] == {}
+    assert res.data["args_schema"] is None
+    assert res.data["args_schema_version"] is None
+
     assert "owner" in res.data.keys()
     first_task_id = int(res.data["id"])
 
