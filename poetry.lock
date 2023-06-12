@@ -624,7 +624,7 @@ sqlalchemy = ["fastapi-users-db-sqlalchemy (>=4.0.0)"]
 
 [[package]]
 name = "fractal-server"
-version = "1.3.0a2"
+version = "1.3.0a3"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -652,8 +652,8 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "740-expose-pinned_package_versions-for-task-collection"
-resolved_reference = "20792eb951aa6f51ad7d68be8bb0c1e41bb1d0bb"
+reference = "main"
+resolved_reference = "fda21d714af385dcf6ff038abab1f9594d1947ae"
 
 [[package]]
 name = "greenlet"
@@ -1231,14 +1231,14 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pytest"
-version = "7.3.1"
+version = "7.3.2"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-7.3.1-py3-none-any.whl", hash = "sha256:3799fa815351fea3a5e96ac7e503a96fa51cc9942c3753cda7651b93c1cfa362"},
-    {file = "pytest-7.3.1.tar.gz", hash = "sha256:434afafd78b1d78ed0addf160ad2b77a30d35d4bdf8af234fe621919d9ed15e3"},
+    {file = "pytest-7.3.2-py3-none-any.whl", hash = "sha256:cdcbd012c9312258922f8cd3f1b62a6580fdced17db6014896053d47cddf9295"},
+    {file = "pytest-7.3.2.tar.gz", hash = "sha256:ee990a3cc55ba808b80795a79944756f315c67c12b56abd3ac993a7b8c17030b"},
 ]
 
 [package.dependencies]
@@ -1250,7 +1250,7 @@ pluggy = ">=0.12,<2.0"
 tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
-testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
+testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "pytest-asyncio"
@@ -1909,4 +1909,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "a75eb347519d12ef3f91dd1f918c9a570cf72805dbece259bede1936c1d53f7b"
+content-hash = "98f9e4a28968a155c038521f5d337d0ad09be32f5bd24a8294ff150d2b02b263"
