@@ -344,7 +344,6 @@ async def test_task_list(register_user, invoke, testdata_path):
     for task in task_list:
         for key in [
             "command",
-            "default_args",
             "meta",
             "input_type",
             "output_type",

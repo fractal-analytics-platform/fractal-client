@@ -361,11 +361,6 @@ task_new_parser.add_argument(
     help="Task version",
 )
 task_new_parser.add_argument(
-    "--default-args-file",
-    help="Path to JSON file with default task arguments",
-    type=str,
-)
-task_new_parser.add_argument(
     "--meta-file",
     help="Path to JSON file with additional parameters useful for execution",
     type=str,
@@ -410,14 +405,6 @@ task_edit_parser.add_argument(
     "--new-output-type",
     type=str,
     help="New output type",
-)
-task_edit_parser.add_argument(
-    "--default-args-file",
-    type=str,
-    help=(
-        "Path to JSON serialised file containing updates to the current"
-        "`default_args` dictionary"
-    ),
 )
 task_edit_parser.add_argument(
     "--meta-file",
