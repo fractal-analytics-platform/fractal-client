@@ -111,16 +111,12 @@ async def post_task(
     input_type: str = "Any",
     output_type: str = "Any",
     version: Optional[str] = None,
-    default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
     batch: bool = False,
 ) -> BaseInterface:
     optionals = {}
     if version:
         optionals["version"] = version
-    if default_args_file:
-        with open(default_args_file, "r") as f:
-            optionals["default_args"] = json.load(f)
     if meta_file:
         with open(meta_file, "r") as f:
             optionals["meta"] = json.load(f)

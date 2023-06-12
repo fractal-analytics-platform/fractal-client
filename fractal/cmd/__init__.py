@@ -163,7 +163,6 @@ async def task(
             "input_type",
             "output_type",
             "version",
-            "default_args_file",
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -178,7 +177,6 @@ async def task(
             "new_input_type",
             "new_output_type",
             "new_version",
-            "default_args_file",
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
