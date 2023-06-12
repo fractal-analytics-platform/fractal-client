@@ -403,3 +403,13 @@ async def test_pin(register_user, invoke, testdata_path, caplog):
         if res.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+
+    res = await invoke(f"task check-collection {state_id}")
+    assert res.retcode == 0
+    assert (
+        f"Currently installed version of {PIN.split('=')[0]}"
+        in res.data["data"]["log"]
+    ) and (
+        f"differs from pinned version ({PIN.split('=')[1]})"
+        in res.data["data"]["log"]
+    )
