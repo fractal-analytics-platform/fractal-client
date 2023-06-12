@@ -152,7 +152,6 @@ async def patch_task(
     new_input_type: Optional[str] = None,
     new_output_type: Optional[str] = None,
     new_version: Optional[str] = None,
-    default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
 ) -> BaseInterface:
 
@@ -174,17 +173,14 @@ async def patch_task(
     update = {}
     if new_name:
         update["name"] = new_name
-    if new_command:
-        update["command"] = new_command
-    if new_version:
-        update["version"] = new_version
     if new_input_type:
         update["input_type"] = new_input_type
     if new_output_type:
         update["output_type"] = new_output_type
-    if default_args_file:
-        with open(default_args_file, "r") as f:
-            update["default_args"] = json.load(f)
+    if new_command:
+        update["command"] = new_command
+    if new_version:
+        update["version"] = new_version
     if meta_file:
         with open(meta_file, "r") as f:
             update["meta"] = json.load(f)

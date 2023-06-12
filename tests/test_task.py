@@ -269,22 +269,11 @@ async def test_task_edit(
     # Test `file not found` errors
     NEW_FILE = "foo.json"
     with pytest.raises(FileNotFoundError):
-        res = await invoke_as_superuser(
-            f"task edit --id {task_id} --default-args-file {NEW_FILE}"
-        )
-    with pytest.raises(FileNotFoundError):
         await invoke_as_superuser(
             f"task edit --id {task_id} --meta-file {NEW_FILE}"
         )
 
     # Test successful edit of dictionary attributes
-    args_file = str(testdata_path / "task_edit_json/default_args.json")
-    res = await invoke_as_superuser(
-        f"task edit --id {task_id} --default-args-file {args_file}"
-    )
-    debug(res)
-    debug(res.data)
-    assert res.retcode == 0
     meta_file = str(testdata_path / "task_edit_json/meta.json")
     res = await invoke_as_superuser(
         f"task edit --id {task_id} --meta-file {meta_file}"
