@@ -475,7 +475,7 @@ async def test_workflow_apply(
     time.sleep(1)
 
     # Check that job completed successfully
-    cmd = f"job show {prj_id} {job_id}"
+    cmd = f"job show {prj_id} {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     debug(cmd)
     while True:
