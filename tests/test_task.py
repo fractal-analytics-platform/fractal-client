@@ -391,6 +391,15 @@ async def test_pin(register_user, invoke, testdata_path, caplog):
         )
     assert "Pins must be written as" in caplog.records[-1].msg
 
-    await invoke(
+    res = await invoke(
         f"task collect {testdata_path / PACKAGE} --pinned-dependency {PIN}"
     )
+    assert res.retcode == 0
+    state_id = res.data["id"]
+    starting_time = time.perf_counter()
+    while True:
+        res = await invoke(f"task check-collection {state_id}")
+        time.sleep(1)
+        if res.data["data"]["status"] == "OK":
+            break
+        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
