@@ -379,9 +379,18 @@ async def test_task_list(register_user, invoke, testdata_path):
     assert task_list[4]["owner"] is not None
 
 
-async def test_pin(register_user, invoke):
-    res = await invoke(
-        "task collect fractal-tasks-core --pinned-dependency 'torch=1.11.0'"
+async def test_pin(register_user, invoke, testdata_path, caplog):
+
+    PACKAGE = "fractal_tasks_core_alpha-0.0.1a0-py3-none-any.whl"
+    PIN = "pydantic=1.10.3"
+
+    with pytest.raises(SystemExit):
+        await invoke(
+            f"task collect {testdata_path / PACKAGE} "
+            f"--pinned-dependency {PIN.replace('=','~')}"
+        )
+    assert "Pins must be written as" in caplog.records[-1].msg
+
+    await invoke(
+        f"task collect {testdata_path / PACKAGE} --pinned-dependency {PIN}"
     )
-    debug(res.data)
-    time.sleep(400)

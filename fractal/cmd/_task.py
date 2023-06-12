@@ -44,9 +44,16 @@ async def task_collect_pip(
     if package_extras:
         attributes["package_extras"] = package_extras
     if pinned_dependency:
+        for pin in pinned_dependency:
+            if len(pin.split("=")) != 2:
+                logging.error(
+                    f"Invalid pin: {pin}.\nPins must be written as "
+                    "'--pinned-dependency PACKAGE_NAME=PACKAGE_VERSION'"
+                )
+                sys.exit(1)
         attributes["pinned_package_versions"] = {
             _name: _version
-            for _name, _version in (x.split("=") for x in pinned_dependency)
+            for _name, _version in (p.split("=") for p in pinned_dependency)
         }
     task_collect = TaskCollectPip(**attributes)
 
