@@ -403,7 +403,9 @@ async def test_workflow_apply(
     """
 
     # Collect tasks
-    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
+    PACKAGE_NAME = (
+        testdata_path / "fractal_tasks_core_alpha-0.0.1a0-py3-none-any.whl"
+    )
     WORKFLOW_NAME = "mywf"
     DATASET_NAME = "myds"
     res0 = await invoke(f"task collect {PACKAGE_NAME}")
