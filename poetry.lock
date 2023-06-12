@@ -624,7 +624,7 @@ sqlalchemy = ["fastapi-users-db-sqlalchemy (>=4.0.0)"]
 
 [[package]]
 name = "fractal-server"
-version = "1.3.0a3"
+version = "1.3.0a4"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -652,8 +652,8 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "main"
-resolved_reference = "fda21d714af385dcf6ff038abab1f9594d1947ae"
+reference = "738-allow-users-to-delete-their-own-tasks"
+resolved_reference = "3bd8df703abc67607abad3a9b2cd1b31e3aab7fb"
 
 [[package]]
 name = "greenlet"
@@ -1909,4 +1909,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "98f9e4a28968a155c038521f5d337d0ad09be32f5bd24a8294ff150d2b02b263"
+content-hash = "8aecb3749cf2248e0ba60a8c429175958765d5e365ba50189a5e09580274cb6b"
