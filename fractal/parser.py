@@ -295,6 +295,11 @@ task_collect_parser.add_argument(
         "`fractal-tasks-core[torch,tensorflow]`"
     ),
 )
+task_collect_parser.add_argument(
+    "--pinned-dependency",
+    action="append",
+    help="List of 'package_name:package_version' to be pinned",  # FIXME
+)
 
 # task check-collection
 task_check_collection_parser = task_subparsers.add_parser(
@@ -356,11 +361,6 @@ task_new_parser.add_argument(
     help="Task version",
 )
 task_new_parser.add_argument(
-    "--default-args-file",
-    help="Path to JSON file with default task arguments",
-    type=str,
-)
-task_new_parser.add_argument(
     "--meta-file",
     help="Path to JSON file with additional parameters useful for execution",
     type=str,
@@ -405,14 +405,6 @@ task_edit_parser.add_argument(
     "--new-output-type",
     type=str,
     help="New output type",
-)
-task_edit_parser.add_argument(
-    "--default-args-file",
-    type=str,
-    help=(
-        "Path to JSON serialised file containing updates to the current"
-        "`default_args` dictionary"
-    ),
 )
 task_edit_parser.add_argument(
     "--meta-file",

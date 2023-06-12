@@ -31,6 +31,7 @@ async def task_collect_pip(
     package_version: Optional[str] = None,
     python_version: Optional[str] = None,
     package_extras: Optional[str] = None,
+    pinned_dependency: Optional[list[str]] = None,
     batch: bool = False,
 ) -> BaseInterface:
 
@@ -42,6 +43,18 @@ async def task_collect_pip(
         attributes["python_version"] = python_version
     if package_extras:
         attributes["package_extras"] = package_extras
+    if pinned_dependency:
+        for pin in pinned_dependency:
+            if len(pin.split("=")) != 2:
+                logging.error(
+                    f"Invalid pin: {pin}.\nPins must be written as "
+                    "'--pinned-dependency PACKAGE_NAME=PACKAGE_VERSION'"
+                )
+                sys.exit(1)
+        attributes["pinned_package_versions"] = {
+            _name: _version
+            for _name, _version in (p.split("=") for p in pinned_dependency)
+        }
     task_collect = TaskCollectPip(**attributes)
 
     res = await client.post(
@@ -65,7 +78,6 @@ async def task_collection_check(
     state_id: int,
     include_logs: bool,
     do_not_separate_logs: bool = False,
-    **kwargs,
 ) -> BaseInterface:
 
     res = await client.get(
@@ -99,16 +111,12 @@ async def post_task(
     input_type: str = "Any",
     output_type: str = "Any",
     version: Optional[str] = None,
-    default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
     batch: bool = False,
 ) -> BaseInterface:
     optionals = {}
     if version:
         optionals["version"] = version
-    if default_args_file:
-        with open(default_args_file, "r") as f:
-            optionals["default_args"] = json.load(f)
     if meta_file:
         with open(meta_file, "r") as f:
             optionals["meta"] = json.load(f)
@@ -140,7 +148,6 @@ async def patch_task(
     new_input_type: Optional[str] = None,
     new_output_type: Optional[str] = None,
     new_version: Optional[str] = None,
-    default_args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
 ) -> BaseInterface:
 
@@ -162,17 +169,14 @@ async def patch_task(
     update = {}
     if new_name:
         update["name"] = new_name
-    if new_command:
-        update["command"] = new_command
-    if new_version:
-        update["version"] = new_version
     if new_input_type:
         update["input_type"] = new_input_type
     if new_output_type:
         update["output_type"] = new_output_type
-    if default_args_file:
-        with open(default_args_file, "r") as f:
-            update["default_args"] = json.load(f)
+    if new_command:
+        update["command"] = new_command
+    if new_version:
+        update["version"] = new_version
     if meta_file:
         with open(meta_file, "r") as f:
             update["meta"] = json.load(f)

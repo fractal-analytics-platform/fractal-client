@@ -141,10 +141,13 @@ async def test_task_new(register_user, invoke):
     assert res.retcode == 0
     assert res.data["name"] == "_name"
     assert res.data["command"] == "_command"
-    assert res.data["source"] == "_source"
+    assert res.data["source"] == f"{register_user['username']}:_source"
     assert res.data["input_type"] == res.data["output_type"] == "Any"
     assert res.data["version"] == "_version"
-    assert res.data["default_args"] == res.data["meta"] == {}
+    assert res.data["meta"] == {}
+    assert res.data["args_schema"] is None
+    assert res.data["args_schema_version"] is None
+
     assert "owner" in res.data.keys()
     first_task_id = int(res.data["id"])
 
@@ -266,22 +269,11 @@ async def test_task_edit(
     # Test `file not found` errors
     NEW_FILE = "foo.json"
     with pytest.raises(FileNotFoundError):
-        res = await invoke_as_superuser(
-            f"task edit --id {task_id} --default-args-file {NEW_FILE}"
-        )
-    with pytest.raises(FileNotFoundError):
         await invoke_as_superuser(
             f"task edit --id {task_id} --meta-file {NEW_FILE}"
         )
 
     # Test successful edit of dictionary attributes
-    args_file = str(testdata_path / "task_edit_json/default_args.json")
-    res = await invoke_as_superuser(
-        f"task edit --id {task_id} --default-args-file {args_file}"
-    )
-    debug(res)
-    debug(res.data)
-    assert res.retcode == 0
     meta_file = str(testdata_path / "task_edit_json/meta.json")
     res = await invoke_as_superuser(
         f"task edit --id {task_id} --meta-file {meta_file}"
@@ -352,7 +344,6 @@ async def test_task_list(register_user, invoke, testdata_path):
     for task in task_list:
         for key in [
             "command",
-            "default_args",
             "meta",
             "input_type",
             "output_type",
@@ -377,3 +368,39 @@ async def test_task_list(register_user, invoke, testdata_path):
     assert task_list[4]["name"] == custom_task_name
     assert task_list[4]["version"] == custom_task_version
     assert task_list[4]["owner"] is not None
+
+
+async def test_pin(register_user, invoke, testdata_path, caplog):
+
+    PACKAGE = "fractal_tasks_core_alpha-0.0.1a0-py3-none-any.whl"
+    PIN = "pydantic=1.10.3"
+
+    with pytest.raises(SystemExit):
+        await invoke(
+            f"task collect {testdata_path / PACKAGE} "
+            f"--pinned-dependency {PIN.replace('=','~')}"
+        )
+    assert "Pins must be written as" in caplog.records[-1].msg
+
+    res = await invoke(
+        f"task collect {testdata_path / PACKAGE} --pinned-dependency {PIN}"
+    )
+    assert res.retcode == 0
+    state_id = res.data["id"]
+    starting_time = time.perf_counter()
+    while True:
+        res = await invoke(f"task check-collection {state_id}")
+        time.sleep(1)
+        if res.data["data"]["status"] == "OK":
+            break
+        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+
+    res = await invoke(f"task check-collection {state_id}")
+    assert res.retcode == 0
+    assert (
+        f"Currently installed version of {PIN.split('=')[0]}"
+        in res.data["data"]["log"]
+    ) and (
+        f"differs from pinned version ({PIN.split('=')[1]})"
+        in res.data["data"]["log"]
+    )
