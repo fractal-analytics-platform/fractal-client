@@ -624,7 +624,7 @@ sqlalchemy = ["fastapi-users-db-sqlalchemy (>=4.0.0)"]
 
 [[package]]
 name = "fractal-server"
-version = "1.3.0a4"
+version = "1.3.0a5"
 description = "Server component of the Fractal analytics platform"
 category = "dev"
 optional = false
@@ -637,6 +637,7 @@ aiosqlite = "^0.17.0"
 alembic = "^1.9.1"
 fastapi = "^0.95.0"
 fastapi-users = {version = "^10.1", extras = ["oauth"]}
+greenlet = "*"
 pydantic = ">=1.10.8"
 python-dotenv = "^0.20.0"
 sqlalchemy = "^1.4"
@@ -652,8 +653,8 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "737-expose-args_schema-and-args_schema_version-in-task-postpatch-endpoints"
-resolved_reference = "d2c2475b5879ce27a35411d7876b39e92e67de7b"
+reference = "main"
+resolved_reference = "24d125868091a0e5271d479254f8527346d98ad1"
 
 [[package]]
 name = "greenlet"
@@ -1909,4 +1910,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8db11ed92beb272d512f962c6abc301e8bbe258351d9d531891a209d02f16c9b"
+content-hash = "98f9e4a28968a155c038521f5d337d0ad09be32f5bd24a8294ff150d2b02b263"
