@@ -372,12 +372,15 @@ task_new_parser.add_argument(
 )
 task_new_parser.add_argument(
     "--args-schema",
-    help="Path to JSON schema",
+    help="Path to file containing JSON Schema for task arguments",
     type=str,
 )
 task_new_parser.add_argument(
     "--args-schema-version",
-    help="JSON schema version",
+    help=(
+        "Label encoding how the task-arguments JSON Schema was generated "
+        "(e.g. `pydantic_v1`)."
+    ),
     type=str,
 )
 
