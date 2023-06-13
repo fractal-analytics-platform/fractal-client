@@ -199,4 +199,20 @@ async def delete_task(
     version: Optional[str] = None,
 ) -> PrintInterface:
 
-    raise NotImplementedError("task_delete")
+    if id:
+        if version:
+            logging.error(
+                "Too many arguments: cannot provide both `id` and `version`."
+            )
+            sys.exit(1)
+    else:
+        try:
+            id = await get_task_id_from_cache(
+                client=client, task_name=name, version=version
+            )
+        except FractalCacheError as e:
+            print(e)
+            sys.exit(1)
+    res = await client.delete(f"{settings.BASE_URL}/task/{id}")
+    check_response(res, expected_status_code=204)
+    return PrintInterface(retcode=0, data="")

@@ -4,6 +4,7 @@
 
 * Align with [fractal-server 1.3.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#130), by updating all relevant endpoint path/query/body parameters (\#479).
 * Add `fractal job stop` command (\#485).
+* Add `fractal task delete` command (\#510).
 * Add task ID/name/version disambiguation to `task edit` and `workflow add-task` (\#499).
 * Specific changes to existing commands:
     * Make `project_id` a required positional argument of `fractal {workflow,dataset,job}` commands (\#479).
@@ -15,7 +16,7 @@
     * Add `--username/--new-username` to `fractal user` subcommands (\#493).
     * Remove `--private` option for `fractal task collect` (\#493).
     * Add `--version` to `fractal task {new,edit}` subcommands (\#493).
-    * Split `task-id-or-name` argument of `task edit` and `workflow add-task` into two arguments (\#504)
+    * Split `task-id-or-name` argument of `task edit` and `workflow add-task` into two arguments (\#504).
     * Add `--pinned-dependency` argument to `task collect` (\#508).
 * Package and repository:
     * Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
