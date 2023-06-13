@@ -125,8 +125,8 @@ async def post_task(
     if args_schema:
         with open(args_schema, "r") as f:
             optionals["args_schema"] = json.load(f)
-        if args_schema_version:
-            optionals["args_schema_version"] = args_schema_version
+    if args_schema_version:
+        optionals["args_schema_version"] = args_schema_version
 
     payload = TaskCreate(
         name=name,
