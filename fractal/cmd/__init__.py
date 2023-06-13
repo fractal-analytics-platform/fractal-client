@@ -164,6 +164,8 @@ async def task(
             "output_type",
             "version",
             "meta_file",
+            "args_schema",
+            "args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await post_task(client, batch=batch, **function_kwargs)
@@ -178,6 +180,8 @@ async def task(
             "new_output_type",
             "new_version",
             "meta_file",
+            "new_args_schema",
+            "new_args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await patch_task(client, **function_kwargs)

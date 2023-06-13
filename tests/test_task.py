@@ -133,10 +133,19 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     assert res0.data["data"]["info"] == "Already installed"
 
 
-async def test_task_new(register_user, invoke):
+async def test_task_new(register_user, invoke, tmp_path):
 
     # create a new task with just positional required args
-    res = await invoke("task new _name _command _source --version _version")
+
+    schema_path = str(tmp_path / "schema.json")
+    schema = dict(key1=1, key2=[2, "3"])
+    with open(schema_path, "w") as f:
+        json.dump(schema, f)
+
+    res = await invoke(
+        "task new _name _command _source --version _version "
+        f"--args-schema {schema_path} --args-schema-version 1.0.0"
+    )
     res.show()
     assert res.retcode == 0
     assert res.data["name"] == "_name"
@@ -145,8 +154,8 @@ async def test_task_new(register_user, invoke):
     assert res.data["input_type"] == res.data["output_type"] == "Any"
     assert res.data["version"] == "_version"
     assert res.data["meta"] == {}
-    assert res.data["args_schema"] is None
-    assert res.data["args_schema_version"] is None
+    assert res.data["args_schema"] == schema
+    assert res.data["args_schema_version"] == "1.0.0"
 
     assert "owner" in res.data.keys()
     first_task_id = int(res.data["id"])
@@ -173,9 +182,18 @@ async def test_task_edit(
     register_user,
     invoke,
     invoke_as_superuser,
+    tmp_path,
     testdata_path: Path,
 ):
-    task = await invoke("task new _name _command _source")
+    schema_path = str(tmp_path / "schema.json")
+    schema = dict(key1=1, key2=[2, "3"])
+    with open(schema_path, "w") as f:
+        json.dump(schema, f)
+
+    task = await invoke(
+        "task new _name _command _source "
+        f"--args-schema {schema_path} --args-schema-version 1.0.0"
+    )
     task.show()
     assert task.retcode == 0
     task_id = task.data["id"]
@@ -281,6 +299,19 @@ async def test_task_edit(
     debug(res)
     debug(res.data)
     assert res.retcode == 0
+
+    # Test succesful edit of args_schema (and args_schema_version)
+    new_schema_path = str(tmp_path / "new_schema.json")
+    new_schema = dict(key1=159, key3=None)
+    with open(new_schema_path, "w") as f:
+        json.dump(new_schema, f)
+    res = await invoke_as_superuser(
+        f"task edit --id {task_id} --new-args-schema {new_schema_path} "
+        "--new-args-schema-version 1.2.3"
+    )
+    assert res.retcode == 0
+    assert res.data["args_schema"] == new_schema
+    assert res.data["args_schema_version"] == "1.2.3"
 
 
 async def test_task_delete(

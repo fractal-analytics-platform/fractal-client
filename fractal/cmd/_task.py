@@ -110,9 +110,11 @@ async def post_task(
     source: str,
     input_type: str = "Any",
     output_type: str = "Any",
+    batch: bool = False,
     version: Optional[str] = None,
     meta_file: Optional[str] = None,
-    batch: bool = False,
+    args_schema: Optional[str] = None,
+    args_schema_version: Optional[str] = None,
 ) -> BaseInterface:
     optionals = {}
     if version:
@@ -120,6 +122,12 @@ async def post_task(
     if meta_file:
         with open(meta_file, "r") as f:
             optionals["meta"] = json.load(f)
+    if args_schema:
+        with open(args_schema, "r") as f:
+            optionals["args_schema"] = json.load(f)
+    if args_schema_version:
+        optionals["args_schema_version"] = args_schema_version
+
     payload = TaskCreate(
         name=name,
         command=command,
@@ -149,6 +157,8 @@ async def patch_task(
     new_output_type: Optional[str] = None,
     new_version: Optional[str] = None,
     meta_file: Optional[str] = None,
+    new_args_schema: Optional[str] = None,
+    new_args_schema_version: Optional[str] = None,
 ) -> BaseInterface:
 
     if id:
@@ -180,6 +190,11 @@ async def patch_task(
     if meta_file:
         with open(meta_file, "r") as f:
             update["meta"] = json.load(f)
+    if new_args_schema:
+        with open(new_args_schema, "r") as f:
+            update["args_schema"] = json.load(f)
+    if new_args_schema_version:
+        update["args_schema_version"] = new_args_schema_version
 
     task_update = TaskUpdate(**update)
     payload = task_update.dict(exclude_unset=True)

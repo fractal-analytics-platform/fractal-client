@@ -370,6 +370,19 @@ task_new_parser.add_argument(
     help="Path to JSON file with additional parameters useful for execution",
     type=str,
 )
+task_new_parser.add_argument(
+    "--args-schema",
+    help="Path to file containing JSON Schema for task arguments",
+    type=str,
+)
+task_new_parser.add_argument(
+    "--args-schema-version",
+    help=(
+        "Label encoding how the task-arguments JSON Schema was generated "
+        "(e.g. `pydantic_v1`)."
+    ),
+    type=str,
+)
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(
@@ -424,7 +437,18 @@ task_edit_parser.add_argument(
     type=str,
     help="New version",
 )
-
+task_edit_parser.add_argument(
+    "--new-args-schema",
+    help="Path to file containing the new JSON Schema for task arguments",
+    type=str,
+)
+task_edit_parser.add_argument(
+    "--new-args-schema-version",
+    help=(
+        "New label encoding how the task-arguments JSON Schema was generated."
+    ),
+    type=str,
+)
 
 # task delete
 task_delete_parser = task_subparsers.add_parser(

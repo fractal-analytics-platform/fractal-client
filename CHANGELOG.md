@@ -18,6 +18,8 @@
     * Add `--version` to `fractal task {new,edit}` subcommands (\#493).
     * Split `task-id-or-name` argument of `task edit` and `workflow add-task` into two arguments (\#504).
     * Add `--pinned-dependency` argument to `task collect` (\#508).
+    * Add `--args-schema` and `--args-schema-version` arguments to `task new` command (\#511).
+    * Add `--new-args-schema` and `--new-args-schema-version` arguments to `task edit` command (\#511).
 * Package and repository:
     * Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
     * Require pydantic version to be `>=1.10.8` (\#486, \#490).
