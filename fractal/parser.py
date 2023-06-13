@@ -370,6 +370,16 @@ task_new_parser.add_argument(
     help="Path to JSON file with additional parameters useful for execution",
     type=str,
 )
+task_new_parser.add_argument(
+    "--args-schema",
+    help="Path to JSON schema",
+    type=str,
+)
+task_new_parser.add_argument(
+    "--args-schema-version",
+    help="JSON schema version",
+    type=str,
+)
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(
@@ -424,7 +434,16 @@ task_edit_parser.add_argument(
     type=str,
     help="New version",
 )
-
+task_new_parser.add_argument(
+    "--new-args-schema",
+    help="Path to new JSON schema",
+    type=str,
+)
+task_new_parser.add_argument(
+    "--new-args-schema-version",
+    help="New JSON schema version",
+    type=str,
+)
 
 # task delete
 task_delete_parser = task_subparsers.add_parser(
