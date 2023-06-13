@@ -298,7 +298,12 @@ task_collect_parser.add_argument(
 task_collect_parser.add_argument(
     "--pinned-dependency",
     action="append",
-    help="List of 'package_name:package_version' to be pinned",  # FIXME
+    help=(
+        "Package/version pair representing a pinned-version dependency, in "
+        "the form `collect fractal-tasks-core --pinned-dependency "
+        "pydantic=1.10.0`. Include `--pinned-dependency` multiple times to "
+        "pin several packages to specific versions."
+    ),
 )
 
 # task check-collection
