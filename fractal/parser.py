@@ -439,12 +439,14 @@ task_edit_parser.add_argument(
 )
 task_edit_parser.add_argument(
     "--new-args-schema",
-    help="Path to new JSON schema",
+    help="Path to file containing the new JSON Schema for task arguments",
     type=str,
 )
 task_edit_parser.add_argument(
     "--new-args-schema-version",
-    help="New JSON schema version",
+    help=(
+        "New label encoding how the task-arguments JSON Schema was generated."
+    ),
     type=str,
 )
 
