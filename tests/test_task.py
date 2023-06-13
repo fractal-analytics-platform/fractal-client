@@ -310,7 +310,7 @@ async def test_task_delete(
         await invoke(f"task delete --id {task_id} --version {VERSION}")
     # Test fail "name and wrong version"
     with pytest.raises(SystemExit):
-        await invoke(f"task delete --name {NAME} --version {VERSION+'_'}")
+        await invoke(f"task delete --name {NAME} --version INVALID_VERSION")
 
     # Test sucess
     res = await invoke("task list")
