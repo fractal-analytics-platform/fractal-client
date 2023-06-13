@@ -434,12 +434,12 @@ task_edit_parser.add_argument(
     type=str,
     help="New version",
 )
-task_new_parser.add_argument(
+task_edit_parser.add_argument(
     "--new-args-schema",
     help="Path to new JSON schema",
     type=str,
 )
-task_new_parser.add_argument(
+task_edit_parser.add_argument(
     "--new-args-schema-version",
     help="New JSON schema version",
     type=str,
