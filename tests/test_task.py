@@ -283,17 +283,44 @@ async def test_task_edit(
     assert res.retcode == 0
 
 
-async def test_task_delete(register_user, invoke):
+async def test_task_delete(
+    register_user, user_factory, invoke, invoke_as_superuser
+):
     """
-    This is currently a placeholder test, since task-delete is not implemented
+    Test task delete
     """
-    res = await invoke("task new _name _command _source")
-    debug(res.data)
+    NAME = "_name"
+    VERSION = "1.0.0"
+    task = await invoke(
+        f"task new {NAME} _command _source --version {VERSION}"
+    )
+    task.show()
+    assert task.retcode == 0
+    task_id = task.data["id"]
+
+    # Test access control
+    with pytest.raises(SystemExit):
+        EMAIL, PASSWORD = "foo@bar.xy", "abc"
+        await user_factory(email=EMAIL, password=PASSWORD)
+        res = await invoke(
+            f"-u {EMAIL} -p {PASSWORD} task delete --id {task_id}"
+        )
+    # Test fail "id and version"
+    with pytest.raises(SystemExit):
+        await invoke(f"task delete --id {task_id} --version {VERSION}")
+    # Test fail "name and wrong version"
+    with pytest.raises(SystemExit):
+        await invoke(f"task delete --name {NAME} --version {VERSION+'_'}")
+
+    # Test sucess
+    res = await invoke("task list")
+    task_list = res.data
+    assert len(task_list) == 1
+    res = await invoke(f"task delete --name {NAME} --version {VERSION}")
     assert res.retcode == 0
-    task_id = res.data["id"]
-    with pytest.raises(NotImplementedError):
-        debug(f"task delete --id {task_id}")
-        res = await invoke(f"task delete --id {task_id}")
+    res = await invoke("task list")
+    task_list = res.data
+    assert len(task_list) == 0
 
 
 async def test_task_list(register_user, invoke, testdata_path):

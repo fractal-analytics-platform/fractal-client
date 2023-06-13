@@ -653,7 +653,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "738-allow-users-to-delete-their-own-tasks"
-resolved_reference = "3bd8df703abc67607abad3a9b2cd1b31e3aab7fb"
+resolved_reference = "64520b2936eeaa79e2d4a4f4c6a6c8e08d75d681"
 
 [[package]]
 name = "greenlet"
