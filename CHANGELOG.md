@@ -11,7 +11,7 @@
     * For `edit` commands, always prepend the new arguments with `new`, e.g. as in `task edit ... --new-version` (\#498).
     * Add `--type` optional argument to `fractal dataset new` command (\#479).
     * For `fractal workflow apply`:
-        * Ttransform `project_id` from option to positional argument (\#479).
+        * Transform `project_id` from option to positional argument (\#479).
         * Make `output_dataset_id` a required positional argument (\#483).
     * Add `--username/--new-username` to `fractal user` subcommands (\#493).
     * Remove `--private` option for `fractal task collect` (\#493).
@@ -26,6 +26,7 @@
     * Make `sqlmodel` a development depedency (\#493).
     * Improve handling of a `ConnectError` in the CI (\#502).
     * Remove arbitrary `kwargs` from internal functions (\#503).
+* Add warning for import/export of workflows with custom tasks (\#513).
 
 # 1.2.0
 
