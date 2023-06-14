@@ -30,6 +30,11 @@
                 "output_type": "Any",
                 "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy_parallel"
             }
+        },
+        {
+            "task": {
+                "source": "custom_source"
+            }
         }
     ]
 }
