@@ -20,13 +20,14 @@
     * Add `--pinned-dependency` argument to `task collect` (\#508).
     * Add `--args-schema` and `--args-schema-version` arguments to `task new` command (\#511).
     * Add `--new-args-schema` and `--new-args-schema-version` arguments to `task edit` command (\#511).
+    * Raise warning when importing/exporting workflows with custom tasks (\#513).
 * Package and repository:
     * Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (\#481).
     * Require pydantic version to be `>=1.10.8` (\#486, \#490).
     * Make `sqlmodel` a development depedency (\#493).
     * Improve handling of a `ConnectError` in the CI (\#502).
     * Remove arbitrary `kwargs` from internal functions (\#503).
-* Add warning for import/export of workflows with custom tasks (\#513).
+
 
 # 1.2.0
 
