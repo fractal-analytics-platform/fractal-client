@@ -254,6 +254,7 @@ async def workflow_apply(
     apply_wf_read = check_response(
         res, expected_status_code=202, coerce=ApplyWorkflowRead
     )
+
     return RichJsonInterface(retcode=0, data=apply_wf_read.sanitised_dict())
 
 
@@ -270,6 +271,16 @@ async def workflow_import(
     wf_read = check_response(
         res, expected_status_code=201, coerce=WorkflowRead
     )
+
+    for workflow_task in wf_read.task_list:
+        if workflow_task.task.owner is None:
+            logging.warning(
+                f"Custom Tasks (like the one with id={workflow_task.task.id} "
+                f"and source='{workflow_task.task.source}') are not meant to "
+                "be portable; re-importing this workflow may not work as "
+                "expected."
+            )
+
     if batch:
         datastr = f"{wf_read.id}"
         for wftask in wf_read.task_list:
@@ -295,6 +306,16 @@ async def workflow_export(
     workflow = check_response(
         res, expected_status_code=200, coerce=WorkflowExport
     )
+
+    for workflow_task in workflow.task_list:
+        if workflow_task.task.owner is None:
+            logging.warning(
+                f"Custom Tasks (like the one with id={workflow_task.task.id} "
+                f"and source='{workflow_task.task.source}') are not meant to "
+                " be portable; re-importing this workflow may not work as "
+                "expected."
+            )
+
     with Path(json_file).open("w") as f:
         json.dump(workflow.dict(), f, indent=2)
     return PrintInterface(
