@@ -610,7 +610,7 @@ async def test_workflow_import(
     assert caplog.records[-1].msg == (
         f"Custom Tasks (like the one with id={t.id} and "
         "source='custom_source') are not meant to be portable; "
-        "re-importing this workflow may not work as expected."
+        "importing this workflow may not work as expected."
     )
 
     imported_workflow = res.data

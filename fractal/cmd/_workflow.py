@@ -277,7 +277,7 @@ async def workflow_import(
             logging.warning(
                 f"Custom Tasks (like the one with id={workflow_task.task.id} "
                 f"and source='{workflow_task.task.source}') are not meant to "
-                "be portable; re-importing this workflow may not work as "
+                "be portable; importing this workflow may not work as "
                 "expected."
             )
 
@@ -308,9 +308,8 @@ async def workflow_export(
     )
 
     for workflow_task in workflow.task_list:
-        if any(
-            not workflow_task.task.source.startswith(x)
-            for x in ("pip_local:", "pip_remote:")
+        if not workflow_task.task.source.startswith(
+            ("pip_local:", "pip_remote:")
         ):
             logging.warning(
                 "Custom Tasks (like the one with "
