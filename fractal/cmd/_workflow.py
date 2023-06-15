@@ -272,10 +272,11 @@ async def workflow_import(
         res, expected_status_code=201, coerce=WorkflowRead
     )
 
-    warnings = []
-    for workflow_task in wf_read.task_list:
-        if workflow_task.task.owner:
-            warnings.append((workflow_task.task.source))
+    warnings = [
+        workflow_task.task.source
+        for workflow_task in wf_read.task_list
+        if workflow_task.task.owner
+    ]
     if warnings:
         sources_str = ", ".join([f"'{s}'" for s in warnings])
         logging.warning(
@@ -310,12 +311,13 @@ async def workflow_export(
         res, expected_status_code=200, coerce=WorkflowExport
     )
 
-    warnings = []
-    for workflow_task in workflow.task_list:
+    warnings = [
+        workflow_task.task.source
+        for workflow_task in workflow.task_list
         if not workflow_task.task.source.startswith(
             ("pip_local:", "pip_remote:")
-        ):
-            warnings.append(workflow_task.task.source)
+        )
+    ]
     if warnings:
         sources_str = ", ".join([f"'{s}'" for s in warnings])
         logging.warning(
