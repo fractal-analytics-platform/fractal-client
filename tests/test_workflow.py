@@ -536,17 +536,31 @@ async def test_workflow_export(
     invoke,
     workflow_factory,
     tmp_path: Path,
+    task_factory,
+    caplog,
 ):
     NAME = "WorkFlow"
     wf = await workflow_factory(name=NAME)
     prj_id = wf.project_id
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")
+
+    task = await task_factory(owner="exact-lab")
+    res = await invoke(
+        f"workflow add-task {prj_id} {wf_id} --task-id {task.id}"
+    )
+    assert res.retcode == 0
+
     res = await invoke(
         f"workflow export {prj_id} {wf_id} --json-file {filename}"
     )
-    debug(res.data)
     assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        f"'{task.source}'), which are not meant to be portable; "
+        "re-importing this workflow may not work as expected."
+    )
+    debug(res.data)
     with open(filename, "r") as f:
         exported_wf = json.load(f)
         assert exported_wf["name"] == NAME
@@ -561,10 +575,9 @@ async def test_workflow_export(
 async def test_workflow_import(
     register_user,
     invoke,
-    workflow_factory,
-    tmp_path: Path,
     testdata_path: Path,
-    project_factory,
+    task_factory,
+    caplog,
 ):
     # collect tasks
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
@@ -585,6 +598,7 @@ async def test_workflow_import(
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
+    await task_factory(source="custom_source", owner="exact-lab")
     # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
     res = await invoke(
@@ -592,6 +606,12 @@ async def test_workflow_import(
     )
     debug(res.data)
     assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        "'custom_source'), which are not meant to be portable; "
+        "importing this workflow may not work as expected."
+    )
+
     imported_workflow = res.data
 
     # get the workflow from the server, and check that it is the same
