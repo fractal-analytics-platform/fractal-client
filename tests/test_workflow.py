@@ -556,8 +556,8 @@ async def test_workflow_export(
     )
     assert res.retcode == 0
     assert caplog.records[-1].msg == (
-        f"Custom Tasks (like the one with source='{task.source}') are not "
-        "meant to  be portable; "
+        "This workflow includes custom tasks (the ones with sources: "
+        f"'{task.source}'), which are not meant to be portable; "
         "re-importing this workflow may not work as expected."
     )
     debug(res.data)
@@ -598,8 +598,7 @@ async def test_workflow_import(
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
-    t = await task_factory(source="custom_source")
-
+    await task_factory(source="custom_source", owner="exact-lab")
     # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
     res = await invoke(
@@ -608,8 +607,8 @@ async def test_workflow_import(
     debug(res.data)
     assert res.retcode == 0
     assert caplog.records[-1].msg == (
-        f"Custom Tasks (like the one with id={t.id} and "
-        "source='custom_source') are not meant to be portable; "
+        "This workflow includes custom tasks (the ones with sources: "
+        "'custom_source'), which are not meant to be portable; "
         "importing this workflow may not work as expected."
     )
 

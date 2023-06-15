@@ -272,14 +272,17 @@ async def workflow_import(
         res, expected_status_code=201, coerce=WorkflowRead
     )
 
+    warnings = []
     for workflow_task in wf_read.task_list:
-        if workflow_task.task.owner is None:
-            logging.warning(
-                f"Custom Tasks (like the one with id={workflow_task.task.id} "
-                f"and source='{workflow_task.task.source}') are not meant to "
-                "be portable; importing this workflow may not work as "
-                "expected."
-            )
+        if workflow_task.task.owner:
+            warnings.append((workflow_task.task.source))
+    if warnings:
+        sources_str = ", ".join([f"'{s}'" for s in warnings])
+        logging.warning(
+            "This workflow includes custom tasks (the ones with sources: "
+            f"{sources_str}), which are not meant to be portable; "
+            "importing this workflow may not work as expected."
+        )
 
     if batch:
         datastr = f"{wf_read.id}"
@@ -307,16 +310,19 @@ async def workflow_export(
         res, expected_status_code=200, coerce=WorkflowExport
     )
 
+    warnings = []
     for workflow_task in workflow.task_list:
         if not workflow_task.task.source.startswith(
             ("pip_local:", "pip_remote:")
         ):
-            logging.warning(
-                "Custom Tasks (like the one with "
-                f"source='{workflow_task.task.source}') are not meant to "
-                " be portable; re-importing this workflow may not work as "
-                "expected."
-            )
+            warnings.append(workflow_task.task.source)
+    if warnings:
+        sources_str = ", ".join([f"'{s}'" for s in warnings])
+        logging.warning(
+            "This workflow includes custom tasks (the ones with sources: "
+            f"{sources_str}), which are not meant to be portable; "
+            "re-importing this workflow may not work as expected."
+        )
 
     with Path(json_file).open("w") as f:
         json.dump(workflow.dict(), f, indent=2)

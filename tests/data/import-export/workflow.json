@@ -9,11 +9,6 @@
             "meta": {"key": "value"},
             "order": 0,
             "task": {
-                "command": "/SOME/PATH/dummy0/venv/bin/python /SOME/PATH/dummy0/venv/lib/python3.8/site-packages/fractal_tasks_dummy/dummy.py",
-                "input_type": "Any",
-                "meta": {},
-                "name": "dummy",
-                "output_type": "Any",
                 "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy"
             }
         },
@@ -23,11 +18,6 @@
             },
             "order": 1,
             "task": {
-                "command": "/SOME/PATH/dummy0/venv/bin/python /SOME/PATH/dummy0/venv/lib/python3.8/site-packages/fractal_tasks_dummy/dummy_parallel.py",
-                "input_type": "Any",
-                "meta": {"parallelization_level": "index"},
-                "name": "dummy parallel",
-                "output_type": "Any",
                 "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy_parallel"
             }
         },
