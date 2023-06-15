@@ -7,7 +7,6 @@
                 "arg": "value"
             },
             "meta": {"key": "value"},
-            "order": 0,
             "task": {
                 "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy"
             }
@@ -16,7 +15,6 @@
             "args": {
                 "message": "task 1"
             },
-            "order": 1,
             "task": {
                 "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy_parallel"
             }
