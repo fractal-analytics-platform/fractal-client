@@ -184,6 +184,7 @@ async def test_task_edit(
     invoke_as_superuser,
     tmp_path,
     testdata_path: Path,
+    clear_task_cache,
 ):
     schema_path = str(tmp_path / "schema.json")
     schema = dict(key1=1, key2=[2, "3"])
@@ -315,7 +316,7 @@ async def test_task_edit(
 
 
 async def test_task_delete(
-    register_user, user_factory, invoke, invoke_as_superuser
+    register_user, user_factory, invoke, invoke_as_superuser, clear_task_cache,
 ):
     """
     Test task delete

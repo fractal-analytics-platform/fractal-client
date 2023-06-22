@@ -136,6 +136,7 @@ async def test_workflow_add_task(
     task_factory,
     workflow_factory,
     tmp_path: Path,
+    clear_task_cache,
 ):
     """
     GIVEN a workflow

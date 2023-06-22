@@ -27,7 +27,7 @@
     * Make `sqlmodel` a development depedency (\#493).
     * Improve handling of a `ConnectError` in the CI (\#502).
     * Remove arbitrary `kwargs` from internal functions (\#503).
-
+    * Align with latest fractal-server version and update tests (\#517).
 
 # 1.2.0
 
