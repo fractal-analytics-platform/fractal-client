@@ -1,6 +1,12 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 1.3.2
+
+* Fix wrong build in 1.3.1 (include missing `fractal.common` submodule).
+
 # 1.3.1
+
+WARNING: wrong build, do not use
 
 * Pin Pydantic to V1 (\#520).
 
