@@ -1,6 +1,7 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
 * Exclude `common/tests` and other files from build (\#523).
+* Remove obsolete folders from `tests/data` (\#526).
 
 # 1.3.2
 
