@@ -13,6 +13,7 @@ packages = [
 ]
 homepage = "https://github.com/fractal-analytics-platform/fractal"
 license = "BSD-3-Clause"
+exclude = ["fractal/common/tests"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
