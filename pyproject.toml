@@ -16,6 +16,7 @@ license = "BSD-3-Clause"
 exclude = [
 "fractal/.gitignore",
 "fractal/common/tests",
+"fractal/common/requirements",
 "fractal/common/.git*",
 "fractal/common/.pre-commit-config.yaml",
 ]
