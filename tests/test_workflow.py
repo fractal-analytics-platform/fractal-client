@@ -445,26 +445,30 @@ async def test_workflow_apply(
         )
         assert res.retcode == 0
 
-    # Create workflow and add task
+    # Create workflow and add task twice
     res = await invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
     workflow = res.data
     workflow_id = workflow["id"]
     debug(workflow)
     assert res.retcode == 0
-    TASK_ID = 1
-    res = await invoke(
-        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
-    )
-    workflow_task = res.data
-    debug(workflow_task)
-    assert res.retcode == 0
-    TASK_NAME = res.data["task"]["name"]
-    debug(TASK_NAME)
+    for _ in [0, 1]:
+        TASK_ID = 1
+        res = await invoke(
+            f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+        )
+        workflow_task = res.data
+        debug(workflow_task)
+        assert res.retcode == 0
+        TASK_NAME = res.data["task"]["name"]
+        debug(TASK_NAME)
 
     # Call `workflow apply`
+    FIRST_TASK_INDEX = 0
+    LAST_TASK_INDEX = 0
     cmd = (
         f"workflow apply "
-        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
+        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id} "
+        f"--start {FIRST_TASK_INDEX} --end {LAST_TASK_INDEX}"
     )
     debug(cmd)
     res = await invoke(cmd)
@@ -473,6 +477,7 @@ async def test_workflow_apply(
     assert res.retcode == 0
     job_id = job["id"]
     assert job["status"] == "submitted"
+
 
     # Avoid immediately calling `job show` right after `workflow apply`
     time.sleep(1)
@@ -493,6 +498,11 @@ async def test_workflow_apply(
         time.sleep(1)
         assert time.perf_counter() - starting_time < TIMEOUT
     assert job["history"][0] == TASK_NAME
+
+    # Check that job has correct first_task_index and last_task_index
+    # attributes
+    assert job["first_task_index"] == FIRST_TASK_INDEX
+    assert job["last_task_index"] == LAST_TASK_INDEX
 
     # Prepare and run a workflow with a failing task
     args_file = str(tmp_path / "args.json")
