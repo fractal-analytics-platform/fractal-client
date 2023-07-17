@@ -254,6 +254,8 @@ async def workflow(
             "input_dataset_id",
             "output_dataset_id",
             "worker_init",
+            "first_task_index",
+            "last_task_index",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await workflow_apply(client, **function_kwargs)

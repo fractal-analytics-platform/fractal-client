@@ -226,6 +226,8 @@ async def workflow_apply(
     workflow_id: int,
     input_dataset_id: int,
     output_dataset_id: int,
+    first_task_index: Optional[int] = None,
+    last_task_index: Optional[int] = None,
     worker_init: Optional[str] = None,
 ) -> BaseInterface:
     apply_wf_create_dict = dict(
@@ -234,8 +236,12 @@ async def workflow_apply(
         output_dataset_id=output_dataset_id,
     )
     # Prepare ApplyWorkflowCreate object, without None attributes
-    if worker_init:
+    if worker_init is not None:
         apply_wf_create_dict["worker_init"] = worker_init
+    if first_task_index is not None:
+        apply_wf_create_dict["first_task_index"] = first_task_index
+    if last_task_index is not None:
+        apply_wf_create_dict["last_task_index"] = last_task_index
     apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
 
     # Prepare query parameters

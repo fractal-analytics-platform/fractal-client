@@ -604,7 +604,7 @@ sqlalchemy = ["fastapi-users-db-sqlalchemy (>=4.0.0)"]
 
 [[package]]
 name = "fractal-server"
-version = "1.3.3"
+version = "1.3.4"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -633,7 +633,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "04b72688129f64c257fa293d668f96b736548aee"
+resolved_reference = "239008e3e787e3a48155dc3ed67ae2b27a75ed79"
 
 [[package]]
 name = "greenlet"
