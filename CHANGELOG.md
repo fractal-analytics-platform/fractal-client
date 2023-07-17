@@ -1,5 +1,7 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+* Exclude `common/tests` and other files from build (\#523).
+
 # 1.3.2
 
 * Fix wrong build in 1.3.1 (include missing `fractal.common` submodule).
