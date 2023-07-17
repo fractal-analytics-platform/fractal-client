@@ -656,10 +656,24 @@ workflow_apply_parser = workflow_subparsers.add_parser(
     allow_abbrev=False,
 )
 
-workflow_apply_parser.add_argument("project_id")
-workflow_apply_parser.add_argument("workflow_id")
-workflow_apply_parser.add_argument("input_dataset_id")
-workflow_apply_parser.add_argument("output_dataset_id")
+workflow_apply_parser.add_argument("project_id", type=int)
+workflow_apply_parser.add_argument("workflow_id", type=int)
+workflow_apply_parser.add_argument("input_dataset_id", type=int)
+workflow_apply_parser.add_argument("output_dataset_id", type=int)
+workflow_apply_parser.add_argument(
+        "--start",
+        dest="first_task_index",
+        type=int,
+        help="Positional index of the first task to be executed",
+        required=False,
+        )
+workflow_apply_parser.add_argument(
+        "--end",
+        dest="last_task_index",
+        type=int,
+        help="Positional index of the last task to be executed",
+        required=False,
+        )
 workflow_apply_parser.add_argument(
     "-w",
     "--worker-init",
