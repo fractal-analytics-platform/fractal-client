@@ -664,14 +664,20 @@ workflow_apply_parser.add_argument(
         "--start",
         dest="first_task_index",
         type=int,
-        help="Positional index of the first task to be executed",
+        help=(
+            "Positional index of the first task to be executed"
+            " (starting from 0)"
+            ),
         required=False,
         )
 workflow_apply_parser.add_argument(
         "--end",
         dest="last_task_index",
         type=int,
-        help="Positional index of the last task to be executed",
+        help=(
+            "Positional index of the last task to be executed"
+            " (starting from 0)"
+            ),
         required=False,
         )
 workflow_apply_parser.add_argument(
