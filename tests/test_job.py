@@ -36,6 +36,12 @@ async def test_job_show(
         worfklow_id=wf.id,
         status=status,
         log=log,
+        workflow_dump={
+            "name": "my workflow",
+            "id": 1,
+            "project_id": 1,
+            "task_list": [],
+        },
     )
     debug(job)
 
@@ -91,11 +97,23 @@ async def test_job_list(
         working_dir=wd_1.as_posix(),
         worfklow_id=wf_1.id,
         status="running",
+        workflow_dump={
+            "name": "my workflow",
+            "id": 1,
+            "project_id": 1,
+            "task_list": [],
+        },
     )
     job2 = await job_factory(
         working_dir=wd_2.as_posix(),
         worfklow_id=wf_2.id,
         status="done",
+        workflow_dump={
+            "name": "my workflow",
+            "id": 1,
+            "project_id": 1,
+            "task_list": [],
+        },
     )
     debug(job1)
     debug(job2)
