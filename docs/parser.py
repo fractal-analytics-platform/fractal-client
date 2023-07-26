@@ -1,6 +1,6 @@
 """
 The current `parser.py` module belongs to the sphinx-argparse
-(https://github.com/ashb/sphinx-argparse).
+(https://github.com/ashb/sphinx-argparse, v0.4.0).
 Original Copyright 2023 Ash Berlin-Taylor
 License: MIT
 
