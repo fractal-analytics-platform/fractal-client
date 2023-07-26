@@ -1,0 +1,77 @@
+site_name: Fractal Command-line Client
+
+repo_url: https://github.com/fractal-analytics-platform/fractal
+repo_name: fractal
+
+markdown_extensions:
+- admonition
+- pymdownx.details
+- pymdownx.emoji
+- pymdownx.magiclink
+- pymdownx.superfences
+- pymdownx.tabbed:
+    alternate_style: true
+- pymdownx.tasklist
+- toc:
+    permalink: true
+
+theme:
+  name: "material"
+  custom_dir: "docs/overrides"
+  features:
+  - content.code.annotate
+  palette:
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: deep purple
+    accent: light blue
+    toggle:
+      icon: material/weather-sunny
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: deep purple
+    accent: light blue
+    toggle:
+      icon: material/weather-night
+      name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+
+nav:
+  - Home page: index.md
+  - How to install: install.md
+  - Changelog: changelog.md
+  - Code reference: reference/fractal/
+  - Contribute: contribute.md
+
+watch:
+  - fractal
+
+plugins:
+  - search
+  - autorefs
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_signature_annotations: false
+            docstring_section_style: "spacy"
+            docstring_style: "google"
+            show_source: true
+            filters: []
+            show_root_full_path: false
+  - include-markdown
+
+extra_css:
+  - extra.css
+
+copyright: © Copyright 2022, Friedrich Miescher Institute for Biomedical Research and University of Zurich.
