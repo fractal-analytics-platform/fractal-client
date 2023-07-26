@@ -1,0 +1,17 @@
+/* Custom style for blockquotes */
+blockquote {
+  background-color: #e7e3e3d8; /* Light gray background */
+  border: 1px solid #9c27b0; /* Purple border */
+  padding: 10px;
+  margin: 20px 0;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1.6;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}
+
+/* Style the text inside blockquotes */
+blockquote p {
+  margin: 0;
+  color: #333; /* Dark text color */
+}

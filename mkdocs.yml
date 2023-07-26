@@ -3,6 +3,9 @@ site_name: Fractal Command-line Client
 repo_url: https://github.com/fractal-analytics-platform/fractal
 repo_name: fractal
 
+extra_css:
+  - css/mkdocstrings.css
+
 markdown_extensions:
 - admonition
 - pymdownx.details
@@ -19,7 +22,8 @@ theme:
   name: "material"
   custom_dir: "docs/overrides"
   features:
-  - content.code.annotate
+    - content.code.annotate
+    - content.code.copy
   palette:
   - media: "(prefers-color-scheme: light)"
     scheme: default

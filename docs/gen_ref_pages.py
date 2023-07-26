@@ -29,9 +29,9 @@ def to_markdown(
     # Create MarkDown string for title
     name = data["name"]
     if parent_cmd:
-        title_str = "#" * (level + 1) + f" {parent_cmd.title()} {name.title()}\n"
+        title_str = "#" * (level + 1) + f" {parent_cmd} {name}\n"
     else:
-        title_str = "#" * (level + 1) + f" {name.title()}\n"
+        title_str = "#" * (level + 1) + f" {name}\n"
 
     # Create MarkDown string for description
     description = data["description"]
