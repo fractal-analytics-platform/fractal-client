@@ -8,7 +8,7 @@ from textwrap import fill
 
 from fractal.parser import parser_main
 import os
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import sys
 from pathlib import Path
@@ -16,9 +16,8 @@ sys.path.append(Path(__file__).parent.as_posix())
 from parser import parse_parser
 
 
-
 def to_markdown(
-        data: dict[str, str],
+        data: dict[str, Any],
         level: int,
         parent_cmd: Optional[str] = None,
         ) -> str:
@@ -26,33 +25,65 @@ def to_markdown(
     Given a `data` object with keys `name`, `description` and `usage`, produce
     a markdown string.
     """
-    name = data["name"]
-    description = data["description"]
-    usage = data["usage"].replace("gen_ref_pages.py", "fractal")  # FIXME: why is this needed??  # noqa
 
     # Create MarkDown string for title
+    name = data["name"]
     if parent_cmd:
         title_str = "#" * (level + 1) + f" {parent_cmd.title()} {name.title()}\n"
     else:
         title_str = "#" * (level + 1) + f" {name.title()}\n"
 
     # Create MarkDown string for description
+    description = data["description"]
     description_str = f"{description}\n"
 
     # Create MarkDown string for usage code block
+    usage = data["usage"].replace("gen_ref_pages.py", "fractal")  # FIXME: why is this needed??  # noqa
+    while "  " in usage:
+        usage = usage.replace("  ", " ")
     usage = fill(
             usage,
-            width=72,
+            width=80,
             initial_indent='',
             subsequent_indent=(' ' * 16),
+            break_on_hyphens=False,
             )
     usage_str = f"```\n{usage}\n```\n"
+
+    # Create MarkDown string for action groups
+    action_groups_strings = []
+    if "action_groups" in data.keys():
+        for group in data["action_groups"]:
+            title = group["title"]
+
+            # FIXME: how to handle these specific cases? Is it actually useful?
+            if title == "Commands:":
+                continue
+            elif title == "Valid subcommands:":
+                continue
+            elif title == "Valid subcommand":
+                continue
+            elif title in [
+                    "Named Arguments",
+                    "Positional Arguments",
+                    ]:
+                options = group["options"]
+                action_groups_strings.append("#" * (level + 2) + f" {title}\n")
+                for opt in options:
+                    opt_name = ",".join(opt["name"])
+                    opt_help = opt["help"]
+                    action_groups_strings.append(f"- **`{opt_name}`**: {opt_help}\n")
+            else:
+                raise NotImplementedError(title)
+        print()
+    action_groups_str = "\n".join(action_groups_strings)
 
     # Combine strings together
     md_string = "\n".join((
             title_str,
             description_str,
             usage_str,
+            action_groups_str,
             )) + "\n"
 
     return md_string
