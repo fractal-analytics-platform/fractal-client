@@ -10,8 +10,6 @@ from fractal.parser import parser_main
 import os
 from typing import Any, Optional
 
-from devtools import debug  # type: ignore[import]
-
 import sys
 from pathlib import Path
 sys.path.append(Path(__file__).parent.as_posix())
@@ -90,7 +88,6 @@ for child in main["children"]:
             f.write(to_markdown(grandchild, level=1, parent_cmd=name))
 
 with mkdocs_gen_files.open("reference/SUMMARY.md", "w") as nav_file:
-    debug(nav.build_literate_nav())
     nav_file.writelines(nav.build_literate_nav())
 
 
