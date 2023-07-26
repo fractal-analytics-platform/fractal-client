@@ -75,7 +75,7 @@ def to_markdown(
                     action_groups_strings.append(f"- **`{opt_name}`**: {opt_help}\n")
             else:
                 raise NotImplementedError(title)
-        print()
+
     action_groups_str = "\n".join(action_groups_strings)
 
     # Combine strings together
