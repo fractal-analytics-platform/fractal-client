@@ -64,9 +64,6 @@ nav = Nav()
 # Parse main parser
 main = parse_parser(parser_main)
 
-# Create output_dir
-output_dir = "reference"
-
 # Parser level 0
 nav[["fractal"]] = f"fractal/index.md"
 main["name"] = "fractal"
