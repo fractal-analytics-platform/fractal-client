@@ -3,10 +3,6 @@ site_name: Fractal Client
 repo_url: https://github.com/fractal-analytics-platform/fractal
 repo_name: fractal
 
-extra_css:
-  - css/mkdocstrings.css
-  - extra.css
-
 markdown_extensions:
 - admonition
 - pymdownx.details
@@ -76,6 +72,9 @@ plugins:
             filters: []
             show_root_full_path: false
   - include-markdown
+
+extra_css:
+  - extra.css
 
 copyright: |
   © Copyright 2022
