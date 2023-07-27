@@ -6,11 +6,11 @@ from typing import Optional
 
 import mkdocs_gen_files  # type: ignore[import]
 from mkdocs_gen_files import Nav
-from parser import parse_parser
 
 from fractal.parser import parser_main
 
 sys.path.append(Path(__file__).parent.as_posix())
+from parser import parse_parser
 
 
 # FIXME: mutually exclusive group??
