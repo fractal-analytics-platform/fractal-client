@@ -1,29 +1,26 @@
+import sys
 from pathlib import Path
-from typing import Iterable
-from typing import Mapping
+from textwrap import fill
+from typing import Any
+from typing import Optional
 
 import mkdocs_gen_files  # type: ignore[import]
 from mkdocs_gen_files import Nav
-from textwrap import fill
+from parser import parse_parser
 
 from fractal.parser import parser_main
-import os
-from typing import Any, Optional, Union
 
-import sys
-from pathlib import Path
 sys.path.append(Path(__file__).parent.as_posix())
-from parser import parse_parser
 
 
 # FIXME: mutually exclusive group??
-# FIXME: omit arguments from toc
+
 
 def to_markdown(
-        data: dict[str, Any],
-        level: int,
-        parent_cmd: Optional[str] = None,
-        ) -> str:
+    data: dict[str, Any],
+    level: int,
+    parent_cmd: Optional[str] = None,
+) -> str:
     """
     Given a `data` object with keys `name`, `description` and `usage`, produce
     a markdown string.
@@ -41,16 +38,18 @@ def to_markdown(
     description_str = f"{description}\n"
 
     # Create MarkDown string for usage code block
-    usage = data["usage"].replace("gen_ref_pages.py", "fractal")  # FIXME: why is this needed??  # noqa
+    usage = data["usage"].replace(
+        "gen_ref_pages.py", "fractal"
+    )  # FIXME: why is this needed??  # noqa
     while "  " in usage:
         usage = usage.replace("  ", " ")
     usage = fill(
-            usage,
-            width=80,
-            initial_indent='',
-            subsequent_indent=(' ' * 16),
-            break_on_hyphens=False,
-            )
+        usage,
+        width=80,
+        initial_indent="",
+        subsequent_indent=(" " * 16),
+        break_on_hyphens=False,
+    )
     usage_str = f"```\n{usage}\n```\n"
 
     # Create MarkDown string for action groups
@@ -63,11 +62,13 @@ def to_markdown(
             if title == "Commands":
                 continue
             elif title == "Valid sub-commands":
-                action_groups_strings.append("#" * (level + 2) + " Sub-commands")
+                action_groups_strings.append(
+                    "#" * (level + 2) + " Sub-commands"
+                )
             elif title in [
-                    "Named Arguments",
-                    "Positional Arguments",
-                    ]:
+                "Named Arguments",
+                "Positional Arguments",
+            ]:
                 options = group["options"]
                 action_groups_strings.append("#" * (level + 3) + f" {title}\n")
                 # FIXME: add here (?): understand whether there are
@@ -77,7 +78,9 @@ def to_markdown(
                     opt_help = opt["help"]
                     # FIXME: if opt_name in some mutually-exclusive group:
                     #     opt_help += "(incompatible with SOMEOTHEROPTION)
-                    action_groups_strings.append(f"- **`{opt_name}`**: {opt_help}\n")
+                    action_groups_strings.append(
+                        f"- **`{opt_name}`**: {opt_help}\n"
+                    )
                     # FIXME: add here "required" mark?
                     # FIXME: add here "default" mark?
             else:
@@ -86,15 +89,19 @@ def to_markdown(
     action_groups_str = "\n".join(action_groups_strings)
 
     # Combine strings together
-    md_string = "\n".join((
-            title_str,
-            description_str,
-            usage_str,
-            action_groups_str,
-            )) + "\n"
+    md_string = (
+        "\n".join(
+            (
+                title_str,
+                description_str,
+                usage_str,
+                action_groups_str,
+            )
+        )
+        + "\n"
+    )
 
     return md_string
-
 
 
 nav = Nav()
@@ -103,9 +110,9 @@ nav = Nav()
 main = parse_parser(parser_main)
 
 # Parser level 0
-nav[["fractal"]] = f"fractal/index.md"
+nav[["fractal"]] = "fractal/index.md"
 main["name"] = "fractal"
-with mkdocs_gen_files.open(f"reference/fractal/index.md", "w") as f:
+with mkdocs_gen_files.open("reference/fractal/index.md", "w") as f:
     f.write(to_markdown(main, level=0))
 
 # Parser levels 1 and 2 (commands and subcommands)
@@ -124,5 +131,3 @@ for child in main["children"]:
 
 with mkdocs_gen_files.open("reference/SUMMARY.md", "w") as nav_file:
     nav_file.writelines(nav.build_literate_nav())
-
-
