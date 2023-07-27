@@ -1,4 +1,4 @@
-site_name: Fractal Command-line Client
+site_name: Fractal Client
 
 repo_url: https://github.com/fractal-analytics-platform/fractal
 repo_name: fractal
@@ -78,4 +78,10 @@ plugins:
 extra_css:
   - extra.css
 
-copyright: © Copyright 2022, Friedrich Miescher Institute for Biomedical Research and University of Zurich.
+copyright: |
+  © Copyright 2022
+  Friedrich Miescher Institute for Biomedical Research and
+  University of Zurich
+  (see <u><a href="https://github.com/fractal-analytics-platform/fractal/blob/main/LICENSE">
+  LICENSE
+  </a></u>).
