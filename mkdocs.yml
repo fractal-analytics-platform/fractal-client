@@ -45,7 +45,7 @@ theme:
 
 nav:
   - Home page: index.md
-  - How to install: install.md
+  - Install: install.md
   - CLI reference: reference/fractal/
   - Development: development.md
   - Changelog: changelog.md

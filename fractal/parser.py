@@ -46,7 +46,7 @@ parser_main.add_argument(
     ),
 )
 
-subparsers_main = parser_main.add_subparsers(title="Commands:", dest="cmd")
+subparsers_main = parser_main.add_subparsers(title="Commands", dest="cmd")
 
 
 # PROJECT GROUP
@@ -56,7 +56,7 @@ project_parser = subparsers_main.add_parser(
     allow_abbrev=False,
 )
 project_subparsers = project_parser.add_subparsers(
-    title="Valid subcommands:", dest="subcmd", required=True
+    title="Valid sub-commands", dest="subcmd", required=True
 )
 
 # project new
@@ -160,7 +160,7 @@ dataset_parser = subparsers_main.add_parser(
     allow_abbrev=False,
 )
 dataset_subparsers = dataset_parser.add_subparsers(
-    title="Valid subcommands:", dest="subcmd", required=True
+    title="Valid sub-commands", dest="subcmd", required=True
 )
 
 # dataset add-resource
@@ -258,7 +258,7 @@ task_parser = subparsers_main.add_parser(
     allow_abbrev=False,
 )
 task_subparsers = task_parser.add_subparsers(
-    title="Valid subcommands:", dest="subcmd", required=True
+    title="Valid sub-commands", dest="subcmd", required=True
 )
 
 # task list
@@ -484,7 +484,7 @@ workflow_parser = subparsers_main.add_parser(
     allow_abbrev=False,
 )
 workflow_subparsers = workflow_parser.add_subparsers(
-    title="Valid subcommand", dest="subcmd", required=True
+    title="Valid sub-commands", dest="subcmd", required=True
 )
 
 # workflow list
@@ -732,7 +732,7 @@ job_parser = subparsers_main.add_parser(
     allow_abbrev=False,
 )
 job_subparsers = job_parser.add_subparsers(
-    title="Valid subcommand", dest="subcmd", required=True
+    title="Valid sub-commands", dest="subcmd", required=True
 )
 
 # job list
@@ -807,7 +807,7 @@ user_parser = subparsers_main.add_parser(
     allow_abbrev=False,
 )
 user_subparsers = user_parser.add_subparsers(
-    title="Valid subcommand", dest="subcmd", required=True
+    title="Valid sub-commands", dest="subcmd", required=True
 )
 
 # user whoami

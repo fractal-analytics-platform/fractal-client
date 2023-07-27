@@ -16,6 +16,9 @@ sys.path.append(Path(__file__).parent.as_posix())
 from parser import parse_parser
 
 
+# FIXME: mutually exclusive group??
+# FIXME: omit arguments from toc
+
 def to_markdown(
         data: dict[str, Any],
         level: int,
@@ -29,7 +32,7 @@ def to_markdown(
     # Create MarkDown string for title
     name = data["name"]
     if parent_cmd:
-        title_str = "#" * (level + 1) + f" {parent_cmd} {name}\n"
+        title_str = "#" * (level + 2) + f" {parent_cmd} {name}\n"
     else:
         title_str = "#" * (level + 1) + f" {name}\n"
 
@@ -57,22 +60,26 @@ def to_markdown(
             title = group["title"]
 
             # FIXME: how to handle these specific cases? Is it actually useful?
-            if title == "Commands:":
+            if title == "Commands":
                 continue
-            elif title == "Valid subcommands:":
-                continue
-            elif title == "Valid subcommand":
-                continue
+            elif title == "Valid sub-commands":
+                action_groups_strings.append("#" * (level + 2) + " Sub-commands")
             elif title in [
                     "Named Arguments",
                     "Positional Arguments",
                     ]:
                 options = group["options"]
-                action_groups_strings.append("#" * (level + 2) + f" {title}\n")
+                action_groups_strings.append("#" * (level + 3) + f" {title}\n")
+                # FIXME: add here (?): understand whether there are
+                # mutually-exclusive groups, and mark them as such
                 for opt in options:
                     opt_name = ",".join(opt["name"])
                     opt_help = opt["help"]
+                    # FIXME: if opt_name in some mutually-exclusive group:
+                    #     opt_help += "(incompatible with SOMEOTHEROPTION)
                     action_groups_strings.append(f"- **`{opt_name}`**: {opt_help}\n")
+                    # FIXME: add here "required" mark?
+                    # FIXME: add here "default" mark?
             else:
                 raise NotImplementedError(title)
 
