@@ -1,7 +1,7 @@
 /* Custom style for blockquotes */
 blockquote {
   background-color: #e7e3e3d8; /* Light gray background */
-  border: 1px solid #9c27b0; /* Purple border */
+  border: 1px solid #000000; /* Black border */
   padding: 10px;
   margin: 20px 0;
   border-radius: 4px;
