@@ -1,5 +1,7 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+* Move documentation from sphinx to mkdocs (\#532).
+
 # 1.3.3
 
 * Support `workflow apply --start/--end` arguments for submitting a workflow subset (\#527).
