@@ -9,11 +9,8 @@ from mkdocs_gen_files import Nav
 
 from fractal.parser import parser_main
 
-sys.path.append(Path(__file__).parent.as_posix())
-from parser import parse_parser
-
-
-# FIXME: mutually exclusive group??
+sys.path.append(Path(__file__).parent.as_posix())  # noqa: E402
+from parser import parse_parser  # noqa: E402
 
 
 def to_markdown(
@@ -71,13 +68,9 @@ def to_markdown(
             ]:
                 options = group["options"]
                 action_groups_strings.append("#" * (level + 3) + f" {title}\n")
-                # FIXME: add here (?): understand whether there are
-                # mutually-exclusive groups, and mark them as such
                 for opt in options:
                     opt_name = ",".join(opt["name"])
                     opt_help = opt["help"]
-                    # FIXME: if opt_name in some mutually-exclusive group:
-                    #     opt_help += "(incompatible with SOMEOTHEROPTION)
                     action_groups_strings.append(
                         f"- **`{opt_name}`**: {opt_help}\n"
                     )
