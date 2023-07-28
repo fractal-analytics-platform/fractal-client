@@ -7,10 +7,10 @@ from typing import Optional
 import mkdocs_gen_files  # type: ignore[import]
 from mkdocs_gen_files import Nav
 
-from fractal.parser import parser_main
-
 sys.path.append(Path(__file__).parent.as_posix())  # noqa: E402
 from parser import parse_parser  # noqa: E402
+sys.path.append(Path(__file__).parents[1].as_posix())  # noqa: E402
+from fractal.parser import parser_main
 
 
 def to_markdown(
