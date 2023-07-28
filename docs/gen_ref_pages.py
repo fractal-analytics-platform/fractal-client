@@ -35,16 +35,14 @@ def to_markdown(
     description_str = f"{description}\n"
 
     # Create MarkDown string for usage code block
-    usage = data["usage"].replace(
-        "gen_ref_pages.py", "fractal"
-    )  # FIXME: why is this needed??  # noqa
+    usage = data["bare_usage"].replace(Path(__file__).name, "fractal")
     while "  " in usage:
         usage = usage.replace("  ", " ")
     usage = fill(
         usage,
         width=80,
         initial_indent="",
-        subsequent_indent=(" " * 16),
+        subsequent_indent=(" " * 8),
         break_on_hyphens=False,
     )
     usage_str = f"```\n{usage}\n```\n"
@@ -55,7 +53,6 @@ def to_markdown(
         for group in data["action_groups"]:
             title = group["title"]
 
-            # FIXME: how to handle these specific cases? Is it actually useful?
             if title == "Commands":
                 continue
             elif title == "Valid sub-commands":
@@ -71,11 +68,14 @@ def to_markdown(
                 for opt in options:
                     opt_name = ",".join(opt["name"])
                     opt_help = opt["help"]
+                    default = str(opt["default"])
+                    if (default == "None") or ("==SUPPRESS==" in default):
+                        default = ""
+                    else:
+                        default = f" *Default*: `{default}`."
                     action_groups_strings.append(
-                        f"- **`{opt_name}`**: {opt_help}\n"
+                        f"- **`{opt_name}`**: {opt_help}{default}\n"
                     )
-                    # FIXME: add here "required" mark?
-                    # FIXME: add here "default" mark?
             else:
                 raise NotImplementedError(title)
 
