@@ -637,7 +637,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "f8e430efb36dcc6008107814a97d079a0082d29a"
+resolved_reference = "8d1c4d81c469569efbff01c23378a329dd7633b6"
 
 [[package]]
 name = "ghp-import"
