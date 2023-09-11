@@ -11,6 +11,8 @@ from ._dataset import get_dataset
 from ._dataset import patch_dataset
 from ._dataset import post_dataset
 from ._dataset import post_resource
+from ._dataset import get_dataset_history
+from ._dataset import get_dataset_status
 from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
@@ -127,6 +129,14 @@ async def dataset(
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await delete_dataset(client, **function_kwargs)
+    elif subcmd == "history":
+        parameters = ["project_id", "dataset_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_dataset_history(client, **function_kwargs)
+    elif subcmd == "status":
+        parameters = ["project_id", "dataset_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = await get_dataset_status(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface

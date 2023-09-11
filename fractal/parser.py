@@ -250,6 +250,25 @@ dataset_delete_parser = dataset_subparsers.add_parser(
 dataset_delete_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 
+# dataset history
+dataset_history_parser = dataset_subparsers.add_parser(
+    "history",
+    description="Export dataset history as a reproducible worfklow.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+dataset_history_parser.add_argument("project_id", type=int, help="Project ID.")
+dataset_history_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
+
+# dataset status
+dataset_status_parser = dataset_subparsers.add_parser(
+    "status",
+    description="Extract status of WorkflowTasks associated with dataset.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+dataset_status_parser.add_argument("project_id", type=int, help="Project ID.")
+dataset_status_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser(
