@@ -77,9 +77,6 @@ push = true
 "fractal/__init__.py" = [
     '__VERSION__ = "{version}"'
 ]
-"docs/source/conf.py" = [
-    'version = "{version}"',
-]
 
 [tool.poetry.scripts]
 fractal = "fractal.__main__:run"
