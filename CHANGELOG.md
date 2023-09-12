@@ -5,6 +5,7 @@
 * Add new commands `dataset status` and `dataset history` (\#544).
 * Align with fractal-server/fractal-common new `TaskUpdate` model, that accepts `version=None` (\#540).
 * Align with fractal-server/fractal-common new attributes in the Task model (\#534).
+* Align with fractal-common new `ApplyWorkflowRead` model, with optional `workflow_dump` (\#547).
 * Move documentation from sphinx to mkdocs (\#532).
 
 # 1.3.3
