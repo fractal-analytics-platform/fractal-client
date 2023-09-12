@@ -608,7 +608,7 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "p
 
 [[package]]
 name = "fractal-server"
-version = "1.3.5a1"
+version = "1.3.5a7"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -636,8 +636,8 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "793-store-rich-and-machine-readable-history-data-as-a-dataset-attribute"
-resolved_reference = "5f8458fc50f937fe782ccf1a08921fe3a3e9d3a6"
+reference = "main"
+resolved_reference = "4c5d781e03195888fe2c543b52e6190537a7f8bf"
 
 [[package]]
 name = "ghp-import"
@@ -2051,4 +2051,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "33f39e490548bc5c0174e006daae9a73a9a19cbc4a2f71f726c378473f0ffdd7"
+content-hash = "2c785939aa434059ebd63560ed0832355451beaa34324258fe29bcecd49f8ee0"
