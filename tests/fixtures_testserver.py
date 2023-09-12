@@ -184,6 +184,8 @@ async def job_factory(db):
             output_dataset_id=2,
             workflow_id=1,
             worker_init="WORKER_INIT string",
+            first_task_index=9999,
+            last_task_index=9999,
         )
         job_args.update(job_args_override)
         j = ApplyWorkflow(**job_args)
