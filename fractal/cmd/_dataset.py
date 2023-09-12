@@ -9,6 +9,7 @@ from ..common.schemas import DatasetCreate
 from ..common.schemas import DatasetRead
 from ..common.schemas import DatasetUpdate
 from ..common.schemas import ResourceCreate
+from ..common.schemas import WorkflowExport
 from ..common.schemas import ResourceRead
 from ..config import settings
 from ..interface import BaseInterface
@@ -193,3 +194,34 @@ async def delete_dataset(
     )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
+
+
+async def get_dataset_history(
+    client: AuthClient, *, project_id: int, dataset_id: int
+) -> BaseInterface:
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
+        "export_history/"
+    )
+
+    history_workflow = check_response(
+            res,
+            expected_status_code=200,
+            coerce=WorkflowExport,
+            )
+    return RichJsonInterface(retcode=0, data=history_workflow.dict())
+
+
+async def get_dataset_status(
+    client: AuthClient, *, project_id: int, dataset_id: int
+) -> BaseInterface:
+    res = await client.get(
+        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
+        "status/"
+    )
+
+    dataset_status = check_response(
+            res,
+            expected_status_code=200,
+            )
+    return RichJsonInterface(retcode=0, data=dataset_status)

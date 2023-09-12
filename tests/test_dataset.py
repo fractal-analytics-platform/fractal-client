@@ -201,3 +201,30 @@ async def test_delete_resource(register_user, invoke):
     res.show()
     assert res.retcode == 0
     assert resource_id == res.data["id"]
+
+
+async def test_dataset_history_command(register_user, invoke):
+    """
+    Only test the client interface, not the fractal-server business logic.
+    """
+    res = await invoke("project new prj0")
+    project_id = res.data["id"]
+    dataset_id = res.data["dataset_list"][0]["id"]
+
+    debug(f"dataset history {project_id} {dataset_id}")
+    res = await invoke(f"dataset history {project_id} {dataset_id}")
+    res.show()
+    assert res.retcode == 0
+
+
+async def test_dataset_status_command(register_user, invoke):
+    """
+    Only test the client interface, not the fractal-server business logic.
+    """
+    res = await invoke("project new prj0")
+    project_id = res.data["id"]
+    dataset_id = res.data["dataset_list"][0]["id"]
+
+    res = await invoke(f"dataset status {project_id} {dataset_id}")
+    res.show()
+    assert res.retcode == 0

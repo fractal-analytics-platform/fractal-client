@@ -497,6 +497,8 @@ async def test_workflow_apply(
             raise RuntimeError(job)
         time.sleep(1)
         assert time.perf_counter() - starting_time < TIMEOUT
+    # NOTE: this will change in the future (see
+    # https://github.com/fractal-analytics-platform/fractal-server/issues/827)
     assert job["history"][0] == TASK_NAME
 
     # Check that job has correct first_task_index and last_task_index
@@ -539,6 +541,8 @@ async def test_workflow_apply(
         assert time.perf_counter() - starting_time < TIMEOUT
     assert job["log"] is not None
     # Note: the failing task is not added to the history
+    # NOTE: this will change in the future (see
+    # https://github.com/fractal-analytics-platform/fractal-server/issues/827)
     assert len(job["history"]) > 0
 
 
