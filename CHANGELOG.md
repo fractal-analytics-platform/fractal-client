@@ -1,7 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 1.3.4
-
+# Unreleased
 * Align with fractal-server/fractal-common new `TaskUpdate` model, that accepts `version=None` (\#540).
 * Align with fractal-server/fractal-common new attributes in the Task model (\#534).
 * Move documentation from sphinx to mkdocs (\#532).
