@@ -55,7 +55,6 @@ def test_version_parsing():
 
 
 def test_version_sorting():
-
     sorted_versions = sorted([v[0] for v in VERSIONS], key=version.parse)
     debug(sorted_versions)
     assert sorted_versions == SORTED_VERSIONS
