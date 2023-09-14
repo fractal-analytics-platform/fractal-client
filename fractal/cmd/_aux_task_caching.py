@@ -14,11 +14,12 @@ TASKS_CACHE_FILENAME = "tasks"
 
 def _loose_version_parse(v: str) -> packaging.version.Version:
     """
-    Catch InvalidVersion error and return a 0.0.0 version.
+    Catch `InvalidVersion` error and return `Version("0")`.
 
-    This is used in version comparisons. If a version is not parsed correctly,
-    then it should not be considered the "latest" (which is obtained by setting
-    it to 0).
+    This function is used in the comparison of different version strings. If a
+    version cannot be parsed correctly, then it should not be considered the
+    "latest"; we obtain this behavior by returning the "0" version when
+    version-string parsing fails.
 
     Args:
         v: Version string (e.g. `0.10.0a2`).
