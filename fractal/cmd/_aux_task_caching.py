@@ -3,11 +3,34 @@ from pathlib import Path
 from typing import Any
 from typing import Optional
 
+import packaging.version
+
 from ..authclient import AuthClient
 from ..config import settings
 from ..response import check_response
 
 TASKS_CACHE_FILENAME = "tasks"
+
+
+def _loose_version_parse(v: str) -> packaging.version.Version:
+    """
+    Catch `InvalidVersion` error and return `Version("0")`.
+
+    This function is used in the comparison of different version strings. If a
+    version cannot be parsed correctly, then it should not be considered the
+    "latest"; we obtain this behavior by returning the "0" version when
+    version-string parsing fails.
+
+    Args:
+        v: Version string (e.g. `0.10.0a2`).
+
+    Returns:
+        A `Version` object, parsed with `packaging.version.parse`
+    """
+    try:
+        return packaging.version.parse(v)
+    except packaging.version.InvalidVersion:
+        return packaging.version.parse("0")
 
 
 class FractalCacheError(RuntimeError):
@@ -153,7 +176,10 @@ def _search_in_task_list(
                     f"task list:\n{formatted_matching_task_list}"
                     "Please make your request more specific.\n"
                 )
-            max_version = max(_task["version"] for _task in matching_task_list)
+            available_versions = [
+                _task["version"] for _task in matching_task_list
+            ]
+            max_version = max(available_versions, key=_loose_version_parse)
             max_version_tasks = [
                 _task
                 for _task in matching_task_list
