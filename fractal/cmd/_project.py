@@ -4,9 +4,6 @@ from typing import Union
 from rich.table import Table
 
 from ..authclient import AuthClient
-from ..common.schemas import ProjectCreate
-from ..common.schemas import ProjectRead
-from ..common.schemas import ProjectUpdate
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
@@ -23,35 +20,33 @@ async def post_project(
     batch: bool = False,
 ) -> BaseInterface:
     # Prepare a ProjectCreate request body
-    project_dict = dict(name=name)
+    project = dict(name=name)
     if dataset:
-        project_dict["default_dataset_name"] = dataset
-    project = ProjectCreate(**project_dict)
+        project["default_dataset_name"] = dataset
+
     # Send API request
-    res = await client.post(
-        f"{settings.BASE_URL}/project/",
-        json=project.dict(exclude_unset=True),
-    )
-    project = check_response(res, expected_status_code=201, coerce=ProjectRead)
+    res = await client.post(f"{settings.BASE_URL}/project/", json=project)
+    check_response(res, expected_status_code=201)
+    project = res.json()
     if batch:
-        if len(project.dataset_list) > 1:
+        if len(project["dataset_list"]) > 1:
             msg = (
-                f"Created project with {len(project.dataset_list)}>1 "
+                f"Created project with {len(project['dataset_list'])}>1 "
                 "datasets, cannot use --batch to provide standard output."
             )
             raise ValueError(msg)
-        dataset_id = project.dataset_list[0].id
-        return PrintInterface(retcode=0, data=f"{project.id} {dataset_id}")
+        dataset_id = project["dataset_list"][0]["id"]
+        return PrintInterface(retcode=0, data=f"{project['id']} {dataset_id}")
     else:
-        return RichJsonInterface(retcode=0, data=project.dict())
+        return RichJsonInterface(retcode=0, data=project)
 
 
 async def get_project_list(client: AuthClient) -> RichConsoleInterface:
 
     res = await client.get(f"{settings.BASE_URL}/project/")
-    res = check_response(res, expected_status_code=200)
+    check_response(res, expected_status_code=200)
 
-    projects = [ProjectRead(**item) for item in res]
+    projects = res.json()
 
     table = Table(title="Project List")
     table.add_column("ID", style="cyan", no_wrap=True)
@@ -62,16 +57,18 @@ async def get_project_list(client: AuthClient) -> RichConsoleInterface:
 
     for p in projects:
         # Map p.read_only (True/False) to read_only_icon (✅/❌)
-        if p.read_only:
+        if p["read_only"]:
             read_only_icon = "✅"
         else:
             read_only_icon = "❌"
 
-        p_dataset_list = str([dataset.name for dataset in p.dataset_list])
+        p_dataset_list = str(
+            [dataset["name"] for dataset in p["dataset_list"]]
+        )
 
         table.add_row(
-            str(p.id),
-            p.name,
+            str(p["id"]),
+            p["name"],
             str(p_dataset_list),
             read_only_icon,
         )
@@ -85,8 +82,9 @@ async def get_project(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}",
     )
-    project = check_response(res, expected_status_code=200, coerce=ProjectRead)
-    return RichJsonInterface(retcode=0, data=project.dict())
+    check_response(res, expected_status_code=200)
+    project = res.json()
+    return RichJsonInterface(retcode=0, data=project)
 
 
 async def delete_project(
@@ -108,24 +106,20 @@ async def patch_project(
     make_read_only: bool = False,
     remove_read_only: bool = False,
 ) -> Union[RichJsonInterface, PrintInterface]:
-    update = {}
+    project_update = {}
     if new_name:
-        update["name"] = new_name
+        project_update["name"] = new_name
     if make_read_only:
-        update["read_only"] = True
+        project_update["read_only"] = True
     if remove_read_only:
-        update["read_only"] = False
+        project_update["read_only"] = False
 
-    project_update = ProjectUpdate(**update)  # validation
-    payload = project_update.dict(exclude_unset=True)
-
-    if not payload:
+    if not project_update:
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        f"{settings.BASE_URL}/project/{project_id}", json=payload
+        f"{settings.BASE_URL}/project/{project_id}", json=project_update
     )
-    new_project = check_response(
-        res, expected_status_code=200, coerce=ProjectRead
-    )
-    return RichJsonInterface(retcode=0, data=new_project.dict())
+    check_response(res, expected_status_code=200)
+    new_project = res.json()
+    return RichJsonInterface(retcode=0, data=new_project)

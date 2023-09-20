@@ -2,7 +2,6 @@ from os import environ
 
 import pytest
 from devtools import debug
-from pydantic.error_wrappers import ValidationError
 
 EMAIL_USER = "test@testmail.com"
 PWD_USER = "testpassword"
@@ -136,7 +135,7 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     assert res.data["is_superuser"] == new_is_superuser
 
     BAD_CACHE_DIR = "not_absolute"
-    with pytest.raises(ValidationError):
+    with pytest.raises(SystemExit):
         cmd = f"user edit {user_id} --new-cache-dir {BAD_CACHE_DIR}"
         await invoke_as_superuser(cmd)
 

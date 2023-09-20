@@ -4,11 +4,6 @@ import sys
 from typing import Optional
 
 from ..authclient import AuthClient
-from ..common.schemas import StateRead
-from ..common.schemas import TaskCollectPip
-from ..common.schemas import TaskCreate
-from ..common.schemas import TaskRead
-from ..common.schemas import TaskUpdate
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
@@ -36,13 +31,13 @@ async def task_collect_pip(
 ) -> BaseInterface:
 
     # Construct TaskCollectPip object
-    attributes = dict(package=package)
+    task_collect = dict(package=package)
     if package_version:
-        attributes["package_version"] = package_version
+        task_collect["package_version"] = package_version
     if python_version:
-        attributes["python_version"] = python_version
+        task_collect["python_version"] = python_version
     if package_extras:
-        attributes["package_extras"] = package_extras
+        task_collect["package_extras"] = package_extras
     if pinned_dependency:
         for pin in pinned_dependency:
             if len(pin.split("=")) != 2:
@@ -51,25 +46,22 @@ async def task_collect_pip(
                     "'--pinned-dependency PACKAGE_NAME=PACKAGE_VERSION'"
                 )
                 sys.exit(1)
-        attributes["pinned_package_versions"] = {
+        task_collect["pinned_package_versions"] = {
             _name: _version
             for _name, _version in (p.split("=") for p in pinned_dependency)
         }
-    task_collect = TaskCollectPip(**attributes)
 
     res = await client.post(
-        f"{settings.BASE_URL}/task/collect/pip/",
-        json=task_collect.dict(exclude_unset=True),
+        f"{settings.BASE_URL}/task/collect/pip/", json=task_collect
     )
 
-    state = check_response(
-        res, expected_status_code=[200, 201], coerce=StateRead
-    )
+    check_response(res, expected_status_code=[200, 201])
+    state = res.json()
     if batch:
-        output = f"{state.id} {state.data['venv_path']}"
+        output = f"{state['id']} {state['data']['venv_path']}"
         return PrintInterface(retcode=0, data=output)
     else:
-        return RichJsonInterface(retcode=0, data=state.sanitised_dict())
+        return RichJsonInterface(retcode=0, data=state)
 
 
 async def task_collection_check(
@@ -83,22 +75,19 @@ async def task_collection_check(
     res = await client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
     )
-    state = check_response(res, expected_status_code=200, coerce=StateRead)
-
-    state_dict = state.sanitised_dict()
+    check_response(res, expected_status_code=200)
+    state = res.json()
 
     # Remove key-value pairs with None value
-    state_dict["data"] = {
-        key: val for (key, val) in state_dict["data"].items() if val
-    }
+    state["data"] = {key: val for (key, val) in state["data"].items() if val}
 
     if (not include_logs) or do_not_separate_logs:
-        return RichJsonInterface(retcode=0, data=state_dict)
+        return RichJsonInterface(retcode=0, data=state)
     else:
-        log = state_dict["data"].pop("log")
+        log = state["data"].pop("log")
         extra_lines = ["\nThis is the task-collection log:\n", log]
         return RichJsonInterface(
-            retcode=0, data=state_dict, extra_lines=extra_lines
+            retcode=0, data=state, extra_lines=extra_lines
         )
 
 
@@ -116,33 +105,32 @@ async def post_task(
     args_schema: Optional[str] = None,
     args_schema_version: Optional[str] = None,
 ) -> BaseInterface:
-    optionals = {}
-    if version:
-        optionals["version"] = version
-    if meta_file:
-        with open(meta_file, "r") as f:
-            optionals["meta"] = json.load(f)
-    if args_schema:
-        with open(args_schema, "r") as f:
-            optionals["args_schema"] = json.load(f)
-    if args_schema_version:
-        optionals["args_schema_version"] = args_schema_version
-
-    payload = TaskCreate(
+    task = dict(
         name=name,
         command=command,
         source=source,
         input_type=input_type,
         output_type=output_type,
-        **optionals,
-    ).dict(exclude_unset=True)
-    res = await client.post(f"{settings.BASE_URL}/task/", json=payload)
-    new_task = check_response(res, expected_status_code=201, coerce=TaskRead)
+    )
+    if version:
+        task["version"] = version
+    if meta_file:
+        with open(meta_file, "r") as f:
+            task["meta"] = json.load(f)
+    if args_schema:
+        with open(args_schema, "r") as f:
+            task["args_schema"] = json.load(f)
+    if args_schema_version:
+        task["args_schema_version"] = args_schema_version
+
+    res = await client.post(f"{settings.BASE_URL}/task/", json=task)
+    check_response(res, expected_status_code=201)
+    new_task = res.json()
 
     if batch:
-        return PrintInterface(retcode=0, data=str(new_task.id))
+        return PrintInterface(retcode=0, data=str(new_task["id"]))
     else:
-        return RichJsonInterface(retcode=0, data=new_task.dict())
+        return RichJsonInterface(retcode=0, data=new_task)
 
 
 async def patch_task(
@@ -176,34 +164,35 @@ async def patch_task(
             print(e)
             sys.exit(1)
 
-    update = {}
+    task_update = {}
     if new_name:
-        update["name"] = new_name
+        task_update["name"] = new_name
     if new_input_type:
-        update["input_type"] = new_input_type
+        task_update["input_type"] = new_input_type
     if new_output_type:
-        update["output_type"] = new_output_type
+        task_update["output_type"] = new_output_type
     if new_command:
-        update["command"] = new_command
+        task_update["command"] = new_command
     if new_version:
-        update["version"] = new_version
+        task_update["version"] = new_version
     if meta_file:
         with open(meta_file, "r") as f:
-            update["meta"] = json.load(f)
+            task_update["meta"] = json.load(f)
     if new_args_schema:
         with open(new_args_schema, "r") as f:
-            update["args_schema"] = json.load(f)
+            task_update["args_schema"] = json.load(f)
     if new_args_schema_version:
-        update["args_schema_version"] = new_args_schema_version
+        task_update["args_schema_version"] = new_args_schema_version
 
-    task_update = TaskUpdate(**update)
-    payload = task_update.dict(exclude_unset=True)
-    if not payload:
+    if not task_update:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = await client.patch(f"{settings.BASE_URL}/task/{id}", json=payload)
-    new_task = check_response(res, expected_status_code=200, coerce=TaskRead)
-    return RichJsonInterface(retcode=0, data=new_task.dict())
+    res = await client.patch(
+        f"{settings.BASE_URL}/task/{id}", json=task_update
+    )
+    check_response(res, expected_status_code=200)
+    new_task = res.json()
+    return RichJsonInterface(retcode=0, data=new_task)
 
 
 async def delete_task(

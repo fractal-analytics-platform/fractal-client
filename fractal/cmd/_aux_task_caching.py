@@ -50,7 +50,8 @@ async def _fetch_task_list(client: AuthClient) -> _TaskList:
     Fetch task list through an API request.
     """
     res = await client.get(f"{settings.BASE_URL}/task/")
-    task_list = check_response(res, expected_status_code=200)
+    check_response(res, expected_status_code=200)
+    task_list = res.json()
     return task_list
 
 

@@ -3,7 +3,7 @@ from json.decoder import JSONDecodeError
 from sys import exit
 
 
-def check_response(res, expected_status_code=200, coerce=False):
+def check_response(res, expected_status_code=200):
     """
     Check the validity of the http response from fractal server
 
@@ -20,11 +20,12 @@ def check_response(res, expected_status_code=200, coerce=False):
         expected_status_codes = [expected_status_code]
 
     logging.debug(res.status_code)
-    try:
-        data = res.json()
-    except JSONDecodeError:
-        data = {}
     if res.status_code not in expected_status_codes:
+        try:
+            data = res.json()
+        except JSONDecodeError:
+            data = {}
+
         logging.error(f"Server returned {res.status_code}")
         logging.error(
             f"Original request: {res._request.method} {res._request.url}"
@@ -35,8 +36,3 @@ def check_response(res, expected_status_code=200, coerce=False):
         logging.error(f"Server error message: {data}\n")
         logging.error("Terminating.\n")
         exit(1)
-
-    if coerce:
-        return coerce(**data)
-    else:
-        return data
