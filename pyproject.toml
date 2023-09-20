@@ -84,4 +84,4 @@ fractal_new = "fractal.new:run"
 branch = true
 parallel = true
 relative_files = true
-omit = ["tests/*", "fractal/common/tests/*"]
+omit = ["tests/*"]
