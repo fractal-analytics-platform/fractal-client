@@ -12,11 +12,11 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import logging
-from dataclasses import dataclass
 from os import getenv
 from typing import Optional
 
 from dotenv import load_dotenv
+from pydantic import BaseSettings
 
 from . import __VERSION__
 
@@ -31,8 +31,7 @@ def fail_getenv(key):
 load_dotenv(".fractal.env")
 
 
-@dataclass
-class Settings:
+class Settings(BaseSettings):
     PROJECT_NAME: str = "Fractal client"
     PROJECT_VERSION: str = __VERSION__
 
