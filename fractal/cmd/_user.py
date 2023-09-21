@@ -47,8 +47,7 @@ async def user_register(
     res = await client.post(
         f"{settings.FRACTAL_SERVER}/auth/register", json=new_user
     )
-    check_response(res, expected_status_code=201)
-    data = res.json()
+    data = check_response(res, expected_status_code=201)
 
     if superuser:
         user_id = data["id"]
@@ -56,8 +55,7 @@ async def user_register(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}",
             json={"is_superuser": True},
         )
-        check_response(res, expected_status_code=200)
-        data = res.json()
+        data = check_response(res, expected_status_code=200)
 
     if batch:
         return PrintInterface(retcode=0, data=data["id"])
@@ -67,15 +65,13 @@ async def user_register(
 
 async def user_list(client: AuthClient) -> RichJsonInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/userlist")
-    check_response(res, expected_status_code=200)
-    users = res.json()
+    users = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=users)
 
 
 async def user_show(client: AuthClient, *, user_id: str) -> RichJsonInterface:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}")
-    check_response(res, expected_status_code=200)
-    user = res.json()
+    user = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=user)
 
 
@@ -125,8 +121,7 @@ async def user_edit(
     debug(user_update)
     debug(res)
     debug(res.json())
-    check_response(res, expected_status_code=200)
-    new_user = res.json()
+    new_user = check_response(res, expected_status_code=200)
 
     return RichJsonInterface(retcode=0, data=new_user)
 
@@ -144,8 +139,7 @@ async def user_whoami(
     client: AuthClient, *, batch: bool
 ) -> Union[RichJsonInterface, PrintInterface]:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/whoami")
-    check_response(res, expected_status_code=200)
-    user = res.json()
+    user = check_response(res, expected_status_code=200)
 
     if batch:
         return PrintInterface(retcode=0, data=user["id"])

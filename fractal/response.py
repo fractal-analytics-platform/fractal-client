@@ -13,6 +13,11 @@ def check_response(res, expected_status_code=200):
     On success, optionally coerce to a pydantic model
     """
 
+    try:
+        data = res.json()
+    except JSONDecodeError:
+        data = {}
+
     # Also allow a list of expected status codes
     if isinstance(expected_status_code, list):
         expected_status_codes = expected_status_code
@@ -21,10 +26,6 @@ def check_response(res, expected_status_code=200):
 
     logging.debug(res.status_code)
     if res.status_code not in expected_status_codes:
-        try:
-            data = res.json()
-        except JSONDecodeError:
-            data = {}
 
         logging.error(f"Server returned {res.status_code}")
         logging.error(
@@ -36,3 +37,5 @@ def check_response(res, expected_status_code=200):
         logging.error(f"Server error message: {data}\n")
         logging.error("Terminating.\n")
         exit(1)
+
+    return data

@@ -25,8 +25,7 @@ async def post_workflow(
         f"{settings.BASE_URL}/project/{project_id}/workflow/",
         json=workflow,
     )
-    check_response(res, expected_status_code=201)
-    workflow = res.json()
+    workflow = check_response(res, expected_status_code=201)
     if batch:
         return PrintInterface(retcode=0, data=workflow["id"])
     else:
@@ -40,8 +39,7 @@ async def get_workflow_list(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}/workflow/"
     )
-    check_response(res, expected_status_code=200)
-    workflow_list = res.json()
+    workflow_list = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=workflow_list)
 
 
@@ -61,8 +59,7 @@ async def get_workflow(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}"
     )
-    check_response(res, expected_status_code=200)
-    workflow = res.json()
+    workflow = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=workflow)
 
 
@@ -117,8 +114,7 @@ async def post_workflowtask(
         ),
         json=workflow_task,
     )
-    check_response(res, expected_status_code=201)
-    workflow_task = res.json()
+    workflow_task = check_response(res, expected_status_code=201)
 
     if batch:
         return PrintInterface(retcode=0, data=str(workflow_task["id"]))
@@ -169,8 +165,7 @@ async def patch_workflowtask(
         ),
         json=payload,
     )
-    check_response(res, expected_status_code=200)
-    workflow_task = res.json()
+    workflow_task = check_response(res, expected_status_code=200)
 
     return RichJsonInterface(retcode=0, data=workflow_task)
 
@@ -205,8 +200,7 @@ async def patch_workflow(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}",
         json=workflow_update,
     )
-    check_response(res, expected_status_code=200)
-    new_workflow = res.json()
+    new_workflow = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=new_workflow)
 
 
@@ -247,8 +241,7 @@ async def workflow_apply(
         ),
         json=apply_wf_create,
     )
-    check_response(res, expected_status_code=202)
-    apply_wf_read = res.json()
+    apply_wf_read = check_response(res, expected_status_code=202)
 
     return RichJsonInterface(retcode=0, data=apply_wf_read)
 
@@ -263,8 +256,7 @@ async def workflow_import(
         f"{settings.BASE_URL}/project/{project_id}/workflow/import/",
         json=workflow,
     )
-    check_response(res, expected_status_code=201)
-    wf_read = res.json()
+    wf_read = check_response(res, expected_status_code=201)
 
     warnings = [
         workflow_task["task"]["source"]
@@ -301,8 +293,7 @@ async def workflow_export(
             f"workflow/{workflow_id}/export/"
         ),
     )
-    check_response(res, expected_status_code=200)
-    workflow = res.json()
+    workflow = check_response(res, expected_status_code=200)
 
     warnings = [
         workflow_task["task"]["source"]

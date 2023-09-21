@@ -43,8 +43,7 @@ async def post_dataset(
         f"{settings.BASE_URL}/project/{project_id}/dataset/",
         json=dataset,
     )
-    check_response(res, expected_status_code=201)
-    new_dataset = res.json()
+    new_dataset = check_response(res, expected_status_code=201)
     if batch:
         return PrintInterface(retcode=0, data=new_dataset["id"])
     else:
@@ -73,8 +72,7 @@ async def post_resource(
         ),
         json=dict(path=path),
     )
-    check_response(res, expected_status_code=201)
-    new_resource = res.json()
+    new_resource = check_response(res, expected_status_code=201)
     if batch:
         return PrintInterface(retcode=0, data=new_resource["id"])
     else:
@@ -132,8 +130,7 @@ async def patch_dataset(
         (f"{settings.BASE_URL}/project/{project_id}/" f"dataset/{dataset_id}"),
         json=dataset_update,
     )
-    check_response(res, expected_status_code=200)
-    data = res.json()
+    data = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=data)
 
 
@@ -145,9 +142,7 @@ async def get_dataset(
     )
     from rich.console import Group
 
-    check_response(res, expected_status_code=200)
-
-    dataset = res.json()
+    dataset = check_response(res, expected_status_code=200)
 
     table = Table(title="Dataset")
     table.add_column("ID", style="cyan", no_wrap=True)
@@ -191,8 +186,7 @@ async def get_dataset_history(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
         "export_history/"
     )
-    check_response(res, expected_status_code=200)
-    history_workflow = res.json()
+    history_workflow = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=history_workflow)
 
 
@@ -203,6 +197,5 @@ async def get_dataset_status(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
         "status/"
     )
-    check_response(res, expected_status_code=200)
-    dataset_status = res.json()
+    dataset_status = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=dataset_status)

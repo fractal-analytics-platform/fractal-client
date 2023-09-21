@@ -26,8 +26,7 @@ async def post_project(
 
     # Send API request
     res = await client.post(f"{settings.BASE_URL}/project/", json=project)
-    check_response(res, expected_status_code=201)
-    project = res.json()
+    project = check_response(res, expected_status_code=201)
     if batch:
         if len(project["dataset_list"]) > 1:
             msg = (
@@ -44,9 +43,7 @@ async def post_project(
 async def get_project_list(client: AuthClient) -> RichConsoleInterface:
 
     res = await client.get(f"{settings.BASE_URL}/project/")
-    check_response(res, expected_status_code=200)
-
-    projects = res.json()
+    projects = check_response(res, expected_status_code=200)
 
     table = Table(title="Project List")
     table.add_column("ID", style="cyan", no_wrap=True)
@@ -82,8 +79,7 @@ async def get_project(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}",
     )
-    check_response(res, expected_status_code=200)
-    project = res.json()
+    project = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=project)
 
 
@@ -120,6 +116,5 @@ async def patch_project(
     res = await client.patch(
         f"{settings.BASE_URL}/project/{project_id}", json=project_update
     )
-    check_response(res, expected_status_code=200)
-    new_project = res.json()
+    new_project = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=new_project)

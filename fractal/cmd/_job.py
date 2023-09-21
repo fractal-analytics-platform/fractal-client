@@ -29,8 +29,7 @@ async def get_job(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}/job/{job_id}"
     )
-    check_response(res, expected_status_code=200)
-    job = res.json()
+    job = check_response(res, expected_status_code=200)
     if batch:
         return PrintInterface(retcode=0, data=job["status"])
     else:
@@ -49,9 +48,7 @@ async def get_job_list(
 ) -> BaseInterface:
 
     res = await client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
-    check_response(res, expected_status_code=200)
-
-    jobs = res.json()
+    jobs = check_response(res, expected_status_code=200)
 
     if batch:
         job_ids = " ".join(str(job["id"]) for job in jobs)

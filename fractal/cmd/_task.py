@@ -55,8 +55,7 @@ async def task_collect_pip(
         f"{settings.BASE_URL}/task/collect/pip/", json=task_collect
     )
 
-    check_response(res, expected_status_code=[200, 201])
-    state = res.json()
+    state = check_response(res, expected_status_code=[200, 201])
     if batch:
         output = f"{state['id']} {state['data']['venv_path']}"
         return PrintInterface(retcode=0, data=output)
@@ -75,8 +74,7 @@ async def task_collection_check(
     res = await client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
     )
-    check_response(res, expected_status_code=200)
-    state = res.json()
+    state = check_response(res, expected_status_code=200)
 
     # Remove key-value pairs with None value
     state["data"] = {key: val for (key, val) in state["data"].items() if val}
@@ -124,8 +122,7 @@ async def post_task(
         task["args_schema_version"] = args_schema_version
 
     res = await client.post(f"{settings.BASE_URL}/task/", json=task)
-    check_response(res, expected_status_code=201)
-    new_task = res.json()
+    new_task = check_response(res, expected_status_code=201)
 
     if batch:
         return PrintInterface(retcode=0, data=str(new_task["id"]))
@@ -190,8 +187,7 @@ async def patch_task(
     res = await client.patch(
         f"{settings.BASE_URL}/task/{id}", json=task_update
     )
-    check_response(res, expected_status_code=200)
-    new_task = res.json()
+    new_task = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=new_task)
 
 
