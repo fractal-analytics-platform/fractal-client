@@ -65,7 +65,7 @@ project_new_parser = project_subparsers.add_parser(
     description="Create new project.",
     allow_abbrev=False,
 )
-project_new_parser.add_argument("name", help="Name of new project.", type=str)
+project_new_parser.add_argument("name", help="Name of new project.")
 project_new_parser.add_argument(
     "-d",
     "--dataset",
@@ -134,7 +134,7 @@ project_edit_parser.add_argument(
     "project_id", type=int, help="ID of the project to edit."
 )
 project_edit_parser.add_argument(
-    "--new-name", help="New project name.", type=str, required=False
+    "--new-name", help="New project name.", required=False
 )
 project_edit_parser_read_only = (
     project_edit_parser.add_mutually_exclusive_group()
@@ -202,16 +202,8 @@ dataset_edit_parser = dataset_subparsers.add_parser(
 )
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
-dataset_edit_parser.add_argument(
-    "--new-name",
-    help="New name of dataset.",
-    type=str,
-)
-dataset_edit_parser.add_argument(
-    "--new-type",
-    help="Dataset type.",
-    type=str,
-)
+dataset_edit_parser.add_argument("--new-name", help="New name of dataset.")
+dataset_edit_parser.add_argument("--new-type", help="Dataset type.")
 dataset_edit_parser.add_argument(
     "--meta-file",
     help="Path to JSON file with new metadata to replace the current ones.",
@@ -336,6 +328,7 @@ task_check_collection_parser = task_subparsers.add_parser(
 task_check_collection_parser.add_argument(
     "state_id",
     help="State ID of the collection (see output of task collect).",
+    type=int,
 )
 task_check_collection_parser.add_argument(
     "--include-logs",
@@ -363,38 +356,33 @@ task_new_parser = task_subparsers.add_parser(
     allow_abbrev=False,
 )
 task_new_parser.add_argument(
-    "name", help="A human readable name for the task.", type=str
+    "name", help="A human readable name for the task."
 )
 task_new_parser.add_argument(
-    "command", help="The command that executes the task.", type=str
+    "command", help="The command that executes the task."
 )
-task_new_parser.add_argument("source", help="TBD", type=str)
+task_new_parser.add_argument("source", help="TBD")
 task_new_parser.add_argument(
     "--input-type",
     help="The type of data the task expects as input.",
-    type=str,
     default="Any",
 )
 task_new_parser.add_argument(
     "--output-type",
     help="The type of data the task expects as output.",
-    type=str,
     default="Any",
 )
 task_new_parser.add_argument(
     "--version",
-    type=str,
     help="Task version.",
 )
 task_new_parser.add_argument(
     "--meta-file",
     help="Path to JSON file with additional parameters useful for execution.",
-    type=str,
 )
 task_new_parser.add_argument(
     "--args-schema",
     help="Path to file containing JSON Schema for task arguments.",
-    type=str,
 )
 task_new_parser.add_argument(
     "--args-schema-version",
@@ -402,7 +390,6 @@ task_new_parser.add_argument(
         "Label encoding how the task-arguments JSON Schema was generated "
         "(e.g. `pydantic_v1`)."
     ),
-    type=str,
 )
 
 # task edit
@@ -420,34 +407,28 @@ task_edit_id_or_name_group.add_argument(
     "--id", help="ID of the task to edit.", type=int
 )
 task_edit_id_or_name_group.add_argument(
-    "--name", help="Name of the task to edit.", type=str
+    "--name", help="Name of the task to edit."
 )
 
 task_edit_parser.add_argument(
     "--version",
-    type=str,
     help=(
         "Version of the task to edit "
         "(only accepted in combination with `--name`)."
     ),
 )
-task_edit_parser.add_argument("--new-name", help="New task name.", type=str)
-task_edit_parser.add_argument(
-    "--new-command", help="New task command.", type=str
-)
+task_edit_parser.add_argument("--new-name", help="New task name.")
+task_edit_parser.add_argument("--new-command", help="New task command.")
 task_edit_parser.add_argument(
     "--new-input-type",
-    type=str,
     help="New input type.",
 )
 task_edit_parser.add_argument(
     "--new-output-type",
-    type=str,
     help="New output type.",
 )
 task_edit_parser.add_argument(
     "--meta-file",
-    type=str,
     help=(
         "Path to JSON serialised file containing updates to the current "
         "`meta` dictionary."
@@ -455,20 +436,17 @@ task_edit_parser.add_argument(
 )
 task_edit_parser.add_argument(
     "--new-version",
-    type=str,
     help="New version.",
 )
 task_edit_parser.add_argument(
     "--new-args-schema",
     help="Path to file containing the new JSON Schema for task arguments.",
-    type=str,
 )
 task_edit_parser.add_argument(
     "--new-args-schema-version",
     help=(
         "New label encoding how the task-arguments JSON Schema was generated."
     ),
-    type=str,
 )
 
 # task delete
@@ -485,11 +463,10 @@ task_delete_id_or_name_group.add_argument(
     "--id", help="ID of the task to delete.", type=int
 )
 task_delete_id_or_name_group.add_argument(
-    "--name", help="Name of the task to delete.", type=str
+    "--name", help="Name of the task to delete."
 )
 task_delete_parser.add_argument(
     "--version",
-    type=str,
     help=(
         "Version of the task to delete "
         "(only accepted in combination with `--name`)."
@@ -525,7 +502,6 @@ workflow_new_parser = workflow_subparsers.add_parser(
 workflow_new_parser.add_argument(
     "name",
     help="Workflow name (must be unique, and not only made of numbers only).",
-    type=str,
 )
 workflow_new_parser.add_argument("project_id", type=int, help="Project ID.")
 
@@ -549,7 +525,6 @@ workflow_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 workflow_edit_parser.add_argument("workflow_id", type=int, help="Workflow ID.")
 workflow_edit_parser.add_argument(
     "--new-name",
-    type=str,
     help="New workflow name.",
     required=True,
 )
@@ -588,12 +563,11 @@ workflow_add_task_id_or_name_group.add_argument(
     "--task-id", help="ID of the task to add.", type=int
 )
 workflow_add_task_id_or_name_group.add_argument(
-    "--task-name", help="Name of the task to add.", type=str
+    "--task-name", help="Name of the task to add."
 )
 
 workflow_add_task_parser.add_argument(
     "--task-version",
-    type=str,
     help=(
         "Version of task to add "
         "(only accepted in combination with --task-name)."
@@ -633,6 +607,7 @@ workflow_edit_task_parser.add_argument(
 )
 workflow_edit_task_parser.add_argument(
     "workflow_task_id",
+    type=int,
     help="Workflow task ID, the ID of a task inside the list of tasks.",
 )
 workflow_edit_task_parser.add_argument(
@@ -666,6 +641,7 @@ workflow_remove_task_parser.add_argument(
 )
 workflow_remove_task_parser.add_argument(
     "workflow_task_id",
+    type=int,
     help="Workflow task ID (the ID of a task inside the list of tasks).",
 )
 
@@ -715,6 +691,7 @@ workflow_import_parser = workflow_subparsers.add_parser(
 )
 workflow_import_parser.add_argument(
     "--project-id",
+    type=int,
     help="ID of the project where the workflow will be imported.",
     required=True,
 )
@@ -888,7 +865,7 @@ user_show_parser = user_subparsers.add_parser(
     description="Show details of single user.",
     allow_abbrev=False,
 )
-user_show_parser.add_argument("user_id", help="ID of the user.")
+user_show_parser.add_argument("user_id", help="ID of the user.", type=int)
 
 # user edit
 user_edit_parser = user_subparsers.add_parser(
@@ -896,12 +873,12 @@ user_edit_parser = user_subparsers.add_parser(
     description="Edit details of single user.",
     allow_abbrev=False,
 )
-user_edit_parser.add_argument("user_id", help="ID of the user.")
+user_edit_parser.add_argument("user_id", help="ID of the user.", type=int)
 user_edit_parser.add_argument(
-    "--new-email", help="New email address.", type=str, required=False
+    "--new-email", help="New email address.", required=False
 )
 user_edit_parser.add_argument(
-    "--new-password", help="New password.", type=str, required=False
+    "--new-password", help="New password.", required=False
 )
 user_edit_parser.add_argument(
     "--new-cache-dir",
@@ -909,14 +886,13 @@ user_edit_parser.add_argument(
         "New user's cache directory "
         "(necessary for workflow execution when using the SLURM backend)."
     ),
-    type=str,
     required=False,
 )
 user_edit_parser.add_argument(
-    "--new-slurm-user", help="New SLURM username.", type=str, required=False
+    "--new-slurm-user", help="New SLURM username.", required=False
 )
 user_edit_parser.add_argument(
-    "--new-username", help="New user username.", type=str, required=False
+    "--new-username", help="New user username.", required=False
 )
 user_edit_parser_superuser = user_edit_parser.add_mutually_exclusive_group()
 user_edit_parser_superuser.add_argument(
@@ -938,4 +914,4 @@ user_delete_parser = user_subparsers.add_parser(
     description="Delete a single user.",
     allow_abbrev=False,
 )
-user_delete_parser.add_argument("user_id", help="ID of the user.")
+user_delete_parser.add_argument("user_id", help="ID of the user.", type=int)
