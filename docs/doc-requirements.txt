@@ -1,4 +1,4 @@
-mkdocs
+mkdocs==1.4.3
 mkdocs-material
 mkdocs-literate-nav
 mkdocs-autorefs
