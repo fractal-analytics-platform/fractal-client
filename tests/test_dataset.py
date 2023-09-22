@@ -62,13 +62,13 @@ async def test_add_resource_relative_path(register_user, invoke):
     assert res.data["dataset_list"][0]["resource_list"] == []
 
     PATH = "../new/resource/path"
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         res = await invoke(
             f"dataset add-resource {project_id} {dataset_id} {PATH}"
         )
 
     PATH = "local-folder/new/resource/path"
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         res = await invoke(
             f"dataset add-resource {project_id} {dataset_id} {PATH}"
         )
