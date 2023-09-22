@@ -101,7 +101,7 @@ async def user_edit(
         if not os.path.isabs(new_cache_dir):
             logging.error(
                 "`new_cache_dir` must be an absolute path "
-                f"(given {new_cache_dir})."
+                f"(given '{new_cache_dir}')."
             )
             sys.exit(1)
         else:
