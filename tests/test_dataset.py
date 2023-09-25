@@ -196,11 +196,10 @@ async def test_delete_resource(register_user, invoke):
     # Add a new resource, and check that it has the same id as the one that was
     # removed
     res = await invoke(
-        f"dataset add-resource {project_id} {dataset_id} {PATH}"
+        f"--batch dataset add-resource {project_id} {dataset_id} {PATH}"
     )
-    res.show()
     assert res.retcode == 0
-    assert resource_id == res.data["id"]
+    assert res.data == resource_id
 
 
 async def test_dataset_history_command(register_user, invoke):
