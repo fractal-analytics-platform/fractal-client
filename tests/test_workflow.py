@@ -555,6 +555,23 @@ async def test_workflow_apply(
     # https://github.com/fractal-analytics-platform/fractal-server/issues/827)
     assert len(job["history"]) > 0
 
+    # Prepare and submit a workflow with --batch
+    res = await invoke(f"workflow new OneMoreWorkflow {prj_id}")
+    workflow_id = res.data["id"]
+    res = await invoke(
+        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+    )
+    assert res.retcode == 0
+    cmd = (
+        f"--batch workflow apply "
+        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
+    )
+    debug(cmd)
+    res = await invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+    assert isinstance(res.data, int)
+
 
 async def test_workflow_export(
     register_user,

@@ -8,11 +8,11 @@ from ..interface import PrintInterface
 from ._dataset import delete_dataset
 from ._dataset import delete_resource
 from ._dataset import get_dataset
+from ._dataset import get_dataset_history
+from ._dataset import get_dataset_status
 from ._dataset import patch_dataset
 from ._dataset import post_dataset
 from ._dataset import post_resource
-from ._dataset import get_dataset_history
-from ._dataset import get_dataset_status
 from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
@@ -268,7 +268,7 @@ async def workflow(
             "last_task_index",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await workflow_apply(client, **function_kwargs)
+        iface = await workflow_apply(client, batch=batch, **function_kwargs)
     elif subcmd == "import":
         parameters = ["project_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)

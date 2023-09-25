@@ -207,6 +207,7 @@ async def workflow_apply(
     first_task_index: Optional[int] = None,
     last_task_index: Optional[int] = None,
     worker_init: Optional[str] = None,
+    batch: bool = False,
 ) -> BaseInterface:
     apply_wf_create = dict(
         workflow_id=workflow_id,
@@ -236,7 +237,10 @@ async def workflow_apply(
     )
     apply_wf_read = check_response(res, expected_status_code=202)
 
-    return RichJsonInterface(retcode=0, data=apply_wf_read)
+    if batch:
+        return PrintInterface(retcode=0, data=apply_wf_read["id"])
+    else:
+        return RichJsonInterface(retcode=0, data=apply_wf_read)
 
 
 async def workflow_import(
