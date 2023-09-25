@@ -61,9 +61,7 @@ def check_response(
             msg = data["detail"][0]["msg"]
             _type = data["detail"][0]["type"]
             loc = data["detail"][0]["loc"]
-            error_msg = (
-                "\n" f"\tmsg: {msg}\n" f"\ttype: {_type}\n" f"\tloc: {loc}"
-            )
+            error_msg = f"\n\tmsg: {msg}\n\ttype: {_type}\n\tloc: {loc}"
 
         logging.error(f"Server error message: {error_msg}\n")
         logging.error("Terminating.\n")
