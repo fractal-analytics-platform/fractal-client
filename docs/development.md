@@ -9,13 +9,12 @@ issue](https://github.com/fractal-analytics-platform/fractal/issues/new).
 
 ## Set up the development environment
 
-### Clone repositories
+### Clone repository
 
-First, you should clone the repository and initialize its submodules:
+First, you should clone the repository
 ```
 git clone https://github.com/fractal-analytics-platform/fractal.git
 cd fractal
-git submodule update --init
 ```
 
 ### Install package
