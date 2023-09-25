@@ -1,6 +1,7 @@
 import logging
+import sys
 from json.decoder import JSONDecodeError
-from sys import exit
+from typing import Any
 from typing import Union
 
 from httpx import Response
@@ -9,7 +10,7 @@ from httpx import Response
 def check_response(
     res: Response,
     expected_status_code: Union[int, list[int]] = 200,
-):
+) -> dict[str, Any]:
     """
     Check the validity of the http response from fractal server
 
@@ -21,6 +22,9 @@ def check_response(
     Args:
         res: Response from `fractal-server`.
         expected_status_code: Expected status code(s).
+
+    Returns:
+        The output of `res.json()`.
     """
 
     try:
@@ -65,6 +69,6 @@ def check_response(
 
         logging.error(f"Server error message: {error_msg}\n")
         logging.error("Terminating.\n")
-        exit(1)
+        sys.exit(1)
 
     return data
