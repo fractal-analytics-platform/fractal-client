@@ -1,6 +1,6 @@
 # Contribute to Fractal Client development
 
-The development of Fractal Client takes place on the [fractal Github
+The development of Fractal Client takes place on the [fractal-client Github
 repository](https://github.com/fractal-analytics-platform/fractal-client).  To
 ask questions or to inform us of a bug or unexpected behavior, please feel free
 to [open an
