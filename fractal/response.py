@@ -1,16 +1,24 @@
 import logging
 from json.decoder import JSONDecodeError
 from sys import exit
+from typing import Union
+
+from httpx import Response
 
 
-def check_response(res, expected_status_code=200):
+def check_response(
+    res: Response,
+    expected_status_code: Union[int, list[int]] = 200,
+):
     """
     Check the validity of the http response from fractal server
 
     If the status code of the response is not one of the expected values, print
     the error to stderr and terminate with exit status 1.
 
-    On success, optionally coerce to a pydantic model
+    Args:
+        res: Response from `fractal-server`.
+        expected_status_code: Expected status code(s).
     """
 
     try:
