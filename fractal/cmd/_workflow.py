@@ -149,13 +149,6 @@ async def patch_workflowtask(
     if meta_file:
         with Path(meta_file).open("r") as f:
             meta = json.load(f)
-            # ! validator from common
-            if "parallelization_level" in meta:
-                raise ValueError(
-                    "Overriding task parallelization level "
-                    "currently not allowed"
-                )
-            # !
             payload["meta"] = meta
 
     res = await client.patch(

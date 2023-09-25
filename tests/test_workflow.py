@@ -400,7 +400,7 @@ async def test_workflow_edit_task(
         f"--meta-file {meta_file}"
     )
     debug(cmd)
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         res = await invoke(cmd)
 
 
