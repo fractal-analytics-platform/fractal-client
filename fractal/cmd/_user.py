@@ -1,6 +1,3 @@
-import logging
-import os
-import sys
 from typing import Optional
 from typing import Union
 
@@ -98,14 +95,7 @@ async def user_edit(
     if remove_superuser:
         user_update["is_superuser"] = False
     if new_cache_dir is not None:
-        if not os.path.isabs(new_cache_dir):
-            logging.error(
-                "`new_cache_dir` must be an absolute path "
-                f"(given '{new_cache_dir}')."
-            )
-            sys.exit(1)
-        else:
-            user_update["cache_dir"] = new_cache_dir
+        user_update["cache_dir"] = new_cache_dir
     if new_slurm_user is not None:
         user_update["slurm_user"] = new_slurm_user
     if new_username is not None:

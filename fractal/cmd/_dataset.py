@@ -1,7 +1,4 @@
 import json
-import logging
-import os
-import sys
 from typing import Optional
 
 from rich.table import Table
@@ -60,12 +57,6 @@ async def post_resource(
     path: str,
     batch: bool = False,
 ) -> BaseInterface:
-
-    # Check that path is absolute, which is needed for when the server submits
-    # tasks as a different user
-    if not os.path.isabs(path):
-        logging.error(f"`path` must be an absolute path (given '{path}').")
-        sys.exit(1)
 
     res = await client.post(
         (
