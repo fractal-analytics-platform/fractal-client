@@ -175,7 +175,9 @@ dataset_add_resource_parser.add_argument(
 dataset_add_resource_parser.add_argument(
     "dataset_id", type=int, help="Dataset ID."
 )
-dataset_add_resource_parser.add_argument("path", help="Path to resource.")
+dataset_add_resource_parser.add_argument(
+    "path", help="Absolute path to resource."
+)
 
 # dataset rm-resource
 dataset_rm_resource_parser = dataset_subparsers.add_parser(
@@ -289,7 +291,7 @@ task_collect_parser = task_subparsers.add_parser(
 )
 task_collect_parser.add_argument(
     "package",
-    help="Package name or path to local package.",
+    help="Package name or absolute path to local package.",
 )
 task_collect_parser.add_argument(
     "--python-version",
@@ -830,7 +832,7 @@ user_register_parser.add_argument(
 user_register_parser.add_argument(
     "--cache-dir",
     help=(
-        "User's cache directory "
+        "User's cache directory absolute path "
         "(necessary for workflow execution when using the SLURM backend)."
     ),
     required=False,
@@ -883,7 +885,7 @@ user_edit_parser.add_argument(
 user_edit_parser.add_argument(
     "--new-cache-dir",
     help=(
-        "New user's cache directory "
+        "New user's cache directory absolute path "
         "(necessary for workflow execution when using the SLURM backend)."
     ),
     required=False,
