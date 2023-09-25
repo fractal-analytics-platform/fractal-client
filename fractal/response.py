@@ -15,6 +15,8 @@ def check_response(
 
     If the status code of the response is not one of the expected values, print
     the error to stderr and terminate with exit status 1.
+    Some errors (422 errors due for failed validation of request body) are
+    handled in a specific way, to make their error message more readable.
 
     Args:
         res: Response from `fractal-server`.
@@ -42,7 +44,28 @@ def check_response(
         logging.error(
             f"Original payload: {res._request._content.decode('utf-8')}"
         )
-        logging.error(f"Server error message: {data}\n")
+
+        error_msg = data
+
+        # Detect whether the error is due to failed request-body validation,
+        # and make the error message more readable
+        if (
+            res.status_code == 422
+            and isinstance(data, dict)
+            and list(data.keys()) == ["detail"]
+            and isinstance(data["detail"], list)
+            and len(data["detail"]) == 1
+            and isinstance(data["detail"][0], dict)
+            and set(data["detail"][0].keys()) == {"msg", "type", "loc"}
+        ):
+            msg = data["detail"][0]["msg"]
+            _type = data["detail"][0]["type"]
+            loc = data["detail"][0]["loc"]
+            error_msg = (
+                "\n" f"\tmsg: {msg}\n" f"\ttype: {_type}\n" f"\tloc: {loc}"
+            )
+
+        logging.error(f"Server error message: {error_msg}\n")
         logging.error("Terminating.\n")
         exit(1)
 
