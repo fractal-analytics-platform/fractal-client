@@ -9,12 +9,12 @@ authors = [
 ]
 readme = "README.md"
 packages = [
-    {include="fractal"}
+    {include="fractal_client"}
 ]
 homepage = "https://github.com/fractal-analytics-platform/fractal"
 license = "BSD-3-Clause"
 exclude = [
-"fractal/.gitignore",
+"fractal_client/.gitignore",
 ]
 
 
@@ -70,14 +70,12 @@ push = true
 "pyproject.toml" = [
     'version = "{version}"',
 ]
-"fractal/__init__.py" = [
+"fractal_client/__init__.py" = [
     '__VERSION__ = "{version}"'
 ]
 
 [tool.poetry.scripts]
-fractal = "fractal.__main__:run"
-fractal_old = "fractal.old:run"
-fractal_new = "fractal.new:run"
+fractal = "fractal_client.__main__:run"
 
 [tool.coverage.run]
 branch = true

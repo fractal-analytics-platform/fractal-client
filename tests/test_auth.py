@@ -2,8 +2,8 @@ from os import environ
 
 import pytest
 
-from fractal.authclient import AuthenticationError
-from fractal.authclient import AuthToken
+from fractal_client.authclient import AuthenticationError
+from fractal_client.authclient import AuthToken
 
 
 async def test_auth_fail(client):

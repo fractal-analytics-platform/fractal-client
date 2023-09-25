@@ -9,8 +9,9 @@ from mkdocs_gen_files import Nav
 
 sys.path.append(Path(__file__).parent.as_posix())  # noqa: E402
 from parser import parse_parser  # noqa: E402
+
 sys.path.append(Path(__file__).parents[1].as_posix())  # noqa: E402
-from fractal.parser import parser_main
+from fractal_client.parser import parser_main  # noqa
 
 
 def to_markdown(

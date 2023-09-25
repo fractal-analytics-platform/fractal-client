@@ -1,8 +1,8 @@
 import pytest
 
-from fractal.cmd._aux_task_caching import _get_matching_tasks
-from fractal.cmd._aux_task_caching import _search_in_task_list
-from fractal.cmd._aux_task_caching import FractalCacheError
+from fractal_client.cmd._aux_task_caching import _get_matching_tasks
+from fractal_client.cmd._aux_task_caching import _search_in_task_list
+from fractal_client.cmd._aux_task_caching import FractalCacheError
 
 
 def test_get_matching_tasks(clear_task_cache):

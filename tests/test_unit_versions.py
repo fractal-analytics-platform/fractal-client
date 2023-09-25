@@ -2,7 +2,7 @@ import pytest
 from devtools import debug
 from packaging import version
 
-from fractal.cmd._aux_task_caching import _loose_version_parse
+from fractal_client.cmd._aux_task_caching import _loose_version_parse
 
 
 # string, major, minor, micro, is_prerelease
