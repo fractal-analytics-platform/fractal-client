@@ -12,15 +12,25 @@ TIMEOUT = 15.0
 
 async def test_workflow_new(register_user, invoke):
     PROJECT_NAME = "project_name"
-    WORKFLOW_NAME = "mywf"
-    res_pj = await invoke(f"project new {PROJECT_NAME}")
-    assert res_pj.data["name"] == PROJECT_NAME
+    res = await invoke(f"project new {PROJECT_NAME}")
+    proj = res.data
+    assert proj["name"] == PROJECT_NAME
+    project_id = proj["id"]
 
-    res_wf = await invoke(f"workflow new {WORKFLOW_NAME} {res_pj.data['id']}")
-    res_wf.show()
-    assert res_wf.retcode == 0
-    assert res_wf.data["name"] == WORKFLOW_NAME
-    assert res_wf.data["project_id"] == res_pj.data["id"]
+    WORKFLOW_NAME = "mywf"
+    res = await invoke(f"workflow new {WORKFLOW_NAME} {project_id}")
+    wf = res.data
+    debug(wf)
+    assert res.retcode == 0
+    assert wf["name"] == WORKFLOW_NAME
+    assert wf["project_id"] == project_id
+
+    # Include --batch
+    WORKFLOW_NAME = "mywf-2"
+    res = await invoke(f"--batch workflow new {WORKFLOW_NAME} {project_id}")
+    assert res.retcode == 0
+    debug(res.data)
+    assert isinstance(res.data, int)
 
 
 async def test_workflow_delete(register_user, invoke):
@@ -390,7 +400,7 @@ async def test_workflow_edit_task(
         f"--meta-file {meta_file}"
     )
     debug(cmd)
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         res = await invoke(cmd)
 
 
@@ -468,7 +478,8 @@ async def test_workflow_apply(
     cmd = (
         f"workflow apply "
         f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id} "
-        f"--start {FIRST_TASK_INDEX} --end {LAST_TASK_INDEX}"
+        f"--start {FIRST_TASK_INDEX} --end {LAST_TASK_INDEX} "
+        f'--worker-init "export SOMEVARIABLE=1"'
     )
     debug(cmd)
     res = await invoke(cmd)
@@ -477,7 +488,6 @@ async def test_workflow_apply(
     assert res.retcode == 0
     job_id = job["id"]
     assert job["status"] == "submitted"
-
 
     # Avoid immediately calling `job show` right after `workflow apply`
     time.sleep(1)
@@ -614,6 +624,7 @@ async def test_workflow_import(
     project_id = res_pj.data["id"]
 
     await task_factory(source="custom_source", owner="exact-lab")
+
     # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
     res = await invoke(
@@ -634,3 +645,19 @@ async def test_workflow_import(
     res = await invoke(f"workflow show {project_id} {workflow_id}")
     assert res.retcode == 0
     assert res.data == imported_workflow
+
+    # import workflow into project, with --batch
+    filename = str(testdata_path / "import-export/workflow_2.json")
+    res = await invoke(
+        f"--batch workflow import --project-id {project_id} "
+        f"--json-file {filename}"
+    )
+    debug(res.data)
+    for _id in res.data.split():
+        assert _id.isdigit()
+    assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        "'custom_source'), which are not meant to be portable; "
+        "importing this workflow may not work as expected."
+    )

@@ -1,5 +1,11 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 1.3.6
+
+* Remove client-side validation of API request/response bodies (\#551).
+* Remove `fractal-common` submodule (\#551).
+* Make error messages more readable for request-body validation errors (\#551).
+
 # 1.3.5
 
 * Implement more robust sorting of versions (e.g. in the presence of pre-releases), via `packaging.version` (\#550).

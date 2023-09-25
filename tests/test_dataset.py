@@ -62,13 +62,13 @@ async def test_add_resource_relative_path(register_user, invoke):
     assert res.data["dataset_list"][0]["resource_list"] == []
 
     PATH = "../new/resource/path"
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         res = await invoke(
             f"dataset add-resource {project_id} {dataset_id} {PATH}"
         )
 
     PATH = "local-folder/new/resource/path"
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         res = await invoke(
             f"dataset add-resource {project_id} {dataset_id} {PATH}"
         )
@@ -196,11 +196,10 @@ async def test_delete_resource(register_user, invoke):
     # Add a new resource, and check that it has the same id as the one that was
     # removed
     res = await invoke(
-        f"dataset add-resource {project_id} {dataset_id} {PATH}"
+        f"--batch dataset add-resource {project_id} {dataset_id} {PATH}"
     )
-    res.show()
     assert res.retcode == 0
-    assert resource_id == res.data["id"]
+    assert res.data == resource_id
 
 
 async def test_dataset_history_command(register_user, invoke):

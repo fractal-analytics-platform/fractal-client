@@ -9,16 +9,13 @@ issue](https://github.com/fractal-analytics-platform/fractal/issues/new).
 
 ## Set up the development environment
 
-### Clone repositories
+### Clone repository
 
-First, you should clone the repository and initialize its submodules:
+First, you should clone the repository
 ```
 git clone https://github.com/fractal-analytics-platform/fractal.git
 cd fractal
-git submodule update --init
 ```
-
-The `git submodule` command is needed to fetch [`fractal-common`](https://github.com/fractal-analytics-platform/fractal-common), which is included as a git submodule.
 
 ### Install package
 
@@ -98,4 +95,3 @@ To build the documentation locally, setup a development python environment (e.g.
 poetry run mkdocs serve --config-file mkdocs.yml  # serves the docs at http://127.0.0.1:8000
 poetry run mkdocs build --config-file mkdocs.yml  # creates a build in the `site` folder
 ```
-

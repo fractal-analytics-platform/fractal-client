@@ -11,7 +11,7 @@ pip install fractal-client
 ## Usage
 
 You may invoke the Fractal Client via the custom command `fractal`, from the
-command line (see its documentation [here](/reference/fractal/)).  Note that you must provide
+command line (see its documentation [here](./reference/fractal/)).  Note that you must provide
 the following environment variables:
 
 * `FRACTAL_SERVER`: fully qualified URL to the Fractal server installation

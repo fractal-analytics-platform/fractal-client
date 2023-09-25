@@ -1,8 +1,8 @@
-mkdocs
-mkdocs-material
-mkdocs-literate-nav
-mkdocs-autorefs
-mkdocs-gen-files
-mkdocs-section-index
-mkdocstrings[python]
-mkdocs-include-markdown-plugin
+mkdocs==1.5.2
+mkdocs-material==9.1.21
+mkdocs-literate-nav==0.5.0
+mkdocs-autorefs==0.5.0
+mkdocs-gen-files==0.4.0
+mkdocs-section-index==0.3.5
+mkdocstrings[python]==0.22.0
+mkdocs-include-markdown-plugin==4.0.4

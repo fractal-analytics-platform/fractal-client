@@ -15,10 +15,6 @@ homepage = "https://github.com/fractal-analytics-platform/fractal"
 license = "BSD-3-Clause"
 exclude = [
 "fractal/.gitignore",
-"fractal/common/tests",
-"fractal/common/requirements.txt",
-"fractal/common/.git*",
-"fractal/common/.pre-commit-config.yaml",
 ]
 
 
@@ -29,7 +25,6 @@ rich = "^12.5.1"
 httpx = "^0.23.0"
 PyJWT = "^2.4.0"
 pydantic = ">=1.10.8,<2"
-fastapi-users = "^10.4.1"
 packaging = "^23.1"
 
 [tool.poetry.group.dev.dependencies]
@@ -48,13 +43,13 @@ fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-
 optional = true
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.4.3"
-mkdocs-material = "^9.1.19"
-mkdocs-literate-nav = "^0.5.0"
-mkdocs-gen-files = "^0.4.0"
-mkdocs-section-index = "^0.3.5"
-mkdocstrings = { extras = ["python"], version = "^0.22" }
-mkdocs-include-markdown-plugin = { version = "^4.0", python = "^3.8,<3.12" }
+mkdocs = "1.5.2"
+mkdocs-material = "9.1.21"
+mkdocs-literate-nav = "0.5.0"
+mkdocs-gen-files = "0.4.0"
+mkdocs-section-index = "0.3.5"
+mkdocstrings = { extras = ["python"], version = "0.22.0" }
+mkdocs-include-markdown-plugin = { version = "4.0.4", python = "^3.8,<3.12" }
 
 [build-system]
 requires = ["poetry-core"]
@@ -88,4 +83,4 @@ fractal_new = "fractal.new:run"
 branch = true
 parallel = true
 relative_files = true
-omit = ["tests/*", "fractal/common/tests/*"]
+omit = ["tests/*"]

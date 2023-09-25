@@ -316,7 +316,11 @@ async def test_task_edit(
 
 
 async def test_task_delete(
-    register_user, user_factory, invoke, invoke_as_superuser, clear_task_cache,
+    register_user,
+    user_factory,
+    invoke,
+    invoke_as_superuser,
+    clear_task_cache,
 ):
     """
     Test task delete
@@ -367,9 +371,11 @@ async def test_task_list(register_user, invoke, testdata_path):
         PACKAGE = (
             testdata_path / f"fractal_tasks_dummy-{version}-py3-none-any.whl"
         )
-        res = await invoke(f"task collect {PACKAGE}")
+
+        res = await invoke(f"--batch task collect {PACKAGE}")
         assert res.retcode == 0
-        state_id = res.data["id"]
+
+        state_id = res.data.split(" ")[0]
 
         # Wait until collection is complete
         time.sleep(1)
@@ -387,9 +393,11 @@ async def test_task_list(register_user, invoke, testdata_path):
     custom_task_command = "custom_task_command"
     custom_task_source = "custom_task_source"
     custom_task_version = "9.9"
+    custom_task_meta = testdata_path / "task_edit_json/meta.json"
     res = await invoke(
         f"task new {custom_task_name} {custom_task_command} "
-        f"{custom_task_source} --version {custom_task_version}"
+        f"{custom_task_source} --meta-file {custom_task_meta} "
+        f"--version {custom_task_version}"
     )
     debug(res)
     assert res.retcode == 0

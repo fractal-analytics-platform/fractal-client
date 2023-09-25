@@ -5,16 +5,6 @@ from pathlib import Path
 from typing import Optional
 
 from ..authclient import AuthClient
-from ..common.schemas import ApplyWorkflowCreate
-from ..common.schemas import ApplyWorkflowRead
-from ..common.schemas import WorkflowCreate
-from ..common.schemas import WorkflowExport
-from ..common.schemas import WorkflowImport
-from ..common.schemas import WorkflowRead
-from ..common.schemas import WorkflowTaskCreate
-from ..common.schemas import WorkflowTaskRead
-from ..common.schemas import WorkflowTaskUpdate
-from ..common.schemas import WorkflowUpdate
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
@@ -27,21 +17,19 @@ from ._aux_task_caching import get_task_id_from_cache
 async def post_workflow(
     client: AuthClient, *, name: str, project_id: int, batch: bool = False
 ) -> BaseInterface:
-    workflow = WorkflowCreate(
+    workflow = dict(
         name=name,
         project_id=project_id,
     )
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/workflow/",
-        json=workflow.dict(),
+        json=workflow,
     )
-    workflow = check_response(
-        res, expected_status_code=201, coerce=WorkflowRead
-    )
+    workflow = check_response(res, expected_status_code=201)
     if batch:
-        return PrintInterface(retcode=0, data=workflow.id)
+        return PrintInterface(retcode=0, data=workflow["id"])
     else:
-        return RichJsonInterface(retcode=0, data=workflow.dict())
+        return RichJsonInterface(retcode=0, data=workflow)
 
 
 async def get_workflow_list(
@@ -71,10 +59,8 @@ async def get_workflow(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}"
     )
-    workflow = check_response(
-        res, expected_status_code=200, coerce=WorkflowRead
-    )
-    return RichJsonInterface(retcode=0, data=workflow.dict())
+    workflow = check_response(res, expected_status_code=200)
+    return RichJsonInterface(retcode=0, data=workflow)
 
 
 async def post_workflowtask(
@@ -108,17 +94,17 @@ async def post_workflowtask(
             sys.exit(1)
 
     if order is None:
-        workflow_task = WorkflowTaskCreate()
+        workflow_task = dict()
     else:
-        workflow_task = WorkflowTaskCreate(order=order)
+        workflow_task = dict(order=order)
     if args_file:
         with Path(args_file).open("r") as f:
             args = json.load(f)
-            workflow_task.args = args
+            workflow_task["args"] = args
     if meta_file:
         with Path(meta_file).open("r") as f:
             meta = json.load(f)
-            workflow_task.meta = meta
+            workflow_task["meta"] = meta
 
     res = await client.post(
         (
@@ -126,16 +112,14 @@ async def post_workflowtask(
             f"workflow/{workflow_id}/wftask/"
             f"?{task_id=}"
         ),
-        json=workflow_task.dict(exclude_unset=True),
+        json=workflow_task,
     )
-    workflow_task = check_response(
-        res, expected_status_code=201, coerce=WorkflowTaskRead
-    )
+    workflow_task = check_response(res, expected_status_code=201)
 
     if batch:
-        return PrintInterface(retcode=0, data=str(workflow_task.id))
+        return PrintInterface(retcode=0, data=str(workflow_task["id"]))
     else:
-        return RichJsonInterface(retcode=0, data=workflow_task.dict())
+        return RichJsonInterface(retcode=0, data=workflow_task)
 
 
 async def patch_workflowtask(
@@ -167,19 +151,16 @@ async def patch_workflowtask(
             meta = json.load(f)
             payload["meta"] = meta
 
-    payload_update = WorkflowTaskUpdate(**payload)
     res = await client.patch(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
             f"workflow/{workflow_id}/wftask/{workflow_task_id}"
         ),
-        json=payload_update.dict(exclude_unset=True),
+        json=payload,
     )
-    workflow_task = check_response(
-        res, expected_status_code=200, coerce=WorkflowTaskRead
-    )
+    workflow_task = check_response(res, expected_status_code=200)
 
-    return RichJsonInterface(retcode=0, data=workflow_task.dict())
+    return RichJsonInterface(retcode=0, data=workflow_task)
 
 
 async def delete_workflowtask(
@@ -206,17 +187,14 @@ async def patch_workflow(
     new_name: str,
 ) -> BaseInterface:
 
-    workflow_update = WorkflowUpdate(name=new_name)
-    payload = workflow_update.dict(exclude_unset=True)
+    workflow_update = dict(name=new_name)
 
     res = await client.patch(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}",
-        json=payload,
+        json=workflow_update,
     )
-    new_workflow = check_response(
-        res, expected_status_code=200, coerce=WorkflowRead
-    )
-    return RichJsonInterface(retcode=0, data=new_workflow.dict())
+    new_workflow = check_response(res, expected_status_code=200)
+    return RichJsonInterface(retcode=0, data=new_workflow)
 
 
 async def workflow_apply(
@@ -230,19 +208,18 @@ async def workflow_apply(
     last_task_index: Optional[int] = None,
     worker_init: Optional[str] = None,
 ) -> BaseInterface:
-    apply_wf_create_dict = dict(
+    apply_wf_create = dict(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
         output_dataset_id=output_dataset_id,
     )
     # Prepare ApplyWorkflowCreate object, without None attributes
     if worker_init is not None:
-        apply_wf_create_dict["worker_init"] = worker_init
+        apply_wf_create["worker_init"] = worker_init
     if first_task_index is not None:
-        apply_wf_create_dict["first_task_index"] = first_task_index
+        apply_wf_create["first_task_index"] = first_task_index
     if last_task_index is not None:
-        apply_wf_create_dict["last_task_index"] = last_task_index
-    apply_wf_create = ApplyWorkflowCreate(**apply_wf_create_dict)
+        apply_wf_create["last_task_index"] = last_task_index
 
     # Prepare query parameters
     query_parameters = (
@@ -255,13 +232,11 @@ async def workflow_apply(
             f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
             f"apply/?{query_parameters}"
         ),
-        json=apply_wf_create.dict(exclude_unset=True),
+        json=apply_wf_create,
     )
-    apply_wf_read = check_response(
-        res, expected_status_code=202, coerce=ApplyWorkflowRead
-    )
+    apply_wf_read = check_response(res, expected_status_code=202)
 
-    return RichJsonInterface(retcode=0, data=apply_wf_read.sanitised_dict())
+    return RichJsonInterface(retcode=0, data=apply_wf_read)
 
 
 async def workflow_import(
@@ -269,19 +244,17 @@ async def workflow_import(
 ) -> BaseInterface:
     with Path(json_file).open("r") as f:
         workflow = json.load(f)
-    workflow = WorkflowImport(**workflow)
+
     res = await client.post(
         f"{settings.BASE_URL}/project/{project_id}/workflow/import/",
-        json=workflow.dict(exclude_unset=True),
+        json=workflow,
     )
-    wf_read = check_response(
-        res, expected_status_code=201, coerce=WorkflowRead
-    )
+    wf_read = check_response(res, expected_status_code=201)
 
     warnings = [
-        workflow_task.task.source
-        for workflow_task in wf_read.task_list
-        if workflow_task.task.owner
+        workflow_task["task"]["source"]
+        for workflow_task in wf_read["task_list"]
+        if workflow_task["task"]["owner"]
     ]
     if warnings:
         sources_str = ", ".join([f"'{s}'" for s in warnings])
@@ -292,12 +265,12 @@ async def workflow_import(
         )
 
     if batch:
-        datastr = f"{wf_read.id}"
-        for wftask in wf_read.task_list:
-            datastr += f" {wftask.id}"
+        datastr = f"{wf_read['id']}"
+        for wftask in wf_read["task_list"]:
+            datastr += f" {wftask['id']}"
         return PrintInterface(retcode=0, data=datastr)
     else:
-        return RichJsonInterface(retcode=0, data=wf_read.dict())
+        return RichJsonInterface(retcode=0, data=wf_read)
 
 
 async def workflow_export(
@@ -313,14 +286,12 @@ async def workflow_export(
             f"workflow/{workflow_id}/export/"
         ),
     )
-    workflow = check_response(
-        res, expected_status_code=200, coerce=WorkflowExport
-    )
+    workflow = check_response(res, expected_status_code=200)
 
     warnings = [
-        workflow_task.task.source
-        for workflow_task in workflow.task_list
-        if not workflow_task.task.source.startswith(
+        workflow_task["task"]["source"]
+        for workflow_task in workflow["task_list"]
+        if not workflow_task["task"]["source"].startswith(
             ("pip_local:", "pip_remote:")
         )
     ]
@@ -333,7 +304,7 @@ async def workflow_export(
         )
 
     with Path(json_file).open("w") as f:
-        json.dump(workflow.dict(), f, indent=2)
+        json.dump(workflow, f, indent=2)
     return PrintInterface(
         retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
     )

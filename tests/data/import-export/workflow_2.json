@@ -1,0 +1,28 @@
+{
+    "name": "MyWorkflow2",
+    "task_list": [
+        {
+            "args": {
+                "message": "task 0",
+                "arg": "value"
+            },
+            "meta": {"key": "value"},
+            "task": {
+                "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy"
+            }
+        },
+        {
+            "args": {
+                "message": "task 1"
+            },
+            "task": {
+                "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy_parallel"
+            }
+        },
+        {
+            "task": {
+                "source": "custom_source"
+            }
+        }
+    ]
+}

@@ -6,7 +6,6 @@ from zipfile import ZipFile
 from rich.table import Table
 
 from ..authclient import AuthClient
-from ..common.schemas import ApplyWorkflowRead
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
@@ -30,20 +29,17 @@ async def get_job(
     res = await client.get(
         f"{settings.BASE_URL}/project/{project_id}/job/{job_id}"
     )
-    job = check_response(
-        res, expected_status_code=200, coerce=ApplyWorkflowRead
-    )
+    job = check_response(res, expected_status_code=200)
     if batch:
-        return PrintInterface(retcode=0, data=job.status)
+        return PrintInterface(retcode=0, data=job["status"])
     else:
-        data = job.sanitised_dict()
-        if do_not_separate_logs or (job.log is None):
-            return RichJsonInterface(retcode=0, data=data)
+        if do_not_separate_logs or (job.get("log") is None):
+            return RichJsonInterface(retcode=0, data=job)
         else:
-            log = data.pop("log")
+            log = job.pop("log")
             extra_lines = ["\nThis is the job log:\n", log]
             return RichJsonInterface(
-                retcode=0, data=data, extra_lines=extra_lines
+                retcode=0, data=job, extra_lines=extra_lines
             )
 
 
@@ -54,11 +50,8 @@ async def get_job_list(
     res = await client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
     jobs = check_response(res, expected_status_code=200)
 
-    # Coerce to a list of ApplyWorkflowRead objects
-    jobs = [ApplyWorkflowRead(**job) for job in jobs]
-
     if batch:
-        job_ids = " ".join(str(job.id) for job in jobs)
+        job_ids = " ".join(str(job["id"]) for job in jobs)
         return PrintInterface(retcode=0, data=job_ids)
     else:
         table = Table(title=f"Job list for project {project_id}")
@@ -70,13 +63,13 @@ async def get_job_list(
         table.add_column("working_dir", **kwargs)
 
         for j in jobs:
-            timestamp = j.dict()["start_timestamp"]
+            timestamp = j["start_timestamp"]
             table.add_row(
-                str(j.id),
-                timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-                j.status,
-                str(j.workflow_id),
-                j.working_dir,
+                str(j["id"]),
+                timestamp,
+                j["status"],
+                str(j["workflow_id"]),
+                j["working_dir"],
             )
         return RichConsoleInterface(retcode=0, data=table)
 
