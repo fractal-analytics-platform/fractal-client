@@ -4,7 +4,7 @@ from devtools import debug
 
 async def test_project_create(register_user, invoke):
     PROJECT_NAME = "project_name"
-    res = await invoke(f"project new {PROJECT_NAME}")
+    res = await invoke(f"project new {PROJECT_NAME} -d foo")
     debug(res)
     assert res.data["name"] == PROJECT_NAME
 
