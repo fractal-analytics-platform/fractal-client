@@ -2,35 +2,24 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/fractal-analytics-platform/fractal/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                                       |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
-|------------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
-| fractal/\_\_init\_\_.py                    |        1 |        0 |        0 |        0 |    100% |           |
-| fractal/authclient.py                      |       70 |        5 |       12 |        3 |     90% |27->exit, 28, 43-44, 75-76 |
-| fractal/client.py                          |       56 |       10 |       18 |        4 |     81% |60-67, 76, 86-87, 112, 118-120, 124 |
-| fractal/cmd/\_\_init\_\_.py                |      224 |        6 |       82 |        6 |     96% |93, 141, 203, 281, 308, 368 |
-| fractal/cmd/\_aux\_task\_caching.py        |       84 |        0 |       35 |        0 |    100% |           |
-| fractal/cmd/\_dataset.py                   |       97 |        2 |       28 |        2 |     97% |   90, 142 |
-| fractal/cmd/\_job.py                       |       73 |       11 |       22 |        2 |     86% |106-114, 120-131, 163 |
-| fractal/cmd/\_project.py                   |       67 |        4 |       22 |        3 |     92% |28, 38-42, 66 |
-| fractal/cmd/\_task.py                      |      119 |        4 |       64 |        4 |     96% |69-70, 123->125, 124, 202 |
-| fractal/cmd/\_user.py                      |       73 |        6 |       30 |        2 |     90% |41-46, 121 |
-| fractal/cmd/\_workflow.py                  |      133 |        7 |       54 |        7 |     91% |42, 155, 165->170, 240, 286->294, 295-298, 327->335 |
-| fractal/common/\_\_init\_\_.py             |        0 |        0 |        0 |        0 |    100% |           |
-| fractal/common/schemas/\_\_init\_\_.py     |        9 |        0 |        0 |        0 |    100% |           |
-| fractal/common/schemas/\_validators.py     |       31 |        1 |       16 |        1 |     96% |        54 |
-| fractal/common/schemas/applyworkflow.py    |       49 |        0 |       12 |        0 |    100% |           |
-| fractal/common/schemas/manifest.py         |       41 |        0 |       12 |        0 |    100% |           |
-| fractal/common/schemas/project.py          |       50 |        0 |        0 |        0 |    100% |           |
-| fractal/common/schemas/state.py            |       14 |        0 |        0 |        0 |    100% |           |
-| fractal/common/schemas/task.py             |       62 |        0 |        0 |        0 |    100% |           |
-| fractal/common/schemas/task\_collection.py |       39 |        4 |        8 |        1 |     89% |74, 104-106 |
-| fractal/common/schemas/user.py             |       24 |        0 |        0 |        0 |    100% |           |
-| fractal/common/schemas/workflow.py         |       56 |        0 |       11 |        0 |    100% |           |
-| fractal/config.py                          |       22 |        4 |        2 |        0 |     75% |     25-28 |
-| fractal/interface.py                       |       37 |        1 |        4 |        0 |     98% |        18 |
-| fractal/parser.py                          |      193 |        0 |        0 |        0 |    100% |           |
-| fractal/response.py                        |       22 |        0 |        6 |        0 |    100% |           |
-|                                  **TOTAL** | **1646** |   **65** |  **438** |   **35** | **95%** |           |
+| Name                                |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
+|------------------------------------ | -------: | -------: | -------: | -------: | ------: | --------: |
+| fractal/\_\_init\_\_.py             |        1 |        0 |        0 |        0 |    100% |           |
+| fractal/authclient.py               |       70 |        5 |       12 |        3 |     90% |27->exit, 28, 43-44, 75-76 |
+| fractal/client.py                   |       56 |       10 |       18 |        4 |     81% |60-67, 76, 86-87, 112, 118-120, 124 |
+| fractal/cmd/\_\_init\_\_.py         |      224 |        6 |       82 |        6 |     96% |93, 141, 203, 281, 308, 368 |
+| fractal/cmd/\_aux\_task\_caching.py |       84 |        0 |       35 |        0 |    100% |           |
+| fractal/cmd/\_dataset.py            |       83 |        1 |       26 |        1 |     98% |       120 |
+| fractal/cmd/\_job.py                |       70 |       11 |       20 |        2 |     86% |99-107, 113-124, 156 |
+| fractal/cmd/\_project.py            |       60 |        3 |       20 |        2 |     94% | 32-36, 58 |
+| fractal/cmd/\_task.py               |      109 |        1 |       64 |        1 |     99% |       185 |
+| fractal/cmd/\_user.py               |       74 |        6 |       32 |        2 |     91% |37-42, 105 |
+| fractal/cmd/\_workflow.py           |      121 |        1 |       56 |        4 |     97% |139, 149->154, 263->271, 302->310 |
+| fractal/config.py                   |       22 |        4 |        2 |        0 |     75% |     25-28 |
+| fractal/interface.py                |       37 |        1 |        4 |        0 |     98% |        18 |
+| fractal/parser.py                   |      193 |        0 |        0 |        0 |    100% |           |
+| fractal/response.py                 |       29 |        0 |        6 |        0 |    100% |           |
+|                           **TOTAL** | **1233** |   **49** |  **377** |   **25** | **95%** |           |
 
 
 ## Setup coverage badge
