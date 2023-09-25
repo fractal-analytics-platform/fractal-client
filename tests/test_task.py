@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from devtools import debug
 
-from fractal.cmd._aux_task_caching import TASKS_CACHE_FILENAME
-from fractal.config import settings
+from fractal_client.cmd._aux_task_caching import TASKS_CACHE_FILENAME
+from fractal_client.config import settings
 
 
 COLLECTION_TIMEOUT = 15.0

@@ -42,7 +42,7 @@ async def client():
 
 @pytest.fixture
 async def client_superuser():
-    from fractal.authclient import AuthClient
+    from fractal_client.authclient import AuthClient
 
     async with AuthClient(
         username="admin@fractal.xy",
@@ -61,7 +61,7 @@ def clisplit():
 
 @pytest.fixture
 async def invoke(clisplit):
-    from fractal.client import handle
+    from fractal_client.client import handle
 
     async def __invoke(args: str):
         return await handle(clisplit(args))
@@ -71,7 +71,7 @@ async def invoke(clisplit):
 
 @pytest.fixture
 async def invoke_as_superuser(clisplit):
-    from fractal.client import handle
+    from fractal_client.client import handle
 
     async def __invoke(args: str):
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
@@ -82,7 +82,7 @@ async def invoke_as_superuser(clisplit):
 
 @pytest.fixture
 def clear_task_cache():
-    from fractal.config import settings
+    from fractal_client.config import settings
 
     # This is a workaround to clean up the state before the test. The right way
     # would be to inject a new (function-scoped) FRACTAL_CACHE_PATH variable

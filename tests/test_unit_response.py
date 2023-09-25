@@ -2,7 +2,7 @@ import pytest
 from httpx import Request
 from httpx import Response
 
-from fractal.response import check_response
+from fractal_client.response import check_response
 
 
 def test_check_response(caplog):

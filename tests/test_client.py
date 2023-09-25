@@ -5,8 +5,8 @@ import httpx
 import pytest
 from devtools import debug
 
-from fractal import __VERSION__
-from fractal.client import MissingCredentialsError
+from fractal_client import __VERSION__
+from fractal_client.client import MissingCredentialsError
 
 
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
@@ -68,17 +68,17 @@ async def test_missing_credentials(monkeypatch):
     """
 
     # Define patched settings
-    from fractal.config import Settings
+    from fractal_client.config import Settings
 
     patched_settings = Settings()
     patched_settings.FRACTAL_USER = None
 
     with monkeypatch.context() as m:
-        import fractal
-        from fractal.client import handle
+        import fractal_client
+        from fractal_client.client import handle
 
-        m.setattr(fractal.client, "settings", patched_settings)
-        debug(fractal.config.settings)
+        m.setattr(fractal_client.client, "settings", patched_settings)
+        debug(fractal_client.config.settings)
         with pytest.raises(MissingCredentialsError) as e:
             await handle(shlex.split("fractal user whoami"))
         debug(e.value)

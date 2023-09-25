@@ -1,6 +1,6 @@
 import asyncio
 
-from fractal.client import main
+from fractal_client.client import main
 
 
 def run():
