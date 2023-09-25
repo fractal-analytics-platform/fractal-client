@@ -1,10 +1,10 @@
 # Contribute to Fractal Client development
 
 The development of Fractal Client takes place on the [fractal Github
-repository](https://github.com/fractal-analytics-platform/fractal).  To
+repository](https://github.com/fractal-analytics-platform/fractal-client).  To
 ask questions or to inform us of a bug or unexpected behavior, please feel free
 to [open an
-issue](https://github.com/fractal-analytics-platform/fractal/issues/new).
+issue](https://github.com/fractal-analytics-platform/fractal-client/issues/new).
 
 
 ## Set up the development environment
@@ -13,7 +13,7 @@ issue](https://github.com/fractal-analytics-platform/fractal/issues/new).
 
 First, you should clone the repository
 ```
-git clone https://github.com/fractal-analytics-platform/fractal.git
+git clone https://github.com/fractal-analytics-platform/fractal-client.git
 cd fractal
 ```
 
@@ -73,15 +73,15 @@ the test suite by invoking
 ```
 poetry run pytest
 ```
-from the main directory of the `fractal` repository. It is sometimes
+from the main directory of the `fractal-client` repository. It is sometimes
 useful to specify additional arguments, e.g.
 ```
 poetry run pytest -s -vvv --log-cli-level info --full-trace
 ```
 
 Tests are also run as part of [GitHub Actions Continuous
-Integration](https://github.com/fractal-analytics-platform/fractal/actions/workflows/ci.yml)
-for the `fractal` repository.
+Integration](https://github.com/fractal-analytics-platform/fractal-client/actions/workflows/ci.yml)
+for the `fractal-client` repository.
 
 
 ## Documentation

@@ -1,7 +1,7 @@
 site_name: Fractal Client
 
-repo_url: https://github.com/fractal-analytics-platform/fractal
-repo_name: fractal
+repo_url: https://github.com/fractal-analytics-platform/fractal-client
+repo_name: fractal-client
 
 markdown_extensions:
 - admonition
