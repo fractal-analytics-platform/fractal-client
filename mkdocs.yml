@@ -49,7 +49,7 @@ nav:
   - Changelog: changelog.md
 
 watch:
-  - fractal
+  - fractal_client
 
 plugins:
   - search
