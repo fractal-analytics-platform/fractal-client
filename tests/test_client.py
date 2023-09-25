@@ -74,11 +74,11 @@ async def test_missing_credentials(monkeypatch):
     patched_settings.FRACTAL_USER = None
 
     with monkeypatch.context() as m:
-        import fractal
+        import fractal_client
         from fractal_client.client import handle
 
-        m.setattr(fractal.client, "settings", patched_settings)
-        debug(fractal.config.settings)
+        m.setattr(fractal_client.client, "settings", patched_settings)
+        debug(fractal_client.config.settings)
         with pytest.raises(MissingCredentialsError) as e:
             await handle(shlex.split("fractal user whoami"))
         debug(e.value)
