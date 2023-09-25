@@ -2,6 +2,7 @@
 
 # 1.3.6
 
+* Change package name from `fractal` to `fractal-client` (\#555).
 * Remove client-side validation of API request/response bodies (\#551).
 * Remove `fractal-common` submodule (\#551).
 * Make error messages more readable for request-body validation errors (\#551).
