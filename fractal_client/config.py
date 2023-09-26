@@ -20,14 +20,6 @@ from dotenv import load_dotenv
 
 from . import __VERSION__
 
-
-def fail_getenv(key):
-    value = getenv(key, None)
-    if value is None:
-        raise ValueError(f"Must provide environment variable {key}")
-    return value
-
-
 load_dotenv(".fractal.env")
 
 
