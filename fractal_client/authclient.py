@@ -50,7 +50,7 @@ class AuthToken:
         self.token = raw_token["access_token"]
 
         # Create cache folder, if needed
-        cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+        cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}")
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Write token in cache_file

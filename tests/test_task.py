@@ -256,7 +256,7 @@ async def test_task_edit(
     assert res.retcode == 0
 
     # Test regular update by name, after deleting cache
-    cache_dir = Path(settings.FRACTAL_CACHE_PATH).expanduser()
+    cache_dir = Path(settings.FRACTAL_CACHE_PATH)
     cache_file = cache_dir / TASKS_CACHE_FILENAME
     cache_file.unlink(missing_ok=True)
     NEW_TYPE = "something"

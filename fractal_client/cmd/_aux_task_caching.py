@@ -73,7 +73,7 @@ def _write_task_list_to_cache(task_list: _TaskList) -> None:
     """
     Write task list to cache file
     """
-    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}")
     cache_dir.mkdir(parents=True, exist_ok=True)
     with (cache_dir / TASKS_CACHE_FILENAME).open("w") as f:
         json.dump(task_list, f, indent=4)
@@ -214,7 +214,7 @@ async def get_task_id_from_cache(
     """
 
     # If cache is missing, create it
-    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}").expanduser()
+    cache_dir = Path(f"{settings.FRACTAL_CACHE_PATH}")
     cache_file = cache_dir / TASKS_CACHE_FILENAME
     if cache_file.exists():
         with cache_file.open("r") as f:
