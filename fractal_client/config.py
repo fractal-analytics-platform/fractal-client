@@ -18,15 +18,11 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-from . import __VERSION__
-
 load_dotenv(".fractal.env")
 
 
 class Settings:
     def __init__(self):
-        self.PROJECT_NAME: str = "Fractal client"
-        self.PROJECT_VERSION: str = __VERSION__
 
         self.FRACTAL_LOGGING_LEVEL: int = logging.INFO
 
