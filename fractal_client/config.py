@@ -32,9 +32,11 @@ class Settings:
         self.FRACTAL_SERVER: str = getenv(
             "FRACTAL_SERVER", "http://localhost:8000"
         )
-
-        self.BASE_URL: str = f"{self.FRACTAL_SERVER}/api/v1"
         self.FRACTAL_CACHE_PATH: str = str(Path.home() / ".cache/fractal")
+
+    @property
+    def BASE_URL(self):
+        return f"{self.FRACTAL_SERVER}/api/v1"
 
 
 settings = Settings()
