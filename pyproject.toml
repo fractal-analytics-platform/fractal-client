@@ -69,10 +69,10 @@ push = true
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = [
-    'version = "{version}"',
+    'version = "{version}"$',
 ]
 "fractal_client/__init__.py" = [
-    '__VERSION__ = "{version}"'
+    '__VERSION__ = "{version}"$'
 ]
 
 [tool.poetry.scripts]
