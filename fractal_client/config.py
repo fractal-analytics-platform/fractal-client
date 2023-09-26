@@ -13,10 +13,10 @@ Zurich.
 """
 import logging
 from os import getenv
+from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings
 
 from . import __VERSION__
 
@@ -31,19 +31,22 @@ def fail_getenv(key):
 load_dotenv(".fractal.env")
 
 
-class Settings(BaseSettings):
-    PROJECT_NAME: str = "Fractal client"
-    PROJECT_VERSION: str = __VERSION__
+class Settings:
+    def __init__(self):
+        self.PROJECT_NAME: str = "Fractal client"
+        self.PROJECT_VERSION: str = __VERSION__
 
-    FRACTAL_LOGGING_LEVEL: int = logging.INFO
+        self.FRACTAL_LOGGING_LEVEL: int = logging.INFO
 
-    FRACTAL_USER: Optional[str] = getenv("FRACTAL_USER")
-    FRACTAL_PASSWORD: Optional[str] = getenv("FRACTAL_PASSWORD")
+        self.FRACTAL_USER: Optional[str] = getenv("FRACTAL_USER")
+        self.FRACTAL_PASSWORD: Optional[str] = getenv("FRACTAL_PASSWORD")
 
-    FRACTAL_SERVER: str = getenv("FRACTAL_SERVER", "http://localhost:8000")
+        self.FRACTAL_SERVER: str = getenv(
+            "FRACTAL_SERVER", "http://localhost:8000"
+        )
 
-    BASE_URL: str = f"{FRACTAL_SERVER}/api/v1"
-    FRACTAL_CACHE_PATH: str = "~/.cache/fractal"
+        self.BASE_URL: str = f"{self.FRACTAL_SERVER}/api/v1"
+        self.FRACTAL_CACHE_PATH: str = str(Path.home() / ".cache/fractal")
 
 
 settings = Settings()
