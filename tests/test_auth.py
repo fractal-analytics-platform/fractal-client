@@ -28,9 +28,5 @@ async def test_auth_fail(client):
     THEN authentication error is raised
     """
     with pytest.raises(AuthenticationError):
-        auth = AuthToken(
-            client,
-            username=environ.get("FRACTAL_USER"),
-            password=environ.get("FRACTAL_PASSWORD"),
-        )
+        auth = AuthToken(client, username="foo", password="bar")
         await auth()

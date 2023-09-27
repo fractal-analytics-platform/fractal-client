@@ -198,7 +198,7 @@ async def job_factory(db):
 
 
 @pytest.fixture
-async def user_factory(client_superuser, testserver):
+async def user_factory(db, testserver):
     async def __register_user(
         email: str,
         password: str,
@@ -210,19 +210,18 @@ async def user_factory(client_superuser, testserver):
             payload["slurm_user"] = slurm_user
         if username:
             payload["username"] = username
-        res = await client_superuser.post(
-            f"{testserver}/auth/register",
-            json=payload,
-        )
-        assert res.status_code == 201
-        return res.json()
+
+        from fractal_server.main import _create_first_user
+
+        await _create_first_user(**payload)
 
     return __register_user
 
 
 @pytest.fixture
 async def register_user(user_factory):
-    return await user_factory(
+
+    await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
         username="some_username",

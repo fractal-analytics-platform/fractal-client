@@ -20,6 +20,17 @@ environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
 multiprocessing.set_start_method("fork")
 
 
+@pytest.fixture(autouse=True, scope="function")
+def clear_cache(tmp_path, monkeypatch):
+    import fractal_client.config
+
+    monkeypatch.setattr(
+        fractal_client.config.settings,
+        "FRACTAL_CACHE_PATH",
+        str(tmp_path),
+    )
+
+
 @pytest.fixture(scope="session")
 def testdata_path() -> Path:
     return Path(__file__).parent / "data"
@@ -59,12 +70,23 @@ def clisplit():
     return __clisplit
 
 
+def remove_session():
+    from fractal_client.config import settings
+
+    cache_dir = Path(settings.FRACTAL_CACHE_PATH)
+    cache_file = cache_dir / "session"
+    cache_file.unlink(missing_ok=True)
+
+
 @pytest.fixture
 async def invoke(clisplit):
     from fractal_client.client import handle
 
     async def __invoke(args: str):
-        return await handle(clisplit(args))
+        remove_session()
+
+        interface = await handle(clisplit(args))
+        return interface
 
     return __invoke
 
@@ -74,8 +96,11 @@ async def invoke_as_superuser(clisplit):
     from fractal_client.client import handle
 
     async def __invoke(args: str):
+        remove_session()
+
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
-        return await handle(clisplit(new_args))
+        interface = await handle(clisplit(new_args))
+        return interface
 
     return __invoke
 
@@ -123,14 +148,3 @@ def override_settings(monkeypatch, tmp_path):
 
 
 from .fixtures_testserver import *  # noqa: 401
-
-
-@pytest.fixture(autouse=True, scope="function")
-def clear_cache(tmp_path, monkeypatch):
-    import fractal_client.config
-
-    monkeypatch.setattr(
-        fractal_client.config.settings,
-        "FRACTAL_CACHE_PATH",
-        str(tmp_path),
-    )
