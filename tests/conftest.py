@@ -7,12 +7,12 @@ import pytest
 from httpx import AsyncClient
 
 
-TASKS_CACHE_FILENAME = "tasks"
-
+# These three variables must be defined before the first import of config.py
+environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
 environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
 environ["FRACTAL_PASSWORD"] = "password"
+
 environ["FRACTAL_USERNAME"] = "myusername"
-environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
 
 
 # set_start_method("fork") necessary to run tests on MacOS
