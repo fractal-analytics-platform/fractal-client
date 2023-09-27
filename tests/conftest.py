@@ -40,15 +40,6 @@ def testdata_path() -> Path:
     return Path(__file__).parent / "data"
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    import asyncio
-
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
-
 @pytest.fixture
 async def client():
     async with AsyncClient(timeout=10) as client:
