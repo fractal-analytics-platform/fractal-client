@@ -106,11 +106,6 @@ async def user_edit(
     res = await client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}", json=user_update
     )
-    from devtools import debug
-
-    debug(user_update)
-    debug(res)
-    debug(res.json())
     new_user = check_response(res, expected_status_code=200)
 
     return RichJsonInterface(retcode=0, data=new_user)
