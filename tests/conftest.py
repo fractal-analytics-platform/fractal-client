@@ -11,6 +11,7 @@ TASKS_CACHE_FILENAME = "tasks"
 
 environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
 environ["FRACTAL_PASSWORD"] = "password"
+environ["FRACTAL_USERNAME"] = "myusername"
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
 
 
