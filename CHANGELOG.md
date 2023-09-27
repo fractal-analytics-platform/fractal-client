@@ -2,12 +2,18 @@
 
 # 1.3.6
 
-* Rename repository from `fractal` to `fractal-client`.
-* Change package name from `fractal` to `fractal-client` (\#555).
-* Remove client-side validation of API request/response bodies (\#551).
-* Remove `fractal-common` submodule (\#551).
-* Make error messages more readable for request-body validation errors (\#551).
-* Include `--batch` option for workflow apply command (commit 06c7ff0e92602f08a98097d3597a8ce39c6ae1a8).
+* Main features:
+    * Remove client-side validation of API request/response bodies (\#551).
+    * Make error messages more readable for request-body validation errors (\#551).
+    * Include `--batch` option for workflow apply command (commit 06c7ff0e92602f08a98097d3597a8ce39c6ae1a8).
+    * Revamp `config.py`, making `Settings` a standard Python class (\#559).
+* Package and repository:
+    * Rename repository from `fractal` to `fractal-client`.
+    * Change package name from `fractal` to `fractal-client` (\#555).
+    * Remove `fractal-common` submodule (\#551).
+    * Remove `pydantic` dependency (\#559).
+* Tests:
+    * Review tests: make them stateless, improve handling of cache, remove obsolete fixtures (\#559).
 
 # 1.3.5
 

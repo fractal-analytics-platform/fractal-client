@@ -184,7 +184,6 @@ async def test_task_edit(
     invoke_as_superuser,
     tmp_path,
     testdata_path: Path,
-    clear_task_cache,
 ):
     schema_path = str(tmp_path / "schema.json")
     schema = dict(key1=1, key2=[2, "3"])
@@ -256,7 +255,7 @@ async def test_task_edit(
     assert res.retcode == 0
 
     # Test regular update by name, after deleting cache
-    cache_dir = Path(settings.FRACTAL_CACHE_PATH).expanduser()
+    cache_dir = Path(settings.FRACTAL_CACHE_PATH)
     cache_file = cache_dir / TASKS_CACHE_FILENAME
     cache_file.unlink(missing_ok=True)
     NEW_TYPE = "something"
@@ -320,7 +319,6 @@ async def test_task_delete(
     user_factory,
     invoke,
     invoke_as_superuser,
-    clear_task_cache,
 ):
     """
     Test task delete

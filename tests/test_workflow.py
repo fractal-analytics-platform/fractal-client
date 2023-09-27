@@ -146,7 +146,6 @@ async def test_workflow_add_task(
     task_factory,
     workflow_factory,
     tmp_path: Path,
-    clear_task_cache,
 ):
     """
     GIVEN a workflow
@@ -230,7 +229,6 @@ async def test_workflow_add_task_by_name(
     task_factory,
     workflow_factory,
     tmp_path: Path,
-    clear_task_cache,
 ):
     """
     GIVEN a workflow and a task
@@ -268,7 +266,6 @@ async def test_task_cache_with_non_unique_names(
     workflow_factory,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
-    clear_task_cache,
 ):
     """
     GIVEN two tasks with the same name
@@ -581,8 +578,13 @@ async def test_workflow_export(
     task_factory,
     caplog,
 ):
+
+    res = await invoke("project new testproject")
+    assert res.retcode == 0
+    project_id = res.data["id"]
+
     NAME = "WorkFlow"
-    wf = await workflow_factory(name=NAME)
+    wf = await workflow_factory(project_id=project_id, name=NAME)
     prj_id = wf.project_id
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")

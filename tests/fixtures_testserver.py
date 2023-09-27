@@ -152,17 +152,11 @@ async def project_factory(db):
 
 
 @pytest.fixture
-async def workflow_factory(db, project_factory, register_user):
+async def workflow_factory(db, project_factory):
     from fractal_server.app.models.workflow import Workflow
 
     async def _workflow_factory(**wf_args_override):
-        if "project_id" not in wf_args_override:
-            p = await project_factory(user_id=register_user["id"])
-            wf_args_override["project_id"] = p.id
-
-        wf_args = dict(
-            name="name",
-        )
+        wf_args = dict(name="name")
         wf_args.update(wf_args_override)
         wf = Workflow(**wf_args)
         db.add(wf)
@@ -198,7 +192,7 @@ async def job_factory(db):
 
 
 @pytest.fixture
-async def user_factory(client_superuser, testserver):
+async def user_factory(testserver, db):
     async def __register_user(
         email: str,
         password: str,
@@ -210,12 +204,16 @@ async def user_factory(client_superuser, testserver):
             payload["slurm_user"] = slurm_user
         if username:
             payload["username"] = username
-        res = await client_superuser.post(
-            f"{testserver}/auth/register",
-            json=payload,
-        )
-        assert res.status_code == 201
-        return res.json()
+
+        from fractal_server.main import _create_first_user
+        from fractal_server.app.models import UserOAuth
+        from sqlmodel import select
+
+        await _create_first_user(**payload)
+        stm = select(UserOAuth).where(UserOAuth.email == email)
+        res = await db.execute(stm)
+        user = res.scalars().first()
+        return user.dict()
 
     return __register_user
 
@@ -225,5 +223,5 @@ async def register_user(user_factory):
     return await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
-        username="some_username",
+        username=environ["FRACTAL_USERNAME"],
     )

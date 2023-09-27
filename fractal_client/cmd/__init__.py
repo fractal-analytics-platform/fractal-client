@@ -1,7 +1,6 @@
 from httpx import AsyncClient
 
 from ..authclient import AuthClient
-from ..config import __VERSION__
 from ..config import settings
 from ..interface import BaseInterface
 from ..interface import PrintInterface
@@ -45,6 +44,7 @@ from ._workflow import post_workflowtask
 from ._workflow import workflow_apply
 from ._workflow import workflow_export
 from ._workflow import workflow_import
+from fractal_client import __VERSION__
 
 
 class NoCommandError(ValueError):
