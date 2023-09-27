@@ -8,9 +8,9 @@ from fractal_client.authclient import AuthToken
 
 async def test_auth_registered(client, register_user):
     """
-    GIVEN no user registered
-    WHEN when fetching a token
-    THEN authentication error is raised
+    GIVEN an existing user
+    WHEN fetching a token
+    THEN authentication goes through
     """
     auth = AuthToken(
         client,
@@ -24,7 +24,7 @@ async def test_auth_registered(client, register_user):
 async def test_auth_fail(client):
     """
     GIVEN no user registered
-    WHEN when fetching a token
+    WHEN fetching a token
     THEN authentication error is raised
     """
     with pytest.raises(AuthenticationError):
