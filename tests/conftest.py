@@ -6,13 +6,13 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient
 
-import fractal_client.config
 
 TASKS_CACHE_FILENAME = "tasks"
 
 environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
 environ["FRACTAL_PASSWORD"] = "password"
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
+
 
 # set_start_method("fork") necessary to run tests on MacOS
 # https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228
@@ -96,6 +96,8 @@ def clear_task_cache():
 
 @pytest.fixture(scope="function")
 def override_settings(monkeypatch, tmp_path):
+    import fractal_client.config
+
     def _override_settings(
         FRACTAL_CACHE_PATH=str(tmp_path),
         FRACTAL_USER=None,
@@ -125,6 +127,7 @@ from .fixtures_testserver import *  # noqa: 401
 
 @pytest.fixture(autouse=True, scope="function")
 def clear_cache(tmp_path, monkeypatch):
+    import fractal_client.config
 
     monkeypatch.setattr(
         fractal_client.config.settings,
