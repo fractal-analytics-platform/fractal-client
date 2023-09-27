@@ -6,13 +6,13 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient
 
-TASKS_CACHE_FILENAME = "tasks"
+import fractal_client.config
 
+TASKS_CACHE_FILENAME = "tasks"
 
 environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
 environ["FRACTAL_PASSWORD"] = "password"
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
-environ["DB_ECHO"] = "0"
 
 # set_start_method("fork") necessary to run tests on MacOS
 # https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228
@@ -94,4 +94,40 @@ def clear_task_cache():
     cache_file.unlink(missing_ok=True)
 
 
+@pytest.fixture(scope="function")
+def override_settings(monkeypatch, tmp_path):
+    def _override_settings(
+        FRACTAL_CACHE_PATH=str(tmp_path),
+        FRACTAL_USER=None,
+        FRACTAL_PASSWORD=None,
+    ):
+        monkeypatch.setattr(
+            fractal_client.config.settings,
+            "FRACTAL_CACHE_PATH",
+            FRACTAL_CACHE_PATH,
+        )
+        monkeypatch.setattr(
+            fractal_client.config.settings,
+            "FRACTAL_USER",
+            FRACTAL_USER,
+        )
+        monkeypatch.setattr(
+            fractal_client.config.settings,
+            "FRACTAL_PASSWORD",
+            FRACTAL_PASSWORD,
+        )
+
+    return _override_settings
+
+
 from .fixtures_testserver import *  # noqa: 401
+
+
+@pytest.fixture(autouse=True, scope="function")
+def clear_cache(tmp_path, monkeypatch):
+
+    monkeypatch.setattr(
+        fractal_client.config.settings,
+        "FRACTAL_CACHE_PATH",
+        str(tmp_path),
+    )
