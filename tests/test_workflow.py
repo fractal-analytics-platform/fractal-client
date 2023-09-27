@@ -578,8 +578,13 @@ async def test_workflow_export(
     task_factory,
     caplog,
 ):
+
+    res = await invoke("project new testproject")
+    assert res.retcode == 0
+    project_id = res.data["id"]
+
     NAME = "WorkFlow"
-    wf = await workflow_factory(name=NAME)
+    wf = await workflow_factory(project_id=project_id, name=NAME)
     prj_id = wf.project_id
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")

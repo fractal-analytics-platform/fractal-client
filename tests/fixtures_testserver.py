@@ -152,17 +152,11 @@ async def project_factory(db):
 
 
 @pytest.fixture
-async def workflow_factory(db, project_factory, register_user):
+async def workflow_factory(db, project_factory):
     from fractal_server.app.models.workflow import Workflow
 
     async def _workflow_factory(**wf_args_override):
-        if "project_id" not in wf_args_override:
-            p = await project_factory(user_id=register_user["id"])  # FIXME
-            wf_args_override["project_id"] = p.id
-
-        wf_args = dict(
-            name="name",
-        )
+        wf_args = dict(name="name")
         wf_args.update(wf_args_override)
         wf = Workflow(**wf_args)
         db.add(wf)
