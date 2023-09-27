@@ -57,12 +57,8 @@ async def client_superuser():
         yield client_superuser
 
 
-@pytest.fixture(scope="session")
-def clisplit():
-    def __clisplit(args: str):
-        return shlex.split(f"fractal {args}")
-
-    return __clisplit
+def _clisplit(args: str):
+    return shlex.split(f"fractal {args}")
 
 
 def remove_session():
@@ -74,27 +70,27 @@ def remove_session():
 
 
 @pytest.fixture
-async def invoke(clisplit):
+async def invoke():
     from fractal_client.client import handle
 
     async def __invoke(args: str):
         remove_session()
 
-        interface = await handle(clisplit(args))
+        interface = await handle(_clisplit(args))
         return interface
 
     return __invoke
 
 
 @pytest.fixture
-async def invoke_as_superuser(clisplit):
+async def invoke_as_superuser():
     from fractal_client.client import handle
 
     async def __invoke(args: str):
         remove_session()
 
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
-        interface = await handle(clisplit(new_args))
+        interface = await handle(_clisplit(new_args))
         return interface
 
     return __invoke
