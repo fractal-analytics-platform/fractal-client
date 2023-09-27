@@ -157,7 +157,7 @@ async def workflow_factory(db, project_factory, register_user):
 
     async def _workflow_factory(**wf_args_override):
         if "project_id" not in wf_args_override:
-            p = await project_factory(user_id=register_user["id"])
+            p = await project_factory(user_id=register_user["id"])  # FIXME
             wf_args_override["project_id"] = p.id
 
         wf_args = dict(
@@ -198,7 +198,7 @@ async def job_factory(db):
 
 
 @pytest.fixture
-async def user_factory(testserver):
+async def user_factory(testserver, db):
     async def __register_user(
         email: str,
         password: str,
@@ -212,15 +212,21 @@ async def user_factory(testserver):
             payload["username"] = username
 
         from fractal_server.main import _create_first_user
+        from fractal_server.app.models import UserOAuth
+        from sqlmodel import select
 
         await _create_first_user(**payload)
+        stm = select(UserOAuth).where(UserOAuth.email == email)
+        res = await db.execute(stm)
+        user = res.scalars().first()
+        return user.dict()
 
     return __register_user
 
 
 @pytest.fixture
 async def register_user(user_factory):
-    await user_factory(
+    return await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
         username=environ["FRACTAL_USERNAME"],
