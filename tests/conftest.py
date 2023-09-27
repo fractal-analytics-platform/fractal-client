@@ -61,7 +61,7 @@ def _clisplit(args: str):
     return shlex.split(f"fractal {args}")
 
 
-def remove_session():
+def _remove_session():
     from fractal_client.config import settings
 
     cache_dir = Path(settings.FRACTAL_CACHE_PATH)
@@ -74,10 +74,8 @@ async def invoke():
     from fractal_client.client import handle
 
     async def __invoke(args: str):
-        remove_session()
-
-        interface = await handle(_clisplit(args))
-        return interface
+        _remove_session()
+        return await handle(_clisplit(args))
 
     return __invoke
 
@@ -87,11 +85,9 @@ async def invoke_as_superuser():
     from fractal_client.client import handle
 
     async def __invoke(args: str):
-        remove_session()
-
+        _remove_session()
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
-        interface = await handle(_clisplit(new_args))
-        return interface
+        return await handle(_clisplit(new_args))
 
     return __invoke
 
