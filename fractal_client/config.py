@@ -24,7 +24,9 @@ load_dotenv(".fractal.env")
 class Settings:
     def __init__(self):
 
-        self.FRACTAL_LOGGING_LEVEL: int = logging.INFO
+        self.FRACTAL_LOGGING_LEVEL: int = getenv(
+            "FRACTAL_LOGGING_LEVEL", logging.INFO
+        )
 
         self.FRACTAL_USER: Optional[str] = getenv("FRACTAL_USER")
         self.FRACTAL_PASSWORD: Optional[str] = getenv("FRACTAL_PASSWORD")
@@ -32,10 +34,12 @@ class Settings:
         self.FRACTAL_SERVER: str = getenv(
             "FRACTAL_SERVER", "http://localhost:8000"
         )
-        self.FRACTAL_CACHE_PATH: str = str(Path.home() / ".cache/fractal")
+        self.FRACTAL_CACHE_PATH: str = getenv(
+            "FRACTAL_CACHE_PATH", str(Path.home() / ".cache/fractal")
+        )
 
     @property
-    def BASE_URL(self):
+    def BASE_URL(self) -> str:
         return f"{self.FRACTAL_SERVER}/api/v1"
 
 
