@@ -220,7 +220,6 @@ async def user_factory(db, testserver):
 
 @pytest.fixture
 async def register_user(user_factory):
-
     await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
