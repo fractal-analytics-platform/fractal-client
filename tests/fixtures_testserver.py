@@ -222,8 +222,10 @@ async def user_factory(client_superuser, testserver):
 
 @pytest.fixture
 async def register_user(user_factory):
-    return await user_factory(
+    new_user = await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
         username="some_username",
     )
+    logging.info(f"Registered new user: {new_user}")
+    return new_user
