@@ -23,6 +23,9 @@ multiprocessing.set_start_method("fork")
 
 @pytest.fixture(autouse=True, scope="function")
 def clear_cache(tmp_path, monkeypatch):
+    """
+    Note that this fixture is automatically used in **all** tests.
+    """
     import fractal_client.config
 
     monkeypatch.setattr(
