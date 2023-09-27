@@ -1,6 +1,5 @@
 import json
 import time
-from os import environ
 from pathlib import Path
 
 import pytest
@@ -136,8 +135,6 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
 
 async def test_task_new(register_user, invoke, tmp_path):
 
-    DEFAULT_USER_USERNAME = environ.get("FRACTAL_USERNAME")
-
     # create a new task with just positional required args
 
     schema_path = str(tmp_path / "schema.json")
@@ -153,7 +150,7 @@ async def test_task_new(register_user, invoke, tmp_path):
     assert res.retcode == 0
     assert res.data["name"] == "_name"
     assert res.data["command"] == "_command"
-    assert res.data["source"] == f"{DEFAULT_USER_USERNAME}:_source"
+    assert res.data["source"] == f"{register_user['username']}:_source"
     assert res.data["input_type"] == res.data["output_type"] == "Any"
     assert res.data["version"] == "_version"
     assert res.data["meta"] == {}
