@@ -6,6 +6,7 @@ import pytest
 from devtools import debug
 
 from fractal_client import __VERSION__
+from fractal_client.client import handle
 from fractal_client.client import MissingCredentialsError
 
 
@@ -64,29 +65,20 @@ async def test_bad_credentials(invoke):
     assert "BAD_CREDENTIALS" in res.data
 
 
-async def test_missing_credentials(monkeypatch):
+async def test_missing_credentials(override_settings):
     """
     GIVEN an invocation with missing credentials
     THEN the client raises a MissingCredentialsError
     """
 
-    # Define patched settings
-    from fractal_client.config import Settings
+    # Remove credentials from settings
+    override_settings(FRACTAL_USER=None, FRACTAL_PASSWORD=None)
 
-    patched_settings = Settings()
-    patched_settings.FRACTAL_USER = None
-
-    with monkeypatch.context() as m:
-        import fractal_client
-        from fractal_client.client import handle
-
-        m.setattr(fractal_client.client, "settings", patched_settings)
-        debug(fractal_client.config.settings)
-        with pytest.raises(MissingCredentialsError) as e:
-            await handle(shlex.split("fractal user whoami"))
-        debug(e.value)
-        debug(e.value.args[0])
-        assert "FRACTAL_USER" in e.value.args[0]
+    with pytest.raises(MissingCredentialsError) as e:
+        await handle(shlex.split("fractal user whoami"))
+    debug(e.value)
+    debug(e.value.args[0])
+    assert "FRACTAL_USER" in e.value.args[0]
 
 
 async def test_argparse_abbreviation(invoke_as_superuser):
