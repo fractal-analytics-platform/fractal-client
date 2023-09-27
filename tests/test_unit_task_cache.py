@@ -5,7 +5,7 @@ from fractal_client.cmd._aux_task_caching import _search_in_task_list
 from fractal_client.cmd._aux_task_caching import FractalCacheError
 
 
-def test_get_matching_tasks(clear_task_cache):
+def test_get_matching_tasks():
     """Test all possible cases for function `_get_matching_tasks`"""
 
     a = dict(name="bob", id=1, version="0.1.1")
@@ -32,7 +32,7 @@ def test_get_matching_tasks(clear_task_cache):
     assert res == []
 
 
-async def test_search_in_task_list(clear_task_cache):
+async def test_search_in_task_list():
     """Test all possible cases for function `_search_in_task_list`"""
 
     TASK_LIST = [

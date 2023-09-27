@@ -146,7 +146,6 @@ async def test_workflow_add_task(
     task_factory,
     workflow_factory,
     tmp_path: Path,
-    clear_task_cache,
 ):
     """
     GIVEN a workflow
@@ -230,7 +229,6 @@ async def test_workflow_add_task_by_name(
     task_factory,
     workflow_factory,
     tmp_path: Path,
-    clear_task_cache,
 ):
     """
     GIVEN a workflow and a task
@@ -268,7 +266,6 @@ async def test_task_cache_with_non_unique_names(
     workflow_factory,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
-    clear_task_cache,
 ):
     """
     GIVEN two tasks with the same name
