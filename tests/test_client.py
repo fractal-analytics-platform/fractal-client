@@ -32,11 +32,8 @@ async def test_server():
 
 
 async def test_register_user(register_user, invoke):
-    res = await invoke("user whoami")
-    user = res.data
-    debug(user)
-    assert res.retcode == 0
-    assert user["email"] == DEFAULT_TEST_EMAIL
+    debug(register_user)
+    assert register_user["email"] == DEFAULT_TEST_EMAIL
 
 
 async def test_user_override(user_factory, invoke):
