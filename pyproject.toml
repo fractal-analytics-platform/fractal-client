@@ -11,7 +11,7 @@ readme = "README.md"
 packages = [
     {include="fractal_client"}
 ]
-homepage = "https://github.com/fractal-analytics-platform/fractal"
+homepage = "https://github.com/fractal-analytics-platform/fractal-client"
 license = "BSD-3-Clause"
 exclude = [
 "fractal_client/.gitignore",
