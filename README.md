@@ -16,7 +16,7 @@ This is the repository that contains the **Fractal client**. Find more informati
 
 ## Documentation
 
-See https://fractal-analytics-platform.github.io/fractal.
+See https://fractal-analytics-platform.github.io/fractal-client.
 
 # Contributors and license
 
