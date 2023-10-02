@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Automate procedure for publishing package to PyPI (\#561).
+
 # 1.3.6
 
 * Main features:
