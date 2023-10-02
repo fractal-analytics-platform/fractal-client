@@ -1,0 +1,39 @@
+name: Publish package to PyPI
+on:
+  push:
+    tags:
+      # See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+[a-c][0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+alpha[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+beta[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-20.04
+    environment: pypi
+    steps:
+
+      - name: Check that PYPI_TOKEN secret exists
+        env:
+            CURRENT_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN}}
+        if: ${{ env.CURRENT_PYPI_TOKEN == '' }}
+        run: echo "Secret PYPI_TOKEN is not defined." && exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry==1.5
+
+      - name: "Set up Python 3.10"
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Build package
+        run: poetry build
+
+      - name: Publish package to PyPI
+        run: poetry publish --username "__token__" --password ${{ secrets.PYPI_TOKEN}}

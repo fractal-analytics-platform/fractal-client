@@ -1,0 +1,26 @@
+name: Build package
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry==1.5
+
+      - name: "Set up Python 3.10"
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Build package
+        run: poetry build --verbose
