@@ -12,6 +12,8 @@ packages = [
     {include="fractal_client"}
 ]
 homepage = "https://github.com/fractal-analytics-platform/fractal-client"
+repository = "https://github.com/fractal-analytics-platform/fractal-client"
+documentation = "https://fractal-analytics-platform.github.io/fractal-client"
 license = "BSD-3-Clause"
 exclude = [
 "fractal_client/.gitignore",
