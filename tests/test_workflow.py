@@ -437,7 +437,8 @@ async def test_workflow_apply(
     assert res.retcode == 0
     prj = res.data
     prj_id = prj["id"]
-    input_dataset_id = prj["dataset_list"][0]["id"]
+    res = await invoke(f"project add-dataset {prj_id} test_name")
+    input_dataset_id = res.data["id"]
 
     # Create output dataset
     res = await invoke(f"project add-dataset {prj_id} {DATASET_NAME}")
