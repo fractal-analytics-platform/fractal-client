@@ -20,7 +20,7 @@ async def post_dataset(
     metadata: Optional[str] = None,
     type: Optional[str] = None,
     batch: bool = False,
-    read_only: bool = False,
+    make_read_only: bool = False,
 ) -> RichJsonInterface:
     """
     Arguments:
@@ -35,7 +35,7 @@ async def post_dataset(
         with open(metadata, "r") as f:
             meta = json.load(f)
 
-    dataset = dict(name=dataset_name, meta=meta, read_only=read_only)
+    dataset = dict(name=dataset_name, meta=meta, read_only=make_read_only)
     if type:
         dataset["type"] = type
 

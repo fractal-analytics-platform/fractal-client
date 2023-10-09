@@ -87,7 +87,7 @@ async def project(
             "dataset_name",
             "metadata",
             "type",
-            "read_only",
+            "make_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await post_dataset(client, batch=batch, **function_kwargs)
