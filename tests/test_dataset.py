@@ -41,8 +41,10 @@ async def test_add_resource(register_user, invoke):
     # Create a project with its default dataset
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
-    assert res.data["dataset_list"][0]["resource_list"] == []
+
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
+    assert res.data["resource_list"] == []
 
     # Add a resource
     PATH = "/some/path"
@@ -58,8 +60,10 @@ async def test_add_resource(register_user, invoke):
 async def test_add_resource_relative_path(register_user, invoke):
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
-    assert res.data["dataset_list"][0]["resource_list"] == []
+
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
+    assert res.data["resource_list"] == []
 
     PATH = "../new/resource/path"
     with pytest.raises(SystemExit):
@@ -77,7 +81,9 @@ async def test_add_resource_relative_path(register_user, invoke):
 async def test_edit_dataset(register_user, invoke, tmp_path):
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
+
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
 
     TYPE = "this_new_type"
     NAME = "this_new_name"
@@ -140,7 +146,9 @@ async def test_delete_dataset(register_user, invoke):
     # Create a project with its default dataset
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
+
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
 
     # Delete dataset
     res = await invoke(f"dataset delete {project_id} {dataset_id}")
@@ -154,7 +162,8 @@ async def test_show_dataset(register_user, invoke):
     # Create a project with its default dataset
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
 
     res = await invoke(f"dataset show {project_id} {dataset_id}")
     res.show()
@@ -165,8 +174,9 @@ async def test_delete_resource(register_user, invoke):
     # Create a project with its default dataset
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
-    assert res.data["dataset_list"][0]["resource_list"] == []
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
+    assert res.data["resource_list"] == []
 
     # Add a resource
     PATH = "/some/path"
@@ -208,7 +218,8 @@ async def test_dataset_history_command(register_user, invoke):
     """
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
 
     debug(f"dataset history {project_id} {dataset_id}")
     res = await invoke(f"dataset history {project_id} {dataset_id}")
@@ -222,7 +233,8 @@ async def test_dataset_status_command(register_user, invoke):
     """
     res = await invoke("project new prj0")
     project_id = res.data["id"]
-    dataset_id = res.data["dataset_list"][0]["id"]
+    res = await invoke(f"project add-dataset {project_id} test_name")
+    dataset_id = res.data["id"]
 
     res = await invoke(f"dataset status {project_id} {dataset_id}")
     res.show()
