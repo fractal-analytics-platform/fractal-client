@@ -319,7 +319,6 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
             f"Fractal client\n\tversion: {__VERSION__}\n"
             "Fractal server:\n"
             f"\turl: {settings.FRACTAL_SERVER}"
-            f"\tdeployment type: {data['deployment_type']}"
             f"\tversion: {data['version']}"
         ),
     )
