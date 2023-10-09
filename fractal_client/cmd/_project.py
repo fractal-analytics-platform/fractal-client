@@ -16,13 +16,10 @@ async def post_project(
     client: AuthClient,
     *,
     name: str,
-    dataset: Optional[str] = None,
     batch: bool = False,
 ) -> BaseInterface:
     # Prepare a ProjectCreate request body
     project = dict(name=name)
-    if dataset:
-        project["default_dataset_name"] = dataset
 
     # Send API request
     res = await client.post(f"{settings.BASE_URL}/project/", json=project)
