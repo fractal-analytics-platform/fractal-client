@@ -63,7 +63,7 @@ async def project(
 ) -> BaseInterface:
 
     if subcmd == "new":
-        parameters = ["name", "dataset"]
+        parameters = ["name"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await post_project(client, batch=batch, **function_kwargs)
     elif subcmd == "show":
