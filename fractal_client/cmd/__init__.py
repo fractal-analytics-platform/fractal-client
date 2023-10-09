@@ -82,7 +82,13 @@ async def project(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await patch_project(client, **function_kwargs)
     elif subcmd == "add-dataset":
-        parameters = ["project_id", "dataset_name", "metadata", "type"]
+        parameters = [
+            "project_id",
+            "dataset_name",
+            "metadata",
+            "type",
+            "read_only",
+        ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await post_dataset(client, batch=batch, **function_kwargs)
     elif subcmd == "delete":

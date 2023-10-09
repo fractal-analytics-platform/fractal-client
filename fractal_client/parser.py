@@ -114,6 +114,13 @@ project_add_dataset_parser.add_argument(
     "--type",
     help="Dataset type.",
 )
+parser_main.add_argument(
+    "--read-only",
+    default=False,
+    action="store_true",
+    required=False,
+    help="Make dataset read-only.",
+)
 
 
 # project edit
