@@ -4,7 +4,7 @@ from devtools import debug
 
 async def test_project_create(register_user, invoke):
     PROJECT_NAME = "project_name"
-    res = await invoke(f"project new {PROJECT_NAME} -d foo")
+    res = await invoke(f"project new {PROJECT_NAME}")
     debug(res)
     assert res.data["name"] == PROJECT_NAME
 
@@ -33,9 +33,8 @@ async def test_project_create_batch(register_user, invoke):
     res = await invoke("--batch project new MyProj1")
     debug(res)
     debug(res.data)
-    project_id, dataset_id = map(int, res.data.split())
+    project_id = int(res.data)
     assert project_id == 1
-    assert dataset_id == 1
 
 
 async def test_project_list(register_user, invoke):
@@ -62,7 +61,7 @@ async def test_add_dataset(register_user, invoke):
     res = await invoke("--batch project new proj0")
     assert res.retcode == 0
     debug(res.data)
-    project_id, dataset_id = map(int, res.data.split())
+    project_id = int(res.data)
 
     res = await invoke(f"project add-dataset {project_id} {DATASET_NAME}")
     assert res.retcode == 0
