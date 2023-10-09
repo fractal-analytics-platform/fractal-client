@@ -116,10 +116,10 @@ project_add_dataset_parser.add_argument(
 )
 project_add_dataset_parser.add_argument(
     "--make-read-only",
-    default=False,
     action="store_true",
+    default=False,
     required=False,
-    help="Make dataset read-only.",
+    help="Make dataset read-only (not required).",
 )
 
 
