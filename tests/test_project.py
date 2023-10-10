@@ -67,6 +67,15 @@ async def test_add_dataset(register_user, invoke):
     assert res.retcode == 0
     res.show()
     assert res.data["name"] == DATASET_NAME
+    assert not res.data["read_only"]
+
+    res = await invoke(
+        f"project add-dataset {project_id} new_{DATASET_NAME} --make-read-only"
+    )
+    assert res.retcode == 0
+    res.show()
+    assert res.data["name"] == f"new_{DATASET_NAME}"
+    assert res.data["read_only"]
 
 
 @pytest.mark.parametrize("new_name", ["new_name", None])
