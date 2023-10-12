@@ -20,17 +20,10 @@ async def post_project(
 ) -> BaseInterface:
     # Prepare a ProjectCreate request body
     project = dict(name=name)
-
     # Send API request
     res = await client.post(f"{settings.BASE_URL}/project/", json=project)
     project = check_response(res, expected_status_code=201)
     if batch:
-        if len(project["dataset_list"]) > 1:
-            msg = (
-                f"Created project with {len(project['dataset_list'])}>1 "
-                "datasets, cannot use --batch to provide standard output."
-            )
-            raise ValueError(msg)
         return PrintInterface(retcode=0, data=project["id"])
     else:
         return RichJsonInterface(retcode=0, data=project)
