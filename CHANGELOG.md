@@ -4,6 +4,7 @@
 
 * Remove `project new --dataset` argument (\#566).
 * Add `project new --make-read-only` argument (\#566).
+* Do not use deprecated fractal-server `deployment_type` variable (\#566).
 * Automate procedure for publishing package to PyPI (\#561).
 
 # 1.3.6
