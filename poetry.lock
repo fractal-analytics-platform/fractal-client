@@ -635,8 +635,8 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "main"
-resolved_reference = "8dde044079096af59e2acb6aa1f0fc52ec66f832"
+reference = "838-move-datasetmetahistory-into-datasethistory"
+resolved_reference = "2c17e59a314d4e726932ff20ae309c1d14bd3e5f"
 
 [[package]]
 name = "ghp-import"
@@ -2074,4 +2074,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "1a49cb7ac7e2a827c18f62fb58cf2d51f216253b3f98bc3cb7ce05efbf0de167"
+content-hash = "5c1570c13f2a1dd54c91b6c04f41656992b63e8033e52df847157200575d50a7"
