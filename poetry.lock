@@ -636,7 +636,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "838-move-datasetmetahistory-into-datasethistory"
-resolved_reference = "0097ea0f4607e8dadb18832d402200d54c6ce7be"
+resolved_reference = "4822d28b1b991351591b77fc5b1dafb70e84c7eb"
 
 [[package]]
 name = "ghp-import"
