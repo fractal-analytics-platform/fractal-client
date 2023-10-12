@@ -25,7 +25,6 @@ def override_server_settings(tmp_path):
     settings.FRACTAL_RUNNER_BACKEND = "local"
 
     settings.JWT_SECRET_KEY = "secret_key"
-    settings.DEPLOYMENT_TYPE = "development"
     base_folder = tmp_path
     settings.FRACTAL_TASKS_DIR = base_folder / "FRACTAL_TASKS_DIR"
     settings.FRACTAL_RUNNER_WORKING_BASE_DIR = (

@@ -66,14 +66,6 @@ project_new_parser = project_subparsers.add_parser(
     allow_abbrev=False,
 )
 project_new_parser.add_argument("name", help="Name of new project.")
-project_new_parser.add_argument(
-    "-d",
-    "--dataset",
-    help=(
-        "Name of new dataset to create. "
-        "By default, the dataset `default` is created."
-    ),
-)
 
 # project list
 project_list_parser = project_subparsers.add_parser(
@@ -121,6 +113,13 @@ project_add_dataset_parser.add_argument(
 project_add_dataset_parser.add_argument(
     "--type",
     help="Dataset type.",
+)
+project_add_dataset_parser.add_argument(
+    "--make-read-only",
+    action="store_true",
+    default=False,
+    required=False,
+    help="Make dataset read-only (not required).",
 )
 
 
