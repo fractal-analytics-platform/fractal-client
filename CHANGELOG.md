@@ -2,6 +2,8 @@
 
 # 1.3.7
 
+This release is up-to-date with `fractal-server` 1.3.12.
+
 * Remove `project new --dataset` argument (\#566).
 * Add `project new --make-read-only` argument (\#566).
 * Do not use deprecated fractal-server `deployment_type` variable (\#566).
