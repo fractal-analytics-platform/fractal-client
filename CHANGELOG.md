@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Testing:
+    * Use ubuntu-22 for GitHub CI (commit e1c8bd3da670c24a0ac48b1163cd1c7833746aaf).
+
 # 1.3.7
 
 This release is up-to-date with `fractal-server` 1.3.12.
