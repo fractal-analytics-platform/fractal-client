@@ -86,3 +86,8 @@ branch = true
 parallel = true
 relative_files = true
 omit = ["tests/*"]
+
+
+[[tool.mypy.overrides]]
+module = ["devtools", "uvicorn", "pytest", "httpx", "fractal_server"]
+ignore_missing_imports = true
