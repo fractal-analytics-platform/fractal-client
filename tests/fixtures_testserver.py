@@ -169,6 +169,8 @@ async def workflow_factory(db, project_factory):
 @pytest.fixture
 async def job_factory(db):
     from fractal_server.app.models.job import ApplyWorkflow
+    from datetime import datetime
+    from datetime import timezone
 
     async def _job_factory(**job_args_override):
         job_args = dict(
@@ -179,6 +181,11 @@ async def job_factory(db):
             worker_init="WORKER_INIT string",
             first_task_index=9999,
             last_task_index=9999,
+            workflow_dump={},
+            input_dataset_dump={},
+            output_dataset_dump={},
+            start_timestamp=datetime.now(tz=timezone.utc),
+            user_email="test@test.test",
         )
         job_args.update(job_args_override)
         j = ApplyWorkflow(**job_args)
