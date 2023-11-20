@@ -173,6 +173,9 @@ async def test_delete_as_user(
     assert "403" in caplog.text
 
 
+@pytest.mark.skip(
+    reason="Delete-user endpoint was removed in fractal-server 1.4.0"
+)
 async def test_delete_as_superuser(invoke_as_superuser, caplog):
     # Register a new user
     res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
