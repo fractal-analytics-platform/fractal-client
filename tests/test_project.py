@@ -46,6 +46,8 @@ async def test_project_list(register_user, invoke):
     res.show()
 
     res = await invoke("--batch project new proj0")
+    project0_id = res.data
+    res = await invoke(f"--batch project add-dataset {project0_id} NAME")
     res = await invoke("--batch project new proj1")
 
     res = await invoke("project list")
