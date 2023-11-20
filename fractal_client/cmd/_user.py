@@ -111,15 +111,6 @@ async def user_edit(
     return RichJsonInterface(retcode=0, data=new_user)
 
 
-async def user_delete(client: AuthClient, *, user_id: str) -> PrintInterface:
-
-    res = await client.delete(
-        f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/"
-    )
-    check_response(res, expected_status_code=204)
-    return PrintInterface(retcode=0, data="")
-
-
 async def user_whoami(
     client: AuthClient, *, batch: bool
 ) -> Union[RichJsonInterface, PrintInterface]:
