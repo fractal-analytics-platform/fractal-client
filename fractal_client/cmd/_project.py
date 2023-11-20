@@ -66,7 +66,7 @@ async def get_project(
     client: AuthClient, *, project_id: int
 ) -> RichJsonInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/project/{project_id}",
+        f"{settings.BASE_URL}/project/{project_id}/",
     )
     project = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=project)
@@ -77,7 +77,7 @@ async def delete_project(
 ) -> PrintInterface:
 
     res = await client.delete(
-        f"{settings.BASE_URL}/project/{project_id}",
+        f"{settings.BASE_URL}/project/{project_id}/",
     )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
@@ -103,7 +103,7 @@ async def patch_project(
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        f"{settings.BASE_URL}/project/{project_id}", json=project_update
+        f"{settings.BASE_URL}/project/{project_id}/", json=project_update
     )
     new_project = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=new_project)

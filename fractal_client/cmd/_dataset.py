@@ -84,7 +84,7 @@ async def delete_resource(
     res = await client.delete(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
-            f"dataset/{dataset_id}/resource/{resource_id}"
+            f"dataset/{dataset_id}/resource/{resource_id}/"
         )
     )
     check_response(res, expected_status_code=204)
@@ -122,7 +122,10 @@ async def patch_dataset(
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        (f"{settings.BASE_URL}/project/{project_id}/" f"dataset/{dataset_id}"),
+        (
+            f"{settings.BASE_URL}/project/{project_id}/"
+            f"dataset/{dataset_id}/"
+        ),
         json=dataset_update,
     )
     data = check_response(res, expected_status_code=200)
@@ -133,7 +136,7 @@ async def get_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int
 ) -> BaseInterface:
     res = await client.get(
-        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}"
+        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
     )
     from rich.console import Group
 
@@ -168,7 +171,7 @@ async def delete_dataset(
 ) -> PrintInterface:
 
     res = await client.delete(
-        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}"
+        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
     )
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
