@@ -607,7 +607,7 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "p
 
 [[package]]
 name = "fractal-server"
-version = "1.4.0a0"
+version = "1.4.0a6"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -634,7 +634,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "6bdc0c67f6c2e2e0485558b87ceeb1afe835ad6f"
+resolved_reference = "fe91f4e4ebbdc88c9ee566bbae8500068415388d"
 
 [[package]]
 name = "ghp-import"
