@@ -19,9 +19,9 @@ async def post_project(
     batch: bool = False,
 ) -> BaseInterface:
     # Prepare a ProjectCreate request body
-    project = dict(name=name)
+    payload = dict(name=name)
     # Send API request
-    res = await client.post(f"{settings.BASE_URL}/project/", json=project)
+    res = await client.post(f"{settings.BASE_URL}/project/", json=payload)
     project = check_response(res, expected_status_code=201)
     if batch:
         return PrintInterface(retcode=0, data=project["id"])
@@ -37,8 +37,6 @@ async def get_project_list(client: AuthClient) -> RichConsoleInterface:
     table = Table(title="Project List")
     table.add_column("ID", style="cyan", no_wrap=True)
     table.add_column("Name", style="magenta")
-    table.add_column("Proj. Dir.", justify="right", style="green")
-    table.add_column("Dataset list", style="white")
     table.add_column("Read only", justify="center")
 
     for p in projects:
@@ -48,14 +46,9 @@ async def get_project_list(client: AuthClient) -> RichConsoleInterface:
         else:
             read_only_icon = "❌"
 
-        p_dataset_list = str(
-            [dataset["name"] for dataset in p["dataset_list"]]
-        )
-
         table.add_row(
             str(p["id"]),
             p["name"],
-            str(p_dataset_list),
             read_only_icon,
         )
 
