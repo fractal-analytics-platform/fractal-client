@@ -198,43 +198,48 @@ async def job_factory(db):
 
 
 @pytest.fixture
-async def user_factory(testserver, db):
+async def user_factory(testserver, db, client_superuser):
     async def __register_user(
         email: str,
         password: str,
         slurm_user: Optional[str] = None,
         username: Optional[str] = None,
     ):
+        # Prepare payload
+        new_user = dict(email=email, password=password)
+        if slurm_user:
+            new_user["slurm_user"] = slurm_user
+        if username:
+            new_user["username"] = username
+        # Register user via API call
+        res = await client_superuser.post(
+            f"http://localhost:{PORT}/auth/register/",
+            json=new_user,
+        )
+        if res.status_code != 201:
+            import logging
 
-        from fractal_client.authclient import AuthClient
-
-        async with AuthClient(
-            username="admin@fractal.xy",
-            password="1234",
-        ) as client_superuser:
-
-            # Prepare payload
-            new_user = dict(email=email, password=password)
-            if slurm_user:
-                new_user["slurm_user"] = slurm_user
-            if username:
-                new_user["username"] = username
-
-            # Register user via API call
-            res = await client_superuser.post(
-                f"http://localhost:{PORT}/auth/register/",
-                json=new_user,
-            )
-            assert res.status_code == 201
-            return res.json()
+            logging.error(res.status_code)
+            logging.error(res.json())
+        assert res.status_code == 201
+        return res.json()
 
     return __register_user
 
 
 @pytest.fixture
-async def register_user(user_factory):
-    return await user_factory(
+async def register_user(user_factory, db):
+
+    from fractal_server.app.models import UserOAuth
+
+    created_user = await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
         username=environ["FRACTAL_USERNAME"],
     )
+
+    yield created_user
+
+    db_user = await db.get(UserOAuth, created_user["id"])
+    await db.delete(db_user)
+    await db.commit()
