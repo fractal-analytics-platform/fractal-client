@@ -10,6 +10,8 @@ import pytest
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
 
+PORT = 10080
+
 
 @pytest.fixture
 def override_server_settings(tmp_path):
@@ -57,8 +59,6 @@ async def testserver(override_server_settings):
 
     # Run testserver in a separate process
     # cf. https://stackoverflow.com/a/57816608/283972
-
-    PORT = 10080
 
     def run_server():
         asyncio.run(
@@ -205,21 +205,28 @@ async def user_factory(testserver, db):
         slurm_user: Optional[str] = None,
         username: Optional[str] = None,
     ):
-        payload = dict(email=email, password=password)
-        if slurm_user:
-            payload["slurm_user"] = slurm_user
-        if username:
-            payload["username"] = username
 
-        from fractal_server.main import _create_first_user
-        from fractal_server.app.models import UserOAuth
-        from sqlmodel import select
+        from fractal_client.authclient import AuthClient
 
-        await _create_first_user(**payload)
-        stm = select(UserOAuth).where(UserOAuth.email == email)
-        res = await db.execute(stm)
-        user = res.scalars().first()
-        return user.dict()
+        async with AuthClient(
+            username="admin@fractal.xy",
+            password="1234",
+        ) as client_superuser:
+
+            # Prepare payload
+            new_user = dict(email=email, password=password)
+            if slurm_user:
+                new_user["slurm_user"] = slurm_user
+            if username:
+                new_user["username"] = username
+
+            # Register user via API call
+            res = await client_superuser.post(
+                f"http://localhost:{PORT}/auth/register/",
+                json=new_user,
+            )
+            assert res.status_code == 201
+            return res.json()
 
     return __register_user
 
