@@ -61,7 +61,7 @@ async def user_register(
 
 
 async def user_list(client: AuthClient) -> RichJsonInterface:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/userlist/")
+    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/")
     users = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=users)
 
