@@ -334,7 +334,8 @@ async def test_task_delete(
 
     # Test access control
     with pytest.raises(SystemExit):
-        EMAIL, PASSWORD = "foo@bar.xy", "abc"
+        EMAIL = "someone@example.org"
+        PASSWORD = "123123"
         await user_factory(email=EMAIL, password=PASSWORD)
         res = await invoke(
             f"-u {EMAIL} -p {PASSWORD} task delete --id {task_id}"
