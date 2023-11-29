@@ -607,7 +607,7 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "p
 
 [[package]]
 name = "fractal-server"
-version = "1.4.0a6"
+version = "1.4.0a8"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -621,20 +621,20 @@ fastapi = "^0.103.0"
 fastapi-users = {version = "^12.1.0", extras = ["oauth"]}
 pydantic = ">=1.10.8,<2"
 python-dotenv = "^0.20.0"
-sqlalchemy = {version = "^1.4", extras = ["asyncio"]}
+sqlalchemy = {version = "1.4.50", extras = ["asyncio"]}
 sqlmodel = "^0.0.11"
 uvicorn = "^0.20.0"
 
 [package.extras]
 gunicorn = ["gunicorn (>=20.1.0,<21.0.0)"]
-postgres = ["asyncpg (>=0.27.0,<0.28.0)", "psycopg2 (>=2.9.5,<3.0.0)"]
+postgres = ["asyncpg (>=0.29.0,<0.30.0)", "psycopg2 (>=2.9.5,<3.0.0)"]
 slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "4966940f0c4d19334befec7e9e38dfdb73e74dac"
+resolved_reference = "8a2cae49fe844229c705c982b0b9ff211b4bf5fc"
 
 [[package]]
 name = "ghp-import"
