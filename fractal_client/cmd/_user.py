@@ -114,7 +114,7 @@ async def user_edit(
 async def user_whoami(
     client: AuthClient, *, batch: bool
 ) -> Union[RichJsonInterface, PrintInterface]:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/whoami/")
+    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
     user = check_response(res, expected_status_code=200)
 
     if batch:
