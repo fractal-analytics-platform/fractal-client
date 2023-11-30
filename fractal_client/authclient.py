@@ -35,7 +35,7 @@ class AuthToken:
             password=self.password,
         )
         res = await self.client.post(
-            f"{settings.FRACTAL_SERVER}/auth/token/login", data=data
+            f"{settings.FRACTAL_SERVER}/auth/token/login/", data=data
         )
         if res.status_code != 200:
             try:

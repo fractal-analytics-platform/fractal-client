@@ -10,6 +10,8 @@ import pytest
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
 
+PORT = 10080
+
 
 @pytest.fixture
 def override_server_settings(tmp_path):
@@ -57,8 +59,6 @@ async def testserver(override_server_settings):
 
     # Run testserver in a separate process
     # cf. https://stackoverflow.com/a/57816608/283972
-
-    PORT = 10080
 
     def run_server():
         asyncio.run(
@@ -169,6 +169,8 @@ async def workflow_factory(db, project_factory):
 @pytest.fixture
 async def job_factory(db):
     from fractal_server.app.models.job import ApplyWorkflow
+    from datetime import datetime
+    from datetime import timezone
 
     async def _job_factory(**job_args_override):
         job_args = dict(
@@ -179,6 +181,11 @@ async def job_factory(db):
             worker_init="WORKER_INIT string",
             first_task_index=9999,
             last_task_index=9999,
+            workflow_dump={},
+            input_dataset_dump={},
+            output_dataset_dump={},
+            start_timestamp=datetime.now(tz=timezone.utc),
+            user_email="test@test.test",
         )
         job_args.update(job_args_override)
         j = ApplyWorkflow(**job_args)
@@ -191,36 +198,48 @@ async def job_factory(db):
 
 
 @pytest.fixture
-async def user_factory(testserver, db):
+async def user_factory(testserver, db, client_superuser):
     async def __register_user(
         email: str,
         password: str,
         slurm_user: Optional[str] = None,
         username: Optional[str] = None,
     ):
-        payload = dict(email=email, password=password)
+        # Prepare payload
+        new_user = dict(email=email, password=password)
         if slurm_user:
-            payload["slurm_user"] = slurm_user
+            new_user["slurm_user"] = slurm_user
         if username:
-            payload["username"] = username
+            new_user["username"] = username
+        # Register user via API call
+        res = await client_superuser.post(
+            f"http://localhost:{PORT}/auth/register/",
+            json=new_user,
+        )
+        if res.status_code != 201:
+            import logging
 
-        from fractal_server.main import _create_first_user
-        from fractal_server.app.models import UserOAuth
-        from sqlmodel import select
-
-        await _create_first_user(**payload)
-        stm = select(UserOAuth).where(UserOAuth.email == email)
-        res = await db.execute(stm)
-        user = res.scalars().first()
-        return user.dict()
+            logging.error(res.status_code)
+            logging.error(res.json())
+        assert res.status_code == 201
+        return res.json()
 
     return __register_user
 
 
 @pytest.fixture
-async def register_user(user_factory):
-    return await user_factory(
+async def register_user(user_factory, db):
+
+    from fractal_server.app.models import UserOAuth
+
+    created_user = await user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
         username=environ["FRACTAL_USERNAME"],
     )
+
+    yield created_user
+
+    db_user = await db.get(UserOAuth, created_user["id"])
+    await db.delete(db_user)
+    await db.commit()

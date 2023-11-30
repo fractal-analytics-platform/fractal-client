@@ -72,7 +72,7 @@ async def task_collection_check(
 ) -> BaseInterface:
 
     res = await client.get(
-        f"{settings.BASE_URL}/task/collect/{state_id}?verbose={include_logs}"
+        f"{settings.BASE_URL}/task/collect/{state_id}/?verbose={include_logs}"
     )
     state = check_response(res, expected_status_code=200)
 
@@ -185,7 +185,7 @@ async def patch_task(
         return PrintInterface(retcode=1, data="Nothing to update")
 
     res = await client.patch(
-        f"{settings.BASE_URL}/task/{id}", json=task_update
+        f"{settings.BASE_URL}/task/{id}/", json=task_update
     )
     new_task = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=new_task)
@@ -213,6 +213,6 @@ async def delete_task(
         except FractalCacheError as e:
             print(e)
             sys.exit(1)
-    res = await client.delete(f"{settings.BASE_URL}/task/{id}")
+    res = await client.delete(f"{settings.BASE_URL}/task/{id}/")
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")

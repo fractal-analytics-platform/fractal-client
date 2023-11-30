@@ -27,7 +27,6 @@ from ._task import patch_task
 from ._task import post_task
 from ._task import task_collect_pip
 from ._task import task_collection_check
-from ._user import user_delete
 from ._user import user_edit
 from ._user import user_list
 from ._user import user_register
@@ -363,10 +362,6 @@ async def user(
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await user_edit(client, **function_kwargs)
-    elif subcmd == "delete":
-        parameters = ["user_id"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await user_delete(client, **function_kwargs)
     elif subcmd == "whoami":
         iface = await user_whoami(client, batch=batch)
     else:

@@ -10,7 +10,7 @@ from httpx import Response
 def check_response(
     res: Response,
     expected_status_code: Union[int, list[int]] = 200,
-) -> dict[str, Any]:
+) -> Union[list[Any], dict[str, Any], str, int, float, bool]:
     """
     Check the validity of the http response from fractal server
 

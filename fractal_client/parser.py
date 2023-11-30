@@ -908,11 +908,3 @@ user_edit_parser_superuser.add_argument(
     action="store_true",
     required=False,
 )
-
-# user delete
-user_delete_parser = user_subparsers.add_parser(
-    "delete",
-    description="Delete a single user.",
-    allow_abbrev=False,
-)
-user_delete_parser.add_argument("user_id", help="ID of the user.", type=int)

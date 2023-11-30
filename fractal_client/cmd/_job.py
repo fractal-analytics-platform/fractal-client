@@ -27,7 +27,7 @@ async def get_job(
     """
 
     res = await client.get(
-        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}"
+        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/"
     )
     job = check_response(res, expected_status_code=200)
     if batch:
