@@ -5,6 +5,9 @@
 * Align with [`fractal-server` 1.4.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#140) (\#573).
 * Testing:
     * Use ubuntu-22 for GitHub CI (commit e1c8bd3da670c24a0ac48b1163cd1c7833746aaf).
+* Development:
+    * Do not include `sqlmodel` dependency explicitly (\#577).
+    * Use poetry 1.7.1 (\#577).
 
 # 1.3.7
 
