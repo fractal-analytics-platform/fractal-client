@@ -182,8 +182,21 @@ async def job_factory(db):
             first_task_index=9999,
             last_task_index=9999,
             workflow_dump={},
-            input_dataset_dump={},
-            output_dataset_dump={},
+            input_dataset_dump=dict(
+                id=1,
+                name="ds-in",
+                read_only=False,
+                project_id=1,
+                resource_list=[dict(path="/tmp", id=1, dataset_id=1)],
+            ),
+            output_dataset_dump=dict(
+                id=2,
+                name="ds-out",
+                read_only=False,
+                project_id=1,
+                resource_list=[dict(path="/tmp", id=1, dataset_id=2)],
+            ),
+            project_dump=dict(id=1, name="proj", read_only=True),
             start_timestamp=datetime.now(tz=timezone.utc),
             user_email="test@test.test",
         )
@@ -229,7 +242,6 @@ async def user_factory(testserver, db, client_superuser):
 
 @pytest.fixture
 async def register_user(user_factory, db):
-
     from fractal_server.app.models import UserOAuth
 
     created_user = await user_factory(
