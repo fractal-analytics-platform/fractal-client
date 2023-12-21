@@ -182,8 +182,21 @@ async def job_factory(db):
             first_task_index=9999,
             last_task_index=9999,
             workflow_dump={},
-            input_dataset_dump={},
-            output_dataset_dump={},
+            input_dataset_dump=dict(
+                id=1,
+                name="ds-in",
+                read_only=False,
+                project_id=1,
+                resource_list=[dict(path="/tmp", id=1, dataset_id=1)],
+            ),
+            output_dataset_dump=dict(
+                id=2,
+                name="ds-out",
+                read_only=False,
+                project_id=1,
+                resource_list=[dict(path="/tmp", id=1, dataset_id=2)],
+            ),
+            project_dump=dict(id=1, name="proj", read_only=True),
             start_timestamp=datetime.now(tz=timezone.utc),
             user_email="test@test.test",
         )
@@ -216,12 +229,14 @@ async def user_factory(testserver, db, client_superuser):
             f"http://localhost:{PORT}/auth/register/",
             json=new_user,
         )
-        if res.status_code != 201:
-            import logging
-
-            logging.error(res.status_code)
-            logging.error(res.json())
         assert res.status_code == 201
+        user_id = res.json()["id"]
+        # Make user verified via API call
+        res = await client_superuser.patch(
+            f"http://localhost:{PORT}/auth/users/{user_id}/",
+            json=dict(is_verified=True),
+        )
+        assert res.status_code == 200
         return res.json()
 
     return __register_user
@@ -229,7 +244,6 @@ async def user_factory(testserver, db, client_superuser):
 
 @pytest.fixture
 async def register_user(user_factory, db):
-
     from fractal_server.app.models import UserOAuth
 
     created_user = await user_factory(

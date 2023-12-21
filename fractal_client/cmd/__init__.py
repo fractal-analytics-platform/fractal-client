@@ -359,6 +359,8 @@ async def user(
             "new_username",
             "make_superuser",
             "remove_superuser",
+            "make_verified",
+            "remove_verified",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await user_edit(client, **function_kwargs)

@@ -17,6 +17,7 @@ async def user_register(
     cache_dir: Optional[str] = None,
     username: Optional[str] = None,
     superuser: bool = False,
+    verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
 ) -> Union[RichJsonInterface, PrintInterface]:
 
@@ -46,11 +47,12 @@ async def user_register(
     )
     data = check_response(res, expected_status_code=201)
 
-    if superuser:
+    if superuser or verified:
+        patch_payload = dict(is_superuser=superuser, is_verified=verified)
         user_id = data["id"]
         res = await client.patch(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/",
-            json={"is_superuser": True},
+            json=patch_payload,
         )
         data = check_response(res, expected_status_code=200)
 
@@ -83,6 +85,8 @@ async def user_edit(
     new_username: Optional[str] = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
+    make_verified: bool = False,
+    remove_verified: bool = False,
 ) -> Union[RichJsonInterface, PrintInterface]:
 
     user_update = dict()
@@ -94,6 +98,10 @@ async def user_edit(
         user_update["is_superuser"] = True
     if remove_superuser:
         user_update["is_superuser"] = False
+    if make_verified:
+        user_update["is_verified"] = True
+    if remove_verified:
+        user_update["is_verified"] = False
     if new_cache_dir is not None:
         user_update["cache_dir"] = new_cache_dir
     if new_slurm_user is not None:

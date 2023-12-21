@@ -33,6 +33,10 @@ async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
         assert not res.data["is_superuser"]
     assert res.data["email"] == EMAIL_USER
 
+    # Test that new user is verified (note: for the moment we don't expose the
+    # possibility of registering a non-verified user)
+    assert res.data["is_verified"]
+
 
 async def test_register_as_superuser_with_batch(invoke_as_superuser):
     # Register a user with the --batch flag
@@ -104,7 +108,10 @@ async def test_edit_as_user(
 
 
 @pytest.mark.parametrize("new_is_superuser", [True, False])
-async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
+@pytest.mark.parametrize("new_is_non_verified", [True, False])
+async def test_edit_as_superuser(
+    invoke_as_superuser, new_is_superuser, new_is_non_verified
+):
     # Register a new user
     res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     assert res.retcode == 0
@@ -124,6 +131,8 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     )
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
+    if new_is_non_verified:
+        cmd = f"{cmd} --remove-verified"
     debug(cmd)
     res = await invoke_as_superuser(cmd)
     debug(res.data)
@@ -133,6 +142,8 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
     assert res.data["slurm_user"] == NEW_SLURM_USER
     assert res.data["username"] == NEW_USERNAME
     assert res.data["is_superuser"] == new_is_superuser
+    if new_is_non_verified:
+        assert not res.data["is_verified"]
 
     BAD_CACHE_DIR = "not_absolute"
     with pytest.raises(SystemExit):
@@ -148,6 +159,16 @@ async def test_edit_as_superuser(invoke_as_superuser, new_is_superuser):
         debug(res.data)
         assert res.retcode == 0
         assert not res.data["is_superuser"]
+
+    # If the user was made verified, check that we can go back to normal
+    # user
+    if new_is_non_verified:
+        cmd = f"user edit {user_id} --make-verified"
+        debug(cmd)
+        res = await invoke_as_superuser(cmd)
+        debug(res.data)
+        assert res.retcode == 0
+        assert res.data["is_verified"]
 
 
 async def test_edit_arguments(invoke_as_superuser):

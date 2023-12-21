@@ -1,5 +1,12 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Always make new users verified, within `user register` command (\#580).
+* Expose verification-related features in `user edit` command (\#580).
+* Testing:
+    * Adapt `job_factory` to new strict response-validation models in `fractal-server` (\#580).
+
 # 1.4.0
 
 * Align with [`fractal-server` 1.4.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#140) (\#573).

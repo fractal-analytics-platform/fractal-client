@@ -908,3 +908,16 @@ user_edit_parser_superuser.add_argument(
     action="store_true",
     required=False,
 )
+user_edit_parser_verified = user_edit_parser.add_mutually_exclusive_group()
+user_edit_parser_verified.add_argument(
+    "--make-verified",
+    help="Make user verified.",
+    action="store_true",
+    required=False,
+)
+user_edit_parser_verified.add_argument(
+    "--remove-verified",
+    help="Make user unverified.",
+    action="store_true",
+    required=False,
+)
