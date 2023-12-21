@@ -66,8 +66,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="d_b7ca0247781cd0c1__aux_task_caching_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.3.2">coverage.py v7.3.2</a>,
-            created at 2023-12-04 10:29 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.3.4">coverage.py v7.3.4</a>,
+            created at 2023-12-21 13:27 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -443,15 +443,17 @@
     <p class="pln"><span class="n"><a id="t359" href="#t359">359</a></span><span class="t">            <span class="str">"new_username"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t360" href="#t360">360</a></span><span class="t">            <span class="str">"make_superuser"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t361" href="#t361">361</a></span><span class="t">            <span class="str">"remove_superuser"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t362" href="#t362">362</a></span><span class="t">        <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t363" href="#t363">363</a></span><span class="t">        <span class="nam">function_kwargs</span> <span class="op">=</span> <span class="nam">get_kwargs</span><span class="op">(</span><span class="nam">parameters</span><span class="op">,</span> <span class="nam">kwargs</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t364" href="#t364">364</a></span><span class="t">        <span class="nam">iface</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">user_edit</span><span class="op">(</span><span class="nam">client</span><span class="op">,</span> <span class="op">**</span><span class="nam">function_kwargs</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="par run show_par"><span class="n"><a id="t365" href="#t365">365</a></span><span class="t">    <span class="key">elif</span> <span class="nam">subcmd</span> <span class="op">==</span> <span class="str">"whoami"</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">365&#x202F;&#x219B;&#x202F;368</span><span class="annotate long">line 365 didn't jump to line 368, because the condition on line 365 was never false</span></span></p>
-    <p class="run"><span class="n"><a id="t366" href="#t366">366</a></span><span class="t">        <span class="nam">iface</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">user_whoami</span><span class="op">(</span><span class="nam">client</span><span class="op">,</span> <span class="nam">batch</span><span class="op">=</span><span class="nam">batch</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t367" href="#t367">367</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t368" href="#t368">368</a></span><span class="t">        <span class="key">raise</span> <span class="nam">NoCommandError</span><span class="op">(</span><span class="str">f"Command user {subcmd} not found"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t369" href="#t369">369</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t370" href="#t370">370</a></span><span class="t">    <span class="key">return</span> <span class="nam">iface</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t362" href="#t362">362</a></span><span class="t">            <span class="str">"make_verified"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t363" href="#t363">363</a></span><span class="t">            <span class="str">"remove_verified"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t364" href="#t364">364</a></span><span class="t">        <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t365" href="#t365">365</a></span><span class="t">        <span class="nam">function_kwargs</span> <span class="op">=</span> <span class="nam">get_kwargs</span><span class="op">(</span><span class="nam">parameters</span><span class="op">,</span> <span class="nam">kwargs</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t366" href="#t366">366</a></span><span class="t">        <span class="nam">iface</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">user_edit</span><span class="op">(</span><span class="nam">client</span><span class="op">,</span> <span class="op">**</span><span class="nam">function_kwargs</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="par run show_par"><span class="n"><a id="t367" href="#t367">367</a></span><span class="t">    <span class="key">elif</span> <span class="nam">subcmd</span> <span class="op">==</span> <span class="str">"whoami"</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">367&#x202F;&#x219B;&#x202F;370</span><span class="annotate long">line 367 didn't jump to line 370, because the condition on line 367 was never false</span></span></p>
+    <p class="run"><span class="n"><a id="t368" href="#t368">368</a></span><span class="t">        <span class="nam">iface</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">user_whoami</span><span class="op">(</span><span class="nam">client</span><span class="op">,</span> <span class="nam">batch</span><span class="op">=</span><span class="nam">batch</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t369" href="#t369">369</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t370" href="#t370">370</a></span><span class="t">        <span class="key">raise</span> <span class="nam">NoCommandError</span><span class="op">(</span><span class="str">f"Command user {subcmd} not found"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t371" href="#t371">371</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t372" href="#t372">372</a></span><span class="t">    <span class="key">return</span> <span class="nam">iface</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -460,8 +462,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="d_b7ca0247781cd0c1__aux_task_caching_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.3.2">coverage.py v7.3.2</a>,
-            created at 2023-12-04 10:29 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.3.4">coverage.py v7.3.4</a>,
+            created at 2023-12-21 13:27 +0000
         </p>
     </div>
 </footer>

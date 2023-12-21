@@ -7,19 +7,19 @@
 | fractal\_client/\_\_init\_\_.py             |        1 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/authclient.py               |       70 |        4 |       12 |        1 |     94% |43-44, 75-76 |
 | fractal\_client/client.py                   |       56 |       10 |       18 |        4 |     81% |60-67, 76, 86-87, 112, 118-120, 124 |
-| fractal\_client/cmd/\_\_init\_\_.py         |      219 |        6 |       80 |        6 |     96% |98, 146, 208, 286, 313, 368 |
+| fractal\_client/cmd/\_\_init\_\_.py         |      219 |        6 |       80 |        6 |     96% |98, 146, 208, 286, 313, 370 |
 | fractal\_client/cmd/\_aux\_task\_caching.py |       84 |        0 |       35 |        0 |    100% |           |
 | fractal\_client/cmd/\_dataset.py            |       83 |        1 |       26 |        1 |     98% |       122 |
 | fractal\_client/cmd/\_job.py                |       70 |       11 |       20 |        2 |     86% |99-107, 113-124, 156 |
 | fractal\_client/cmd/\_project.py            |       51 |        1 |       14 |        1 |     97% |        45 |
 | fractal\_client/cmd/\_task.py               |      109 |        1 |       64 |        1 |     99% |       185 |
-| fractal\_client/cmd/\_user.py               |       66 |        6 |       32 |        2 |     90% |37-42, 105 |
+| fractal\_client/cmd/\_user.py               |       71 |        6 |       36 |        3 |     90% |38-43, 50->59, 113 |
 | fractal\_client/cmd/\_workflow.py           |      121 |        1 |       56 |        4 |     97% |139, 149->154, 263->271, 302->310 |
 | fractal\_client/config.py                   |       17 |        0 |        2 |        0 |    100% |           |
 | fractal\_client/interface.py                |       37 |        1 |        4 |        0 |     98% |        18 |
-| fractal\_client/parser.py                   |      191 |        0 |        0 |        0 |    100% |           |
+| fractal\_client/parser.py                   |      194 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/response.py                 |       29 |        0 |        6 |        0 |    100% |           |
-|                                   **TOTAL** | **1204** |   **42** |  **369** |   **22** | **96%** |           |
+|                                   **TOTAL** | **1212** |   **42** |  **373** |   **23** | **96%** |           |
 
 
 ## Setup coverage badge
