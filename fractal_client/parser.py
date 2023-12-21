@@ -852,12 +852,6 @@ user_register_parser.add_argument(
     action="store_true",
     required=False,
 )
-user_register_parser.add_argument(
-    "--verified",
-    help="Make the new user verified.",
-    action="store_true",
-    required=True,
-)
 
 # user list
 user_list_parser = user_subparsers.add_parser(

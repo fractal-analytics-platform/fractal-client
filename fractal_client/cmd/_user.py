@@ -17,7 +17,7 @@ async def user_register(
     cache_dir: Optional[str] = None,
     username: Optional[str] = None,
     superuser: bool = False,
-    verified: bool = False,
+    verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
 ) -> Union[RichJsonInterface, PrintInterface]:
 

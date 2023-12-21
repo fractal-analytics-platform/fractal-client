@@ -340,7 +340,6 @@ async def user(
             "slurm_user",
             "username",
             "superuser",
-            "verified",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = await user_register(client, batch=batch, **function_kwargs)
