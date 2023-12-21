@@ -229,12 +229,14 @@ async def user_factory(testserver, db, client_superuser):
             f"http://localhost:{PORT}/auth/register/",
             json=new_user,
         )
-        if res.status_code != 201:
-            import logging
-
-            logging.error(res.status_code)
-            logging.error(res.json())
         assert res.status_code == 201
+        user_id = res.json()["id"]
+        # Make user verified via API call
+        res = await client_superuser.patch(
+            f"http://localhost:{PORT}/auth/users/{user_id}/",
+            json=dict(is_verified=True),
+        )
+        assert res.status_code == 200
         return res.json()
 
     return __register_user
