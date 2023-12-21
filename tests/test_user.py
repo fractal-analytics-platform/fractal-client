@@ -108,9 +108,9 @@ async def test_edit_as_user(
 
 
 @pytest.mark.parametrize("new_is_superuser", [True, False])
-@pytest.mark.parametrize("new_is_verified", [True, False])
+@pytest.mark.parametrize("new_is_non_verified", [True, False])
 async def test_edit_as_superuser(
-    invoke_as_superuser, new_is_superuser, new_is_verified
+    invoke_as_superuser, new_is_superuser, new_is_non_verified
 ):
     # Register a new user
     res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
@@ -131,8 +131,8 @@ async def test_edit_as_superuser(
     )
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
-    if new_is_verified:
-        cmd = f"{cmd} --make-verified"
+    if new_is_non_verified:
+        cmd = f"{cmd} --remove-verified"
     debug(cmd)
     res = await invoke_as_superuser(cmd)
     debug(res.data)
@@ -142,7 +142,8 @@ async def test_edit_as_superuser(
     assert res.data["slurm_user"] == NEW_SLURM_USER
     assert res.data["username"] == NEW_USERNAME
     assert res.data["is_superuser"] == new_is_superuser
-    assert res.data["is_verified"] == new_is_verified
+    if new_is_non_verified:
+        assert not res.data["is_verified"]
 
     BAD_CACHE_DIR = "not_absolute"
     with pytest.raises(SystemExit):
@@ -158,15 +159,16 @@ async def test_edit_as_superuser(
         debug(res.data)
         assert res.retcode == 0
         assert not res.data["is_superuser"]
-    # If the user was made a veried, check that we can go back to normal
+
+    # If the user was made verified, check that we can go back to normal
     # user
-    if new_is_superuser:
-        cmd = f"user edit {user_id} --remove-verified"
+    if new_is_non_verified:
+        cmd = f"user edit {user_id} --make-verified"
         debug(cmd)
         res = await invoke_as_superuser(cmd)
         debug(res.data)
         assert res.retcode == 0
-        assert not res.data["is_verified"]
+        assert res.data["is_verified"]
 
 
 async def test_edit_arguments(invoke_as_superuser):
