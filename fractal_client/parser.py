@@ -852,6 +852,12 @@ user_register_parser.add_argument(
     action="store_true",
     required=False,
 )
+user_register_parser.add_argument(
+    "--verified",
+    help="Make the new user verified.",
+    action="store_true",
+    required=True,
+)
 
 # user list
 user_list_parser = user_subparsers.add_parser(
@@ -905,6 +911,19 @@ user_edit_parser_superuser.add_argument(
 user_edit_parser_superuser.add_argument(
     "--remove-superuser",
     help="Remove superuser privileges from user.",
+    action="store_true",
+    required=False,
+)
+user_edit_parser_verified = user_edit_parser.add_mutually_exclusive_group()
+user_edit_parser_verified.add_argument(
+    "--make-verified",
+    help="Make user verified.",
+    action="store_true",
+    required=False,
+)
+user_edit_parser_verified.add_argument(
+    "--remove-verified",
+    help="Make user unverified.",
     action="store_true",
     required=False,
 )
