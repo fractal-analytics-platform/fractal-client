@@ -6,6 +6,7 @@
 * Expose verification-related features in `user edit` command (\#580).
 * Testing:
     * Adapt `job_factory` to new strict response-validation models in `fractal-server` (\#580).
+    * Adapt `job_factory` by including the `timestamp_created` attribute (\#582).
 
 # 1.4.0
 
