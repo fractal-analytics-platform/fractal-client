@@ -610,7 +610,7 @@ typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
 name = "fractal-server"
-version = "1.4.2a0"
+version = "1.4.2a3"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -638,7 +638,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "965b8af990c3997917bc8136f893506d697b8490"
+resolved_reference = "d2b45ee5f42f002a57d8d1e1739e3fb7e83f1507"
 
 [[package]]
 name = "ghp-import"
