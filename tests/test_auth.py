@@ -1,6 +1,7 @@
 from os import environ
 
 import pytest
+from devtools import debug
 
 from fractal_client.authclient import AuthenticationError
 from fractal_client.authclient import AuthToken
@@ -27,6 +28,7 @@ async def test_auth_fail(client):
     WHEN fetching a token
     THEN authentication error is raised
     """
-    with pytest.raises(AuthenticationError):
+    with pytest.raises(AuthenticationError) as err:
         auth = AuthToken(client, username="foo", password="bar")
         await auth()
+    debug(err)
