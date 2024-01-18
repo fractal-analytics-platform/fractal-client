@@ -38,7 +38,7 @@ class AuthToken:
         )
         if res.status_code != 200:
             raise AuthenticationError(
-                f"Error from {res.request.method} {res.request.url}."
+                f"Error from {res.request.method} {res.request.url}.\n"
                 f"HEADERS: {res.headers.multi_items()}.\n"
                 f"STATUS CODE: {res.status_code}.\n"
                 f"TEXT: {res.text}.\n"
