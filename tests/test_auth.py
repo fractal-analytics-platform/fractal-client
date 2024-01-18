@@ -31,4 +31,4 @@ async def test_auth_fail(client):
     with pytest.raises(AuthenticationError) as err:
         auth = AuthToken(client, username="foo", password="bar")
         await auth()
-    debug(err)
+    debug(err.value)
