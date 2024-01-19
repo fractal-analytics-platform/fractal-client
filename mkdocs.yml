@@ -44,6 +44,7 @@ theme:
 nav:
   - Home page: index.md
   - Install: install.md
+  - Version compatibility: versions.md
   - CLI reference: reference/fractal/
   - Development: development.md
   - Changelog: changelog.md

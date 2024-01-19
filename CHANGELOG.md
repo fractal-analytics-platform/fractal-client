@@ -1,5 +1,12 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 1.4.3 (unreleased)
+
+* Testing:
+    * Adapt `job_factory` and tests to the presence of new `timestamp_created` attributes in `fractal-server` (\#589).
+* Documentation:
+    * Add info about server/client version compatibility (\#591).
+
 # 1.4.2
 
 * Always make new users verified, within `user register` command (\#580).
