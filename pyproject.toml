@@ -24,7 +24,7 @@ exclude = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-python-dotenv = "^0.20.0"
+python-dotenv = "^0.21.0"
 rich = "^12.5.1"
 httpx = "^0.23.0"
 PyJWT = "^2.4.0"

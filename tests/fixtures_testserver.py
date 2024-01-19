@@ -187,6 +187,7 @@ async def job_factory(db):
                 read_only=False,
                 project_id=1,
                 resource_list=[dict(path="/tmp", id=1, dataset_id=1)],
+                timestamp_created=str(get_timestamp()),
             ),
             output_dataset_dump=dict(
                 id=2,
@@ -194,6 +195,7 @@ async def job_factory(db):
                 read_only=False,
                 project_id=1,
                 resource_list=[dict(path="/tmp", id=1, dataset_id=2)],
+                timestamp_created=str(get_timestamp()),
             ),
             project_dump=dict(
                 id=1,
