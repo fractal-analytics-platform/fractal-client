@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest  # noqa F401
 from devtools import debug
+from fractal_server.utils import get_timestamp
 
 
 LOG = "Here are some logs"
@@ -41,6 +42,7 @@ async def test_job_show(
             "id": 1,
             "project_id": 1,
             "task_list": [],
+            "timestamp_created": str(get_timestamp()),
         },
     )
     debug(job)
@@ -102,6 +104,7 @@ async def test_job_list(
             "id": 1,
             "project_id": 1,
             "task_list": [],
+            "timestamp_created": str(get_timestamp()),
         },
     )
     job2 = await job_factory(
@@ -113,6 +116,7 @@ async def test_job_list(
             "id": 1,
             "project_id": 1,
             "task_list": [],
+            "timestamp_created": str(get_timestamp()),
         },
     )
     debug(job1)
@@ -122,8 +126,8 @@ async def test_job_list(
     cmd = f"--batch job list {project_id}"
     debug(cmd)
     res = await invoke(cmd)
-    assert res.retcode == 0
     debug(res.data)
+    assert res.retcode == 0
     job_ids = [int(i) for i in res.data.split()]
     assert job1.id in job_ids
     assert job2.id in job_ids
