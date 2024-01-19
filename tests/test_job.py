@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest  # noqa F401
 from devtools import debug
+from fractal_server.utils import get_timestamp
 
 
 LOG = "Here are some logs"
@@ -41,6 +42,7 @@ async def test_job_show(
             "id": 1,
             "project_id": 1,
             "task_list": [],
+            "timestamp_created": str(get_timestamp()),
         },
     )
     debug(job)
