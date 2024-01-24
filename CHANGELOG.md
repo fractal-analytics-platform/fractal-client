@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 1.4.3 (unreleased)
+
+* Improve handling of `AuthenticationError` and `ConnectionError`, and handle uncaught `Exception` (\#587).
+
 # 1.4.2
 
 * Always make new users verified, within `user register` command (\#580).
