@@ -117,6 +117,8 @@ async def handle(cli_args: List[str] = argv):
                 f"Hint: is {settings.FRACTAL_SERVER} alive?"
             ),
         )
+    except Exception as e:
+        return PrintInterface(retcode=1, data=str(e))
 
     return interface
 

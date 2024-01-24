@@ -173,8 +173,9 @@ async def test_task_new(register_user, invoke, tmp_path):
     assert e.value.code == 1
 
     # create a new task passing not existing file
-    with pytest.raises(FileNotFoundError):
-        await invoke("task new _name _command _source --meta-file ./foo.pdf")
+    res = await invoke("task new _name _command _source --meta-file ./foo.pdf")
+    debug(res.data)
+    assert res.retcode == 1
 
 
 async def test_task_edit(
@@ -286,10 +287,11 @@ async def test_task_edit(
 
     # Test `file not found` errors
     NEW_FILE = "foo.json"
-    with pytest.raises(FileNotFoundError):
-        await invoke_as_superuser(
-            f"task edit --id {task_id} --meta-file {NEW_FILE}"
-        )
+    res = await invoke_as_superuser(
+        f"task edit --id {task_id} --meta-file {NEW_FILE}"
+    )
+    debug(res.data)
+    assert res.retcode == 1
 
     # Test successful edit of dictionary attributes
     meta_file = str(testdata_path / "task_edit_json/meta.json")
