@@ -3,6 +3,10 @@
 # 1.4.3 (unreleased)
 
 * Improve handling of `AuthenticationError` and `ConnectionError`, and handle uncaught `Exception` (\#587).
+* Testing:
+    * Adapt `job_factory` and tests to the presence of new `timestamp_created` attributes in `fractal-server` (\#589).
+* Documentation:
+    * Add info about server/client version compatibility (\#591).
 
 # 1.4.2
 
