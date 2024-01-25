@@ -1,4 +1,3 @@
-from json import JSONDecodeError
 from pathlib import Path
 
 import jwt
@@ -37,11 +36,8 @@ class AuthToken:
         res = await self.client.post(
             f"{settings.FRACTAL_SERVER}/auth/token/login/", data=data
         )
-        try:
-            data = res.json()
-        except JSONDecodeError:
-            data = res.text
         if res.status_code != 200:
+            data = res.text
             raise AuthenticationError(
                 f"Error at {res.request.url}.\n"
                 f"Status code: {res.status_code}.\n"
