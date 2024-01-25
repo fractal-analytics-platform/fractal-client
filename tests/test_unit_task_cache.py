@@ -32,7 +32,7 @@ def test_get_matching_tasks():
     assert res == []
 
 
-async def test_search_in_task_list():
+def test_search_in_task_list():
     """Test all possible cases for function `_search_in_task_list`"""
 
     TASK_LIST = [

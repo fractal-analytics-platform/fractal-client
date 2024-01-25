@@ -7,24 +7,24 @@ EMAIL_USER = "test@testmail.com"
 PWD_USER = "testpassword"
 
 
-async def test_register_as_user(invoke, register_user, caplog):
+def test_register_as_user(invoke, register_user, caplog):
     with pytest.raises(SystemExit):
-        await invoke(f"user register {EMAIL_USER} {PWD_USER}")
+        invoke(f"user register {EMAIL_USER} {PWD_USER}")
     debug(caplog.text)
     assert "403" in caplog.text
 
 
 @pytest.mark.parametrize("is_superuser", [True, False])
-async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
+def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
     if is_superuser:
-        res = await invoke_as_superuser(
+        res = invoke_as_superuser(
             f"user register {EMAIL_USER} {PWD_USER} --superuser"
         )
         debug(res.data)
         assert res.retcode == 0
         assert res.data["is_superuser"]
     else:
-        res = await invoke_as_superuser(
+        res = invoke_as_superuser(
             f"user register {EMAIL_USER} {PWD_USER} "
             "--slurm-user SOMETHING --cache-dir /absolute --username X"
         )
@@ -38,30 +38,28 @@ async def test_register_as_superuser(invoke_as_superuser, is_superuser: bool):
     assert res.data["is_verified"]
 
 
-async def test_register_as_superuser_with_batch(invoke_as_superuser):
+def test_register_as_superuser_with_batch(invoke_as_superuser):
     # Register a user with the --batch flag
-    res = await invoke_as_superuser(
-        f"--batch user register {EMAIL_USER} {PWD_USER}"
-    )
+    res = invoke_as_superuser(f"--batch user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data
     debug(user_id)
     assert res.retcode == 0
     # Check that the user exists
-    res = await invoke_as_superuser(f"user show {user_id}")
+    res = invoke_as_superuser(f"user show {user_id}")
     debug(res.data)
     assert res.data["email"] == EMAIL_USER
     assert res.retcode == 0
 
 
-async def test_list_as_user(invoke, register_user, caplog):
+def test_list_as_user(invoke, register_user, caplog):
     with pytest.raises(SystemExit):
-        await invoke("user list")
+        invoke("user list")
     debug(caplog.text)
     assert "403" in caplog.text
 
 
-async def test_list_as_superuser(invoke_as_superuser, register_user):
-    res = await invoke_as_superuser("user list")
+def test_list_as_superuser(invoke_as_superuser, register_user):
+    res = invoke_as_superuser("user list")
     debug(res.data)
     assert res.retcode == 0
     list_emails = [user["email"] for user in res.data]
@@ -70,50 +68,46 @@ async def test_list_as_superuser(invoke_as_superuser, register_user):
     assert environ["FRACTAL_USER"] in list_emails
 
 
-async def test_show_as_user(
-    invoke, invoke_as_superuser, register_user, caplog
-):
+def test_show_as_user(invoke, invoke_as_superuser, register_user, caplog):
     # Register a new user
-    res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
     # Call fractal user show
     with pytest.raises(SystemExit):
-        await invoke(f"user show {user_id}")
+        invoke(f"user show {user_id}")
     debug(caplog.text)
     assert "403" in caplog.text
 
 
-async def test_show_as_superuser(invoke_as_superuser):
+def test_show_as_superuser(invoke_as_superuser):
     # Register a new user
-    res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
     # Call fractal user show
-    await invoke_as_superuser(f"user show {user_id}")
+    invoke_as_superuser(f"user show {user_id}")
     debug(res.data)
     assert res.retcode == 0
     assert res.data["email"] == EMAIL_USER
 
 
-async def test_edit_as_user(
-    invoke, invoke_as_superuser, register_user, caplog
-):
+def test_edit_as_user(invoke, invoke_as_superuser, register_user, caplog):
     # Register a new user
-    res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
     # Call fractal user edit
     with pytest.raises(SystemExit):
-        await invoke(f"user edit {user_id} --new-email email@something.xy")
+        invoke(f"user edit {user_id} --new-email email@something.xy")
     debug(caplog.text)
     assert "403" in caplog.text
 
 
 @pytest.mark.parametrize("new_is_superuser", [True, False])
 @pytest.mark.parametrize("new_is_non_verified", [True, False])
-async def test_edit_as_superuser(
+def test_edit_as_superuser(
     invoke_as_superuser, new_is_superuser, new_is_non_verified
 ):
     # Register a new user
-    res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     assert res.retcode == 0
     user_id = res.data["id"]
     # Call fractal user edit
@@ -134,7 +128,7 @@ async def test_edit_as_superuser(
     if new_is_non_verified:
         cmd = f"{cmd} --remove-verified"
     debug(cmd)
-    res = await invoke_as_superuser(cmd)
+    res = invoke_as_superuser(cmd)
     debug(res.data)
     assert res.retcode == 0
     assert res.data["email"] == NEW_EMAIL
@@ -148,14 +142,14 @@ async def test_edit_as_superuser(
     BAD_CACHE_DIR = "not_absolute"
     with pytest.raises(SystemExit):
         cmd = f"user edit {user_id} --new-cache-dir {BAD_CACHE_DIR}"
-        await invoke_as_superuser(cmd)
+        invoke_as_superuser(cmd)
 
     # If the user was made a superuser, check that we can go back to normal
     # user
     if new_is_superuser:
         cmd = f"user edit {user_id} --remove-superuser"
         debug(cmd)
-        res = await invoke_as_superuser(cmd)
+        res = invoke_as_superuser(cmd)
         debug(res.data)
         assert res.retcode == 0
         assert not res.data["is_superuser"]
@@ -165,31 +159,29 @@ async def test_edit_as_superuser(
     if new_is_non_verified:
         cmd = f"user edit {user_id} --make-verified"
         debug(cmd)
-        res = await invoke_as_superuser(cmd)
+        res = invoke_as_superuser(cmd)
         debug(res.data)
         assert res.retcode == 0
         assert res.data["is_verified"]
 
 
-async def test_edit_arguments(invoke_as_superuser):
+def test_edit_arguments(invoke_as_superuser):
     # Test that superuser flags are mutually exclusive
     with pytest.raises(SystemExit):
         cmd = "user edit SOME_USER_ID --make-superuser --remove-superuser"
-        await invoke_as_superuser(cmd)
+        invoke_as_superuser(cmd)
 
 
 @pytest.mark.skip(
     reason="Delete-user endpoint was removed in fractal-server 1.4.0"
 )
-async def test_delete_as_user(
-    invoke, invoke_as_superuser, register_user, caplog
-):
+def test_delete_as_user(invoke, invoke_as_superuser, register_user, caplog):
     # Register a new user
-    res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
     # Call fractal user edit
     with pytest.raises(SystemExit):
-        await invoke(f"user delete {user_id}")
+        invoke(f"user delete {user_id}")
     debug(caplog.text)
     assert "403" in caplog.text
 
@@ -197,23 +189,23 @@ async def test_delete_as_user(
 @pytest.mark.skip(
     reason="Delete-user endpoint was removed in fractal-server 1.4.0"
 )
-async def test_delete_as_superuser(invoke_as_superuser, caplog):
+def test_delete_as_superuser(invoke_as_superuser, caplog):
     # Register a new user
-    res = await invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
     # Call fractal user delete
-    res = await invoke_as_superuser(f"user delete {user_id}")
+    res = invoke_as_superuser(f"user delete {user_id}")
     assert res.retcode == 0
     # Check that user was not found
     with pytest.raises(SystemExit):
-        res = await invoke_as_superuser(f"user show {user_id}")
+        res = invoke_as_superuser(f"user show {user_id}")
     debug(caplog.text)
     assert "404" in caplog.text
     assert "Not Found" in caplog.text
 
 
-async def test_whoami_as_user(invoke, register_user):
-    res = await invoke("user whoami")
+def test_whoami_as_user(invoke, register_user):
+    res = invoke("user whoami")
     assert res.retcode == 0
     debug(res.data)
     assert res.data["email"] == environ["FRACTAL_USER"]
@@ -221,14 +213,14 @@ async def test_whoami_as_user(invoke, register_user):
     user_id = res.data["id"]
 
     # Test user whoami with --batch flag
-    res = await invoke("--batch user whoami")
+    res = invoke("--batch user whoami")
     debug(res.data)
     assert res.data == user_id
     assert res.retcode == 0
 
 
-async def test_whoami_as_superuser(invoke_as_superuser):
-    res = await invoke_as_superuser("user whoami")
+def test_whoami_as_superuser(invoke_as_superuser):
+    res = invoke_as_superuser("user whoami")
     assert res.retcode == 0
     debug(res.data)
     assert res.data["email"] == "admin@fractal.xy"

@@ -12,7 +12,7 @@ from fractal_client.config import settings
 COLLECTION_TIMEOUT = 15.0
 
 
-async def test_task_collection_command(register_user, invoke, caplog):
+def test_task_collection_command(register_user, invoke, caplog):
     """
     Test that all `task collect` options are correctly parsed and included in
     the the payload for the API request.
@@ -22,7 +22,7 @@ async def test_task_collection_command(register_user, invoke, caplog):
     PYTHON_VERSION = "1.2"
     PACKAGE_EXTRAS = "a,b,c"
     with pytest.raises(SystemExit):
-        await invoke(
+        invoke(
             (
                 "task collect "
                 f"{PACKAGE} "
@@ -47,7 +47,7 @@ async def test_task_collection_command(register_user, invoke, caplog):
     assert payload["python_version"] == PYTHON_VERSION
 
 
-async def test_task_collection(register_user, invoke, testdata_path):
+def test_task_collection(register_user, invoke, testdata_path):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
     WHEN the collection subcommand is called
@@ -57,7 +57,7 @@ async def test_task_collection(register_user, invoke, testdata_path):
     """
     PACKAGE = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res0 = await invoke(f"task collect {PACKAGE}")
+    res0 = invoke(f"task collect {PACKAGE}")
     debug(res0)
     res0.show()
 
@@ -71,7 +71,7 @@ async def test_task_collection(register_user, invoke, testdata_path):
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
-        res1 = await invoke(f"task check-collection {state_id}")
+        res1 = invoke(f"task check-collection {state_id}")
         assert res1.retcode == 0
         res1.show()
         time.sleep(1)
@@ -80,7 +80,7 @@ async def test_task_collection(register_user, invoke, testdata_path):
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Add --include-logs and --do-not-separate-logs flags
-    res2 = await invoke(
+    res2 = invoke(
         f"task check-collection {state_id}"
         " --include-logs"
         " --do-not-separate-logs"
@@ -92,11 +92,11 @@ async def test_task_collection(register_user, invoke, testdata_path):
 
     # Show again the check-collection output, without --do-not-separate-logs,
     # for visual inspection
-    res = await invoke(f"task check-collection {state_id} --include-logs")
+    res = invoke(f"task check-collection {state_id} --include-logs")
     res.show()
 
 
-async def test_repeated_task_collection(register_user, invoke, testdata_path):
+def test_repeated_task_collection(register_user, invoke, testdata_path):
     """
     GIVEN
         * a pip installable package containing fractal-compatible tasks
@@ -107,7 +107,7 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     """
     PACKAGE = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
 
-    res0 = await invoke(f"task collect {PACKAGE}")
+    res0 = invoke(f"task collect {PACKAGE}")
     debug(res0)
     res0.show()
 
@@ -121,19 +121,19 @@ async def test_repeated_task_collection(register_user, invoke, testdata_path):
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
-        res1 = await invoke(f"task check-collection {state_id}")
+        res1 = invoke(f"task check-collection {state_id}")
         time.sleep(1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Second collection
-    res0 = await invoke(f"task collect {PACKAGE}")
+    res0 = invoke(f"task collect {PACKAGE}")
     res0.show()
     assert res0.data["data"]["info"] == "Already installed"
 
 
-async def test_task_new(register_user, invoke, tmp_path):
+def test_task_new(register_user, invoke, tmp_path):
 
     # create a new task with just positional required args
 
@@ -142,7 +142,7 @@ async def test_task_new(register_user, invoke, tmp_path):
     with open(schema_path, "w") as f:
         json.dump(schema, f)
 
-    res = await invoke(
+    res = invoke(
         "task new _name _command _source --version _version "
         f"--args-schema {schema_path} --args-schema-version 1.0.0"
     )
@@ -161,7 +161,7 @@ async def test_task_new(register_user, invoke, tmp_path):
     first_task_id = int(res.data["id"])
 
     # create a new task with batch option
-    res = await invoke("--batch task new _name2 _command2 _source2")
+    res = invoke("--batch task new _name2 _command2 _source2")
     res.show()
     assert res.retcode == 0
     assert res.data == str(first_task_id + 1)
@@ -169,15 +169,15 @@ async def test_task_new(register_user, invoke, tmp_path):
     # create a new task with same source as before. Note that in check_response
     # we have sys.exit(1) when status code is not the expecte one
     with pytest.raises(SystemExit) as e:
-        await invoke("task new _name2 _command2 _source")
+        invoke("task new _name2 _command2 _source")
     assert e.value.code == 1
 
     # create a new task passing not existing file
     with pytest.raises(FileNotFoundError):
-        await invoke("task new _name _command _source --meta-file ./foo.pdf")
+        invoke("task new _name _command _source --meta-file ./foo.pdf")
 
 
-async def test_task_edit(
+def test_task_edit(
     caplog,
     register_user,
     invoke,
@@ -190,7 +190,7 @@ async def test_task_edit(
     with open(schema_path, "w") as f:
         json.dump(schema, f)
 
-    task = await invoke(
+    task = invoke(
         "task new _name _command _source "
         f"--args-schema {schema_path} --args-schema-version 1.0.0"
     )
@@ -201,17 +201,17 @@ async def test_task_edit(
 
     # Test that regular user is not authorized
     with pytest.raises(SystemExit):
-        res = await invoke(f"task edit {task_id} --new-name {NEW_NAME}")
+        res = invoke(f"task edit {task_id} --new-name {NEW_NAME}")
 
     # Test successful edit of string attributes
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --id {task_id} --new-name {NEW_NAME}"
     )
     assert res.data["name"] == NEW_NAME
     assert res.retcode == 0
 
     NEW_COMMAND = "run"
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --id {task_id} --new-command {NEW_COMMAND}"
     )
     assert res.data["command"] == NEW_COMMAND
@@ -219,15 +219,15 @@ async def test_task_edit(
 
     # Test fail with no task_id nor task_name
     with pytest.raises(SystemExit):
-        res = await invoke_as_superuser("task edit")
+        res = invoke_as_superuser("task edit")
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
-        res = await invoke_as_superuser(
+        res = invoke_as_superuser(
             f"task edit --id {task_id} --name {task.data['name']}"
         )
     # Test fail with both task_id and task_version
     with pytest.raises(SystemExit):
-        res = await invoke_as_superuser(
+        res = invoke_as_superuser(
             f"task edit --id {task_id} --version 1.2.3.4.5.6"
         )
     assert caplog.records[-1].msg == (
@@ -236,19 +236,19 @@ async def test_task_edit(
 
     NEW_TYPE = "zip"
     # Test regular updates (both by id and name)
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --id {task_id} --new-input-type {NEW_TYPE}"
     )
     assert res.data["input_type"] == NEW_TYPE
     assert res.retcode == 0
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
 
     NEW_VERSION = "3.14"
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --id {task_id} --new-version {NEW_VERSION}"
     )
     assert res.data["version"] == NEW_VERSION
@@ -259,7 +259,7 @@ async def test_task_edit(
     cache_file = cache_dir / TASKS_CACHE_FILENAME
     cache_file.unlink(missing_ok=True)
     NEW_TYPE = "something"
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
@@ -269,7 +269,7 @@ async def test_task_edit(
     cache_file.unlink(missing_ok=True)
     NEW_TYPE = "something-here"
     with pytest.raises(SystemExit):
-        res = await invoke_as_superuser(
+        res = invoke_as_superuser(
             f"task edit --name INVALID_NAME --new-output-type {NEW_TYPE}"
         )
 
@@ -278,7 +278,7 @@ async def test_task_edit(
         json.dump([], f)
     NEW_TYPE = "something-else"
     debug(f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}")
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
@@ -287,13 +287,11 @@ async def test_task_edit(
     # Test `file not found` errors
     NEW_FILE = "foo.json"
     with pytest.raises(FileNotFoundError):
-        await invoke_as_superuser(
-            f"task edit --id {task_id} --meta-file {NEW_FILE}"
-        )
+        invoke_as_superuser(f"task edit --id {task_id} --meta-file {NEW_FILE}")
 
     # Test successful edit of dictionary attributes
     meta_file = str(testdata_path / "task_edit_json/meta.json")
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --id {task_id} --meta-file {meta_file}"
     )
     debug(res)
@@ -305,7 +303,7 @@ async def test_task_edit(
     new_schema = dict(key1=159, key3=None)
     with open(new_schema_path, "w") as f:
         json.dump(new_schema, f)
-    res = await invoke_as_superuser(
+    res = invoke_as_superuser(
         f"task edit --id {task_id} --new-args-schema {new_schema_path} "
         "--new-args-schema-version 1.2.3"
     )
@@ -314,7 +312,7 @@ async def test_task_edit(
     assert res.data["args_schema_version"] == "1.2.3"
 
 
-async def test_task_delete(
+def test_task_delete(
     register_user,
     user_factory,
     invoke,
@@ -325,9 +323,7 @@ async def test_task_delete(
     """
     NAME = "_name"
     VERSION = "1.0.0"
-    task = await invoke(
-        f"task new {NAME} _command _source --version {VERSION}"
-    )
+    task = invoke(f"task new {NAME} _command _source --version {VERSION}")
     task.show()
     assert task.retcode == 0
     task_id = task.data["id"]
@@ -336,29 +332,27 @@ async def test_task_delete(
     with pytest.raises(SystemExit):
         EMAIL = "someone@example.org"
         PASSWORD = "123123"
-        await user_factory(email=EMAIL, password=PASSWORD)
-        res = await invoke(
-            f"-u {EMAIL} -p {PASSWORD} task delete --id {task_id}"
-        )
+        user_factory(email=EMAIL, password=PASSWORD)
+        res = invoke(f"-u {EMAIL} -p {PASSWORD} task delete --id {task_id}")
     # Test fail "id and version"
     with pytest.raises(SystemExit):
-        await invoke(f"task delete --id {task_id} --version {VERSION}")
+        invoke(f"task delete --id {task_id} --version {VERSION}")
     # Test fail "name and wrong version"
     with pytest.raises(SystemExit):
-        await invoke(f"task delete --name {NAME} --version INVALID_VERSION")
+        invoke(f"task delete --name {NAME} --version INVALID_VERSION")
 
     # Test sucess
-    res = await invoke("task list")
+    res = invoke("task list")
     task_list = res.data
     assert len(task_list) == 1
-    res = await invoke(f"task delete --name {NAME} --version {VERSION}")
+    res = invoke(f"task delete --name {NAME} --version {VERSION}")
     assert res.retcode == 0
-    res = await invoke("task list")
+    res = invoke("task list")
     task_list = res.data
     assert len(task_list) == 0
 
 
-async def test_task_list(register_user, invoke, testdata_path):
+def test_task_list(register_user, invoke, testdata_path):
     """
     Install tasks from a package
     Add a custom task with an owner
@@ -371,7 +365,7 @@ async def test_task_list(register_user, invoke, testdata_path):
             testdata_path / f"fractal_tasks_dummy-{version}-py3-none-any.whl"
         )
 
-        res = await invoke(f"--batch task collect {PACKAGE}")
+        res = invoke(f"--batch task collect {PACKAGE}")
         assert res.retcode == 0
 
         state_id = res.data.split(" ")[0]
@@ -380,7 +374,7 @@ async def test_task_list(register_user, invoke, testdata_path):
         time.sleep(1)
         starting_time = time.perf_counter()
         while True:
-            res = await invoke(f"task check-collection {state_id}")
+            res = invoke(f"task check-collection {state_id}")
             assert res.retcode == 0
             if res.data["data"]["status"] == "OK":
                 break
@@ -393,7 +387,7 @@ async def test_task_list(register_user, invoke, testdata_path):
     custom_task_source = "custom_task_source"
     custom_task_version = "9.9"
     custom_task_meta = testdata_path / "task_edit_json/meta.json"
-    res = await invoke(
+    res = invoke(
         f"task new {custom_task_name} {custom_task_command} "
         f"{custom_task_source} --meta-file {custom_task_meta} "
         f"--version {custom_task_version}"
@@ -402,7 +396,7 @@ async def test_task_list(register_user, invoke, testdata_path):
     assert res.retcode == 0
 
     # List tasks
-    res = await invoke("task list")
+    res = invoke("task list")
     assert res.retcode == 0
     task_list = res.data
 
@@ -436,32 +430,32 @@ async def test_task_list(register_user, invoke, testdata_path):
     assert task_list[4]["owner"] is not None
 
 
-async def test_pin(register_user, invoke, testdata_path, caplog):
+def test_pin(register_user, invoke, testdata_path, caplog):
 
     PACKAGE = "fractal_tasks_core_alpha-0.0.1a0-py3-none-any.whl"
     PIN = "pydantic=1.10.3"
 
     with pytest.raises(SystemExit):
-        await invoke(
+        invoke(
             f"task collect {testdata_path / PACKAGE} "
             f"--pinned-dependency {PIN.replace('=','~')}"
         )
     assert "Pins must be written as" in caplog.records[-1].msg
 
-    res = await invoke(
+    res = invoke(
         f"task collect {testdata_path / PACKAGE} --pinned-dependency {PIN}"
     )
     assert res.retcode == 0
     state_id = res.data["id"]
     starting_time = time.perf_counter()
     while True:
-        res = await invoke(f"task check-collection {state_id}")
+        res = invoke(f"task check-collection {state_id}")
         time.sleep(1)
         if res.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
-    res = await invoke(f"task check-collection {state_id}")
+    res = invoke(f"task check-collection {state_id}")
     assert res.retcode == 0
     assert (
         f"Currently installed version of {PIN.split('=')[0]}"

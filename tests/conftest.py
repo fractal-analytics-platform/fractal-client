@@ -4,7 +4,7 @@ from os import environ
 from pathlib import Path
 
 import pytest
-from httpx import AsyncClient
+from httpx import Client
 
 
 # These three variables must be defined before the first import of config.py
@@ -41,16 +41,16 @@ def testdata_path() -> Path:
 
 
 @pytest.fixture
-async def client():
-    async with AsyncClient(timeout=10) as client:
+def client():
+    with Client(timeout=10) as client:
         yield client
 
 
 @pytest.fixture
-async def client_superuser():
+def client_superuser():
     from fractal_client.authclient import AuthClient
 
-    async with AuthClient(
+    with AuthClient(
         username="admin@fractal.xy",
         password="1234",
     ) as client_superuser:
@@ -70,24 +70,24 @@ def _remove_session():
 
 
 @pytest.fixture
-async def invoke():
+def invoke():
     from fractal_client.client import handle
 
-    async def __invoke(args: str):
+    def __invoke(args: str):
         _remove_session()
-        return await handle(_clisplit(args))
+        return handle(_clisplit(args))
 
     return __invoke
 
 
 @pytest.fixture
-async def invoke_as_superuser():
+def invoke_as_superuser():
     from fractal_client.client import handle
 
-    async def __invoke(args: str):
+    def __invoke(args: str):
         _remove_session()
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
-        return await handle(_clisplit(new_args))
+        return handle(_clisplit(new_args))
 
     return __invoke
 

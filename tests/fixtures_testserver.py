@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from os import environ
 from typing import Optional
@@ -45,7 +44,7 @@ def override_server_settings(tmp_path):
 
 
 @pytest.fixture(scope="function", autouse=True)
-async def testserver(override_server_settings):
+def testserver(override_server_settings):
     import uvicorn
     from multiprocessing import Process
     from fractal_server.app.db import DB
@@ -61,13 +60,11 @@ async def testserver(override_server_settings):
     # cf. https://stackoverflow.com/a/57816608/283972
 
     def run_server():
-        asyncio.run(
-            uvicorn.run(
-                "fractal_server.main:app",
-                port=PORT,
-                log_level="debug",
-                timeout_keep_alive=10,
-            )
+        uvicorn.run(
+            "fractal_server.main:app",
+            port=PORT,
+            log_level="debug",
+            timeout_keep_alive=10,
         )
 
     proc = Process(target=run_server, args=(), daemon=True)
@@ -97,21 +94,21 @@ async def testserver(override_server_settings):
 
 
 @pytest.fixture
-async def db(testserver):
+def db(testserver):
     """
     NOTE: Only use this fixture within other fixtures!!!
     """
-    from fractal_server.app.db import get_db
+    from fractal_server.app.db import get_sync_db
 
-    async for db in get_db():
+    for db in get_sync_db():
         yield db
 
 
 @pytest.fixture
-async def task_factory(db):
+def task_factory(db):
     from fractal_server.app.models.task import Task
 
-    async def _task_factory(**task_args_override):
+    def _task_factory(**task_args_override):
         task_args = dict(
             name="test_task",
             command="cmd",
@@ -122,56 +119,56 @@ async def task_factory(db):
         task_args.update(task_args_override)
         t = Task(**task_args)
         db.add(t)
-        await db.commit()
-        await db.refresh(t)
+        db.commit()
+        db.refresh(t)
         return t
 
     return _task_factory
 
 
 @pytest.fixture
-async def project_factory(db):
+def project_factory(db):
     from fractal_server.app.models.project import Project
 
-    async def _project_factory(user_id=None, **project_args_override):
+    def _project_factory(user_id=None, **project_args_override):
         project_args = dict(name="name")
         project_args.update(project_args_override)
         p = Project(**project_args)
         if user_id:
             from fractal_server.app.security import User
 
-            user = await db.get(User, user_id)
+            user = db.get(User, user_id)
             p.user_list.append(user)
         db.add(p)
-        await db.commit()
-        await db.refresh(p)
+        db.commit()
+        db.refresh(p)
         return p
 
     return _project_factory
 
 
 @pytest.fixture
-async def workflow_factory(db, project_factory):
+def workflow_factory(db, project_factory):
     from fractal_server.app.models.workflow import Workflow
 
-    async def _workflow_factory(**wf_args_override):
+    def _workflow_factory(**wf_args_override):
         wf_args = dict(name="name")
         wf_args.update(wf_args_override)
         wf = Workflow(**wf_args)
         db.add(wf)
-        await db.commit()
-        await db.refresh(wf)
+        db.commit()
+        db.refresh(wf)
         return wf
 
     return _workflow_factory
 
 
 @pytest.fixture
-async def job_factory(db):
+def job_factory(db):
     from fractal_server.app.models.job import ApplyWorkflow
     from fractal_server.utils import get_timestamp
 
-    async def _job_factory(**job_args_override):
+    def _job_factory(**job_args_override):
         job_args = dict(
             project_id=1,
             input_dataset_id=1,
@@ -209,16 +206,16 @@ async def job_factory(db):
         job_args.update(job_args_override)
         j = ApplyWorkflow(**job_args)
         db.add(j)
-        await db.commit()
-        await db.refresh(j)
+        db.commit()
+        db.refresh(j)
         return j
 
     return _job_factory
 
 
 @pytest.fixture
-async def user_factory(testserver, db, client_superuser):
-    async def __register_user(
+def user_factory(testserver, db, client_superuser):
+    def __register_user(
         email: str,
         password: str,
         slurm_user: Optional[str] = None,
@@ -231,14 +228,14 @@ async def user_factory(testserver, db, client_superuser):
         if username:
             new_user["username"] = username
         # Register user via API call
-        res = await client_superuser.post(
+        res = client_superuser.post(
             f"http://localhost:{PORT}/auth/register/",
             json=new_user,
         )
         assert res.status_code == 201
         user_id = res.json()["id"]
         # Make user verified via API call
-        res = await client_superuser.patch(
+        res = client_superuser.patch(
             f"http://localhost:{PORT}/auth/users/{user_id}/",
             json=dict(is_verified=True),
         )
@@ -249,10 +246,10 @@ async def user_factory(testserver, db, client_superuser):
 
 
 @pytest.fixture
-async def register_user(user_factory, db):
+def register_user(user_factory, db):
     from fractal_server.app.models import UserOAuth
 
-    created_user = await user_factory(
+    created_user = user_factory(
         email=environ["FRACTAL_USER"],
         password=environ["FRACTAL_PASSWORD"],
         username=environ["FRACTAL_USERNAME"],
@@ -260,6 +257,6 @@ async def register_user(user_factory, db):
 
     yield created_user
 
-    db_user = await db.get(UserOAuth, created_user["id"])
-    await db.delete(db_user)
-    await db.commit()
+    db_user = db.get(UserOAuth, created_user["id"])
+    db.delete(db_user)
+    db.commit()

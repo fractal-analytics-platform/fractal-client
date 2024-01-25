@@ -9,7 +9,7 @@ LOG = "Here are some logs"
 
 
 @pytest.mark.parametrize("status", ["done", "failed"])
-async def test_job_show(
+def test_job_show(
     register_user,
     invoke,
     tmp_path: Path,
@@ -25,14 +25,14 @@ async def test_job_show(
     """
 
     # Create mock Workflow/ApplyWorkflow objects
-    res = await invoke("project new prj0")
+    res = invoke("project new prj0")
     project_id = res.data["id"]
-    wf = await workflow_factory(project_id=project_id)
+    wf = workflow_factory(project_id=project_id)
     debug(wf)
     log = LOG
     workflow_path = tmp_path / f"workflow_{wf.id}"
     workflow_path.mkdir()
-    job = await job_factory(
+    job = job_factory(
         working_dir=workflow_path.as_posix(),
         worfklow_id=wf.id,
         status=status,
@@ -50,7 +50,7 @@ async def test_job_show(
     # Check `job show` output
     cmd = f"job show {project_id} {job.id}"
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     assert res.data["status"] == status
     debug(res.data)
@@ -60,13 +60,13 @@ async def test_job_show(
 
     # Check `job show` output with --batch
     cmd = f"--batch job show {project_id} {job.id}"
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     assert res.data == status
 
     # Check `job show` output with `--do-not-separate-logs`
     cmd = f"job show {project_id} {job.id} --do-not-separate-logs"
-    res = await invoke(cmd)
+    res = invoke(cmd)
     debug(res.data)
     assert res.retcode == 0
     assert res.data["status"] == status
@@ -74,7 +74,7 @@ async def test_job_show(
     assert res.data["log"] == LOG
 
 
-async def test_job_list(
+def test_job_list(
     register_user,
     invoke,
     tmp_path: Path,
@@ -89,13 +89,13 @@ async def test_job_list(
     """
 
     # Create mock Project/Workflow/ApplyWorkflow objects
-    res = await invoke("project new prj0")
+    res = invoke("project new prj0")
     project_id = res.data["id"]
-    wf_1 = await workflow_factory(project_id=project_id)
-    wf_2 = await workflow_factory(project_id=project_id)
+    wf_1 = workflow_factory(project_id=project_id)
+    wf_2 = workflow_factory(project_id=project_id)
     wd_1 = tmp_path / f"workflow_{wf_1.id}"
     wd_2 = tmp_path / f"workflow_{wf_2.id}"
-    job1 = await job_factory(
+    job1 = job_factory(
         working_dir=wd_1.as_posix(),
         worfklow_id=wf_1.id,
         status="running",
@@ -107,7 +107,7 @@ async def test_job_list(
             "timestamp_created": str(get_timestamp()),
         },
     )
-    job2 = await job_factory(
+    job2 = job_factory(
         working_dir=wd_2.as_posix(),
         worfklow_id=wf_2.id,
         status="done",
@@ -125,7 +125,7 @@ async def test_job_list(
     # Check `job list` output with --batch option
     cmd = f"--batch job list {project_id}"
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     debug(res.data)
     assert res.retcode == 0
     job_ids = [int(i) for i in res.data.split()]
@@ -135,7 +135,7 @@ async def test_job_list(
     # Check `job list` output
     cmd = f"job list {project_id}"
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
     # There is not much to assert here, apart from successful invocation of the
@@ -143,7 +143,7 @@ async def test_job_list(
     res.show()
 
 
-async def test_job_download_logs(
+def test_job_download_logs(
     register_user,
     invoke,
     tmp_path: Path,
@@ -155,11 +155,11 @@ async def test_job_download_logs(
     """
 
     # Create mock Workflow/ApplyWorkflow objects
-    res = await invoke("project new prj0")
+    res = invoke("project new prj0")
     project_id = res.data["id"]
-    wf = await workflow_factory(project_id=project_id)
+    wf = workflow_factory(project_id=project_id)
     wd = tmp_path / f"workflow_{wf.id}"
-    job = await job_factory(
+    job = job_factory(
         working_dir=wd.as_posix(),
         worfklow_id=wf.id,
         status="running",
@@ -179,7 +179,7 @@ async def test_job_download_logs(
         f"--output {str(output_fail)}"
     )
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 1
 
     # Check standard `job download-logs` output
@@ -189,7 +189,7 @@ async def test_job_download_logs(
         f"--output {str(output)}"
     )
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
 
@@ -201,7 +201,7 @@ async def test_job_download_logs(
     assert contents == LOG
 
 
-async def test_job_stop(
+def test_job_stop(
     register_user,
     invoke,
     tmp_path: Path,
@@ -224,12 +224,12 @@ async def test_job_stop(
     """
 
     # Create mock Workflow/ApplyWorkflow objects
-    res = await invoke("project new prj0")
+    res = invoke("project new prj0")
     project_id = res.data["id"]
-    wf = await workflow_factory(project_id=project_id)
+    wf = workflow_factory(project_id=project_id)
     workflow_path = tmp_path / f"workflow_{wf.id}"
     workflow_path.mkdir()
-    job = await job_factory(
+    job = job_factory(
         working_dir=workflow_path.as_posix(),
         worfklow_id=wf.id,
     )
@@ -239,7 +239,7 @@ async def test_job_stop(
     cmd = f"job stop {project_id} {job.id}"
     debug(cmd)
     with pytest.raises(SystemExit):
-        res = await invoke(cmd)
+        res = invoke(cmd)
     debug(caplog.text)
     assert "Stopping a job execution is not implemented" in caplog.text
     caplog.clear()

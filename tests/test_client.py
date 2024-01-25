@@ -13,14 +13,14 @@ from fractal_client.client import MissingCredentialsError
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
-async def test_version(invoke):
-    iface = await invoke("version")
+def test_version(invoke):
+    iface = invoke("version")
     debug(iface.data)
     assert f"version: {__VERSION__}" in iface.data
     assert iface.retcode == 0
 
 
-async def test_server():
+def test_server():
     """
     GIVEN a testserver
     WHEN it gets called
@@ -31,15 +31,15 @@ async def test_server():
     assert res.status_code == 200
 
 
-async def test_register_user(register_user, invoke):
-    res = await invoke("user whoami")
+def test_register_user(register_user, invoke):
+    res = invoke("user whoami")
     user = res.data
     debug(user)
     assert res.retcode == 0
     assert user["email"] == DEFAULT_TEST_EMAIL
 
 
-async def test_user_override(user_factory, invoke):
+def test_user_override(user_factory, invoke):
     """
     GIVEN a user whose credentials differ from those of the environment
     WHEN the client is invoked with -u and -p
@@ -47,25 +47,25 @@ async def test_user_override(user_factory, invoke):
     """
     EMAIL = "other_user@exact-lab.it"
     PASSWORD = "other_password"
-    await user_factory(email=EMAIL, password=PASSWORD)
+    user_factory(email=EMAIL, password=PASSWORD)
 
-    res = await invoke(f"-u {EMAIL} -p {PASSWORD} project list")
+    res = invoke(f"-u {EMAIL} -p {PASSWORD} project list")
     assert res.retcode == 0
 
 
-async def test_bad_credentials(invoke):
+def test_bad_credentials(invoke):
     """
     GIVEN a registered user
     WHEN wrong credentials are passed
     THEN the client returns an error
     """
-    res = await invoke("-u nouser@exact-lab.it -p nopassword project list")
+    res = invoke("-u nouser@exact-lab.it -p nopassword project list")
     res.show()
     assert res.retcode != 0
     assert "BAD_CREDENTIALS" in res.data
 
 
-async def test_missing_credentials(override_settings):
+def test_missing_credentials(override_settings):
     """
     GIVEN an invocation with missing credentials
     THEN the client raises a MissingCredentialsError
@@ -75,13 +75,13 @@ async def test_missing_credentials(override_settings):
     override_settings(FRACTAL_USER=None, FRACTAL_PASSWORD=None)
 
     with pytest.raises(MissingCredentialsError) as e:
-        await handle(shlex.split("fractal user whoami"))
+        handle(shlex.split("fractal user whoami"))
     debug(e.value)
     debug(e.value.args[0])
     assert "FRACTAL_USER" in e.value.args[0]
 
 
-async def test_argparse_abbreviation(invoke_as_superuser):
+def test_argparse_abbreviation(invoke_as_superuser):
     """
     Check that argparse abbreviations are disabled on at least one command.
 
@@ -91,14 +91,10 @@ async def test_argparse_abbreviation(invoke_as_superuser):
     """
 
     # Successful invoke
-    res = await invoke_as_superuser(
-        "user register test@mail.com secret --superuser"
-    )
+    res = invoke_as_superuser("user register test@mail.com secret --superuser")
     res.show()
     assert res.retcode == 0
 
     # Failed (abbreviation-based) invoke
     with pytest.raises(SystemExit):
-        await invoke_as_superuser(
-            "user register test2@mail.com secret2 --super"
-        )
+        invoke_as_superuser("user register test2@mail.com secret2 --super")

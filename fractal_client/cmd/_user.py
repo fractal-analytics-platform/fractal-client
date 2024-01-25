@@ -8,7 +8,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def user_register(
+def user_register(
     client: AuthClient,
     *,
     new_email: str,
@@ -42,7 +42,7 @@ async def user_register(
         else:
             return PrintInterface(retcode=1, data="Passwords do not match.")
 
-    res = await client.post(
+    res = client.post(
         f"{settings.FRACTAL_SERVER}/auth/register/", json=new_user
     )
     data = check_response(res, expected_status_code=201)
@@ -50,7 +50,7 @@ async def user_register(
     if superuser or verified:
         patch_payload = dict(is_superuser=superuser, is_verified=verified)
         user_id = data["id"]
-        res = await client.patch(
+        res = client.patch(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/",
             json=patch_payload,
         )
@@ -62,19 +62,19 @@ async def user_register(
         return RichJsonInterface(retcode=0, data=data)
 
 
-async def user_list(client: AuthClient) -> RichJsonInterface:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/")
+def user_list(client: AuthClient) -> RichJsonInterface:
+    res = client.get(f"{settings.FRACTAL_SERVER}/auth/users/")
     users = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=users)
 
 
-async def user_show(client: AuthClient, *, user_id: str) -> RichJsonInterface:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/")
+def user_show(client: AuthClient, *, user_id: str) -> RichJsonInterface:
+    res = client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/")
     user = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=user)
 
 
-async def user_edit(
+def user_edit(
     client: AuthClient,
     *,
     user_id: str,
@@ -111,7 +111,7 @@ async def user_edit(
 
     if not user_update:
         return PrintInterface(retcode=1, data="Nothing to update")
-    res = await client.patch(
+    res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update
     )
     new_user = check_response(res, expected_status_code=200)
@@ -119,10 +119,10 @@ async def user_edit(
     return RichJsonInterface(retcode=0, data=new_user)
 
 
-async def user_whoami(
+def user_whoami(
     client: AuthClient, *, batch: bool
 ) -> Union[RichJsonInterface, PrintInterface]:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
+    res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
     user = check_response(res, expected_status_code=200)
 
     if batch:

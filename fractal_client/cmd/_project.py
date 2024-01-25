@@ -12,7 +12,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def post_project(
+def post_project(
     client: AuthClient,
     *,
     name: str,
@@ -21,7 +21,7 @@ async def post_project(
     # Prepare a ProjectCreate request body
     payload = dict(name=name)
     # Send API request
-    res = await client.post(f"{settings.BASE_URL}/project/", json=payload)
+    res = client.post(f"{settings.BASE_URL}/project/", json=payload)
     project = check_response(res, expected_status_code=201)
     if batch:
         return PrintInterface(retcode=0, data=project["id"])
@@ -29,9 +29,9 @@ async def post_project(
         return RichJsonInterface(retcode=0, data=project)
 
 
-async def get_project_list(client: AuthClient) -> RichConsoleInterface:
+def get_project_list(client: AuthClient) -> RichConsoleInterface:
 
-    res = await client.get(f"{settings.BASE_URL}/project/")
+    res = client.get(f"{settings.BASE_URL}/project/")
     projects = check_response(res, expected_status_code=200)
 
     table = Table(title="Project List")
@@ -55,28 +55,20 @@ async def get_project_list(client: AuthClient) -> RichConsoleInterface:
     return RichConsoleInterface(retcode=0, data=table)
 
 
-async def get_project(
-    client: AuthClient, *, project_id: int
-) -> RichJsonInterface:
-    res = await client.get(
-        f"{settings.BASE_URL}/project/{project_id}/",
-    )
+def get_project(client: AuthClient, *, project_id: int) -> RichJsonInterface:
+    res = client.get(f"{settings.BASE_URL}/project/{project_id}/")
     project = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=project)
 
 
-async def delete_project(
-    client: AuthClient, *, project_id: int
-) -> PrintInterface:
+def delete_project(client: AuthClient, *, project_id: int) -> PrintInterface:
 
-    res = await client.delete(
-        f"{settings.BASE_URL}/project/{project_id}/",
-    )
+    res = client.delete(f"{settings.BASE_URL}/project/{project_id}/")
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
 
 
-async def patch_project(
+def patch_project(
     client: AuthClient,
     *,
     project_id: int,
@@ -95,7 +87,7 @@ async def patch_project(
     if not project_update:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = await client.patch(
+    res = client.patch(
         f"{settings.BASE_URL}/project/{project_id}/", json=project_update
     )
     new_project = check_response(res, expected_status_code=200)
