@@ -2,8 +2,8 @@
 
 # 1.4.3 (unreleased)
 
+* Make `fractal-client` a fully synchronous client, by removing all `async`/`await` (\#592).
 * Improve handling of `AuthenticationError` and `ConnectionError`, and handle uncaught `Exception` (\#587).
-* Remove all `async`/`await` (\#592).
 * Testing:
     * Adapt `job_factory` and tests to the presence of new `timestamp_created` attributes in `fractal-server` (\#589).
 * Documentation:
