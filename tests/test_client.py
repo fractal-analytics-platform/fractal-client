@@ -78,6 +78,18 @@ async def test_missing_credentials(override_settings):
     assert res.retcode == 1
 
 
+async def test_connecterror(client, override_settings):
+    override_settings(
+        FRACTAL_USER="admin@fractal.xy",
+        FRACTAL_PASSWORD="1234",
+        FRACTAL_SERVER="http://localhost:12345",
+    )
+    res = await handle(shlex.split("fractal user whoami"))
+    debug(res.data)
+    assert "ConnectError" in res.data
+    assert "Hint: is http://localhost:12345 alive?" in res.data
+
+
 async def test_argparse_abbreviation(invoke_as_superuser):
     """
     Check that argparse abbreviations are disabled on at least one command.
