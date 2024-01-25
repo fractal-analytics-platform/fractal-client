@@ -77,7 +77,7 @@ push = true
 ]
 
 [tool.poetry.scripts]
-fractal = "fractal_client.__main__:run"
+fractal = "fractal_client.client:main"
 
 [tool.coverage.run]
 branch = true
