@@ -124,7 +124,6 @@ async def user_whoami(
 ) -> Union[RichJsonInterface, PrintInterface]:
     res = await client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
     user = check_response(res, expected_status_code=200)
-
     if batch:
         return PrintInterface(retcode=0, data=user["id"])
     else:

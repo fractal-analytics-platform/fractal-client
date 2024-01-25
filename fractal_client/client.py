@@ -109,7 +109,16 @@ async def handle(cli_args: List[str] = argv):
     except AuthenticationError as e:
         return PrintInterface(retcode=1, data=e.args[0])
     except ConnectError as e:
-        return PrintInterface(retcode=1, data=e.args[0])
+        return PrintInterface(
+            retcode=1,
+            data=(
+                f"ConnectError at {e.request.url}\n"
+                f"Original error: '{e.args[0]}'\n"
+                f"Hint: is {settings.FRACTAL_SERVER} alive?"
+            ),
+        )
+    except Exception as e:
+        return PrintInterface(retcode=1, data=str(e))
 
     return interface
 
