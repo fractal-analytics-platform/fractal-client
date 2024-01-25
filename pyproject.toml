@@ -37,7 +37,6 @@ pytest = "^7.1.2"
 bumpver = "^2022.1118"
 coverage = {extras = ["toml"], version = "^6.5.0"}
 pytest-pretty = "^1.1.0"
-pytest-asyncio = "^0.19.0"
 fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "main"}
 
 
