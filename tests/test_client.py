@@ -7,7 +7,6 @@ from devtools import debug
 
 from fractal_client import __VERSION__
 from fractal_client.client import handle
-from fractal_client.client import MissingCredentialsError
 
 
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
@@ -74,11 +73,21 @@ def test_missing_credentials(override_settings):
     # Remove credentials from settings
     override_settings(FRACTAL_USER=None, FRACTAL_PASSWORD=None)
 
-    with pytest.raises(MissingCredentialsError) as e:
-        handle(shlex.split("fractal user whoami"))
-    debug(e.value)
-    debug(e.value.args[0])
-    assert "FRACTAL_USER" in e.value.args[0]
+    res = handle(shlex.split("fractal user whoami"))
+    debug(res.data)
+    assert res.retcode == 1
+
+
+def test_connecterror(client, override_settings):
+    override_settings(
+        FRACTAL_USER="admin@fractal.xy",
+        FRACTAL_PASSWORD="1234",
+        FRACTAL_SERVER="http://localhost:12345",
+    )
+    res = handle(shlex.split("fractal user whoami"))
+    debug(res.data)
+    assert "ConnectError" in res.data
+    assert "Hint: is http://localhost:12345 alive?" in res.data
 
 
 def test_argparse_abbreviation(invoke_as_superuser):
