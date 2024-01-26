@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_b7ca0247781cd0c1__dataset_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-25 09:41 +0000
+            created at 2024-01-26 08:55 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -129,11 +129,11 @@
     <p class="run"><span class="n"><a id="t45" href="#t45">45</a></span><span class="t"><span class="nam">_TaskList</span> <span class="op">=</span> <span class="nam">list</span><span class="op">[</span><span class="nam">dict</span><span class="op">[</span><span class="nam">str</span><span class="op">,</span> <span class="nam">Any</span><span class="op">]</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t46" href="#t46">46</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t47" href="#t47">47</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t48" href="#t48">48</a></span><span class="t"><span class="key">async</span> <span class="key">def</span> <span class="nam">_fetch_task_list</span><span class="op">(</span><span class="nam">client</span><span class="op">:</span> <span class="nam">AuthClient</span><span class="op">)</span> <span class="op">-></span> <span class="nam">_TaskList</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t48" href="#t48">48</a></span><span class="t"><span class="key">def</span> <span class="nam">_fetch_task_list</span><span class="op">(</span><span class="nam">client</span><span class="op">:</span> <span class="nam">AuthClient</span><span class="op">)</span> <span class="op">-></span> <span class="nam">_TaskList</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t49" href="#t49">49</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t"><span class="str">    Fetch task list through an API request.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t51" href="#t51">51</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">    <span class="nam">res</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">client</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">f"{settings.BASE_URL}/task/"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">    <span class="nam">res</span> <span class="op">=</span> <span class="nam">client</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">f"{settings.BASE_URL}/task/"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">    <span class="nam">task_list</span> <span class="op">=</span> <span class="nam">check_response</span><span class="op">(</span><span class="nam">res</span><span class="op">,</span> <span class="nam">expected_status_code</span><span class="op">=</span><span class="num">200</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t54" href="#t54">54</a></span><span class="t">    <span class="key">return</span> <span class="nam">task_list</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -163,11 +163,11 @@
     <p class="run"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">        <span class="nam">json</span><span class="op">.</span><span class="nam">dump</span><span class="op">(</span><span class="nam">task_list</span><span class="op">,</span> <span class="nam">f</span><span class="op">,</span> <span class="nam">indent</span><span class="op">=</span><span class="num">4</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t"><span class="key">async</span> <span class="key">def</span> <span class="nam">refresh_task_cache</span><span class="op">(</span><span class="nam">client</span><span class="op">:</span> <span class="nam">AuthClient</span><span class="op">)</span> <span class="op">-></span> <span class="nam">_TaskList</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t"><span class="key">def</span> <span class="nam">refresh_task_cache</span><span class="op">(</span><span class="nam">client</span><span class="op">:</span> <span class="nam">AuthClient</span><span class="op">)</span> <span class="op">-></span> <span class="nam">_TaskList</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t"><span class="str">    Return task list after fetching it, sorting it and writing to cache file.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">    <span class="nam">task_list</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">_fetch_task_list</span><span class="op">(</span><span class="nam">client</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">    <span class="nam">task_list</span> <span class="op">=</span> <span class="nam">_fetch_task_list</span><span class="op">(</span><span class="nam">client</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t87" href="#t87">87</a></span><span class="t">    <span class="nam">task_list</span> <span class="op">=</span> <span class="nam">_sort_task_list</span><span class="op">(</span><span class="nam">task_list</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t88" href="#t88">88</a></span><span class="t">    <span class="nam">_write_task_list_to_cache</span><span class="op">(</span><span class="nam">task_list</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t89" href="#t89">89</a></span><span class="t">    <span class="key">return</span> <span class="nam">task_list</span>&nbsp;</span><span class="r"></span></p>
@@ -281,7 +281,7 @@
     <p class="pln"><span class="n"><a id="t197" href="#t197">197</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t198" href="#t198">198</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t199" href="#t199">199</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t200" href="#t200">200</a></span><span class="t"><span class="key">async</span> <span class="key">def</span> <span class="nam">get_task_id_from_cache</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t200" href="#t200">200</a></span><span class="t"><span class="key">def</span> <span class="nam">get_task_id_from_cache</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t201" href="#t201">201</a></span><span class="t">    <span class="nam">client</span><span class="op">:</span> <span class="nam">AuthClient</span><span class="op">,</span> <span class="nam">task_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span> <span class="nam">version</span><span class="op">:</span> <span class="nam">Optional</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span> <span class="op">=</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t202" href="#t202">202</a></span><span class="t"><span class="op">)</span> <span class="op">-></span> <span class="nam">int</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t203" href="#t203">203</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
@@ -305,7 +305,7 @@
     <p class="run"><span class="n"><a id="t221" href="#t221">221</a></span><span class="t">            <span class="nam">task_list</span> <span class="op">=</span> <span class="nam">json</span><span class="op">.</span><span class="nam">load</span><span class="op">(</span><span class="nam">f</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t222" href="#t222">222</a></span><span class="t">        <span class="nam">already_refreshed_cache</span> <span class="op">=</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t223" href="#t223">223</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t224" href="#t224">224</a></span><span class="t">        <span class="nam">task_list</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">refresh_task_cache</span><span class="op">(</span><span class="nam">client</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t224" href="#t224">224</a></span><span class="t">        <span class="nam">task_list</span> <span class="op">=</span> <span class="nam">refresh_task_cache</span><span class="op">(</span><span class="nam">client</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t225" href="#t225">225</a></span><span class="t">        <span class="nam">already_refreshed_cache</span> <span class="op">=</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t226" href="#t226">226</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t227" href="#t227">227</a></span><span class="t">    <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -320,7 +320,7 @@
     <p class="run"><span class="n"><a id="t236" href="#t236">236</a></span><span class="t">            <span class="key">raise</span> <span class="nam">e</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t237" href="#t237">237</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t238" href="#t238">238</a></span><span class="t">            <span class="com"># Cache may be out-of-date, refresh it and try again</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t239" href="#t239">239</a></span><span class="t">            <span class="nam">task_list</span> <span class="op">=</span> <span class="key">await</span> <span class="nam">refresh_task_cache</span><span class="op">(</span><span class="nam">client</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t239" href="#t239">239</a></span><span class="t">            <span class="nam">task_list</span> <span class="op">=</span> <span class="nam">refresh_task_cache</span><span class="op">(</span><span class="nam">client</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t240" href="#t240">240</a></span><span class="t">            <span class="nam">task_id</span> <span class="op">=</span> <span class="nam">_search_in_task_list</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t241" href="#t241">241</a></span><span class="t">                <span class="nam">task_list</span><span class="op">=</span><span class="nam">task_list</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t242" href="#t242">242</a></span><span class="t">                <span class="nam">name</span><span class="op">=</span><span class="nam">task_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -336,7 +336,7 @@
             <a id="nextFileLink" class="nav" href="d_b7ca0247781cd0c1__dataset_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-25 09:41 +0000
+            created at 2024-01-26 08:55 +0000
         </p>
     </div>
 </footer>
