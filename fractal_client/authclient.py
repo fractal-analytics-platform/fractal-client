@@ -8,8 +8,16 @@ from jwt.exceptions import ExpiredSignatureError
 from .config import settings
 
 
-def debug_url(url):
-    logging.debug(f"Fractal Client connecting to URL:\n    {url}")
+def debug_url(verb: str, url: str, request_body: dict[str, str]):
+    request_body = "\n".join(
+        [f"    {k}: {v}" for k, v in request_body.items()]
+    )
+    logging.debug(
+        "\nFractal Client sending HTTP request to:"
+        f"\n    {verb} {url}"
+        "\nRequest body"
+        f"\n{request_body}"
+    )
 
 
 class AuthenticationError(ValueError):
@@ -112,17 +120,17 @@ class AuthClient:
         self.client.close()
 
     def get(self, *args, **kwargs):
-        debug_url(args[0])
+        debug_url("GET", args[0], kwargs["json"])
         return self.client.get(headers=self.auth.header(), *args, **kwargs)
 
     def post(self, *args, **kwargs):
-        debug_url(args[0])
+        debug_url("POST", args[0], kwargs["json"])
         return self.client.post(headers=self.auth.header(), *args, **kwargs)
 
     def patch(self, *args, **kwargs):
-        debug_url(args[0])
+        debug_url("PATCH", args[0], kwargs["json"])
         return self.client.patch(headers=self.auth.header(), *args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        debug_url(args[0])
+        debug_url("DELETE", args[0], kwargs["json"])
         return self.client.delete(headers=self.auth.header(), *args, **kwargs)

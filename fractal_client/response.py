@@ -38,7 +38,7 @@ def check_response(
     else:
         expected_status_codes = [expected_status_code]
 
-    logging.debug(f"Response status code:\n    {res.status_code}")
+    logging.debug(f"\nResponse status code:\n    {res.status_code}")
     if res.status_code not in expected_status_codes:
 
         logging.error(f"Server returned {res.status_code}")

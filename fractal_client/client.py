@@ -84,7 +84,7 @@ def handle(cli_args: List[str] = argv):
             for k, v in args.__dict__.items()
         ]
     )
-    logging.debug(f"Arguments:\n{show_args}")
+    logging.debug(f"\nArguments:\n{show_args}")
 
     if args.cmd is not None:
         handler = getattr(cmd, args.cmd)
