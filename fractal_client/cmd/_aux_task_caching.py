@@ -45,11 +45,11 @@ class FractalCacheError(RuntimeError):
 _TaskList = list[dict[str, Any]]
 
 
-async def _fetch_task_list(client: AuthClient) -> _TaskList:
+def _fetch_task_list(client: AuthClient) -> _TaskList:
     """
     Fetch task list through an API request.
     """
-    res = await client.get(f"{settings.BASE_URL}/task/")
+    res = client.get(f"{settings.BASE_URL}/task/")
     task_list = check_response(res, expected_status_code=200)
     return task_list
 
@@ -79,11 +79,11 @@ def _write_task_list_to_cache(task_list: _TaskList) -> None:
         json.dump(task_list, f, indent=4)
 
 
-async def refresh_task_cache(client: AuthClient) -> _TaskList:
+def refresh_task_cache(client: AuthClient) -> _TaskList:
     """
     Return task list after fetching it, sorting it and writing to cache file.
     """
-    task_list = await _fetch_task_list(client)
+    task_list = _fetch_task_list(client)
     task_list = _sort_task_list(task_list)
     _write_task_list_to_cache(task_list)
     return task_list
@@ -197,7 +197,7 @@ def _search_in_task_list(
                 )
 
 
-async def get_task_id_from_cache(
+def get_task_id_from_cache(
     client: AuthClient, task_name: str, version: Optional[str] = None
 ) -> int:
     """
@@ -221,7 +221,7 @@ async def get_task_id_from_cache(
             task_list = json.load(f)
         already_refreshed_cache = False
     else:
-        task_list = await refresh_task_cache(client)
+        task_list = refresh_task_cache(client)
         already_refreshed_cache = True
 
     try:
@@ -236,7 +236,7 @@ async def get_task_id_from_cache(
             raise e
         else:
             # Cache may be out-of-date, refresh it and try again
-            task_list = await refresh_task_cache(client)
+            task_list = refresh_task_cache(client)
             task_id = _search_in_task_list(
                 task_list=task_list,
                 name=task_name,

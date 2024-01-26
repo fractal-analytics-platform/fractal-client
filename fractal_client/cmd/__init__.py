@@ -1,4 +1,4 @@
-from httpx import AsyncClient
+from httpx import Client
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -54,7 +54,7 @@ def get_kwargs(_parameters, _kwargs):
     return {k: _kwargs.get(k) for k in _parameters if k in _kwargs}
 
 
-async def project(
+def project(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
@@ -64,13 +64,13 @@ async def project(
     if subcmd == "new":
         parameters = ["name"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_project(client, batch=batch, **function_kwargs)
+        iface = post_project(client, batch=batch, **function_kwargs)
     elif subcmd == "show":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_project(client, **function_kwargs)
+        iface = get_project(client, **function_kwargs)
     elif subcmd == "list":
-        iface = await get_project_list(client)
+        iface = get_project_list(client)
     elif subcmd == "edit":
         parameters = [
             "project_id",
@@ -79,7 +79,7 @@ async def project(
             "remove_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await patch_project(client, **function_kwargs)
+        iface = patch_project(client, **function_kwargs)
     elif subcmd == "add-dataset":
         parameters = [
             "project_id",
@@ -89,18 +89,18 @@ async def project(
             "make_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_dataset(client, batch=batch, **function_kwargs)
+        iface = post_dataset(client, batch=batch, **function_kwargs)
     elif subcmd == "delete":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await delete_project(client, **function_kwargs)
+        iface = delete_project(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command project {subcmd} not found")
 
     return iface
 
 
-async def dataset(
+def dataset(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
@@ -109,15 +109,15 @@ async def dataset(
     if subcmd == "show":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_dataset(client, **function_kwargs)
+        iface = get_dataset(client, **function_kwargs)
     elif subcmd == "add-resource":
         parameters = ["project_id", "dataset_id", "path"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_resource(client, batch=batch, **function_kwargs)
+        iface = post_resource(client, batch=batch, **function_kwargs)
     elif subcmd == "rm-resource":
         parameters = ["project_id", "dataset_id", "resource_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await delete_resource(client, **function_kwargs)
+        iface = delete_resource(client, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
             "project_id",
@@ -129,25 +129,25 @@ async def dataset(
             "remove_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await patch_dataset(client, **function_kwargs)
+        iface = patch_dataset(client, **function_kwargs)
     elif subcmd == "delete":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await delete_dataset(client, **function_kwargs)
+        iface = delete_dataset(client, **function_kwargs)
     elif subcmd == "history":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_dataset_history(client, **function_kwargs)
+        iface = get_dataset_history(client, **function_kwargs)
     elif subcmd == "status":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_dataset_status(client, **function_kwargs)
+        iface = get_dataset_status(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface
 
 
-async def task(
+def task(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
@@ -155,7 +155,7 @@ async def task(
 ) -> BaseInterface:
 
     if subcmd == "list":
-        iface = await get_task_list(client)
+        iface = get_task_list(client)
     elif subcmd == "collect":
         parameters = [
             "package",
@@ -165,11 +165,11 @@ async def task(
             "pinned_dependency",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await task_collect_pip(client, batch=batch, **function_kwargs)
+        iface = task_collect_pip(client, batch=batch, **function_kwargs)
     elif subcmd == "check-collection":
         parameters = ["state_id", "include_logs", "do_not_separate_logs"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await task_collection_check(client, **function_kwargs)
+        iface = task_collection_check(client, **function_kwargs)
     elif subcmd == "new":
         parameters = [
             "name",
@@ -183,7 +183,7 @@ async def task(
             "args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_task(client, batch=batch, **function_kwargs)
+        iface = post_task(client, batch=batch, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
             "id",
@@ -199,17 +199,17 @@ async def task(
             "new_args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await patch_task(client, **function_kwargs)
+        iface = patch_task(client, **function_kwargs)
     elif subcmd == "delete":
         parameters = ["id", "name", "version"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await delete_task(client, **function_kwargs)
+        iface = delete_task(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command task {subcmd} not found")
     return iface
 
 
-async def workflow(
+def workflow(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
@@ -218,23 +218,23 @@ async def workflow(
     if subcmd == "show":
         parameters = ["project_id", "workflow_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_workflow(client, **function_kwargs)
+        iface = get_workflow(client, **function_kwargs)
     elif subcmd == "new":
         parameters = ["name", "project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_workflow(client, batch=batch, **function_kwargs)
+        iface = post_workflow(client, batch=batch, **function_kwargs)
     elif subcmd == "list":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_workflow_list(client, batch=batch, **function_kwargs)
+        iface = get_workflow_list(client, batch=batch, **function_kwargs)
     elif subcmd == "edit":
         parameters = ["project_id", "workflow_id", "new_name"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await patch_workflow(client, **function_kwargs)
+        iface = patch_workflow(client, **function_kwargs)
     elif subcmd == "delete":
         parameters = ["project_id", "workflow_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await delete_workflow(client, **function_kwargs)
+        iface = delete_workflow(client, **function_kwargs)
     elif subcmd == "add-task":
         parameters = [
             "project_id",
@@ -247,7 +247,7 @@ async def workflow(
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await post_workflowtask(client, batch=batch, **function_kwargs)
+        iface = post_workflowtask(client, batch=batch, **function_kwargs)
     elif subcmd == "edit-task":
         parameters = [
             "project_id",
@@ -257,11 +257,11 @@ async def workflow(
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await patch_workflowtask(client, **function_kwargs)
+        iface = patch_workflowtask(client, **function_kwargs)
     elif subcmd == "rm-task":
         parameters = ["project_id", "workflow_id", "workflow_task_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await delete_workflowtask(client, **function_kwargs)
+        iface = delete_workflowtask(client, **function_kwargs)
     elif subcmd == "apply":
         parameters = [
             "project_id",
@@ -273,21 +273,21 @@ async def workflow(
             "last_task_index",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await workflow_apply(client, batch=batch, **function_kwargs)
+        iface = workflow_apply(client, batch=batch, **function_kwargs)
     elif subcmd == "import":
         parameters = ["project_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await workflow_import(client, batch=batch, **function_kwargs)
+        iface = workflow_import(client, batch=batch, **function_kwargs)
     elif subcmd == "export":
         parameters = ["project_id", "workflow_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await workflow_export(client, **function_kwargs)
+        iface = workflow_export(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface
 
 
-async def job(
+def job(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
@@ -296,26 +296,26 @@ async def job(
     if subcmd == "list":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_job_list(client, batch=batch, **function_kwargs)
+        iface = get_job_list(client, batch=batch, **function_kwargs)
     elif subcmd == "show":
         parameters = ["project_id", "job_id", "do_not_separate_logs"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_job(client, batch=batch, **function_kwargs)
+        iface = get_job(client, batch=batch, **function_kwargs)
     elif subcmd == "download-logs":
         parameters = ["project_id", "job_id", "output_folder"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await get_job_logs(client, **function_kwargs)
+        iface = get_job_logs(client, **function_kwargs)
     elif subcmd == "stop":
         parameters = ["project_id", "job_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await stop_job(client, **function_kwargs)
+        iface = stop_job(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command job {subcmd} not found")
     return iface
 
 
-async def version(client: AsyncClient, **kwargs) -> PrintInterface:
-    res = await client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
+def version(client: Client, **kwargs) -> PrintInterface:
+    res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
     data = res.json()
 
     return PrintInterface(
@@ -329,7 +329,7 @@ async def version(client: AsyncClient, **kwargs) -> PrintInterface:
     )
 
 
-async def user(
+def user(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
 ) -> BaseInterface:
     if subcmd == "register":
@@ -342,13 +342,13 @@ async def user(
             "superuser",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await user_register(client, batch=batch, **function_kwargs)
+        iface = user_register(client, batch=batch, **function_kwargs)
     elif subcmd == "list":
-        iface = await user_list(client)
+        iface = user_list(client)
     elif subcmd == "show":
         parameters = ["user_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await user_show(client, **function_kwargs)
+        iface = user_show(client, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
             "user_id",
@@ -363,9 +363,9 @@ async def user(
             "remove_verified",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = await user_edit(client, **function_kwargs)
+        iface = user_edit(client, **function_kwargs)
     elif subcmd == "whoami":
-        iface = await user_whoami(client, batch=batch)
+        iface = user_whoami(client, batch=batch)
     else:
         raise NoCommandError(f"Command user {subcmd} not found")
 

@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import time
@@ -10,15 +9,15 @@ from devtools import debug
 TIMEOUT = 15.0
 
 
-async def test_workflow_new(register_user, invoke):
+def test_workflow_new(register_user, invoke):
     PROJECT_NAME = "project_name"
-    res = await invoke(f"project new {PROJECT_NAME}")
+    res = invoke(f"project new {PROJECT_NAME}")
     proj = res.data
     assert proj["name"] == PROJECT_NAME
     project_id = proj["id"]
 
     WORKFLOW_NAME = "mywf"
-    res = await invoke(f"workflow new {WORKFLOW_NAME} {project_id}")
+    res = invoke(f"workflow new {WORKFLOW_NAME} {project_id}")
     wf = res.data
     debug(wf)
     assert res.retcode == 0
@@ -27,95 +26,95 @@ async def test_workflow_new(register_user, invoke):
 
     # Include --batch
     WORKFLOW_NAME = "mywf-2"
-    res = await invoke(f"--batch workflow new {WORKFLOW_NAME} {project_id}")
+    res = invoke(f"--batch workflow new {WORKFLOW_NAME} {project_id}")
     assert res.retcode == 0
     debug(res.data)
     assert isinstance(res.data, int)
 
 
-async def test_workflow_delete(register_user, invoke):
+def test_workflow_delete(register_user, invoke):
     # Create project
-    res_pj = await invoke("project new project_name")
+    res_pj = invoke("project new project_name")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
     # Create workflow
-    res_wf = await invoke(f"workflow new MyWorkflow {project_id}")
+    res_wf = invoke(f"workflow new MyWorkflow {project_id}")
     workflow_id = res_wf.data["id"]
     assert res_wf.retcode == 0
 
     # List workflows
-    res_list = await invoke(f"workflow list {project_id}")
+    res_list = invoke(f"workflow list {project_id}")
     assert res_list.retcode == 0
     debug(res_list.data)
     assert len(res_list.data) == 1
 
     # Delete workflow
-    res_delete = await invoke(f"workflow delete {project_id} {workflow_id}")
+    res_delete = invoke(f"workflow delete {project_id} {workflow_id}")
     assert res_delete.retcode == 0
 
     # List workflows
-    res_list = await invoke(f"workflow list {project_id}")
+    res_list = invoke(f"workflow list {project_id}")
     assert res_list.retcode == 0
     debug(res_list.data)
     assert len(res_list.data) == 0
 
 
-async def test_workflow_edit(register_user, invoke):
+def test_workflow_edit(register_user, invoke):
     # Create a project
-    res_pj = await invoke("project new project_name_1")
+    res_pj = invoke("project new project_name_1")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
     # Add a workflow
-    res_wf = await invoke(f"workflow new MyWorkflow {project_id}")
+    res_wf = invoke(f"workflow new MyWorkflow {project_id}")
     workflow_id = res_wf.data["id"]
     assert res_wf.retcode == 0
 
     # Fail editing with no edits
     cmd = f"workflow edit {project_id} {workflow_id}"
     with pytest.raises(SystemExit):
-        res = await invoke(cmd)
+        res = invoke(cmd)
 
     # Edit workflow name
     NAME = "new-workflow-name"
     cmd = f"workflow edit {project_id} {workflow_id} --new-name {NAME}"
     debug(cmd)
-    res_edit = await invoke(cmd)
+    res_edit = invoke(cmd)
     assert res_edit.retcode == 0
     debug(res_edit.data)
 
     # List workflows, and check edit
-    res = await invoke(f"workflow show {project_id} {workflow_id}")
+    res = invoke(f"workflow show {project_id} {workflow_id}")
     debug(res.data)
     assert res.retcode == 0
     assert res.data["name"] == NAME
 
 
-async def test_workflow_list(register_user, invoke):
+def test_workflow_list(register_user, invoke):
     PROJECT_NAME = "project_name"
-    res_pj = await invoke(f"project new {PROJECT_NAME}")
+    res_pj = invoke(f"project new {PROJECT_NAME}")
     project_id = res_pj.data["id"]
     debug(project_id)
 
-    res_wf = await invoke(f"workflow new WF1 {project_id}")
+    res_wf = invoke(f"workflow new WF1 {project_id}")
     res_wf.show()
     assert res_wf.retcode == 0
 
-    res_wf = await invoke(f"workflow new WF2 {project_id}")
+    res_wf = invoke(f"workflow new WF2 {project_id}")
     res_wf.show()
     assert res_wf.retcode == 0
 
-    res_list = await invoke(f"workflow list {project_id}")
+    res_list = invoke(f"workflow list {project_id}")
     debug(res_list)
     debug(res_list.data)
     assert res_list.retcode == 0
     assert len(res_list.data) == 2
 
 
-async def test_workflow_list_when_two_projects_exist(register_user, invoke):
-    res_pj1 = await invoke("project new PRJ1")
-    res_pj2 = await invoke("project new PRJ2")
+def test_workflow_list_when_two_projects_exist(register_user, invoke):
+    res_pj1 = invoke("project new PRJ1")
+    res_pj2 = invoke("project new PRJ2")
     project_id_1 = res_pj1.data["id"]
     project_id_2 = res_pj2.data["id"]
 
@@ -123,23 +122,23 @@ async def test_workflow_list_when_two_projects_exist(register_user, invoke):
     NUM_WF_PROJECT_2 = 4
 
     for wf in range(NUM_WF_PROJECT_1):
-        res_wf = await invoke(f"workflow new WF{wf} {project_id_1}")
+        res_wf = invoke(f"workflow new WF{wf} {project_id_1}")
         assert res_wf.retcode == 0
 
     for wf in range(NUM_WF_PROJECT_2):
-        res_wf = await invoke(f"workflow new WF{wf} {project_id_2}")
+        res_wf = invoke(f"workflow new WF{wf} {project_id_2}")
         assert res_wf.retcode == 0
 
-    res_list_1 = await invoke(f"workflow list {project_id_1}")
+    res_list_1 = invoke(f"workflow list {project_id_1}")
     assert res_list_1.retcode == 0
     assert len(res_list_1.data) == NUM_WF_PROJECT_1
 
-    res_list_2 = await invoke(f"workflow list {project_id_2}")
+    res_list_2 = invoke(f"workflow list {project_id_2}")
     assert res_list_2.retcode == 0
     assert len(res_list_2.data) == NUM_WF_PROJECT_2
 
 
-async def test_workflow_add_task(
+def test_workflow_add_task(
     caplog,
     invoke,
     register_user,
@@ -156,10 +155,10 @@ async def test_workflow_add_task(
         the WorkflowTask's are correctly registered in the db, and the returned
         object has the right properties
     """
-    res = await invoke("project new MyProject")
+    res = invoke("project new MyProject")
     project_id = res.data["id"]
-    wf = await workflow_factory(project_id=project_id)
-    t = await task_factory()
+    wf = workflow_factory(project_id=project_id)
+    t = task_factory()
 
     # Add a WorkflowTask with --args-file and --meta-file arguments
     ARGS = {"arg": "arg_value"}
@@ -174,15 +173,13 @@ async def test_workflow_add_task(
     cmd = f"workflow add-task {project_id} {wf.id}"
     # Test fail with no task_id nor task_name
     with pytest.raises(SystemExit):
-        res = await invoke(cmd)
+        invoke(cmd)
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
-        res = await invoke(f"{cmd} --task-id {t.id} --task-name {t.name}")
+        invoke(f"{cmd} --task-id {t.id} --task-name {t.name}")
     # Test fail with both task_id and version
     with pytest.raises(SystemExit):
-        res = await invoke(
-            f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6"
-        )
+        invoke(f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6")
     assert caplog.records[-1].msg == (
         "Too many arguments: cannot provide both `task_id` and `task_version`."
     )
@@ -193,7 +190,7 @@ async def test_workflow_add_task(
     )
     debug(cmd)
     # Test success
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
 
     workflow_task = res.data
@@ -208,14 +205,14 @@ async def test_workflow_add_task(
         f"--task-name {t.name} --order 1"
     )
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
     workflow_task_id_2 = int(res.data)
 
     # Check that the WorkflowTask's in Workflow.task_list have the correct IDs
     cmd = f"workflow show {project_id} {wf.id}"
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     workflow = res.data
     debug(workflow)
@@ -223,7 +220,7 @@ async def test_workflow_add_task(
     assert list_IDs == [workflow_task_id_1, workflow_task_id_2]
 
 
-async def test_workflow_add_task_by_name(
+def test_workflow_add_task_by_name(
     invoke,
     register_user,
     task_factory,
@@ -236,15 +233,15 @@ async def test_workflow_add_task_by_name(
     THEN the WorkflowTask is added (for a valid name) or an error is raised
     (for invalid name)
     """
-    res = await invoke("project new MyProject")
+    res = invoke("project new MyProject")
     project_id = res.data["id"]
-    wf = await workflow_factory(project_id=project_id)
-    task = await task_factory()
+    wf = workflow_factory(project_id=project_id)
+    task = task_factory()
     debug(task)
 
     cmd = f"workflow add-task {project_id} {wf.id} --task-name {task.name}"
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task"]["id"] == task.id
@@ -255,11 +252,11 @@ async def test_workflow_add_task_by_name(
             f"workflow add-task {project_id} {wf.id} --task-name INVALID_NAME"
         )
         debug(cmd)
-        res = await invoke(cmd)
+        res = invoke(cmd)
 
 
 @pytest.mark.skip(reason="Definition of expected behavior is ongoing")
-async def test_task_cache_with_non_unique_names(
+def test_task_cache_with_non_unique_names(
     invoke,
     register_user,
     task_factory,
@@ -275,31 +272,31 @@ async def test_task_cache_with_non_unique_names(
         * Addressing tasks by name raises a FileNotFoundError
     """
 
-    res = await invoke("project new MyProject")
+    res = invoke("project new MyProject")
     project_id = res.data["id"]
 
     # Create two tasks with the same name
-    task1 = await task_factory()
-    task2 = await task_factory()
+    task1 = task_factory()
+    task2 = task_factory()
     assert task1.name == task2.name
 
     # Verify that a warning is raised upon creating the cache file
     caplog.set_level(logging.WARNING)
-    res = await invoke("task list")
+    res = invoke("task list")
     assert res.retcode == 0
     debug(caplog.text)
     assert "Cannot" in caplog.text
 
     # Verify that adding tasks to a worfklow by name (as opposed to "by id")
     # fails because of missing cache file
-    wf = await workflow_factory(project_id=project_id)
+    wf = workflow_factory(project_id=project_id)
     cmd = f"workflow add-task {project_id} {wf.id} --task-name {task1.name}"
     debug(cmd)
     with pytest.raises(FileNotFoundError):
-        res = await invoke(cmd)
+        res = invoke(cmd)
 
 
-async def test_workflow_rm_task(
+def test_workflow_rm_task(
     invoke,
     register_user,
     task_factory,
@@ -307,28 +304,28 @@ async def test_workflow_rm_task(
     tmp_path: Path,
 ):
     # Create project, workflow and task
-    res = await invoke("project new MyProject")
+    res = invoke("project new MyProject")
     project_id = res.data["id"]
-    wf = await workflow_factory(project_id=project_id)
-    t = await task_factory()
+    wf = workflow_factory(project_id=project_id)
+    t = task_factory()
 
     # Add task to workflow, twice
     cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     workflow_task_id_1 = res.data["id"]
 
     # Remove task 1 from workflow
     cmd = f"workflow rm-task {project_id} {wf.id} {workflow_task_id_1}"
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
 
 
-async def test_workflow_edit_task(
+def test_workflow_edit_task(
     invoke,
     register_user,
     task_factory,
@@ -343,14 +340,14 @@ async def test_workflow_edit_task(
         gargs
     """
 
-    res = await invoke("project new MyProject")
+    res = invoke("project new MyProject")
     project_id = res.data["id"]
-    wf = await workflow_factory(project_id=project_id)
-    t = await task_factory()
+    wf = workflow_factory(project_id=project_id)
+    t = task_factory()
 
     # Create task, without overriding arguments
     cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
 
     # New arguments to be used
@@ -372,13 +369,13 @@ async def test_workflow_edit_task(
         f"--args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     assert res.data["args"] == ARGS
     assert res.data["meta"] == META
 
     # Check that also the workflow in the db was correctly updated
-    res = await invoke(f"workflow show {project_id} {wf.id}")
+    res = invoke(f"workflow show {project_id} {wf.id}")
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task_list"][0]["args"] == ARGS
@@ -398,10 +395,10 @@ async def test_workflow_edit_task(
     )
     debug(cmd)
     with pytest.raises(SystemExit):
-        res = await invoke(cmd)
+        res = invoke(cmd)
 
 
-async def test_workflow_apply(
+def test_workflow_apply(
     register_user, invoke, testdata_path: Path, tmp_path: Path
 ):
     """
@@ -416,7 +413,7 @@ async def test_workflow_apply(
     )
     WORKFLOW_NAME = "mywf"
     DATASET_NAME = "myds"
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = invoke(f"task collect {PACKAGE_NAME}")
     debug(res0)
     venv_path = res0.data["data"]["venv_path"]
     debug(venv_path)
@@ -425,7 +422,7 @@ async def test_workflow_apply(
     # Wait for task collection to end
     starting_time = time.perf_counter()
     while True:
-        res1 = await invoke(f"task check-collection {state_id}")
+        res1 = invoke(f"task check-collection {state_id}")
         if res1.data["data"]["status"] == "OK":
             debug(res1.data)
             break
@@ -433,35 +430,35 @@ async def test_workflow_apply(
         assert time.perf_counter() - starting_time < TIMEOUT
 
     # Create a project
-    res = await invoke("project new testproject")
+    res = invoke("project new testproject")
     assert res.retcode == 0
     prj = res.data
     prj_id = prj["id"]
-    res = await invoke(f"project add-dataset {prj_id} test_name")
+    res = invoke(f"project add-dataset {prj_id} test_name")
     input_dataset_id = res.data["id"]
 
     # Create output dataset
-    res = await invoke(f"project add-dataset {prj_id} {DATASET_NAME}")
+    res = invoke(f"project add-dataset {prj_id} {DATASET_NAME}")
     assert res.retcode == 0
     dataset = res.data
     output_dataset_id = dataset["id"]
 
     # Add resources to datasets
     for dataset_id in (input_dataset_id, output_dataset_id):
-        res = await invoke(
+        res = invoke(
             f"dataset add-resource {prj_id} {dataset_id} {str(tmp_path)}"
         )
         assert res.retcode == 0
 
     # Create workflow and add task twice
-    res = await invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
+    res = invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
     workflow = res.data
     workflow_id = workflow["id"]
     debug(workflow)
     assert res.retcode == 0
     for _ in [0, 1]:
         TASK_ID = 1
-        res = await invoke(
+        res = invoke(
             f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
         )
         workflow_task = res.data
@@ -480,7 +477,7 @@ async def test_workflow_apply(
         f'--worker-init "export SOMEVARIABLE=1"'
     )
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     job = res.data
     debug(job)
     assert res.retcode == 0
@@ -495,7 +492,7 @@ async def test_workflow_apply(
     starting_time = time.perf_counter()
     debug(cmd)
     while True:
-        res = await invoke(cmd)
+        res = invoke(cmd)
         job = res.data
         debug(job)
         assert res.retcode == 0
@@ -515,7 +512,7 @@ async def test_workflow_apply(
     args_file = str(tmp_path / "args.json")
     with open(args_file, "w") as f:
         json.dump({"raise_error": True}, f)
-    res = await invoke(
+    res = invoke(
         f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
         f" --args-file {args_file}"
     )
@@ -525,7 +522,7 @@ async def test_workflow_apply(
         f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
     )
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     job_id = res.data["id"]
 
@@ -536,7 +533,7 @@ async def test_workflow_apply(
     cmd = f"job show {prj_id} {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     while True:
-        res = await invoke(cmd)
+        res = invoke(cmd)
         job = res.data
         debug(job)
         assert res.retcode == 0
@@ -547,9 +544,9 @@ async def test_workflow_apply(
     assert job["log"] is not None
 
     # Prepare and submit a workflow with --batch
-    res = await invoke(f"workflow new OneMoreWorkflow {prj_id}")
+    res = invoke(f"workflow new OneMoreWorkflow {prj_id}")
     workflow_id = res.data["id"]
-    res = await invoke(
+    res = invoke(
         f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
     )
     assert res.retcode == 0
@@ -558,13 +555,13 @@ async def test_workflow_apply(
         f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
     )
     debug(cmd)
-    res = await invoke(cmd)
+    res = invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
     assert isinstance(res.data, int)
 
 
-async def test_workflow_export(
+def test_workflow_export(
     register_user,
     invoke,
     workflow_factory,
@@ -573,25 +570,21 @@ async def test_workflow_export(
     caplog,
 ):
 
-    res = await invoke("project new testproject")
+    res = invoke("project new testproject")
     assert res.retcode == 0
     project_id = res.data["id"]
 
     NAME = "WorkFlow"
-    wf = await workflow_factory(project_id=project_id, name=NAME)
+    wf = workflow_factory(project_id=project_id, name=NAME)
     prj_id = wf.project_id
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")
 
-    task = await task_factory(owner="exact-lab")
-    res = await invoke(
-        f"workflow add-task {prj_id} {wf_id} --task-id {task.id}"
-    )
+    task = task_factory(owner="exact-lab")
+    res = invoke(f"workflow add-task {prj_id} {wf_id} --task-id {task.id}")
     assert res.retcode == 0
 
-    res = await invoke(
-        f"workflow export {prj_id} {wf_id} --json-file {filename}"
-    )
+    res = invoke(f"workflow export {prj_id} {wf_id} --json-file {filename}")
     assert res.retcode == 0
     assert caplog.records[-1].msg == (
         "This workflow includes custom tasks (the ones with sources: "
@@ -610,7 +603,7 @@ async def test_workflow_export(
             assert "workflow_id" not in wftask
 
 
-async def test_workflow_import(
+def test_workflow_import(
     register_user,
     invoke,
     testdata_path: Path,
@@ -619,28 +612,28 @@ async def test_workflow_import(
 ):
     # collect tasks
     PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
-    res0 = await invoke(f"task collect {PACKAGE_NAME}")
+    res0 = invoke(f"task collect {PACKAGE_NAME}")
     assert res0.retcode == 0
     state_id = res0.data["id"]
     starting_time = time.perf_counter()
     while True:
-        res1 = await invoke(f"task check-collection {state_id}")
+        res1 = invoke(f"task check-collection {state_id}")
         if res1.data["data"]["status"] == "OK":
             break
-        await asyncio.sleep(1)
+        time.sleep(1)
         assert time.perf_counter() - starting_time < TIMEOUT
 
     # create project
     PROJECT_NAME = "project_name"
-    res_pj = await invoke(f"project new {PROJECT_NAME}")
+    res_pj = invoke(f"project new {PROJECT_NAME}")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
-    await task_factory(source="custom_source", owner="exact-lab")
+    task_factory(source="custom_source", owner="exact-lab")
 
     # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
-    res = await invoke(
+    res = invoke(
         f"workflow import --project-id {project_id} --json-file {filename}"
     )
     debug(res.data)
@@ -655,13 +648,13 @@ async def test_workflow_import(
 
     # get the workflow from the server, and check that it is the same
     workflow_id = res.data["id"]
-    res = await invoke(f"workflow show {project_id} {workflow_id}")
+    res = invoke(f"workflow show {project_id} {workflow_id}")
     assert res.retcode == 0
     assert res.data == imported_workflow
 
     # import workflow into project, with --batch
     filename = str(testdata_path / "import-export/workflow_2.json")
-    res = await invoke(
+    res = invoke(
         f"--batch workflow import --project-id {project_id} "
         f"--json-file {filename}"
     )

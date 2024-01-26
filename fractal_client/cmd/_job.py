@@ -14,7 +14,7 @@ from ..interface import RichJsonInterface
 from ..response import check_response
 
 
-async def get_job(
+def get_job(
     client: AuthClient,
     *,
     project_id: int,
@@ -26,9 +26,7 @@ async def get_job(
     Query the status of a workflow-execution job
     """
 
-    res = await client.get(
-        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/"
-    )
+    res = client.get(f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/")
     job = check_response(res, expected_status_code=200)
     if batch:
         return PrintInterface(retcode=0, data=job["status"])
@@ -43,11 +41,11 @@ async def get_job(
             )
 
 
-async def get_job_list(
+def get_job_list(
     client: AuthClient, *, project_id: int, batch: bool = False
 ) -> BaseInterface:
 
-    res = await client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
+    res = client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
     jobs = check_response(res, expected_status_code=200)
 
     if batch:
@@ -74,7 +72,7 @@ async def get_job_list(
         return RichConsoleInterface(retcode=0, data=table)
 
 
-async def get_job_logs(
+def get_job_logs(
     client: AuthClient,
     *,
     project_id: int,
@@ -89,7 +87,7 @@ async def get_job_logs(
         )
 
     # Send request to server
-    res = await client.get(
+    res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/download/"
     )
 
@@ -142,14 +140,14 @@ async def get_job_logs(
     )
 
 
-async def stop_job(
+def stop_job(
     client: AuthClient, *, project_id: int, job_id: int
 ) -> BaseInterface:
     """
     Stop a workflow-execution job
     """
 
-    res = await client.get(
+    res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/stop/"
     )
     check_response(res, expected_status_code=202)

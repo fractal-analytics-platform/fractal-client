@@ -14,12 +14,12 @@ from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
 
 
-async def get_task_list(client: AuthClient) -> RichJsonInterface:
-    task_list = await refresh_task_cache(client=client)
+def get_task_list(client: AuthClient) -> RichJsonInterface:
+    task_list = refresh_task_cache(client=client)
     return RichJsonInterface(retcode=0, data=task_list)
 
 
-async def task_collect_pip(
+def task_collect_pip(
     client: AuthClient,
     *,
     package: str,
@@ -51,7 +51,7 @@ async def task_collect_pip(
             for _name, _version in (p.split("=") for p in pinned_dependency)
         }
 
-    res = await client.post(
+    res = client.post(
         f"{settings.BASE_URL}/task/collect/pip/", json=task_collect
     )
 
@@ -63,7 +63,7 @@ async def task_collect_pip(
         return RichJsonInterface(retcode=0, data=state)
 
 
-async def task_collection_check(
+def task_collection_check(
     client: AuthClient,
     *,
     state_id: int,
@@ -71,7 +71,7 @@ async def task_collection_check(
     do_not_separate_logs: bool = False,
 ) -> BaseInterface:
 
-    res = await client.get(
+    res = client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}/?verbose={include_logs}"
     )
     state = check_response(res, expected_status_code=200)
@@ -89,7 +89,7 @@ async def task_collection_check(
         )
 
 
-async def post_task(
+def post_task(
     client: AuthClient,
     *,
     name: str,
@@ -121,7 +121,7 @@ async def post_task(
     if args_schema_version:
         task["args_schema_version"] = args_schema_version
 
-    res = await client.post(f"{settings.BASE_URL}/task/", json=task)
+    res = client.post(f"{settings.BASE_URL}/task/", json=task)
     new_task = check_response(res, expected_status_code=201)
 
     if batch:
@@ -130,7 +130,7 @@ async def post_task(
         return RichJsonInterface(retcode=0, data=new_task)
 
 
-async def patch_task(
+def patch_task(
     client: AuthClient,
     *,
     id: Optional[int] = None,
@@ -154,7 +154,7 @@ async def patch_task(
             sys.exit(1)
     else:
         try:
-            id = await get_task_id_from_cache(
+            id = get_task_id_from_cache(
                 client=client, task_name=name, version=version
             )
         except FractalCacheError as e:
@@ -184,14 +184,12 @@ async def patch_task(
     if not task_update:
         return PrintInterface(retcode=1, data="Nothing to update")
 
-    res = await client.patch(
-        f"{settings.BASE_URL}/task/{id}/", json=task_update
-    )
+    res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
     new_task = check_response(res, expected_status_code=200)
     return RichJsonInterface(retcode=0, data=new_task)
 
 
-async def delete_task(
+def delete_task(
     client: AuthClient,
     *,
     id: Optional[int] = None,
@@ -207,12 +205,12 @@ async def delete_task(
             sys.exit(1)
     else:
         try:
-            id = await get_task_id_from_cache(
+            id = get_task_id_from_cache(
                 client=client, task_name=name, version=version
             )
         except FractalCacheError as e:
             print(e)
             sys.exit(1)
-    res = await client.delete(f"{settings.BASE_URL}/task/{id}/")
+    res = client.delete(f"{settings.BASE_URL}/task/{id}/")
     check_response(res, expected_status_code=204)
     return PrintInterface(retcode=0, data="")
