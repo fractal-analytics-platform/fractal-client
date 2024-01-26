@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import jwt
@@ -5,6 +6,10 @@ from httpx import Client
 from jwt.exceptions import ExpiredSignatureError
 
 from .config import settings
+
+
+def debug_url(url):
+    logging.debug(f"Fractal Client connecting to URL:\n    {url}")
 
 
 class AuthenticationError(ValueError):
@@ -94,6 +99,7 @@ class AuthClient:
         self.password = password
 
     def __enter__(self):
+        logging.getLogger("httpx").setLevel(logging.ERROR)
         self.client = Client()
         self.auth = AuthToken(
             client=self.client,
@@ -106,13 +112,17 @@ class AuthClient:
         self.client.close()
 
     def get(self, *args, **kwargs):
+        debug_url(args[0])
         return self.client.get(headers=self.auth.header(), *args, **kwargs)
 
     def post(self, *args, **kwargs):
+        debug_url(args[0])
         return self.client.post(headers=self.auth.header(), *args, **kwargs)
 
     def patch(self, *args, **kwargs):
+        debug_url(args[0])
         return self.client.patch(headers=self.auth.header(), *args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        debug_url(args[0])
         return self.client.delete(headers=self.auth.header(), *args, **kwargs)
