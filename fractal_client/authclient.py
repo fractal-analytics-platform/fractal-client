@@ -99,7 +99,7 @@ class AuthClient:
         self.password = password
 
     def __enter__(self):
-        logging.getLogger("httpx").setLevel(logging.ERROR)
+        logging.getLogger("httpx").setLevel(logging.WARNING)
         self.client = Client()
         self.auth = AuthToken(
             client=self.client,
