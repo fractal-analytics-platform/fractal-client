@@ -76,7 +76,14 @@ def handle(cli_args: List[str] = argv):
     else:
         logging.basicConfig(level=logging.INFO)
 
-    show_args = "\n".join([f"    {k}: {v}" for k, v in args.__dict__.items()])
+    show_args = "\n".join(
+        [
+            f"    {k}: {v}"
+            if not (k == "password" and v is not None)
+            else "    password: ***"
+            for k, v in args.__dict__.items()
+        ]
+    )
     logging.debug(f"Arguments:\n{show_args}")
 
     if args.cmd is not None:
