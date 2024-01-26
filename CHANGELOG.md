@@ -4,7 +4,7 @@
 
 * Make `fractal-client` a fully synchronous client, by removing all `async`/`await` (\#592).
 * Improve handling of `AuthenticationError` and `ConnectionError`, and handle uncaught `Exception` (\#587).
-* Deprecate environment variable `FRACTAL_LOGGING_LEVEL`, remove flag `--verbose` and  and replaces it with `--debug`, improve debugging of http requests (\#597).
+* Deprecate environment variable `FRACTAL_LOGGING_LEVEL`, remove flag `--verbose` and replace it with `--debug`, improve debugging of http requests (\#597).
 * Testing:
     * Adapt `job_factory` and tests to the presence of new `timestamp_created` attributes in `fractal-server` (\#589).
 * Documentation:
