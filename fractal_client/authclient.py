@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import jwt
@@ -5,6 +6,16 @@ from httpx import Client
 from jwt.exceptions import ExpiredSignatureError
 
 from .config import settings
+
+
+def debug_request(verb: str, url: str, **kwargs):
+    body = kwargs.get("json")
+    log = f"\nFractal Client sending HTTP request to:\n    {verb} {url}"
+    if body is not None:
+        log += "\nRequest body:\n" + "\n".join(
+            [f"    {k}: {v}" for k, v in body.items()]
+        )
+    logging.debug(log)
 
 
 class AuthenticationError(ValueError):
@@ -94,6 +105,7 @@ class AuthClient:
         self.password = password
 
     def __enter__(self):
+        logging.getLogger("httpx").setLevel(logging.WARNING)
         self.client = Client()
         self.auth = AuthToken(
             client=self.client,
@@ -106,13 +118,17 @@ class AuthClient:
         self.client.close()
 
     def get(self, *args, **kwargs):
+        debug_request("GET", args[0], **kwargs)
         return self.client.get(headers=self.auth.header(), *args, **kwargs)
 
     def post(self, *args, **kwargs):
+        debug_request("POST", args[0], **kwargs)
         return self.client.post(headers=self.auth.header(), *args, **kwargs)
 
     def patch(self, *args, **kwargs):
+        debug_request("PATCH", args[0], **kwargs)
         return self.client.patch(headers=self.auth.header(), *args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        debug_request("DELETE", args[0], **kwargs)
         return self.client.delete(headers=self.auth.header(), *args, **kwargs)

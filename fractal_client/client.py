@@ -71,14 +71,22 @@ def handle(cli_args: List[str] = argv):
     args = parser_main.parse_args(cli_args[1:])
 
     # Set logging level
-    if args.verbose:
+    if args.debug is True:
         logging.basicConfig(level=logging.DEBUG)
     else:
-        logging.basicConfig(level=settings.FRACTAL_LOGGING_LEVEL)
+        logging.basicConfig(level=logging.INFO)
 
-    logging.debug(f"Arguments: {args}")
+    show_args = "\n".join(
+        [
+            f"    {k}: {v}"
+            if not (k == "password" and v is not None)
+            else "    password: ***"
+            for k, v in args.__dict__.items()
+        ]
+    )
+    logging.debug(f"\nArguments:\n{show_args}")
 
-    if args.cmd:
+    if args.cmd is not None:
         handler = getattr(cmd, args.cmd)
     else:
         # no command provided. Print help and exit 1

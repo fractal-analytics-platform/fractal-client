@@ -11,7 +11,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-import logging
 from os import getenv
 from pathlib import Path
 from typing import Optional
@@ -23,10 +22,6 @@ load_dotenv(".fractal.env")
 
 class Settings:
     def __init__(self):
-
-        self.FRACTAL_LOGGING_LEVEL: int = getenv(
-            "FRACTAL_LOGGING_LEVEL", logging.INFO
-        )
 
         self.FRACTAL_USER: Optional[str] = getenv("FRACTAL_USER")
         self.FRACTAL_PASSWORD: Optional[str] = getenv("FRACTAL_PASSWORD")

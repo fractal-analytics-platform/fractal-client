@@ -30,11 +30,10 @@ parser_main.add_argument(
     "-p", "--password", help="User password (overrides configuration file)."
 )
 parser_main.add_argument(
-    "--verbose",
-    "-v",
+    "--debug",
     action="store_true",
     default=False,
-    help="Change minimal logging level from default to DEBUG.",
+    help="Change minimal logging level from INFO to DEBUG.",
 )
 parser_main.add_argument(
     "--batch",
