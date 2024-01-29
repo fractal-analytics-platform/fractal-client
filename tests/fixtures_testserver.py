@@ -52,7 +52,7 @@ def testserver(override_server_settings):
     from fractal_server.app.models import SQLModel
 
     # INIT DB
-    DB.set_db()
+    DB.set_sync_db()
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
