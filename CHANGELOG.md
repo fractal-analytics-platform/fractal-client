@@ -7,6 +7,7 @@
 * Deprecate environment variable `FRACTAL_LOGGING_LEVEL`, remove flag `--verbose` and replace it with `--debug`, improve debugging of http requests (\#597).
 * Testing:
     * Adapt `job_factory` and tests to the presence of new `timestamp_created` attributes in `fractal-server` (\#589).
+    * Align with `fractal-server` 1.4.3a2 (\#598).
 * Documentation:
     * Add info about server/client version compatibility (\#591).
 
