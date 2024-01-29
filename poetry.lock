@@ -611,7 +611,7 @@ typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
 name = "fractal-server"
-version = "1.4.3a0"
+version = "1.4.3a2"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -624,6 +624,7 @@ alembic = "^1.9.1"
 bcrypt = "4.0.1"
 fastapi = "^0.103.0"
 fastapi-users = {version = "^12.1.0", extras = ["oauth"]}
+packaging = "^23.2"
 pydantic = ">=1.10.8,<2"
 python-dotenv = "^0.21.0"
 sqlalchemy = {version = ">=2.0.23,<2.1", extras = ["asyncio"]}
@@ -639,7 +640,7 @@ slurm = ["cloudpickle (>=2.2.1,<2.3.0)", "clusterfutures (>=0.5,<0.6)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "2855d9425b10173352d39b80823ed576489547b4"
+resolved_reference = "81a90fb8b50c3e5c960a3b20e40b577c14805ade"
 
 [[package]]
 name = "ghp-import"
