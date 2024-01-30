@@ -25,7 +25,7 @@ from . import cmd
 from .authclient import AuthClient
 from .authclient import AuthenticationError
 from .config import settings
-from .interface import PrintInterface
+from .interface import Interface
 from .parser import parser_main
 
 
@@ -112,9 +112,9 @@ def handle(cli_args: List[str] = argv):
             with AuthClient(username=username, password=password) as client:
                 interface = handler(client, **kwargs)
     except AuthenticationError as e:
-        return PrintInterface(retcode=1, data=e.args[0])
+        return Interface(retcode=1, data=e.args[0])
     except ConnectError as e:
-        return PrintInterface(
+        return Interface(
             retcode=1,
             data=(
                 f"ConnectError at {e.request.url}\n"
@@ -123,7 +123,7 @@ def handle(cli_args: List[str] = argv):
             ),
         )
     except Exception as e:
-        return PrintInterface(retcode=1, data=str(e))
+        return Interface(retcode=1, data=str(e))
 
     return interface
 

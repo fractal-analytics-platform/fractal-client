@@ -55,7 +55,7 @@ def test_job_show(
     assert res.data["status"] == status
     debug(res.data)
     assert "log" not in res.data
-    assert LOG in res.extra_lines
+    assert LOG in res.extra
     res.show()
 
     # Check `job show` output with --batch

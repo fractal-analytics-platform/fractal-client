@@ -3,14 +3,9 @@ import os
 from pathlib import Path
 from zipfile import ZipFile
 
-from rich.table import Table
-
 from ..authclient import AuthClient
 from ..config import settings
-from ..interface import BaseInterface
-from ..interface import PrintInterface
-from ..interface import RichConsoleInterface
-from ..interface import RichJsonInterface
+from ..interface import Interface
 from ..response import check_response
 
 
@@ -21,7 +16,7 @@ def get_job(
     job_id: int,
     do_not_separate_logs: bool = False,
     batch: bool = False,
-) -> BaseInterface:
+) -> Interface:
     """
     Query the status of a workflow-execution job
     """
@@ -29,47 +24,28 @@ def get_job(
     res = client.get(f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/")
     job = check_response(res, expected_status_code=200)
     if batch:
-        return PrintInterface(retcode=0, data=job["status"])
+        return Interface(retcode=0, data=job["status"])
     else:
         if do_not_separate_logs or (job.get("log") is None):
-            return RichJsonInterface(retcode=0, data=job)
+            return Interface(retcode=0, data=job)
         else:
             log = job.pop("log")
             extra_lines = ["\nThis is the job log:\n", log]
-            return RichJsonInterface(
-                retcode=0, data=job, extra_lines=extra_lines
-            )
+            return Interface(retcode=0, data=job, extra=extra_lines)
 
 
 def get_job_list(
     client: AuthClient, *, project_id: int, batch: bool = False
-) -> BaseInterface:
+) -> Interface:
 
     res = client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
     jobs = check_response(res, expected_status_code=200)
 
     if batch:
         job_ids = " ".join(str(job["id"]) for job in jobs)
-        return PrintInterface(retcode=0, data=job_ids)
+        return Interface(retcode=0, data=job_ids)
     else:
-        table = Table(title=f"Job list for project {project_id}")
-        kwargs = dict(style="white", justify="center")
-        table.add_column("id", **kwargs)
-        table.add_column("start_timestamp", **kwargs)
-        table.add_column("status", **kwargs)
-        table.add_column("workflow_id", **kwargs)
-        table.add_column("working_dir", **kwargs)
-
-        for j in jobs:
-            timestamp = j["start_timestamp"]
-            table.add_row(
-                str(j["id"]),
-                timestamp,
-                j["status"],
-                str(j["workflow_id"]),
-                j["working_dir"],
-            )
-        return RichConsoleInterface(retcode=0, data=table)
+        return Interface(retcode=0, data=jobs)
 
 
 def get_job_logs(
@@ -78,11 +54,11 @@ def get_job_logs(
     project_id: int,
     job_id: int,
     output_folder: str,
-) -> BaseInterface:
+) -> Interface:
 
     # Check that output_folder does not already exist
     if Path(output_folder).exists():
-        return PrintInterface(
+        return Interface(
             retcode=1, data=f"ERROR: {output_folder=} already exists"
         )
 
@@ -135,14 +111,10 @@ def get_job_logs(
     # Remove zipped temporary file
     os.unlink(zipped_archive_path)
 
-    return PrintInterface(
-        retcode=0, data=f"Logs downloaded to {output_folder=}"
-    )
+    return Interface(retcode=0, data=f"Logs downloaded to {output_folder=}")
 
 
-def stop_job(
-    client: AuthClient, *, project_id: int, job_id: int
-) -> BaseInterface:
+def stop_job(client: AuthClient, *, project_id: int, job_id: int) -> Interface:
     """
     Stop a workflow-execution job
     """
@@ -151,6 +123,6 @@ def stop_job(
         f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/stop/"
     )
     check_response(res, expected_status_code=202)
-    return PrintInterface(
+    return Interface(
         retcode=0, data="Correctly called the job-stopping endpoint"
     )

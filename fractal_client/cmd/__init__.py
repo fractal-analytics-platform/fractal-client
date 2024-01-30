@@ -2,8 +2,7 @@ from httpx import Client
 
 from ..authclient import AuthClient
 from ..config import settings
-from ..interface import BaseInterface
-from ..interface import PrintInterface
+from ..interface import Interface
 from ._dataset import delete_dataset
 from ._dataset import delete_resource
 from ._dataset import get_dataset
@@ -59,7 +58,7 @@ def project(
     subcmd: str,
     batch: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
 
     if subcmd == "new":
         parameters = ["name"]
@@ -105,7 +104,7 @@ def dataset(
     subcmd: str,
     batch: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
     if subcmd == "show":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -152,7 +151,7 @@ def task(
     subcmd: str,
     batch: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
 
     if subcmd == "list":
         iface = get_task_list(client)
@@ -214,7 +213,7 @@ def workflow(
     subcmd: str,
     batch: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
     if subcmd == "show":
         parameters = ["project_id", "workflow_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -292,7 +291,7 @@ def job(
     subcmd: str,
     batch: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
     if subcmd == "list":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -314,11 +313,11 @@ def job(
     return iface
 
 
-def version(client: Client, **kwargs) -> PrintInterface:
+def version(client: Client, **kwargs) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
     data = res.json()
 
-    return PrintInterface(
+    return Interface(
         retcode=0,
         data=(
             f"Fractal client\n\tversion: {__VERSION__}\n"
@@ -331,7 +330,7 @@ def version(client: Client, **kwargs) -> PrintInterface:
 
 def user(
     client: AuthClient, subcmd: str, batch: bool = False, **kwargs
-) -> BaseInterface:
+) -> Interface:
     if subcmd == "register":
         parameters = [
             "new_email",
