@@ -10,6 +10,8 @@
     * Align with `fractal-server` 1.4.3a2 (\#598).
 * Documentation:
     * Add info about server/client version compatibility (\#591).
+* Dependencies:
+    * Introduce automatic updates of `poetry.lock` (\#609 and commits to `main`).
 
 # 1.4.2
 
