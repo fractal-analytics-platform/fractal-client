@@ -4,6 +4,7 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
 from ..response import check_response
+from ._aux_trim_output import _simplify_project
 
 
 def post_project(
@@ -11,6 +12,7 @@ def post_project(
     *,
     name: str,
     batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     # Prepare a ProjectCreate request body
     payload = dict(name=name)
@@ -19,21 +21,48 @@ def post_project(
     project = check_response(res, expected_status_code=201)
     if batch:
         return Interface(retcode=0, data=project["id"])
-    else:
+    elif verbose:
         return Interface(retcode=0, data=project)
+    else:
+        return Interface(retcode=0, data=_simplify_project(project))
 
 
-def get_project_list(client: AuthClient) -> Interface:
-
+def get_project_list(
+    client: AuthClient,
+    batch: bool = False,
+    verbose: bool = False,
+) -> Interface:
     res = client.get(f"{settings.BASE_URL}/project/")
     projects = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=projects)
+    if batch:
+        return Interface(
+            retcode=0,
+            data=" ".join([str(project["id"]) for project in projects]),
+        )
+    elif verbose:
+        return Interface(retcode=0, data=projects)
+    else:
+        return Interface(
+            retcode=0,
+            data=[_simplify_project(project) for project in projects],
+        )
 
 
-def get_project(client: AuthClient, *, project_id: int) -> Interface:
+def get_project(
+    client: AuthClient,
+    *,
+    project_id: int,
+    batch: bool = False,
+    verbose: bool = False,
+) -> Interface:
     res = client.get(f"{settings.BASE_URL}/project/{project_id}/")
     project = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=project)
+    if batch:
+        return Interface(retcode=0, data=project["id"])
+    elif verbose:
+        return Interface(retcode=0, data=project)
+    else:
+        return Interface(retcode=0, data=_simplify_project(project))
 
 
 def delete_project(client: AuthClient, *, project_id: int) -> Interface:
@@ -50,6 +79,8 @@ def patch_project(
     new_name: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     project_update = {}
     if new_name:
@@ -66,4 +97,9 @@ def patch_project(
         f"{settings.BASE_URL}/project/{project_id}/", json=project_update
     )
     new_project = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=new_project)
+    if batch:
+        return Interface(retcode=0, data=new_project["id"])
+    elif verbose:
+        return Interface(retcode=0, data=new_project)
+    else:
+        return Interface(retcode=0, data=_simplify_project(new_project))
