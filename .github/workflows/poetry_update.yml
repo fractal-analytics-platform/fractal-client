@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          github-token: ${{ secrets.PAT }}
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
 
       - name: Install poetry
@@ -24,7 +25,6 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          github-token: ${{ secrets.PAT }}
           delete-branch: true
           branch: poetry-update
           add-paths: poetry.lock
