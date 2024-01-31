@@ -5,7 +5,7 @@
 | Name                                        |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |-------------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | fractal\_client/\_\_init\_\_.py             |        1 |        0 |        0 |        0 |    100% |           |
-| fractal\_client/authclient.py               |       78 |        2 |       16 |        1 |     97% |     83-84 |
+| fractal\_client/authclient.py               |       78 |        2 |       16 |        1 |     97% |     82-83 |
 | fractal\_client/client.py                   |       58 |        9 |       22 |        4 |     84% |59-66, 75, 93-94, 132-134, 138 |
 | fractal\_client/cmd/\_\_init\_\_.py         |      219 |        6 |       80 |        6 |     96% |98, 146, 208, 286, 313, 370 |
 | fractal\_client/cmd/\_aux\_task\_caching.py |       84 |        0 |       35 |        0 |    100% |           |
