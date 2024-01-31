@@ -25,7 +25,7 @@ jobs:
           branch: poetry-update
           add-paths: poetry.lock
           commit-message: "Update dependencies in `poetry.lock`"
-          title: "Update dependencies in `poetry.lock`"
+          title: "[auto] Update dependencies in `poetry.lock`"
           draft: true
           body: |
 
