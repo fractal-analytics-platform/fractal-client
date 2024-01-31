@@ -52,3 +52,7 @@ jobs:
 
             _Note: there may be dependencies in the table above which were not updated as part of this PR.
             The reason is they require manual updating due to the way they are pinned._
+
+            _Note: the curent version of this action does **not** trigger other
+            GitHub workflows (e.g. the CI one). To do so, please manually close
+            and re-open this PR.
