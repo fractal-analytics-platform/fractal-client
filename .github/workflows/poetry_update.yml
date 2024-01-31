@@ -1,3 +1,10 @@
+# NOTE: in order for this action to trigger other GitHub workflows (typically
+# the CI ones), the "Create Pull Request" step must use a Personal Access Token
+# (PAT) rather than the standard GITHUB_TOKEN. This PAT must be generated
+# elsewhere by one of the developers, and set as a secret for the current
+# repositories.
+
+
 name: poetry-update
 
 on:
@@ -10,10 +17,6 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-        # with:
-        #   token: ${{ secrets.PAT }}
-        #  persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
-
       - name: Install poetry
         run: pipx install poetry==1.7.1
       - uses: actions/setup-python@v3
@@ -54,7 +57,3 @@ jobs:
 
             _Note: there may be dependencies in the table above which were not updated as part of this PR.
             The reason is they require manual updating due to the way they are pinned._
-
-            _Note: the curent version of this action does **not** trigger other
-            GitHub workflows (e.g. the CI one). To do so, please manually close
-            and re-open this PR.
