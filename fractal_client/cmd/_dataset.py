@@ -178,8 +178,8 @@ def get_dataset_history(
     *,
     project_id: int,
     dataset_id: int,
-    batch: bool = False,
-    verbose: bool = False,
+    batch: bool = False,  # FIXME
+    verbose: bool = False,  # FIXME
 ) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"

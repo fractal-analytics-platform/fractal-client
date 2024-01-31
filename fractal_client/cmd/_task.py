@@ -10,11 +10,21 @@ from ..response import check_response
 from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
+from ._aux_trim_output import _simplify_task
 
 
-def get_task_list(client: AuthClient) -> Interface:
+def get_task_list(
+    client: AuthClient, batch: bool = False, verbose: bool = False
+) -> Interface:
     task_list = refresh_task_cache(client=client)
-    return Interface(retcode=0, data=task_list)
+    if batch:
+        return Interface(retcode=0, data=[task["id"] for task in task_list])
+    elif verbose:
+        return Interface(retcode=0, data=task_list)
+    else:
+        return Interface(
+            retcode=0, data=[_simplify_task(task) for task in task_list]
+        )
 
 
 def task_collect_pip(
@@ -26,6 +36,7 @@ def task_collect_pip(
     package_extras: Optional[str] = None,
     pinned_dependency: Optional[list[str]] = None,
     batch: bool = False,
+    verbose: bool = False,  # FIXME
 ) -> Interface:
 
     # Construct TaskCollectPip object
@@ -93,11 +104,12 @@ def post_task(
     source: str,
     input_type: str = "Any",
     output_type: str = "Any",
-    batch: bool = False,
     version: Optional[str] = None,
     meta_file: Optional[str] = None,
     args_schema: Optional[str] = None,
     args_schema_version: Optional[str] = None,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     task = dict(
         name=name,
@@ -122,8 +134,10 @@ def post_task(
 
     if batch:
         return Interface(retcode=0, data=str(new_task["id"]))
-    else:
+    elif verbose:
         return Interface(retcode=0, data=new_task)
+    else:
+        return Interface(retcode=0, data=_simplify_task(new_task))
 
 
 def patch_task(
@@ -140,6 +154,8 @@ def patch_task(
     meta_file: Optional[str] = None,
     new_args_schema: Optional[str] = None,
     new_args_schema_version: Optional[str] = None,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     if id:
@@ -182,7 +198,12 @@ def patch_task(
 
     res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
     new_task = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=new_task)
+    if batch:
+        return Interface(retcode=0, data=new_task["id"])
+    elif verbose:
+        return Interface(retcode=0, data=new_task)
+    else:
+        return Interface(retcode=0, data=_simplify_task(new_task))
 
 
 def delete_task(

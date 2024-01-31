@@ -143,7 +143,7 @@ def test_task_new(register_user, invoke, tmp_path):
         json.dump(schema, f)
 
     res = invoke(
-        "task new _name _command _source --version _version "
+        "--verbose task new _name _command _source --version _version "
         f"--args-schema {schema_path} --args-schema-version 1.0.0"
     )
     res.show()
@@ -238,19 +238,19 @@ def test_task_edit(
     NEW_TYPE = "zip"
     # Test regular updates (both by id and name)
     res = invoke_as_superuser(
-        f"task edit --id {task_id} --new-input-type {NEW_TYPE}"
+        f"--verbose task edit --id {task_id} --new-input-type {NEW_TYPE}"
     )
     assert res.data["input_type"] == NEW_TYPE
     assert res.retcode == 0
     res = invoke_as_superuser(
-        f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
+        f"--verbose task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
 
     NEW_VERSION = "3.14"
     res = invoke_as_superuser(
-        f"task edit --id {task_id} --new-version {NEW_VERSION}"
+        f"--verbose task edit --id {task_id} --new-version {NEW_VERSION}"
     )
     assert res.data["version"] == NEW_VERSION
     assert res.retcode == 0
@@ -261,7 +261,7 @@ def test_task_edit(
     cache_file.unlink(missing_ok=True)
     NEW_TYPE = "something"
     res = invoke_as_superuser(
-        f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
+        f"--verbose task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
@@ -278,9 +278,11 @@ def test_task_edit(
     with cache_file.open("w") as f:
         json.dump([], f)
     NEW_TYPE = "something-else"
-    debug(f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}")
+    debug(
+        f"--verbose task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
+    )
     res = invoke_as_superuser(
-        f"task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
+        f"--verbose task edit --name {NEW_NAME} --new-output-type {NEW_TYPE}"
     )
     assert res.data["output_type"] == NEW_TYPE
     assert res.retcode == 0
@@ -308,8 +310,8 @@ def test_task_edit(
     with open(new_schema_path, "w") as f:
         json.dump(new_schema, f)
     res = invoke_as_superuser(
-        f"task edit --id {task_id} --new-args-schema {new_schema_path} "
-        "--new-args-schema-version 1.2.3"
+        f"--verbose task edit --id {task_id} "
+        f"--new-args-schema {new_schema_path} --new-args-schema-version 1.2.3"
     )
     assert res.retcode == 0
     assert res.data["args_schema"] == new_schema
@@ -400,7 +402,7 @@ def test_task_list(register_user, invoke, testdata_path):
     assert res.retcode == 0
 
     # List tasks
-    res = invoke("task list")
+    res = invoke("--verbose task list")
     assert res.retcode == 0
     task_list = res.data
 
