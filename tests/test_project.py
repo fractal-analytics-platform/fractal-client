@@ -90,11 +90,11 @@ def test_edit_project(
     tmp_path,
 ):
     name = "name"
-    res = invoke(f"project new {name}")
+    res = invoke(f"--verbose project new {name}")
     project = res.data
     project_id = project["id"]
 
-    cmd = f"project edit {project_id}"
+    cmd = f"--verbose project edit {project_id}"
     if new_name:
         cmd += f" --new-name {new_name}"
     if read_only is True:
