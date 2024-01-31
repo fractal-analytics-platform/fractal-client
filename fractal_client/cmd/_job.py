@@ -7,6 +7,7 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
 from ..response import check_response
+from ._aux_trim_output import _simplify_job
 
 
 def get_job(
@@ -16,6 +17,7 @@ def get_job(
     job_id: int,
     do_not_separate_logs: bool = False,
     batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     """
     Query the status of a workflow-execution job
@@ -25,17 +27,24 @@ def get_job(
     job = check_response(res, expected_status_code=200)
     if batch:
         return Interface(retcode=0, data=job["status"])
-    else:
+    elif verbose:
         if do_not_separate_logs or (job.get("log") is None):
             return Interface(retcode=0, data=job)
         else:
             log = job.pop("log")
             extra_lines = ["\nThis is the job log:\n", log]
             return Interface(retcode=0, data=job, extra=extra_lines)
+    else:
+        job.pop("log")
+        return Interface(retcode=0, data=_simplify_job(job))
 
 
 def get_job_list(
-    client: AuthClient, *, project_id: int, batch: bool = False
+    client: AuthClient,
+    *,
+    project_id: int,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     res = client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
@@ -44,8 +53,10 @@ def get_job_list(
     if batch:
         job_ids = " ".join(str(job["id"]) for job in jobs)
         return Interface(retcode=0, data=job_ids)
-    else:
+    elif verbose:
         return Interface(retcode=0, data=jobs)
+    else:
+        return Interface(retcode=0, data=[_simplify_job(job) for job in jobs])
 
 
 def get_job_logs(

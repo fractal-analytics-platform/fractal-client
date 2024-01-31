@@ -118,7 +118,9 @@ def dataset(
     if subcmd == "show":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_dataset(client, **function_kwargs)
+        iface = get_dataset(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "add-resource":
         parameters = ["project_id", "dataset_id", "path"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -140,7 +142,9 @@ def dataset(
             "remove_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = patch_dataset(client, **function_kwargs)
+        iface = patch_dataset(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "delete":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -148,7 +152,9 @@ def dataset(
     elif subcmd == "history":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_dataset_history(client, **function_kwargs)
+        iface = get_dataset_history(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "status":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -167,7 +173,7 @@ def task(
 ) -> Interface:
 
     if subcmd == "list":
-        iface = get_task_list(client)
+        iface = get_task_list(client, batch=batch, verbose=verbose)
     elif subcmd == "collect":
         parameters = [
             "package",
@@ -215,7 +221,9 @@ def task(
             "new_args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = patch_task(client, **function_kwargs)
+        iface = patch_task(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "delete":
         parameters = ["id", "name", "version"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -235,7 +243,9 @@ def workflow(
     if subcmd == "show":
         parameters = ["project_id", "workflow_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_workflow(client, **function_kwargs)
+        iface = get_workflow(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "new":
         parameters = ["name", "project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -280,7 +290,9 @@ def workflow(
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = patch_workflowtask(client, **function_kwargs)
+        iface = patch_workflowtask(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "rm-task":
         parameters = ["project_id", "workflow_id", "workflow_task_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -365,7 +377,6 @@ def user(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
-    verbose: bool = False,
     **kwargs,
 ) -> Interface:
     if subcmd == "register":
@@ -378,9 +389,7 @@ def user(
             "superuser",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = user_register(
-            client, batch=batch, verbose=verbose, **function_kwargs
-        )
+        iface = user_register(client, batch=batch, **function_kwargs)
     elif subcmd == "list":
         iface = user_list(client)
     elif subcmd == "show":

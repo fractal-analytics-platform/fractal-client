@@ -10,10 +10,18 @@ from ..interface import Interface
 from ..response import check_response
 from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
+from ._aux_trim_output import _simplify_job
+from ._aux_trim_output import _simplify_wftask
+from ._aux_trim_output import _simplify_workflow
 
 
 def post_workflow(
-    client: AuthClient, *, name: str, project_id: int, batch: bool = False
+    client: AuthClient,
+    *,
+    name: str,
+    project_id: int,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     workflow = dict(
         name=name,
@@ -24,19 +32,35 @@ def post_workflow(
         json=workflow,
     )
     workflow = check_response(res, expected_status_code=201)
+
     if batch:
         return Interface(retcode=0, data=workflow["id"])
-    else:
+    elif verbose:
         return Interface(retcode=0, data=workflow)
+    else:
+        return Interface(retcode=0, data=_simplify_workflow(workflow))
 
 
 def get_workflow_list(
-    client: AuthClient, *, project_id: int, batch: bool = False
+    client: AuthClient,
+    *,
+    project_id: int,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     res = client.get(f"{settings.BASE_URL}/project/{project_id}/workflow/")
     workflow_list = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=workflow_list)
+    if batch:
+        return Interface(
+            retcode=0, data=[" ".join(str(wf["id"])) for wf in workflow_list]
+        )
+    elif verbose:
+        return Interface(retcode=0, data=workflow_list)
+    else:
+        return Interface(
+            retcode=0, data=[_simplify_workflow(wf) for wf in workflow_list]
+        )
 
 
 def delete_workflow(
@@ -50,13 +74,23 @@ def delete_workflow(
 
 
 def get_workflow(
-    client: AuthClient, *, project_id: int, workflow_id: int
+    client: AuthClient,
+    *,
+    project_id: int,
+    workflow_id: int,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
     )
     workflow = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=workflow)
+    if batch:
+        return Interface(retcode=0, data=workflow["id"])
+    elif verbose:
+        return Interface(retcode=0, data=workflow)
+    else:
+        return Interface(retcode=0, data=_simplify_workflow(workflow))
 
 
 def post_workflowtask(
@@ -67,10 +101,11 @@ def post_workflowtask(
     task_id: Optional[int] = None,
     task_name: Optional[str] = None,
     task_version: Optional[str] = None,
-    batch: bool = False,
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     if task_id:
@@ -113,9 +148,11 @@ def post_workflowtask(
     workflow_task = check_response(res, expected_status_code=201)
 
     if batch:
-        return Interface(retcode=0, data=str(workflow_task["id"]))
-    else:
+        return Interface(retcode=0, data=workflow_task["id"])
+    elif verbose:
         return Interface(retcode=0, data=workflow_task)
+    else:
+        return Interface(retcode=0, data=_simplify_wftask(workflow_task))
 
 
 def patch_workflowtask(
@@ -126,6 +163,8 @@ def patch_workflowtask(
     workflow_task_id: int,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     # Check that at least one of args_file or meta_file was given (note: it
@@ -155,8 +194,12 @@ def patch_workflowtask(
         json=payload,
     )
     workflow_task = check_response(res, expected_status_code=200)
-
-    return Interface(retcode=0, data=workflow_task)
+    if batch:
+        return Interface(retcode=0, data=workflow_task["id"])
+    elif verbose:
+        return Interface(retcode=0, data=workflow_task)
+    else:
+        return Interface(retcode=0, data=_simplify_wftask(workflow_task))
 
 
 def delete_workflowtask(
@@ -181,6 +224,8 @@ def patch_workflow(
     project_id: int,
     workflow_id: int,
     new_name: str,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     workflow_update = dict(name=new_name)
@@ -190,7 +235,12 @@ def patch_workflow(
         json=workflow_update,
     )
     new_workflow = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=new_workflow)
+    if batch:
+        return Interface(retcode=0, data=new_workflow["id"])
+    elif verbose:
+        return Interface(retcode=0, data=new_workflow)
+    else:
+        return Interface(retcode=0, data=_simplify_workflow(new_workflow))
 
 
 def workflow_apply(
@@ -204,6 +254,7 @@ def workflow_apply(
     last_task_index: Optional[int] = None,
     worker_init: Optional[str] = None,
     batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     apply_wf_create = dict(
         workflow_id=workflow_id,
@@ -235,12 +286,19 @@ def workflow_apply(
 
     if batch:
         return Interface(retcode=0, data=apply_wf_read["id"])
-    else:
+    elif verbose:
         return Interface(retcode=0, data=apply_wf_read)
+    else:
+        return Interface(retcode=0, data=_simplify_job(apply_wf_read))
 
 
 def workflow_import(
-    client: AuthClient, *, project_id: int, json_file: str, batch: bool = False
+    client: AuthClient,
+    *,
+    project_id: int,
+    json_file: str,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     with Path(json_file).open("r") as f:
         workflow = json.load(f)
@@ -269,8 +327,10 @@ def workflow_import(
         for wftask in wf_read["task_list"]:
             datastr += f" {wftask['id']}"
         return Interface(retcode=0, data=datastr)
-    else:
+    elif verbose:
         return Interface(retcode=0, data=wf_read)
+    else:
+        return Interface(retcode=0, data=_simplify_workflow(wf_read))
 
 
 def workflow_export(
