@@ -5,6 +5,8 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
 from ..response import check_response
+from ._aux_trim_output import _simplify_dataset
+from ._aux_trim_output import _simplify_resource
 
 
 def post_dataset(
@@ -15,6 +17,7 @@ def post_dataset(
     metadata: Optional[str] = None,
     type: Optional[str] = None,
     batch: bool = False,
+    verbose: bool = False,
     make_read_only: bool = False,
 ) -> Interface:
     """
@@ -42,8 +45,10 @@ def post_dataset(
     new_dataset = check_response(res, expected_status_code=201)
     if batch:
         return Interface(retcode=0, data=new_dataset["id"])
-    else:
+    elif verbose:
         return Interface(retcode=0, data=new_dataset)
+    else:
+        return Interface(retcode=0, data=_simplify_dataset(new_dataset))
 
 
 def post_resource(
@@ -53,6 +58,7 @@ def post_resource(
     dataset_id: int,
     path: str,
     batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     res = client.post(
@@ -65,8 +71,10 @@ def post_resource(
     new_resource = check_response(res, expected_status_code=201)
     if batch:
         return Interface(retcode=0, data=new_resource["id"])
-    else:
+    elif verbose:
         return Interface(retcode=0, data=new_resource)
+    else:
+        return Interface(retcode=0, data=_simplify_resource(new_resource))
 
 
 def delete_resource(
@@ -96,6 +104,8 @@ def patch_dataset(
     meta_file: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
 
     # Prepare payload
@@ -124,17 +134,32 @@ def patch_dataset(
         json=dataset_update,
     )
     data = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=data)
+    if batch:
+        return Interface(retcode=0, data=data["id"])
+    elif verbose:
+        return Interface(retcode=0, data=data)
+    else:
+        return Interface(retcode=0, data=_simplify_dataset(data))
 
 
 def get_dataset(
-    client: AuthClient, *, project_id: int, dataset_id: int
+    client: AuthClient,
+    *,
+    project_id: int,
+    dataset_id: int,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
     )
     dataset = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=dataset)
+    if batch:
+        return Interface(retcode=0, data=dataset["id"])
+    elif verbose:
+        return Interface(retcode=0, data=dataset)
+    else:
+        return Interface(retcode=0, data=_simplify_dataset(dataset))
 
 
 def delete_dataset(
@@ -149,7 +174,12 @@ def delete_dataset(
 
 
 def get_dataset_history(
-    client: AuthClient, *, project_id: int, dataset_id: int
+    client: AuthClient,
+    *,
+    project_id: int,
+    dataset_id: int,
+    batch: bool = False,
+    verbose: bool = False,
 ) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
