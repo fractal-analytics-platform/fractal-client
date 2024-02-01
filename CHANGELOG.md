@@ -1,6 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 1.4.3 (unreleased)
+# 1.4.3
 
 * Make `fractal-client` a fully synchronous client, by removing all `async`/`await` (\#592).
 * Improve handling of `AuthenticationError` and `ConnectionError`, and handle uncaught `Exception` (\#587).
