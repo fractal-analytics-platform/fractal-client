@@ -45,7 +45,7 @@ Actual **release instructions**:
 
 1. Use:
 ```
-poetry run bumpver update --[tag-num|patch|minor] --tag-commit --commit --dry
+poetry run bumpver update --[tag-num|minor|patch] --tag-commit --commit --dry
 ```
 to test updating the version bump.
 
