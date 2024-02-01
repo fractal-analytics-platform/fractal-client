@@ -35,10 +35,11 @@ We also use `poetry` to build the package and publish it to PyPI.
 Preliminary check-list:
 
 * The `main` branch is checked out.
-* You reviewed dependencies, and the lock file is up to date with ``pyproject.toml``.
+* You reviewed dependencies, and the lock file is up to date with `pyproject.toml`.
 * The current HEAD of the `main` branch passes all the tests (note: make sure
   that you are using `poetry run pytest`, and not simply `pytest`).
 * You updated the `CHANGELOG.md` file.
+* You updated `docs/versions.md` with the constraints for the new version.
 
 Actual **release instructions**:
 
