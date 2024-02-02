@@ -11,6 +11,7 @@
 * Documentation:
     * Add info about server/client version compatibility (\#591).
 * Dependencies:
+    * Update python-dotenv to `^0.21.0` (\#589).
     * Introduce automatic updates of `poetry.lock` (\#609 and commits to `main`).
 
 # 1.4.2
