@@ -35,18 +35,25 @@ parser_main.add_argument(
     default=False,
     help="Change minimal logging level from INFO to DEBUG.",
 )
-parser_main.add_argument(
+
+outuput_parser = parser_main.add_mutually_exclusive_group()
+outuput_parser.add_argument(
     "--batch",
-    default=False,
-    action="store_true",
     help=(
         "Return output suitable for scripting, e.g., "
         "only the ID of items created instead of the full object."
     ),
+    action="store_true",
+    required=False,
+)
+outuput_parser.add_argument(
+    "--verbose",
+    help="TBD",
+    action="store_true",
+    required=False,
 )
 
 subparsers_main = parser_main.add_subparsers(title="Commands", dest="cmd")
-
 
 # PROJECT GROUP
 project_parser = subparsers_main.add_parser(

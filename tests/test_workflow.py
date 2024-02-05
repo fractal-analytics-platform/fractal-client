@@ -17,7 +17,8 @@ def test_workflow_new(register_user, invoke):
     project_id = proj["id"]
 
     WORKFLOW_NAME = "mywf"
-    res = invoke(f"workflow new {WORKFLOW_NAME} {project_id}")
+    res = invoke(f"--verbose workflow new {WORKFLOW_NAME} {project_id}")
+    debug(res.data)
     wf = res.data
     debug(wf)
     assert res.retcode == 0
@@ -85,7 +86,7 @@ def test_workflow_edit(register_user, invoke):
     debug(res_edit.data)
 
     # List workflows, and check edit
-    res = invoke(f"workflow show {project_id} {workflow_id}")
+    res = invoke(f"--verbose workflow show {project_id} {workflow_id}")
     debug(res.data)
     assert res.retcode == 0
     assert res.data["name"] == NAME
@@ -185,7 +186,7 @@ def test_workflow_add_task(
     )
 
     cmd = (
-        f"{cmd} --task-id {t.id} "
+        f"--verbose {cmd} --task-id {t.id} "
         f"--args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
@@ -365,8 +366,8 @@ def test_workflow_edit_task(
     debug(res.data)
     workflow_task_id = res.data["id"]
     cmd = (
-        f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
-        f"--args-file {args_file} --meta-file {meta_file}"
+        f"--verbose workflow edit-task {project_id} {wf.id} {workflow_task_id}"
+        f" --args-file {args_file} --meta-file {meta_file}"
     )
     debug(cmd)
     res = invoke(cmd)
@@ -375,7 +376,7 @@ def test_workflow_edit_task(
     assert res.data["meta"] == META
 
     # Check that also the workflow in the db was correctly updated
-    res = invoke(f"workflow show {project_id} {wf.id}")
+    res = invoke(f"--verbose workflow show {project_id} {wf.id}")
     assert res.retcode == 0
     debug(res.data)
     assert res.data["task_list"][0]["args"] == ARGS
@@ -488,7 +489,7 @@ def test_workflow_apply(
     time.sleep(1)
 
     # Check that job completed successfully
-    cmd = f"job show {prj_id} {job_id} --do-not-separate-logs"
+    cmd = f"--verbose job show {prj_id} {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     debug(cmd)
     while True:
@@ -530,7 +531,7 @@ def test_workflow_apply(
     time.sleep(1)
 
     # Verify that status is failed, and that there is a log
-    cmd = f"job show {prj_id} {job_id} --do-not-separate-logs"
+    cmd = f"--verbose job show {prj_id} {job_id} --do-not-separate-logs"
     starting_time = time.perf_counter()
     while True:
         res = invoke(cmd)

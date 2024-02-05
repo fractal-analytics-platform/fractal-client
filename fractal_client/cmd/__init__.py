@@ -2,8 +2,7 @@ from httpx import Client
 
 from ..authclient import AuthClient
 from ..config import settings
-from ..interface import BaseInterface
-from ..interface import PrintInterface
+from ..interface import Interface
 from ._dataset import delete_dataset
 from ._dataset import delete_resource
 from ._dataset import get_dataset
@@ -58,19 +57,24 @@ def project(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
+    verbose: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
 
     if subcmd == "new":
         parameters = ["name"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = post_project(client, batch=batch, **function_kwargs)
+        iface = post_project(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "show":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_project(client, **function_kwargs)
+        iface = get_project(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "list":
-        iface = get_project_list(client)
+        iface = get_project_list(client, batch=batch, verbose=verbose)
     elif subcmd == "edit":
         parameters = [
             "project_id",
@@ -79,7 +83,9 @@ def project(
             "remove_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = patch_project(client, **function_kwargs)
+        iface = patch_project(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "add-dataset":
         parameters = [
             "project_id",
@@ -89,7 +95,9 @@ def project(
             "make_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = post_dataset(client, batch=batch, **function_kwargs)
+        iface = post_dataset(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "delete":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -104,16 +112,21 @@ def dataset(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
+    verbose: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
     if subcmd == "show":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_dataset(client, **function_kwargs)
+        iface = get_dataset(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "add-resource":
         parameters = ["project_id", "dataset_id", "path"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = post_resource(client, batch=batch, **function_kwargs)
+        iface = post_resource(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "rm-resource":
         parameters = ["project_id", "dataset_id", "resource_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -129,7 +142,9 @@ def dataset(
             "remove_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = patch_dataset(client, **function_kwargs)
+        iface = patch_dataset(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "delete":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -137,7 +152,9 @@ def dataset(
     elif subcmd == "history":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_dataset_history(client, **function_kwargs)
+        iface = get_dataset_history(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "status":
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -151,11 +168,12 @@ def task(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
+    verbose: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
 
     if subcmd == "list":
-        iface = get_task_list(client)
+        iface = get_task_list(client, batch=batch, verbose=verbose)
     elif subcmd == "collect":
         parameters = [
             "package",
@@ -165,7 +183,9 @@ def task(
             "pinned_dependency",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = task_collect_pip(client, batch=batch, **function_kwargs)
+        iface = task_collect_pip(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "check-collection":
         parameters = ["state_id", "include_logs", "do_not_separate_logs"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -183,7 +203,9 @@ def task(
             "args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = post_task(client, batch=batch, **function_kwargs)
+        iface = post_task(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "edit":
         parameters = [
             "id",
@@ -199,7 +221,9 @@ def task(
             "new_args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = patch_task(client, **function_kwargs)
+        iface = patch_task(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "delete":
         parameters = ["id", "name", "version"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -213,20 +237,27 @@ def workflow(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
+    verbose: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
     if subcmd == "show":
         parameters = ["project_id", "workflow_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_workflow(client, **function_kwargs)
+        iface = get_workflow(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "new":
         parameters = ["name", "project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = post_workflow(client, batch=batch, **function_kwargs)
+        iface = post_workflow(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "list":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_workflow_list(client, batch=batch, **function_kwargs)
+        iface = get_workflow_list(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "edit":
         parameters = ["project_id", "workflow_id", "new_name"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -247,7 +278,9 @@ def workflow(
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = post_workflowtask(client, batch=batch, **function_kwargs)
+        iface = post_workflowtask(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "edit-task":
         parameters = [
             "project_id",
@@ -257,7 +290,9 @@ def workflow(
             "meta_file",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = patch_workflowtask(client, **function_kwargs)
+        iface = patch_workflowtask(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "rm-task":
         parameters = ["project_id", "workflow_id", "workflow_task_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -273,11 +308,15 @@ def workflow(
             "last_task_index",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_apply(client, batch=batch, **function_kwargs)
+        iface = workflow_apply(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "import":
         parameters = ["project_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_import(client, batch=batch, **function_kwargs)
+        iface = workflow_import(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "export":
         parameters = ["project_id", "workflow_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -291,16 +330,21 @@ def job(
     client: AuthClient,
     subcmd: str,
     batch: bool = False,
+    verbose: bool = False,
     **kwargs,
-) -> BaseInterface:
+) -> Interface:
     if subcmd == "list":
         parameters = ["project_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_job_list(client, batch=batch, **function_kwargs)
+        iface = get_job_list(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "show":
         parameters = ["project_id", "job_id", "do_not_separate_logs"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_job(client, batch=batch, **function_kwargs)
+        iface = get_job(
+            client, batch=batch, verbose=verbose, **function_kwargs
+        )
     elif subcmd == "download-logs":
         parameters = ["project_id", "job_id", "output_folder"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -314,11 +358,11 @@ def job(
     return iface
 
 
-def version(client: Client, **kwargs) -> PrintInterface:
+def version(client: Client, **kwargs) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
     data = res.json()
 
-    return PrintInterface(
+    return Interface(
         retcode=0,
         data=(
             f"Fractal client\n\tversion: {__VERSION__}\n"
@@ -330,8 +374,11 @@ def version(client: Client, **kwargs) -> PrintInterface:
 
 
 def user(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
-) -> BaseInterface:
+    client: AuthClient,
+    subcmd: str,
+    batch: bool = False,
+    **kwargs,
+) -> Interface:
     if subcmd == "register":
         parameters = [
             "new_email",

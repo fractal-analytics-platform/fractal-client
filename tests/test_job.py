@@ -48,14 +48,14 @@ def test_job_show(
     debug(job)
 
     # Check `job show` output
-    cmd = f"job show {project_id} {job.id}"
+    cmd = f"--verbose job show {project_id} {job.id}"
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
     assert res.data["status"] == status
     debug(res.data)
     assert "log" not in res.data
-    assert LOG in res.extra_lines
+    assert LOG in res.extra
     res.show()
 
     # Check `job show` output with --batch
@@ -65,7 +65,7 @@ def test_job_show(
     assert res.data == status
 
     # Check `job show` output with `--do-not-separate-logs`
-    cmd = f"job show {project_id} {job.id} --do-not-separate-logs"
+    cmd = f"--verbose job show {project_id} {job.id} --do-not-separate-logs"
     res = invoke(cmd)
     debug(res.data)
     assert res.retcode == 0

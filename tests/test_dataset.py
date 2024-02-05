@@ -21,7 +21,7 @@ def test_create_dataset(register_user, invoke, tmp_path):
 
     res = invoke(
         (
-            f"project add-dataset {project_id} MyDS "
+            f"--verbose project add-dataset {project_id} MyDS "
             f"--metadata {file_metadata} "
             f"--type {TYPE}"
         )
@@ -112,7 +112,8 @@ def test_edit_dataset(register_user, invoke, tmp_path):
     assert res.retcode == 0
 
     res = invoke(
-        f"dataset edit {project_id} {dataset_id} --meta-file {META_FILE}"
+        "--verbose dataset edit "
+        f"{project_id} {dataset_id} --meta-file {META_FILE}"
     )
     res.show()
     assert res.data["name"] == NAME

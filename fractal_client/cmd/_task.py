@@ -5,18 +5,26 @@ from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
-from ..interface import BaseInterface
-from ..interface import PrintInterface
-from ..interface import RichJsonInterface
+from ..interface import Interface
 from ..response import check_response
 from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
+from ._aux_trim_output import _simplify_task
 
 
-def get_task_list(client: AuthClient) -> RichJsonInterface:
+def get_task_list(
+    client: AuthClient, batch: bool = False, verbose: bool = False
+) -> Interface:
     task_list = refresh_task_cache(client=client)
-    return RichJsonInterface(retcode=0, data=task_list)
+    if batch:
+        return Interface(retcode=0, data=[task["id"] for task in task_list])
+    elif verbose:
+        return Interface(retcode=0, data=task_list)
+    else:
+        return Interface(
+            retcode=0, data=[_simplify_task(task) for task in task_list]
+        )
 
 
 def task_collect_pip(
@@ -28,7 +36,8 @@ def task_collect_pip(
     package_extras: Optional[str] = None,
     pinned_dependency: Optional[list[str]] = None,
     batch: bool = False,
-) -> BaseInterface:
+    verbose: bool = False,  # FIXME
+) -> Interface:
 
     # Construct TaskCollectPip object
     task_collect = dict(package=package)
@@ -58,9 +67,9 @@ def task_collect_pip(
     state = check_response(res, expected_status_code=[200, 201])
     if batch:
         output = f"{state['id']} {state['data']['venv_path']}"
-        return PrintInterface(retcode=0, data=output)
+        return Interface(retcode=0, data=output)
     else:
-        return RichJsonInterface(retcode=0, data=state)
+        return Interface(retcode=0, data=state)
 
 
 def task_collection_check(
@@ -69,7 +78,7 @@ def task_collection_check(
     state_id: int,
     include_logs: bool,
     do_not_separate_logs: bool = False,
-) -> BaseInterface:
+) -> Interface:
 
     res = client.get(
         f"{settings.BASE_URL}/task/collect/{state_id}/?verbose={include_logs}"
@@ -80,13 +89,11 @@ def task_collection_check(
     state["data"] = {key: val for (key, val) in state["data"].items() if val}
 
     if (not include_logs) or do_not_separate_logs:
-        return RichJsonInterface(retcode=0, data=state)
+        return Interface(retcode=0, data=state)
     else:
         log = state["data"].pop("log")
         extra_lines = ["\nThis is the task-collection log:\n", log]
-        return RichJsonInterface(
-            retcode=0, data=state, extra_lines=extra_lines
-        )
+        return Interface(retcode=0, data=state, extra=extra_lines)
 
 
 def post_task(
@@ -97,12 +104,13 @@ def post_task(
     source: str,
     input_type: str = "Any",
     output_type: str = "Any",
-    batch: bool = False,
     version: Optional[str] = None,
     meta_file: Optional[str] = None,
     args_schema: Optional[str] = None,
     args_schema_version: Optional[str] = None,
-) -> BaseInterface:
+    batch: bool = False,
+    verbose: bool = False,
+) -> Interface:
     task = dict(
         name=name,
         command=command,
@@ -125,9 +133,11 @@ def post_task(
     new_task = check_response(res, expected_status_code=201)
 
     if batch:
-        return PrintInterface(retcode=0, data=str(new_task["id"]))
+        return Interface(retcode=0, data=str(new_task["id"]))
+    elif verbose:
+        return Interface(retcode=0, data=new_task)
     else:
-        return RichJsonInterface(retcode=0, data=new_task)
+        return Interface(retcode=0, data=_simplify_task(new_task))
 
 
 def patch_task(
@@ -144,7 +154,9 @@ def patch_task(
     meta_file: Optional[str] = None,
     new_args_schema: Optional[str] = None,
     new_args_schema_version: Optional[str] = None,
-) -> BaseInterface:
+    batch: bool = False,
+    verbose: bool = False,
+) -> Interface:
 
     if id:
         if version:
@@ -182,11 +194,16 @@ def patch_task(
         task_update["args_schema_version"] = new_args_schema_version
 
     if not task_update:
-        return PrintInterface(retcode=1, data="Nothing to update")
+        return Interface(retcode=1, data="Nothing to update")
 
     res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
     new_task = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=new_task)
+    if batch:
+        return Interface(retcode=0, data=new_task["id"])
+    elif verbose:
+        return Interface(retcode=0, data=new_task)
+    else:
+        return Interface(retcode=0, data=_simplify_task(new_task))
 
 
 def delete_task(
@@ -195,7 +212,7 @@ def delete_task(
     id: Optional[int] = None,
     name: Optional[str] = None,
     version: Optional[str] = None,
-) -> PrintInterface:
+) -> Interface:
 
     if id:
         if version:
@@ -213,4 +230,4 @@ def delete_task(
             sys.exit(1)
     res = client.delete(f"{settings.BASE_URL}/task/{id}/")
     check_response(res, expected_status_code=204)
-    return PrintInterface(retcode=0, data="")
+    return Interface(retcode=0, data="")

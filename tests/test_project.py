@@ -40,8 +40,8 @@ def test_project_create_batch(register_user, invoke):
 def test_project_list(register_user, invoke):
     res = invoke("project list")
     debug(res)
-    debug(vars(res.data))
-    assert len(res.data.rows) == 0
+    debug(res.data)
+    assert len(res.data) == 0
 
     res.show()
 
@@ -52,9 +52,9 @@ def test_project_list(register_user, invoke):
 
     res = invoke("project list")
     debug(res)
-    debug(vars(res.data))
+    debug(res.data)
     res.show()
-    assert len(res.data.rows) == 2
+    assert len(res.data) == 2
 
 
 def test_add_dataset(register_user, invoke):
@@ -90,11 +90,11 @@ def test_edit_project(
     tmp_path,
 ):
     name = "name"
-    res = invoke(f"project new {name}")
+    res = invoke(f"--verbose project new {name}")
     project = res.data
     project_id = project["id"]
 
-    cmd = f"project edit {project_id}"
+    cmd = f"--verbose project edit {project_id}"
     if new_name:
         cmd += f" --new-name {new_name}"
     if read_only is True:
