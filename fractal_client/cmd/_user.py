@@ -124,6 +124,7 @@ def user_edit(
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update
     )
+    new_user = check_response(res, expected_status_code=200)
 
     if new_email is not None:
         # issue 619
@@ -131,8 +132,7 @@ def user_edit(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/",
             json=dict(is_verified=user_update["is_verified"]),
         )
-
-    new_user = check_response(res, expected_status_code=200)
+        new_user = check_response(res, expected_status_code=200)
 
     return RichJsonInterface(retcode=0, data=new_user)
 

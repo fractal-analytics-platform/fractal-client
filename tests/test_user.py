@@ -96,7 +96,10 @@ def test_edit_as_user(invoke, invoke_as_superuser, register_user, caplog):
     user_id = res.data["id"]
     # Call fractal user edit
     with pytest.raises(SystemExit):
-        invoke(f"user edit {user_id} --new-email email@something.xy")
+        res = invoke(
+            f"user edit {user_id} "
+            "--new-email email@something.xy --make-verified"
+        )
     debug(caplog.text)
     assert "403" in caplog.text
 
@@ -127,17 +130,19 @@ def test_edit_as_superuser(
         cmd = f"{cmd} --make-superuser"
     if new_is_non_verified:
         cmd = f"{cmd} --remove-verified"
-    debug(cmd)
+
     res = invoke_as_superuser(cmd)
-    debug(res.data)
-    assert res.retcode == 0
-    assert res.data["email"] == NEW_EMAIL
-    assert res.data["cache_dir"] == NEW_CACHE_DIR
-    assert res.data["slurm_user"] == NEW_SLURM_USER
-    assert res.data["username"] == NEW_USERNAME
-    assert res.data["is_superuser"] == new_is_superuser
+
     if new_is_non_verified:
+        assert res.retcode == 0
+        assert res.data["email"] == NEW_EMAIL
+        assert res.data["cache_dir"] == NEW_CACHE_DIR
+        assert res.data["slurm_user"] == NEW_SLURM_USER
+        assert res.data["username"] == NEW_USERNAME
+        assert res.data["is_superuser"] == new_is_superuser
         assert not res.data["is_verified"]
+    else:
+        assert res.retcode == 1
 
     BAD_CACHE_DIR = "not_absolute"
     with pytest.raises(SystemExit):
