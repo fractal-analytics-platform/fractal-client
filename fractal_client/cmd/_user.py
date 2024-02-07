@@ -91,6 +91,14 @@ def user_edit(
 
     user_update = dict()
     if new_email is not None:
+        if (make_verified is False) and (remove_verified is False):
+            return PrintInterface(
+                retcode=1,
+                data=(
+                    "Cannot use `--new-email` without `--make-verified` or "
+                    "`--remove-verified`"
+                ),
+            )
         user_update["email"] = new_email
     if new_password is not None:
         user_update["password"] = new_password
