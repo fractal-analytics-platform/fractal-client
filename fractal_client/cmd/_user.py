@@ -92,6 +92,7 @@ def user_edit(
     user_update = dict()
     if new_email is not None:
         if (make_verified is False) and (remove_verified is False):
+            # issue 619
             return PrintInterface(
                 retcode=1,
                 data=(
@@ -119,9 +120,18 @@ def user_edit(
 
     if not user_update:
         return PrintInterface(retcode=1, data="Nothing to update")
+
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update
     )
+
+    if new_email is not None:
+        # issue 619
+        res = client.patch(
+            f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/",
+            json=dict(is_verified=user_update["is_verified"]),
+        )
+
     new_user = check_response(res, expected_status_code=200)
 
     return RichJsonInterface(retcode=0, data=new_user)
