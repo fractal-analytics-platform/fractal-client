@@ -2,7 +2,7 @@
 
 # 1.4.4 (unreleased)
 
-* Require user's verification to be specified when editing user email (\#620).
+* Require user's verification to be specified when editing user's email (\#620).
 
 # 1.4.3
 
