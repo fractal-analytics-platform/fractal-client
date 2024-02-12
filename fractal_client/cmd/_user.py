@@ -91,6 +91,17 @@ def user_edit(
 
     user_update = dict()
     if new_email is not None:
+        if (make_verified is False) and (remove_verified is False):
+            # Since `fastapi-users` sets `is_verified` to `False` each time the
+            # email is updated, we force the user to make explicit whether the
+            # account is verified or not.
+            return PrintInterface(
+                retcode=1,
+                data=(
+                    "Cannot use `--new-email` without `--make-verified` or "
+                    "`--remove-verified`"
+                ),
+            )
         user_update["email"] = new_email
     if new_password is not None:
         user_update["password"] = new_password
@@ -111,10 +122,20 @@ def user_edit(
 
     if not user_update:
         return PrintInterface(retcode=1, data="Nothing to update")
+
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update
     )
     new_user = check_response(res, expected_status_code=200)
+
+    if new_email is not None:
+        # Since `fastapi-users` sets `is_verified` to `False` each time the
+        # email is updated, we set `is_verified` as specified by the user.
+        res = client.patch(
+            f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/",
+            json=dict(is_verified=user_update["is_verified"]),
+        )
+        new_user = check_response(res, expected_status_code=200)
 
     return RichJsonInterface(retcode=0, data=new_user)
 

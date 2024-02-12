@@ -96,15 +96,19 @@ def test_edit_as_user(invoke, invoke_as_superuser, register_user, caplog):
     user_id = res.data["id"]
     # Call fractal user edit
     with pytest.raises(SystemExit):
-        invoke(f"user edit {user_id} --new-email email@something.xy")
+        res = invoke(
+            f"user edit {user_id} "
+            "--new-email email@something.xy --make-verified"
+        )
     debug(caplog.text)
     assert "403" in caplog.text
 
 
 @pytest.mark.parametrize("new_is_superuser", [True, False])
+@pytest.mark.parametrize("new_is_verified", [True, False])
 @pytest.mark.parametrize("new_is_non_verified", [True, False])
 def test_edit_as_superuser(
-    invoke_as_superuser, new_is_superuser, new_is_non_verified
+    invoke_as_superuser, new_is_superuser, new_is_verified, new_is_non_verified
 ):
     # Register a new user
     res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
@@ -125,19 +129,34 @@ def test_edit_as_superuser(
     )
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
+    if new_is_verified:
+        cmd = f"{cmd} --make-verified"
     if new_is_non_verified:
         cmd = f"{cmd} --remove-verified"
-    debug(cmd)
-    res = invoke_as_superuser(cmd)
-    debug(res.data)
-    assert res.retcode == 0
-    assert res.data["email"] == NEW_EMAIL
-    assert res.data["cache_dir"] == NEW_CACHE_DIR
-    assert res.data["slurm_user"] == NEW_SLURM_USER
-    assert res.data["username"] == NEW_USERNAME
-    assert res.data["is_superuser"] == new_is_superuser
-    if new_is_non_verified:
-        assert not res.data["is_verified"]
+
+    if new_is_verified and new_is_non_verified:
+        with pytest.raises(SystemExit):
+            invoke_as_superuser(cmd)
+    elif new_is_verified or new_is_non_verified:
+        res = invoke_as_superuser(cmd)
+        assert res.retcode == 0
+        assert res.data["email"] == NEW_EMAIL
+        assert res.data["cache_dir"] == NEW_CACHE_DIR
+        assert res.data["slurm_user"] == NEW_SLURM_USER
+        assert res.data["username"] == NEW_USERNAME
+        assert res.data["is_superuser"] == new_is_superuser
+        assert (
+            res.data["is_verified"]
+            if new_is_verified
+            else not res.data["is_verified"]
+        )
+    else:
+        res = invoke_as_superuser(cmd)
+        assert res.retcode == 1
+        assert res.data == (
+            "Cannot use `--new-email` without `--make-verified` or "
+            "`--remove-verified`"
+        )
 
     BAD_CACHE_DIR = "not_absolute"
     with pytest.raises(SystemExit):
