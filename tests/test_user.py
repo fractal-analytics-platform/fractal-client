@@ -143,6 +143,10 @@ def test_edit_as_superuser(
         assert not res.data["is_verified"]
     else:
         assert res.retcode == 1
+        assert res.data == (
+            "Cannot use `--new-email` without `--make-verified` or "
+            "`--remove-verified`"
+        )
 
     BAD_CACHE_DIR = "not_absolute"
     with pytest.raises(SystemExit):
