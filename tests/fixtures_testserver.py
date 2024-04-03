@@ -32,6 +32,7 @@ def override_server_settings(tmp_path):
         base_folder / "FRACTAL_RUNNER_WORKING_BASE_DIR"
     )
     settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
+    settings.FRACTAL_API_SUBMIT_RATE_LIMIT = 0
 
     def _get_settings():
         return settings
