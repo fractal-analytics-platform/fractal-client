@@ -3,8 +3,7 @@ from typing import Union
 
 from ..authclient import AuthClient
 from ..config import settings
-from ..interface import PrintInterface
-from ..interface import RichJsonInterface
+from ..interface import Interface
 from ..response import check_response
 
 
@@ -19,7 +18,7 @@ def user_register(
     superuser: bool = False,
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
-) -> Union[RichJsonInterface, PrintInterface]:
+) -> Union[Interface, Interface]:
 
     new_user = dict(
         email=new_email,
@@ -40,7 +39,7 @@ def user_register(
         if new_password == confirm_new_password:
             new_user["password"] = new_password
         else:
-            return PrintInterface(retcode=1, data="Passwords do not match.")
+            return Interface(retcode=1, data="Passwords do not match.")
 
     res = client.post(
         f"{settings.FRACTAL_SERVER}/auth/register/", json=new_user
@@ -57,21 +56,21 @@ def user_register(
         data = check_response(res, expected_status_code=200)
 
     if batch:
-        return PrintInterface(retcode=0, data=data["id"])
+        return Interface(retcode=0, data=data["id"])
     else:
-        return RichJsonInterface(retcode=0, data=data)
+        return Interface(retcode=0, data=data)
 
 
-def user_list(client: AuthClient) -> RichJsonInterface:
+def user_list(client: AuthClient) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/users/")
     users = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=users)
+    return Interface(retcode=0, data=users)
 
 
-def user_show(client: AuthClient, *, user_id: str) -> RichJsonInterface:
+def user_show(client: AuthClient, *, user_id: str) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/")
     user = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=user)
+    return Interface(retcode=0, data=user)
 
 
 def user_edit(
@@ -87,7 +86,7 @@ def user_edit(
     remove_superuser: bool = False,
     make_verified: bool = False,
     remove_verified: bool = False,
-) -> Union[RichJsonInterface, PrintInterface]:
+) -> Union[Interface, Interface]:
 
     user_update = dict()
     if new_email is not None:
@@ -95,7 +94,7 @@ def user_edit(
             # Since `fastapi-users` sets `is_verified` to `False` each time the
             # email is updated, we force the user to make explicit whether the
             # account is verified or not.
-            return PrintInterface(
+            return Interface(
                 retcode=1,
                 data=(
                     "Cannot use `--new-email` without `--make-verified` or "
@@ -121,7 +120,7 @@ def user_edit(
         user_update["username"] = new_username
 
     if not user_update:
-        return PrintInterface(retcode=1, data="Nothing to update")
+        return Interface(retcode=1, data="Nothing to update")
 
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update
@@ -137,15 +136,15 @@ def user_edit(
         )
         new_user = check_response(res, expected_status_code=200)
 
-    return RichJsonInterface(retcode=0, data=new_user)
+    return Interface(retcode=0, data=new_user)
 
 
 def user_whoami(
     client: AuthClient, *, batch: bool
-) -> Union[RichJsonInterface, PrintInterface]:
+) -> Union[Interface, Interface]:
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
     user = check_response(res, expected_status_code=200)
     if batch:
-        return PrintInterface(retcode=0, data=user["id"])
+        return Interface(retcode=0, data=user["id"])
     else:
-        return RichJsonInterface(retcode=0, data=user)
+        return Interface(retcode=0, data=user)

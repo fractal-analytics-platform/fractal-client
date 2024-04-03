@@ -6,9 +6,7 @@ from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
-from ..interface import BaseInterface
-from ..interface import PrintInterface
-from ..interface import RichJsonInterface
+from ..interface import Interface
 from ..response import check_response
 from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
@@ -16,7 +14,7 @@ from ._aux_task_caching import get_task_id_from_cache
 
 def post_workflow(
     client: AuthClient, *, name: str, project_id: int, batch: bool = False
-) -> BaseInterface:
+) -> Interface:
     workflow = dict(
         name=name,
         project_id=project_id,
@@ -27,38 +25,38 @@ def post_workflow(
     )
     workflow = check_response(res, expected_status_code=201)
     if batch:
-        return PrintInterface(retcode=0, data=workflow["id"])
+        return Interface(retcode=0, data=workflow["id"])
     else:
-        return RichJsonInterface(retcode=0, data=workflow)
+        return Interface(retcode=0, data=workflow)
 
 
 def get_workflow_list(
     client: AuthClient, *, project_id: int, batch: bool = False
-) -> RichJsonInterface:
+) -> Interface:
 
     res = client.get(f"{settings.BASE_URL}/project/{project_id}/workflow/")
     workflow_list = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=workflow_list)
+    return Interface(retcode=0, data=workflow_list)
 
 
 def delete_workflow(
     client: AuthClient, *, project_id: int, workflow_id: int
-) -> BaseInterface:
+) -> Interface:
     res = client.delete(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
     )
     check_response(res, expected_status_code=204)
-    return PrintInterface(retcode=0, data="")
+    return Interface(retcode=0, data="")
 
 
 def get_workflow(
     client: AuthClient, *, project_id: int, workflow_id: int
-) -> RichJsonInterface:
+) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
     )
     workflow = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=workflow)
+    return Interface(retcode=0, data=workflow)
 
 
 def post_workflowtask(
@@ -73,7 +71,7 @@ def post_workflowtask(
     order: Optional[int] = None,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-) -> RichJsonInterface:
+) -> Interface:
 
     if task_id:
         if task_version:
@@ -115,9 +113,9 @@ def post_workflowtask(
     workflow_task = check_response(res, expected_status_code=201)
 
     if batch:
-        return PrintInterface(retcode=0, data=str(workflow_task["id"]))
+        return Interface(retcode=0, data=str(workflow_task["id"]))
     else:
-        return RichJsonInterface(retcode=0, data=workflow_task)
+        return Interface(retcode=0, data=workflow_task)
 
 
 def patch_workflowtask(
@@ -128,7 +126,7 @@ def patch_workflowtask(
     workflow_task_id: int,
     args_file: Optional[str] = None,
     meta_file: Optional[str] = None,
-) -> RichJsonInterface:
+) -> Interface:
 
     # Check that at least one of args_file or meta_file was given (note: it
     # would be reasonable to check it in the parser, but we are not aware of a
@@ -158,7 +156,7 @@ def patch_workflowtask(
     )
     workflow_task = check_response(res, expected_status_code=200)
 
-    return RichJsonInterface(retcode=0, data=workflow_task)
+    return Interface(retcode=0, data=workflow_task)
 
 
 def delete_workflowtask(
@@ -167,14 +165,14 @@ def delete_workflowtask(
     project_id: int,
     workflow_id: int,
     workflow_task_id: int,
-) -> BaseInterface:
+) -> Interface:
 
     res = client.delete(
         f"{settings.BASE_URL}/project/{project_id}/"
         f"workflow/{workflow_id}/wftask/{workflow_task_id}/"
     )
     check_response(res, expected_status_code=204)
-    return PrintInterface(retcode=0, data="")
+    return Interface(retcode=0, data="")
 
 
 def patch_workflow(
@@ -183,7 +181,7 @@ def patch_workflow(
     project_id: int,
     workflow_id: int,
     new_name: str,
-) -> BaseInterface:
+) -> Interface:
 
     workflow_update = dict(name=new_name)
 
@@ -192,7 +190,7 @@ def patch_workflow(
         json=workflow_update,
     )
     new_workflow = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=new_workflow)
+    return Interface(retcode=0, data=new_workflow)
 
 
 def workflow_apply(
@@ -206,7 +204,7 @@ def workflow_apply(
     last_task_index: Optional[int] = None,
     worker_init: Optional[str] = None,
     batch: bool = False,
-) -> BaseInterface:
+) -> Interface:
     apply_wf_create = dict(
         workflow_id=workflow_id,
         input_dataset_id=input_dataset_id,
@@ -236,14 +234,14 @@ def workflow_apply(
     apply_wf_read = check_response(res, expected_status_code=202)
 
     if batch:
-        return PrintInterface(retcode=0, data=apply_wf_read["id"])
+        return Interface(retcode=0, data=apply_wf_read["id"])
     else:
-        return RichJsonInterface(retcode=0, data=apply_wf_read)
+        return Interface(retcode=0, data=apply_wf_read)
 
 
 def workflow_import(
     client: AuthClient, *, project_id: int, json_file: str, batch: bool = False
-) -> BaseInterface:
+) -> Interface:
     with Path(json_file).open("r") as f:
         workflow = json.load(f)
 
@@ -270,9 +268,9 @@ def workflow_import(
         datastr = f"{wf_read['id']}"
         for wftask in wf_read["task_list"]:
             datastr += f" {wftask['id']}"
-        return PrintInterface(retcode=0, data=datastr)
+        return Interface(retcode=0, data=datastr)
     else:
-        return RichJsonInterface(retcode=0, data=wf_read)
+        return Interface(retcode=0, data=wf_read)
 
 
 def workflow_export(
@@ -281,7 +279,7 @@ def workflow_export(
     project_id: int,
     workflow_id: int,
     json_file: str,
-) -> BaseInterface:
+) -> Interface:
     res = client.get(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
@@ -307,6 +305,6 @@ def workflow_export(
 
     with Path(json_file).open("w") as f:
         json.dump(workflow, f, indent=2)
-    return PrintInterface(
+    return Interface(
         retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
     )

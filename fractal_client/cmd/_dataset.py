@@ -5,10 +5,7 @@ from rich.table import Table
 
 from ..authclient import AuthClient
 from ..config import settings
-from ..interface import BaseInterface
-from ..interface import PrintInterface
-from ..interface import RichConsoleInterface
-from ..interface import RichJsonInterface
+from ..interface import Interface
 from ..response import check_response
 
 
@@ -21,7 +18,7 @@ def post_dataset(
     type: Optional[str] = None,
     batch: bool = False,
     make_read_only: bool = False,
-) -> RichJsonInterface:
+) -> Interface:
     """
     Arguments:
         project_id: ID of project to add the new dataset to
@@ -46,9 +43,9 @@ def post_dataset(
     )
     new_dataset = check_response(res, expected_status_code=201)
     if batch:
-        return PrintInterface(retcode=0, data=new_dataset["id"])
+        return Interface(retcode=0, data=new_dataset["id"])
     else:
-        return RichJsonInterface(retcode=0, data=new_dataset)
+        return Interface(retcode=0, data=new_dataset)
 
 
 def post_resource(
@@ -58,7 +55,7 @@ def post_resource(
     dataset_id: int,
     path: str,
     batch: bool = False,
-) -> BaseInterface:
+) -> Interface:
 
     res = client.post(
         (
@@ -69,9 +66,9 @@ def post_resource(
     )
     new_resource = check_response(res, expected_status_code=201)
     if batch:
-        return PrintInterface(retcode=0, data=new_resource["id"])
+        return Interface(retcode=0, data=new_resource["id"])
     else:
-        return RichJsonInterface(retcode=0, data=new_resource)
+        return Interface(retcode=0, data=new_resource)
 
 
 def delete_resource(
@@ -80,7 +77,7 @@ def delete_resource(
     project_id: int,
     dataset_id: int,
     resource_id: int,
-) -> BaseInterface:
+) -> Interface:
     res = client.delete(
         (
             f"{settings.BASE_URL}/project/{project_id}/"
@@ -88,7 +85,7 @@ def delete_resource(
         )
     )
     check_response(res, expected_status_code=204)
-    return PrintInterface(retcode=0, data="")
+    return Interface(retcode=0, data="")
 
 
 def patch_dataset(
@@ -101,7 +98,7 @@ def patch_dataset(
     meta_file: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
-) -> BaseInterface:
+) -> Interface:
 
     # Prepare payload
     dataset_update = {}
@@ -119,7 +116,7 @@ def patch_dataset(
         dataset_update["read_only"] = False
 
     if not dataset_update:
-        return PrintInterface(retcode=1, data="Nothing to update")
+        return Interface(retcode=1, data="Nothing to update")
 
     res = client.patch(
         (
@@ -129,71 +126,46 @@ def patch_dataset(
         json=dataset_update,
     )
     data = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=data)
+    return Interface(retcode=0, data=data)
 
 
 def get_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int
-) -> BaseInterface:
+) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
     )
-    from rich.console import Group
-
-    dataset = check_response(res, expected_status_code=200)
-
-    table = Table(title="Dataset")
-    table.add_column("ID", style="cyan", no_wrap=True)
-    table.add_column("Name", justify="right", style="green")
-    table.add_column("Type", style="white")
-    table.add_column("Meta", justify="center")
-    table.add_column("Read only", justify="center")
-
-    table.add_row(
-        str(dataset["id"]),
-        dataset["name"],
-        dataset["type"],
-        json.dumps(dataset["meta"], indent=2),
-        "✅" if dataset["read_only"] else "❌",
-    )
-    table_res = Table(title="Resources")
-    table_res.add_column("Path", justify="center", style="yellow")
-    table_res.add_column("ID", justify="center", style="yellow")
-    table_res.add_column("Dataset ID", justify="center", style="yellow")
-    for r in dataset["resource_list"]:
-        table_res.add_row(r["path"], str(r["id"]), str(r["dataset_id"]))
-    group = Group(table, table_res)
-    return RichConsoleInterface(retcode=0, data=group)
+    return Interface(retcode=0, data=res.json())
 
 
 def delete_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int
-) -> PrintInterface:
+) -> Interface:
 
     res = client.delete(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
     )
     check_response(res, expected_status_code=204)
-    return PrintInterface(retcode=0, data="")
+    return Interface(retcode=0, data="")
 
 
 def get_dataset_history(
     client: AuthClient, *, project_id: int, dataset_id: int
-) -> BaseInterface:
+) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
         "export_history/"
     )
     history_workflow = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=history_workflow)
+    return Interface(retcode=0, data=history_workflow)
 
 
 def get_dataset_status(
     client: AuthClient, *, project_id: int, dataset_id: int
-) -> BaseInterface:
+) -> Interface:
     res = client.get(
         f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
         "status/"
     )
     dataset_status = check_response(res, expected_status_code=200)
-    return RichJsonInterface(retcode=0, data=dataset_status)
+    return Interface(retcode=0, data=dataset_status)
