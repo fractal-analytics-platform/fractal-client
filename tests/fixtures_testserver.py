@@ -49,7 +49,7 @@ def testserver(override_server_settings):
     from multiprocessing import Process
     from fractal_server.app.db import DB
     import time
-    from sqlmodel import SQLModel
+    from fractal_server.app.models import SQLModel
 
     # INIT DB
     DB.set_sync_db()
