@@ -32,6 +32,7 @@ def override_server_settings(tmp_path):
         base_folder / "FRACTAL_RUNNER_WORKING_BASE_DIR"
     )
     settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
+    settings.FRACTAL_API_SUBMIT_RATE_LIMIT = 0
 
     def _get_settings():
         return settings
@@ -106,7 +107,7 @@ def db(testserver):
 
 @pytest.fixture
 def task_factory(db):
-    from fractal_server.app.models.task import Task
+    from fractal_server.app.models.v1.task import Task
 
     def _task_factory(**task_args_override):
         task_args = dict(
@@ -128,7 +129,7 @@ def task_factory(db):
 
 @pytest.fixture
 def project_factory(db):
-    from fractal_server.app.models.project import Project
+    from fractal_server.app.models.v1.project import Project
 
     def _project_factory(user_id=None, **project_args_override):
         project_args = dict(name="name")
@@ -149,7 +150,7 @@ def project_factory(db):
 
 @pytest.fixture
 def workflow_factory(db, project_factory):
-    from fractal_server.app.models.workflow import Workflow
+    from fractal_server.app.models.v1.workflow import Workflow
 
     def _workflow_factory(**wf_args_override):
         wf_args = dict(name="name")
@@ -165,7 +166,7 @@ def workflow_factory(db, project_factory):
 
 @pytest.fixture
 def job_factory(db):
-    from fractal_server.app.models.job import ApplyWorkflow
+    from fractal_server.app.models.v1.job import ApplyWorkflow
     from fractal_server.utils import get_timestamp
 
     def _job_factory(**job_args_override):
