@@ -46,7 +46,7 @@ def test_project_list(register_user, invoke):
 
     res = invoke("--batch project new proj0")
     project0_id = res.data
-    res = invoke(f"--batch project add-dataset {project0_id} NAME")
+    res = invoke(f"--batch project add-dataset {project0_id} NAME /tmp")
     res = invoke("--batch project new proj1")
 
     res = invoke("project list")
@@ -55,36 +55,11 @@ def test_project_list(register_user, invoke):
     assert len(res.data) == 2
 
 
-def test_add_dataset(register_user, invoke):
-    DATASET_NAME = "new_ds_name"
-
-    res = invoke("--batch project new proj0")
-    assert res.retcode == 0
-    debug(res.data)
-    project_id = int(res.data)
-
-    res = invoke(f"project add-dataset {project_id} {DATASET_NAME}")
-    assert res.retcode == 0
-    res.show()
-    assert res.data["name"] == DATASET_NAME
-    assert not res.data["read_only"]
-
-    res = invoke(
-        f"project add-dataset {project_id} new_{DATASET_NAME} --make-read-only"
-    )
-    assert res.retcode == 0
-    res.show()
-    assert res.data["name"] == f"new_{DATASET_NAME}"
-    assert res.data["read_only"]
-
-
 @pytest.mark.parametrize("new_name", ["new_name", None])
-@pytest.mark.parametrize("read_only", [True, False, None])
 def test_edit_project(
     register_user,
     invoke,
     new_name,
-    read_only,
     tmp_path,
 ):
     name = "name"
@@ -95,15 +70,11 @@ def test_edit_project(
     cmd = f"project edit {project_id}"
     if new_name:
         cmd += f" --new-name {new_name}"
-    if read_only is True:
-        cmd += " --make-read-only"
-    elif read_only is False:
-        cmd += " --remove-read-only"
 
     res = invoke(cmd)
     debug(res)
 
-    if (not new_name) and (read_only is None):
+    if not new_name:
         assert res.retcode == 1
     else:
         assert res.retcode == 0
@@ -112,9 +83,3 @@ def test_edit_project(
             assert new_project["name"] == new_name
         else:
             assert new_project["name"] == name
-        if read_only is True:
-            assert new_project["read_only"] is True
-        if read_only is False:
-            assert new_project["read_only"] is False
-        if read_only is None:
-            assert new_project["read_only"] == project["read_only"]

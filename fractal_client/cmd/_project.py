@@ -48,16 +48,10 @@ def patch_project(
     *,
     project_id: int,
     new_name: Optional[str] = None,
-    make_read_only: bool = False,
-    remove_read_only: bool = False,
 ) -> Interface:
     project_update = {}
     if new_name:
         project_update["name"] = new_name
-    if make_read_only:
-        project_update["read_only"] = True
-    if remove_read_only:
-        project_update["read_only"] = False
 
     if not project_update:
         return Interface(retcode=1, data="Nothing to update")

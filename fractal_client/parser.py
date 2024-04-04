@@ -130,21 +130,6 @@ project_edit_parser.add_argument(
 project_edit_parser.add_argument(
     "--new-name", help="New project name.", required=False
 )
-project_edit_parser_read_only = (
-    project_edit_parser.add_mutually_exclusive_group()
-)
-project_edit_parser_read_only.add_argument(
-    "--make-read-only",
-    help="Set the read-only flag for this project.",
-    action="store_true",
-    required=False,
-)
-project_edit_parser_read_only.add_argument(
-    "--remove-read-only",
-    help="Remove the read-only flag for this project.",
-    action="store_true",
-    required=False,
-)
 
 
 # DATASET GROUP

@@ -70,8 +70,6 @@ def project(
         parameters = [
             "project_id",
             "new_name",
-            "make_read_only",
-            "remove_read_only",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_project(client, **function_kwargs)
