@@ -1,8 +1,6 @@
 import json
 from typing import Optional
 
-from rich.table import Table
-
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
