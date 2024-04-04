@@ -1,5 +1,5 @@
 from typing import Optional
-from typing import Union
+
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
@@ -50,7 +50,7 @@ def patch_project(
     new_name: Optional[str] = None,
     make_read_only: bool = False,
     remove_read_only: bool = False,
-) -> Union[Interface, Interface]:
+) -> Interface:
     project_update = {}
     if new_name:
         project_update["name"] = new_name
