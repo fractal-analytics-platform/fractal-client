@@ -63,15 +63,6 @@ def test_job_show(
     assert res.retcode == 0
     assert res.data == status
 
-    # Check `job show` output with `--do-not-separate-logs`
-    cmd = f"job show {project_id} {job.id} --do-not-separate-logs"
-    res = invoke(cmd)
-    debug(res.data)
-    assert res.retcode == 0
-    assert res.data["status"] == status
-    debug(res.data)
-    assert res.data["log"] == LOG
-
 
 def test_job_list(
     register_user,

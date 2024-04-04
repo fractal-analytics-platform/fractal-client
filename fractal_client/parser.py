@@ -671,13 +671,6 @@ job_show_parser = job_subparsers.add_parser(
 )
 job_show_parser.add_argument("project_id", type=int, help="Project ID.")
 job_show_parser.add_argument("job_id", type=int, help="Job ID.")
-job_show_parser.add_argument(
-    "--do-not-separate-logs",
-    dest="do_not_separate_logs",
-    help="Show the job logs in the main output, instead of a separate field.",
-    action="store_true",
-    required=False,
-)
 
 # job download-logs
 job_download_logs_parser = job_subparsers.add_parser(

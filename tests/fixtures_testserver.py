@@ -107,7 +107,7 @@ def db(testserver):
 
 @pytest.fixture
 def task_factory(db):
-    from fractal_server.app.models.v1.task import Task
+    from fractal_server.app.models.v2.task import TaskV2
 
     def _task_factory(**task_args_override):
         task_args = dict(
@@ -118,7 +118,7 @@ def task_factory(db):
             output_type="Any",
         )
         task_args.update(task_args_override)
-        t = Task(**task_args)
+        t = TaskV2(**task_args)
         db.add(t)
         db.commit()
         db.refresh(t)
@@ -129,12 +129,12 @@ def task_factory(db):
 
 @pytest.fixture
 def project_factory(db):
-    from fractal_server.app.models.v1.project import Project
+    from fractal_server.app.models.v2.project import ProjectV2
 
     def _project_factory(user_id=None, **project_args_override):
         project_args = dict(name="name")
         project_args.update(project_args_override)
-        p = Project(**project_args)
+        p = ProjectV2(**project_args)
         if user_id:
             from fractal_server.app.security import User
 
@@ -150,12 +150,12 @@ def project_factory(db):
 
 @pytest.fixture
 def workflow_factory(db, project_factory):
-    from fractal_server.app.models.v1.workflow import Workflow
+    from fractal_server.app.models.v2.workflow import WorkflowV2
 
     def _workflow_factory(**wf_args_override):
         wf_args = dict(name="name")
         wf_args.update(wf_args_override)
-        wf = Workflow(**wf_args)
+        wf = WorkflowV2(**wf_args)
         db.add(wf)
         db.commit()
         db.refresh(wf)
@@ -166,7 +166,7 @@ def workflow_factory(db, project_factory):
 
 @pytest.fixture
 def job_factory(db):
-    from fractal_server.app.models.v1.job import ApplyWorkflow
+    from fractal_server.app.models.v2.job import JobV2
     from fractal_server.utils import get_timestamp
 
     def _job_factory(**job_args_override):
@@ -179,21 +179,14 @@ def job_factory(db):
             first_task_index=9999,
             last_task_index=9999,
             workflow_dump={},
-            input_dataset_dump=dict(
+            dataset_dump=dict(
                 id=1,
                 name="ds-in",
+                zarr_dir="/abc",
                 read_only=False,
                 project_id=1,
-                resource_list=[dict(path="/tmp", id=1, dataset_id=1)],
                 timestamp_created=str(get_timestamp()),
-            ),
-            output_dataset_dump=dict(
-                id=2,
-                name="ds-out",
-                read_only=False,
-                project_id=1,
-                resource_list=[dict(path="/tmp", id=1, dataset_id=2)],
-                timestamp_created=str(get_timestamp()),
+                filters=dict(attributes=dict(a=1), types=dict(b=True)),
             ),
             project_dump=dict(
                 id=1,
@@ -205,7 +198,7 @@ def job_factory(db):
             user_email="test@test.test",
         )
         job_args.update(job_args_override)
-        j = ApplyWorkflow(**job_args)
+        j = JobV2(**job_args)
         db.add(j)
         db.commit()
         db.refresh(j)

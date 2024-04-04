@@ -2,6 +2,7 @@ import logging
 import os
 from pathlib import Path
 from zipfile import ZipFile
+
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
@@ -13,7 +14,6 @@ def get_job(
     *,
     project_id: int,
     job_id: int,
-    do_not_separate_logs: bool = False,
     batch: bool = False,
 ) -> Interface:
     """
@@ -25,12 +25,7 @@ def get_job(
     if batch:
         return Interface(retcode=0, data=job["status"])
     else:
-        if do_not_separate_logs or (job.get("log") is None):
-            return Interface(retcode=0, data=job)
-        else:
-            return Interface(
-                retcode=0, data=job
-            )
+        return Interface(retcode=0, data=job)
 
 
 def get_job_list(
@@ -110,14 +105,10 @@ def get_job_logs(
     # Remove zipped temporary file
     os.unlink(zipped_archive_path)
 
-    return Interface(
-        retcode=0, data=f"Logs downloaded to {output_folder=}"
-    )
+    return Interface(retcode=0, data=f"Logs downloaded to {output_folder=}")
 
 
-def stop_job(
-    client: AuthClient, *, project_id: int, job_id: int
-) -> Interface:
+def stop_job(client: AuthClient, *, project_id: int, job_id: int) -> Interface:
     """
     Stop a workflow-execution job
     """
