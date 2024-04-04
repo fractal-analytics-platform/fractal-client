@@ -100,25 +100,21 @@ project_add_dataset_parser = project_subparsers.add_parser(
     allow_abbrev=False,
 )
 project_add_dataset_parser.add_argument(
-    "project_id", type=int, help="ID of project to add the new dataset to."
+    "project_id",
+    type=int,
+    help="ID of project to add the new dataset to.",
 )
 project_add_dataset_parser.add_argument(
-    "dataset_name", help="Name of new dataset."
+    "dataset_name",
+    help="Name of new dataset.",
 )
 project_add_dataset_parser.add_argument(
-    "--metadata",
-    help="Path to file containing dataset metadata in JSON format.",
+    "zarr_dir",
+    help="Path to zarr dir.",
 )
 project_add_dataset_parser.add_argument(
-    "--type",
-    help="Dataset type.",
-)
-project_add_dataset_parser.add_argument(
-    "--make-read-only",
-    action="store_true",
-    default=False,
-    required=False,
-    help="Make dataset read-only (not required).",
+    "--filters",
+    help="Path to JSON file with filters.",
 )
 
 
@@ -161,37 +157,6 @@ dataset_subparsers = dataset_parser.add_subparsers(
     title="Valid sub-commands", dest="subcmd", required=True
 )
 
-# dataset add-resource
-dataset_add_resource_parser = dataset_subparsers.add_parser(
-    "add-resource",
-    description="Add resource to existing dataset.",
-    allow_abbrev=False,
-)
-dataset_add_resource_parser.add_argument(
-    "project_id", type=int, help="Project ID."
-)
-dataset_add_resource_parser.add_argument(
-    "dataset_id", type=int, help="Dataset ID."
-)
-dataset_add_resource_parser.add_argument(
-    "path", help="Absolute path to resource."
-)
-
-# dataset rm-resource
-dataset_rm_resource_parser = dataset_subparsers.add_parser(
-    "rm-resource",
-    description="Remove resource to existing dataset.",
-    allow_abbrev=False,
-)
-dataset_rm_resource_parser.add_argument(
-    "project_id", type=int, help="Project ID."
-)
-dataset_rm_resource_parser.add_argument(
-    "dataset_id", type=int, help="Dataset ID."
-)
-dataset_rm_resource_parser.add_argument(
-    "resource_id", type=int, help="Resource ID."
-)
 
 # dataset edit
 dataset_edit_parser = dataset_subparsers.add_parser(
@@ -203,24 +168,11 @@ dataset_edit_parser = dataset_subparsers.add_parser(
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 dataset_edit_parser.add_argument("--new-name", help="New name of dataset.")
-dataset_edit_parser.add_argument("--new-type", help="Dataset type.")
 dataset_edit_parser.add_argument(
-    "--meta-file",
+    "--filters",
     help="Path to JSON file with new metadata to replace the current ones.",
 )
-dataset_edit_parser_read = dataset_edit_parser.add_mutually_exclusive_group()
-dataset_edit_parser_read.add_argument(
-    "--make-read-only",
-    help="Set read-only flag of dataset.",
-    action="store_true",
-    required=False,
-)
-dataset_edit_parser_read.add_argument(
-    "--remove-read-only",
-    help="Remove read-only flag of dataset.",
-    action="store_true",
-    required=False,
-)
+
 
 # dataset show
 dataset_show_parser = dataset_subparsers.add_parser(
@@ -241,26 +193,6 @@ dataset_delete_parser = dataset_subparsers.add_parser(
 )
 dataset_delete_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
-
-# dataset history
-dataset_history_parser = dataset_subparsers.add_parser(
-    "history",
-    description="Export dataset history as a reproducible worfklow.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-dataset_history_parser.add_argument("project_id", type=int, help="Project ID.")
-dataset_history_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
-
-# dataset status
-dataset_status_parser = dataset_subparsers.add_parser(
-    "status",
-    description="Extract status of WorkflowTasks associated with dataset.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-dataset_status_parser.add_argument("project_id", type=int, help="Project ID.")
-dataset_status_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser(

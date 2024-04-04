@@ -4,13 +4,9 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
 from ._dataset import delete_dataset
-from ._dataset import delete_resource
 from ._dataset import get_dataset
-from ._dataset import get_dataset_history
-from ._dataset import get_dataset_status
 from ._dataset import patch_dataset
 from ._dataset import post_dataset
-from ._dataset import post_resource
 from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
@@ -80,13 +76,7 @@ def project(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_project(client, **function_kwargs)
     elif subcmd == "add-dataset":
-        parameters = [
-            "project_id",
-            "dataset_name",
-            "metadata",
-            "type",
-            "make_read_only",
-        ]
+        parameters = ["project_id", "dataset_name", "zarr_dir", "filters"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_dataset(client, batch=batch, **function_kwargs)
     elif subcmd == "delete":
@@ -109,23 +99,12 @@ def dataset(
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = get_dataset(client, **function_kwargs)
-    elif subcmd == "add-resource":
-        parameters = ["project_id", "dataset_id", "path"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = post_resource(client, batch=batch, **function_kwargs)
-    elif subcmd == "rm-resource":
-        parameters = ["project_id", "dataset_id", "resource_id"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = delete_resource(client, **function_kwargs)
     elif subcmd == "edit":
         parameters = [
             "project_id",
             "dataset_id",
             "new_name",
-            "new_type",
-            "meta_file",
-            "make_read_only",
-            "remove_read_only",
+            "filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_dataset(client, **function_kwargs)
@@ -133,14 +112,6 @@ def dataset(
         parameters = ["project_id", "dataset_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = delete_dataset(client, **function_kwargs)
-    elif subcmd == "history":
-        parameters = ["project_id", "dataset_id"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_dataset_history(client, **function_kwargs)
-    elif subcmd == "status":
-        parameters = ["project_id", "dataset_id"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = get_dataset_status(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command dataset {subcmd} not found")
     return iface

@@ -12,28 +12,23 @@ def post_dataset(
     *,
     project_id: int,
     dataset_name: str,
-    metadata: Optional[str] = None,
-    type: Optional[str] = None,
+    zarr_dir: str,
+    filters: Optional[str] = None,
     batch: bool = False,
-    make_read_only: bool = False,
 ) -> Interface:
     """
     Arguments:
         project_id: ID of project to add the new dataset to
         dataset_name: Name of new dataset
-        metadata: Path to file containing dataset metadata in JSON format.
-        type: Dataset type.
-        make_read_only: Make the new dataset read-only.
+        filters: Path to file containing dataset filters in JSON format.
+        batch: Dataset filters.
     """
-    if metadata is None:
-        meta = {}
+    if filters is None:
+        filters_dict = {}
     else:
-        with open(metadata, "r") as f:
-            meta = json.load(f)
-
-    dataset = dict(name=dataset_name, meta=meta, read_only=make_read_only)
-    if type:
-        dataset["type"] = type
+        with open(filters, "r") as f:
+            filters_dict = json.load(f)
+    dataset = dict(name=dataset_name, filters=filters_dict, zarr_dir=zarr_dir)
 
     res = client.post(
         f"{settings.BASE_URL}/project/{project_id}/dataset/",
@@ -92,26 +87,16 @@ def patch_dataset(
     project_id: int,
     dataset_id: int,
     new_name: Optional[str] = None,
-    new_type: Optional[str] = None,
-    meta_file: Optional[str] = None,
-    make_read_only: bool = False,
-    remove_read_only: bool = False,
+    filters: Optional[str] = None,
 ) -> Interface:
-
     # Prepare payload
     dataset_update = {}
     if new_name:
         dataset_update["name"] = new_name
-    if new_type:
-        dataset_update["type"] = new_type
-    if meta_file:
-        with open(meta_file, "r") as f:
-            meta = json.load(f)
-        dataset_update.update(meta=meta)
-    if make_read_only:
-        dataset_update["read_only"] = True
-    if remove_read_only:
-        dataset_update["read_only"] = False
+    if filters:
+        with open(filters, "r") as f:
+            filters = json.load(f)
+        dataset_update.update(filters=filters)
 
     if not dataset_update:
         return Interface(retcode=1, data="Nothing to update")
@@ -145,25 +130,3 @@ def delete_dataset(
     )
     check_response(res, expected_status_code=204)
     return Interface(retcode=0, data="")
-
-
-def get_dataset_history(
-    client: AuthClient, *, project_id: int, dataset_id: int
-) -> Interface:
-    res = client.get(
-        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
-        "export_history/"
-    )
-    history_workflow = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=history_workflow)
-
-
-def get_dataset_status(
-    client: AuthClient, *, project_id: int, dataset_id: int
-) -> Interface:
-    res = client.get(
-        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
-        "status/"
-    )
-    dataset_status = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=dataset_status)
