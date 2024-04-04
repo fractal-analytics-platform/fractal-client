@@ -72,7 +72,6 @@ def test_delete_dataset(register_user, invoke):
     res = invoke(f"dataset delete {project_id} {dataset_id}")
     debug(res.data)
     # Check that dataset show fails
-    # with pytest.raises(SystemExit):
     res = invoke(f"dataset show {project_id} {dataset_id}")
     assert res.data["detail"] == "Dataset not found"
 
