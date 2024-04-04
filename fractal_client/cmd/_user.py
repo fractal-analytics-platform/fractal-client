@@ -1,5 +1,4 @@
 from typing import Optional
-from typing import Union
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -18,7 +17,7 @@ def user_register(
     superuser: bool = False,
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
-) -> Union[Interface, Interface]:
+) -> Interface:
 
     new_user = dict(
         email=new_email,
@@ -86,7 +85,7 @@ def user_edit(
     remove_superuser: bool = False,
     make_verified: bool = False,
     remove_verified: bool = False,
-) -> Union[Interface, Interface]:
+) -> Interface:
 
     user_update = dict()
     if new_email is not None:
@@ -139,9 +138,7 @@ def user_edit(
     return Interface(retcode=0, data=new_user)
 
 
-def user_whoami(
-    client: AuthClient, *, batch: bool
-) -> Union[Interface, Interface]:
+def user_whoami(client: AuthClient, *, batch: bool) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
     user = check_response(res, expected_status_code=200)
     if batch:
