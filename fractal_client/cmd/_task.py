@@ -63,7 +63,6 @@ def task_collection_check(
     *,
     state_id: int,
     include_logs: bool,
-    do_not_separate_logs: bool = False,
 ) -> Interface:
 
     res = client.get(
@@ -74,12 +73,10 @@ def task_collection_check(
     # Remove key-value pairs with None value
     state["data"] = {key: val for (key, val) in state["data"].items() if val}
 
-    if (not include_logs) or do_not_separate_logs:
+    if include_logs:
         return Interface(retcode=0, data=state)
     else:
-        log = state["data"].pop("log")
-        extra_lines = ["\nThis is the task-collection log:\n", log]
-        return Interface(retcode=0, data=state, extra_lines=extra_lines)
+        return Interface(retcode=0, data=state["data"]["status"])
 
 
 def post_task() -> None:

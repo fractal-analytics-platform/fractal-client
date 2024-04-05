@@ -253,46 +253,6 @@ task_check_collection_parser.add_argument(
     action="store_true",
     help="Also include task-collection logs.",
 )
-task_check_collection_parser.add_argument(
-    "--do-not-separate-logs",
-    dest="do_not_separate_logs",
-    help=(
-        "Show the task-collection logs in the main output, "
-        "instead of a separate field."
-    ),
-    action="store_true",
-    required=False,
-)
-
-
-# task new
-
-
-# task edit
-
-# task delete
-task_delete_parser = task_subparsers.add_parser(
-    "delete",
-    description="Delete task.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-task_delete_id_or_name_group = task_delete_parser.add_mutually_exclusive_group(
-    required=True
-)
-task_delete_id_or_name_group.add_argument(
-    "--id", help="ID of the task to delete.", type=int
-)
-task_delete_id_or_name_group.add_argument(
-    "--name", help="Name of the task to delete."
-)
-task_delete_parser.add_argument(
-    "--version",
-    help=(
-        "Version of the task to delete "
-        "(only accepted in combination with `--name`)."
-    ),
-)
 
 
 # WORKFLOW GROUP

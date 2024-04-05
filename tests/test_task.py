@@ -76,28 +76,22 @@ def test_task_collection(register_user, invoke, testdata_path):
     starting_time = time.perf_counter()
     while True:
         res1 = invoke(f"task check-collection {state_id}")
+        debug(res1.data)
         assert res1.retcode == 0
         res1.show()
         time.sleep(1)
-        if res1.data["data"]["status"] == "OK":
+        if res1.data == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
-    # Add --include-logs and --do-not-separate-logs flags
-    res2 = invoke(
-        f"task check-collection {state_id}"
-        " --include-logs"
-        " --do-not-separate-logs"
-    )
-    assert res2.retcode == 0
+    res2 = invoke(f"task check-collection {state_id}" " --include-logs")
+    debug(res2.data)
+    assert res2.retcode == 0j
     res2.show()
-    assert res2.data["data"]["log"]
     assert res2.data["data"]["status"] == "OK"
 
-    # Show again the check-collection output, without --do-not-separate-logs,
-    # for visual inspection
-    res = invoke(f"task check-collection {state_id} --include-logs")
-    res.show()
+    res = invoke("task list")
+    assert len(res.data) == 13
 
 
 def test_repeated_task_collection(register_user, invoke, testdata_path):
@@ -126,7 +120,7 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
     while True:
         res1 = invoke(f"task check-collection {state_id}")
         time.sleep(1)
-        if res1.data["data"]["status"] == "OK":
+        if res1.data == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
