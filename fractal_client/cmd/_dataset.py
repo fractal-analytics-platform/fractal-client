@@ -41,46 +41,6 @@ def post_dataset(
         return Interface(retcode=0, data=new_dataset)
 
 
-def post_resource(
-    client: AuthClient,
-    *,
-    project_id: int,
-    dataset_id: int,
-    path: str,
-    batch: bool = False,
-) -> Interface:
-
-    res = client.post(
-        (
-            f"{settings.BASE_URL}/project/{project_id}/"
-            f"dataset/{dataset_id}/resource/"
-        ),
-        json=dict(path=path),
-    )
-    new_resource = check_response(res, expected_status_code=201)
-    if batch:
-        return Interface(retcode=0, data=new_resource["id"])
-    else:
-        return Interface(retcode=0, data=new_resource)
-
-
-def delete_resource(
-    client: AuthClient,
-    *,
-    project_id: int,
-    dataset_id: int,
-    resource_id: int,
-) -> Interface:
-    res = client.delete(
-        (
-            f"{settings.BASE_URL}/project/{project_id}/"
-            f"dataset/{dataset_id}/resource/{resource_id}/"
-        )
-    )
-    check_response(res, expected_status_code=204)
-    return Interface(retcode=0, data="")
-
-
 def patch_dataset(
     client: AuthClient,
     *,
