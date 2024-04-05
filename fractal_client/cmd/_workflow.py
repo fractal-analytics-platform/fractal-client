@@ -104,12 +104,11 @@ def post_workflowtask(
         with Path(args_non_parallel).open("r") as f:
             a_n_p = json.load(f)
         workflow_task["args_non_parallel"] = a_n_p
-    elif args_parallel:
+
+    if args_parallel:
         with Path(args_parallel).open("r") as f:
             a_p = json.load(f)
         workflow_task["args_parallel"] = a_p
-    else:
-        raise ValueError("Missing task args")
 
     res = client.post(
         (
