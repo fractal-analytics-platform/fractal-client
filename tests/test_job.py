@@ -279,7 +279,7 @@ def test_job_submit(
     assert res.retcode == 0
     prj = res.data
     prj_id = prj["id"]
-    res = invoke(f"project add-dataset {prj_id} test_name /tmp")
+    res = invoke(f"project add-dataset {prj_id} test_name {tmp_path}/ds")
     dataset_id = res.data["id"]
 
     # Create workflow and add task twice
@@ -348,19 +348,13 @@ def test_job_submit(
     assert job["last_task_index"] == LAST_TASK_INDEX
 
     # Prepare and run a workflow with a failing task
-    input_filters_file = str(tmp_path / "input_filters.json")
     args_file = str(tmp_path / "args.json")
     with open(args_file, "w") as f:
-        json.dump({"image_dir": "/tmp"}, f)
-
-    with open(input_filters_file, "w") as f:
-        json.dump({"raise_error": True}, f)
-
+        json.dump({"image_dir": "/asdasd"}, f)
     res = invoke(
         (
             f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
             f" --args-non-parallel {args_file} "
-            f"--input-filters {input_filters_file}"
         )
     )
     assert res.retcode == 0
@@ -391,7 +385,10 @@ def test_job_submit(
     res = invoke(f"workflow new OneMoreWorkflow {prj_id}")
     workflow_id = res.data["id"]
     res = invoke(
-        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+        (
+            f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID} "
+            f"--args-non-parallel {args_file}"
+        )
     )
     assert res.retcode == 0
     cmd = f"--batch job submit " f"{prj_id} {workflow_id} {dataset_id}"
