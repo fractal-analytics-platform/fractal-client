@@ -135,14 +135,14 @@ def job_submit(
     batch: bool = False,
 ) -> Interface:
 
-    apply_wf_create = dict()
-    # Prepare ApplyWorkflowCreate object, without None attributes
+    job_submit = dict()
+    # Prepare JobV2 object, without None attributes
     if worker_init is not None:
-        apply_wf_create["worker_init"] = worker_init
+        job_submit["worker_init"] = worker_init
     if first_task_index is not None:
-        apply_wf_create["first_task_index"] = first_task_index
+        job_submit["first_task_index"] = first_task_index
     if last_task_index is not None:
-        apply_wf_create["last_task_index"] = last_task_index
+        job_submit["last_task_index"] = last_task_index
 
     # Prepare query parameters
     query_parameters = f"workflow_id={workflow_id}" f"&dataset_id={dataset_id}"
@@ -152,11 +152,11 @@ def job_submit(
             f"{settings.BASE_URL}/project/{project_id}/job/"
             f"submit/?{query_parameters}"
         ),
-        json=apply_wf_create,
+        json=job_submit,
     )
-    apply_wf_read = check_response(res, expected_status_code=202)
+    job_read = check_response(res, expected_status_code=202)
 
     if batch:
-        return Interface(retcode=0, data=apply_wf_read["id"])
+        return Interface(retcode=0, data=job_read["id"])
     else:
-        return Interface(retcode=0, data=apply_wf_read)
+        return Interface(retcode=0, data=job_read)
