@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import Optional
 from zipfile import ZipFile
 
 from ..authclient import AuthClient
@@ -120,3 +121,45 @@ def stop_job(client: AuthClient, *, project_id: int, job_id: int) -> Interface:
     return Interface(
         retcode=0, data="Correctly called the job-stopping endpoint"
     )
+
+
+def job_submit(
+    client: AuthClient,
+    *,
+    project_id: int,
+    workflow_id: int,
+    dataset_id: int,
+    first_task_index: Optional[int] = None,
+    last_task_index: Optional[int] = None,
+    worker_init: Optional[str] = None,
+    batch: bool = False,
+) -> Interface:
+
+    apply_wf_create = dict(
+        workflow_id=workflow_id,
+        dataset_id=dataset_id,
+    )
+    # Prepare ApplyWorkflowCreate object, without None attributes
+    if worker_init is not None:
+        apply_wf_create["worker_init"] = worker_init
+    if first_task_index is not None:
+        apply_wf_create["first_task_index"] = first_task_index
+    if last_task_index is not None:
+        apply_wf_create["last_task_index"] = last_task_index
+
+    # Prepare query parameters
+    query_parameters = f"workflow_id={workflow_id}" f"&dataset_id={dataset_id}"
+
+    res = client.post(
+        (
+            f"{settings.BASE_URL}/project/{project_id}/job/"
+            f"submit/?{query_parameters}"
+        ),
+        json=apply_wf_create,
+    )
+    apply_wf_read = check_response(res, expected_status_code=202)
+
+    if batch:
+        return Interface(retcode=0, data=apply_wf_read["id"])
+    else:
+        return Interface(retcode=0, data=apply_wf_read)

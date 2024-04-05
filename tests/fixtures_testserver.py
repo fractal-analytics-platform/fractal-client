@@ -112,7 +112,7 @@ def task_factory(db):
     def _task_factory(**task_args_override):
         task_args = dict(
             name="test_task",
-            type="type",
+            type="parallel",
             source="source",
         )
         task_args.update(task_args_override)

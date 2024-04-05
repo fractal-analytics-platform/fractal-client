@@ -1,9 +1,13 @@
+import json
+import time
 from pathlib import Path
+from urllib.request import urlretrieve
 
 import pytest  # noqa F401
 from devtools import debug
 from fractal_server.utils import get_timestamp
 
+TIMEOUT = 15.0
 
 LOG = "Here are some logs"
 
@@ -233,3 +237,151 @@ def test_job_stop(
     debug(caplog.text)
     assert "Stopping a job execution is not implemented" in caplog.text
     caplog.clear()
+
+
+def test_job_submit(
+    register_user, invoke, testdata_path: Path, tmp_path: Path
+):
+    """
+    GIVEN a project and a nontrivial workflow
+    WHEN the client requests to apply the workflow to the project
+    THEN the workflow is scheduled and executed, and the artifacts created
+    """
+
+    # Collect tasks
+    PACKAGE_URL = (
+        "https://github.com/fractal-analytics-platform/fractal-server/"
+        "raw/main/tests/v2/fractal_tasks_mock/dist/"
+        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    )
+    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
+
+    WORKFLOW_NAME = "mywf"
+    res0 = invoke(f"task collect {PACKAGE_PATH}")
+    debug(res0)
+    venv_path = res0.data["data"]["venv_path"]
+    debug(venv_path)
+    state_id = res0.data["id"]
+
+    # Wait for task collection to end
+    starting_time = time.perf_counter()
+    while True:
+        res1 = invoke(f"task check-collection {state_id}")
+        if res1.data["data"]["status"] == "OK":
+            debug(res1.data)
+            break
+        time.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
+
+    # Create a project
+    res = invoke("project new testproject")
+    assert res.retcode == 0
+    prj = res.data
+    prj_id = prj["id"]
+    res = invoke(f"project add-dataset {prj_id} test_name /tmp")
+    dataset_id = res.data["id"]
+
+    # Create workflow and add task twice
+    res = invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
+    workflow = res.data
+    workflow_id = workflow["id"]
+    debug(workflow)
+    assert res.retcode == 0
+    for _ in [0, 1]:
+        TASK_ID = 1
+        res = invoke(
+            f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+        )
+        workflow_task = res.data
+        debug(workflow_task)
+        assert res.retcode == 0
+        TASK_NAME = res.data["task"]["name"]
+        debug(TASK_NAME)
+
+    # Call `workflow apply`
+    FIRST_TASK_INDEX = 0
+    LAST_TASK_INDEX = 0
+    cmd = (
+        f"job submit "
+        f"{prj_id} {workflow_id} {dataset_id} "
+        f"--start {FIRST_TASK_INDEX} --end {LAST_TASK_INDEX} "
+        f'--worker-init "export SOMEVARIABLE=1"'
+    )
+    debug(cmd)
+    res = invoke(cmd)
+    job = res.data
+    debug(job)
+    assert res.retcode == 0
+    job_id = job["id"]
+    assert job["status"] == "submitted"
+
+    # Avoid immediately calling `job show` right after `workflow apply`
+    time.sleep(1)
+
+    # Check that job completed successfully
+    cmd = f"job show {prj_id} {job_id}"
+    starting_time = time.perf_counter()
+    debug(cmd)
+    while True:
+        res = invoke(cmd)
+        job = res.data
+        debug(job)
+        assert res.retcode == 0
+        if job["status"] == "done":
+            break
+        elif job["status"] == "failed":
+            raise RuntimeError(job)
+        time.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
+
+    # Check that job has correct first_task_index and last_task_index
+    # attributes
+    assert job["first_task_index"] == FIRST_TASK_INDEX
+    assert job["last_task_index"] == LAST_TASK_INDEX
+
+    # Prepare and run a workflow with a failing task
+    input_filters_file = str(tmp_path / "input_filters.json")
+    with open(input_filters_file, "w") as f:
+        json.dump({"raise_error": True}, f)
+    res = invoke(
+        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+        f" --input-filters {input_filters_file}"
+    )
+    assert res.retcode == 0
+    cmd = f"job submit " f"{prj_id} {workflow_id} {dataset_id}"
+    debug(cmd)
+    res = invoke(cmd)
+    assert res.retcode == 0
+    job_id = res.data["id"]
+
+    # Avoid immediately calling `job show` right after `workflow apply`
+    time.sleep(1)
+
+    # Verify that status is failed, and that there is a log
+    cmd = f"job show {prj_id} {job_id}"
+    starting_time = time.perf_counter()
+    while True:
+        res = invoke(cmd)
+        job = res.data
+        debug(job)
+        assert res.retcode == 0
+        if job["status"] == "failed":
+            break
+        time.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
+    assert job["log"] is not None
+
+    # Prepare and submit a workflow with --batch
+    res = invoke(f"workflow new OneMoreWorkflow {prj_id}")
+    workflow_id = res.data["id"]
+    res = invoke(
+        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+    )
+    assert res.retcode == 0
+    cmd = f"--batch job submit " f"{prj_id} {workflow_id} {dataset_id}"
+    debug(cmd)
+    res = invoke(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+    assert isinstance(res.data, int)

@@ -386,7 +386,6 @@ workflow_add_task_id_or_name_group.add_argument(
 workflow_add_task_id_or_name_group.add_argument(
     "--task-name", help="Name of the task to add."
 )
-
 workflow_add_task_parser.add_argument(
     "--task-version",
     help=(
@@ -398,18 +397,13 @@ workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list."
 )
 workflow_add_task_parser.add_argument(
-    "--args-file",
-    help=(
-        "Path to json serialised file containing the arguments "
-        "overrides of the task."
-    ),
+    "--input-filters",
+    help=("Path to json file with filters."),
 )
 workflow_add_task_parser.add_argument(
-    "--meta-file",
-    help=(
-        "Path to json serialised file containing the meta "
-        "overrides of the task."
-    ),
+    "--is-legacy-task",
+    action="store_true",
+    help=("Boolean for legacy task, if set it pass true."),
 )
 
 # workflow edit task
@@ -432,16 +426,9 @@ workflow_edit_task_parser.add_argument(
     help="Workflow task ID, the ID of a task inside the list of tasks.",
 )
 workflow_edit_task_parser.add_argument(
-    "--args-file",
+    "--input-filters",
     help=(
         "Path to json serialised file containing the arguments "
-        "overrides of the task."
-    ),
-)
-workflow_edit_task_parser.add_argument(
-    "--meta-file",
-    help=(
-        "Path to json serialised file containing the meta "
         "overrides of the task."
     ),
 )
@@ -466,43 +453,6 @@ workflow_remove_task_parser.add_argument(
     help="Workflow task ID (the ID of a task inside the list of tasks).",
 )
 
-# workflow apply
-workflow_apply_parser = workflow_subparsers.add_parser(
-    "apply",
-    description="Apply workflow to dataset.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-
-workflow_apply_parser.add_argument("project_id", type=int)
-workflow_apply_parser.add_argument("workflow_id", type=int)
-workflow_apply_parser.add_argument("input_dataset_id", type=int)
-workflow_apply_parser.add_argument("output_dataset_id", type=int)
-workflow_apply_parser.add_argument(
-    "--start",
-    dest="first_task_index",
-    type=int,
-    help=(
-        "Positional index of the first task to be executed"
-        " (starting from 0)."
-    ),
-    required=False,
-)
-workflow_apply_parser.add_argument(
-    "--end",
-    dest="last_task_index",
-    type=int,
-    help=(
-        "Positional index of the last task to be executed"
-        " (starting from 0)."
-    ),
-    required=False,
-)
-workflow_apply_parser.add_argument(
-    "-w",
-    "--worker-init",
-    help="Command to be run before starting a worker.",
-)
 
 # workflow import
 workflow_import_parser = workflow_subparsers.add_parser(
@@ -601,6 +551,44 @@ job_stop_parser = job_subparsers.add_parser(
 )
 job_stop_parser.add_argument("project_id", type=int, help="Project ID.")
 job_stop_parser.add_argument("job_id", type=int, help="Job ID.")
+
+
+# job submit
+job_submit_parser = job_subparsers.add_parser(
+    "submit",
+    description="Submit a job.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+
+job_submit_parser.add_argument("project_id", type=int)
+job_submit_parser.add_argument("workflow_id", type=int)
+job_submit_parser.add_argument("dataset_id", type=int)
+job_submit_parser.add_argument(
+    "--start",
+    dest="first_task_index",
+    type=int,
+    help=(
+        "Positional index of the first task to be executed"
+        " (starting from 0)."
+    ),
+    required=False,
+)
+job_submit_parser.add_argument(
+    "--end",
+    dest="last_task_index",
+    type=int,
+    help=(
+        "Positional index of the last task to be executed"
+        " (starting from 0)."
+    ),
+    required=False,
+)
+job_submit_parser.add_argument(
+    "-w",
+    "--worker-init",
+    help="Command to be run before starting a worker.",
+)
 
 
 # VERSION GROUP

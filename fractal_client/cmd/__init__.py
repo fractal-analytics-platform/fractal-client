@@ -10,6 +10,7 @@ from ._dataset import post_dataset
 from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
+from ._job import job_submit
 from ._job import stop_job
 from ._project import delete_project
 from ._project import get_project
@@ -35,9 +36,6 @@ from ._workflow import patch_workflow
 from ._workflow import patch_workflowtask
 from ._workflow import post_workflow
 from ._workflow import post_workflowtask
-from ._workflow import workflow_apply
-from ._workflow import workflow_export
-from ._workflow import workflow_import
 from fractal_client import __VERSION__
 
 
@@ -211,8 +209,8 @@ def workflow(
             "task_name",
             "task_version",
             "order",
-            "args_file",
-            "meta_file",
+            "input_filters",
+            "is_legacy_task",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_workflowtask(client, batch=batch, **function_kwargs)
@@ -221,8 +219,7 @@ def workflow(
             "project_id",
             "workflow_id",
             "workflow_task_id",
-            "args_file",
-            "meta_file",
+            "input_filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_workflowtask(client, **function_kwargs)
@@ -230,26 +227,6 @@ def workflow(
         parameters = ["project_id", "workflow_id", "workflow_task_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = delete_workflowtask(client, **function_kwargs)
-    elif subcmd == "apply":
-        parameters = [
-            "project_id",
-            "workflow_id",
-            "input_dataset_id",
-            "output_dataset_id",
-            "worker_init",
-            "first_task_index",
-            "last_task_index",
-        ]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_apply(client, batch=batch, **function_kwargs)
-    elif subcmd == "import":
-        parameters = ["project_id", "json_file"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_import(client, batch=batch, **function_kwargs)
-    elif subcmd == "export":
-        parameters = ["project_id", "workflow_id", "json_file"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_export(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface
@@ -277,6 +254,17 @@ def job(
         parameters = ["project_id", "job_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = stop_job(client, **function_kwargs)
+    elif subcmd == "submit":
+        parameters = [
+            "project_id",
+            "workflow_id",
+            "dataset_id",
+            "worker_init",
+            "first_task_index",
+            "last_task_index",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = job_submit(client, batch=batch, **function_kwargs)
     else:
         raise NoCommandError(f"Command job {subcmd} not found")
     return iface
