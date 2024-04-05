@@ -18,7 +18,6 @@ def post_workflow(
 ) -> Interface:
     workflow = dict(
         name=name,
-        project_id=project_id,
     )
     res = client.post(
         f"{settings.BASE_URL}/project/{project_id}/workflow/",

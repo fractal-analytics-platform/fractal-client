@@ -135,10 +135,7 @@ def job_submit(
     batch: bool = False,
 ) -> Interface:
 
-    apply_wf_create = dict(
-        workflow_id=workflow_id,
-        dataset_id=dataset_id,
-    )
+    apply_wf_create = dict()
     # Prepare ApplyWorkflowCreate object, without None attributes
     if worker_init is not None:
         apply_wf_create["worker_init"] = worker_init
