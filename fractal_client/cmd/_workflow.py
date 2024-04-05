@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from typing import Any
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -65,6 +66,8 @@ def post_workflowtask(
     project_id: int,
     workflow_id: int,
     input_filters: str,
+    args_non_parallel: Optional[dict[str, Any]],
+    args_parallel: Optional[dict[str, Any]],
     is_legacy_task: Optional[bool] = False,
     task_id: Optional[int] = None,
     task_name: Optional[str] = None,
@@ -97,6 +100,17 @@ def post_workflowtask(
         with Path(input_filters).open("r") as f:
             i_filters = json.load(f)
             workflow_task["input_filters"] = i_filters
+
+    if args_non_parallel:
+        with Path(args_non_parallel).open("r") as f:
+            a_n_p = json.load(f)
+        workflow_task["args_non_parallel"] = a_n_p
+    elif args_parallel:
+        with Path(args_parallel).open("r") as f:
+            a_p = json.load(f)
+        workflow_task["args_parallel"] = a_p
+    else:
+        raise ValueError("Missing task args")
 
     res = client.post(
         (

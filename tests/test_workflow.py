@@ -160,10 +160,15 @@ def test_workflow_add_task(
     t = task_factory()
 
     INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
+    ARGS = {"image_dir": "/asdasd"}
 
     input_filters_file = tmp_path / "input_filters.json"
     with input_filters_file.open("w") as f:
         json.dump(INPUT_FILTERS, f)
+
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
 
     cmd = f"workflow add-task {project_id} {wf.id}"
     # Test fail with no task_id nor task_name
@@ -171,18 +176,32 @@ def test_workflow_add_task(
         invoke(cmd)
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
-        invoke(f"{cmd} --task-id {t.id} --task-name {t.name}")
+        invoke(
+            (
+                f"{cmd} --task-id {t.id} --task-name {t.name} "
+                f"--args-parallel {args_file}"
+            )
+        )
     # Test fail with both task_id and version
     with pytest.raises(SystemExit):
-        invoke(f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6")
+        invoke(
+            (
+                f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6 "
+                f"--args-parallel {args_file}"
+            )
+        )
     assert caplog.records[-1].msg == (
         "Too many arguments: cannot provide both `task_id` and `task_version`."
     )
 
-    cmd = f"{cmd} --task-id {t.id} " f"--input-filters {input_filters_file}"
+    cmd = (
+        f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
+        f"--args-parallel {args_file}"
+    )
     debug(cmd)
     # Test success
     res = invoke(cmd)
+    debug(res.data)
     assert res.retcode == 0
 
     workflow_task = res.data
@@ -193,7 +212,7 @@ def test_workflow_add_task(
     # Add a WorkflowTask by Task.name with the --batch option
     cmd = (
         f"--batch workflow add-task {project_id} {wf.id} "
-        f"--task-name {t.name} --order 1"
+        f"--task-name {t.name} --order 1 --args-parallel {args_file}"
     )
     debug(cmd)
     res = invoke(cmd)
@@ -230,7 +249,16 @@ def test_workflow_add_task_by_name(
     task = task_factory()
     debug(task)
 
-    cmd = f"workflow add-task {project_id} {wf.id} --task-name {task.name}"
+    ARGS = {"image_dir": "/asdasd"}
+
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
+
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-name {task.name} "
+        f"--args-parallel {args_file}"
+    )
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
@@ -240,7 +268,8 @@ def test_workflow_add_task_by_name(
     # Fail when adding task via a wrong name
     with pytest.raises(SystemExit):
         cmd = (
-            f"workflow add-task {project_id} {wf.id} --task-name INVALID_NAME"
+            f"workflow add-task {project_id} {wf.id} --task-name INVALID_NAME "
+            f"--args-parallel {args_file}"
         )
         debug(cmd)
         res = invoke(cmd)
@@ -265,7 +294,11 @@ def test_task_cache_with_non_unique_names(
 
     res = invoke("project new MyProject")
     project_id = res.data["id"]
+    ARGS = {"image_dir": "/asdasd"}
 
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
     # Create two tasks with the same name
     task1 = task_factory()
     task2 = task_factory()
@@ -281,7 +314,10 @@ def test_task_cache_with_non_unique_names(
     # Verify that adding tasks to a worfklow by name (as opposed to "by id")
     # fails because of missing cache file
     wf = workflow_factory(project_id=project_id)
-    cmd = f"workflow add-task {project_id} {wf.id} --task-name {task1.name}"
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-name {task1.name} "
+        f"--args-parallel {args_file}"
+    )
     debug(cmd)
     with pytest.raises(FileNotFoundError):
         res = invoke(cmd)
@@ -300,8 +336,17 @@ def test_workflow_rm_task(
     wf = workflow_factory(project_id=project_id)
     t = task_factory()
 
+    ARGS = {"image_dir": "/asdasd"}
+
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
+
     # Add task to workflow, twice
-    cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-id {t.id} "
+        f"--args-parallel {args_file}"
+    )
     res = invoke(cmd)
     assert res.retcode == 0
     res = invoke(cmd)
@@ -336,9 +381,16 @@ def test_workflow_edit_task(
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
     t = task_factory()
+    ARGS = {"image_dir": "/asdasd"}
 
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
     # Create task, without overriding arguments
-    cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-id {t.id} "
+        f"--args-parallel {args_file}"
+    )
     res = invoke(cmd)
     assert res.retcode == 0
 

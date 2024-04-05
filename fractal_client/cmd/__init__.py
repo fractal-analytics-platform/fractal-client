@@ -209,6 +209,8 @@ def workflow(
             "task_name",
             "task_version",
             "order",
+            "args_non_parallel",
+            "args_parallel",
             "input_filters",
             "is_legacy_task",
         ]

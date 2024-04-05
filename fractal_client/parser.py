@@ -396,6 +396,18 @@ workflow_add_task_parser.add_argument(
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list."
 )
+
+workflow_add_args_group = (
+    workflow_add_task_parser.add_mutually_exclusive_group(required=True)
+)
+workflow_add_args_group.add_argument(
+    "--args-non-parallel", help="Args for non parallel tasks"
+)
+
+workflow_add_args_group.add_argument(
+    "--args-parallel", help="Args for parallel tasks"
+)
+
 workflow_add_task_parser.add_argument(
     "--input-filters",
     help=("Path to json file with filters."),
