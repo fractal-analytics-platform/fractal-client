@@ -28,7 +28,9 @@ def post_dataset(
     else:
         with open(filters, "r") as f:
             filters_dict = json.load(f)
-    dataset = dict(name=dataset_name, filters=filters_dict, zarr_dir=zarr_dir)
+        dataset = dict(
+            name=dataset_name, filters=filters_dict, zarr_dir=zarr_dir
+        )
 
     res = client.post(
         f"{settings.BASE_URL}/project/{project_id}/dataset/",
