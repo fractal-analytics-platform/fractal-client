@@ -53,9 +53,6 @@ def patch_project(
     if new_name:
         project_update["name"] = new_name
 
-    if not project_update:
-        return Interface(retcode=1, data="Nothing to update")
-
     res = client.patch(
         f"{settings.BASE_URL}/project/{project_id}/", json=project_update
     )
