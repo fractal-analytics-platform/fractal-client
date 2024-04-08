@@ -366,8 +366,16 @@ workflow_add_task_parser.add_argument(
 )
 
 workflow_add_task_parser.add_argument(
+    "--meta--non--parallel", help="Metadata file fornon parallel tasks"
+)
+
+workflow_add_task_parser.add_argument(
+    "--meta--parallel", help="Metadata file for parallel tasks"
+)
+
+workflow_add_task_parser.add_argument(
     "--input-filters",
-    help=("Path to json file with filters."),
+    help="Path to json file with filters.",
 )
 
 

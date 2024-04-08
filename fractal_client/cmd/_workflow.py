@@ -2,7 +2,6 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -64,9 +63,11 @@ def post_workflowtask(
     *,
     project_id: int,
     workflow_id: int,
-    input_filters: str,
-    args_non_parallel: Optional[dict[str, Any]],
-    args_parallel: Optional[dict[str, Any]],
+    input_filters: Optional[str] = None,
+    args_non_parallel: Optional[str] = None,
+    args_parallel: Optional[str] = None,
+    meta_non_parallel: Optional[str] = None,
+    meta_parallel: Optional[str] = None,
     task_id: Optional[int] = None,
     task_name: Optional[str] = None,
     task_version: Optional[str] = None,
@@ -94,6 +95,7 @@ def post_workflowtask(
         workflow_task = dict()
     else:
         workflow_task = dict(order=order)
+
     if input_filters:
         with Path(input_filters).open("r") as f:
             i_filters = json.load(f)
@@ -102,12 +104,22 @@ def post_workflowtask(
     if args_non_parallel:
         with Path(args_non_parallel).open("r") as f:
             a_n_p = json.load(f)
-        workflow_task["args_non_parallel"] = a_n_p
+            workflow_task["args_non_parallel"] = a_n_p
 
     if args_parallel:
         with Path(args_parallel).open("r") as f:
             a_p = json.load(f)
-        workflow_task["args_parallel"] = a_p
+            workflow_task["args_parallel"] = a_p
+
+    if meta_non_parallel:
+        with Path(meta_non_parallel).open("r") as f:
+            m_n_p = json.load(f)
+            workflow_task["meta_non_parallel"] = m_n_p
+
+    if meta_parallel:
+        with Path(meta_parallel).open("r") as f:
+            m_p = json.load(f)
+            workflow_task["meta_parallel"] = m_p
 
     res = client.post(
         (
@@ -131,7 +143,11 @@ def patch_workflowtask(
     project_id: int,
     workflow_id: int,
     workflow_task_id: int,
-    input_filters: str,
+    input_filters: Optional[str] = None,
+    args_non_parallel: Optional[str] = None,
+    args_parallel: Optional[str] = None,
+    meta_non_parallel: Optional[str] = None,
+    meta_parallel: Optional[str] = None,
 ) -> Interface:
 
     payload = {}
@@ -139,6 +155,26 @@ def patch_workflowtask(
         with Path(input_filters).open("r") as f:
             input_filters = json.load(f)
             payload["input_filters"] = input_filters
+
+    if args_non_parallel:
+        with Path(args_non_parallel).open("r") as f:
+            a_n_p = json.load(f)
+            payload["args_non_parallel"] = a_n_p
+
+    if args_parallel:
+        with Path(args_parallel).open("r") as f:
+            a_p = json.load(f)
+            payload["args_parallel"] = a_p
+
+    if meta_non_parallel:
+        with Path(meta_non_parallel).open("r") as f:
+            m_n_p = json.load(f)
+            payload["meta_non_parallel"] = m_n_p
+
+    if meta_parallel:
+        with Path(meta_parallel).open("r") as f:
+            m_p = json.load(f)
+            payload["meta_parallel"] = m_p
 
     res = client.patch(
         (

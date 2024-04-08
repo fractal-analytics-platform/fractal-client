@@ -212,6 +212,8 @@ def workflow(
             "args_non_parallel",
             "args_parallel",
             "input_filters",
+            "meta_parallel",
+            "meta_non_parallel",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_workflowtask(client, batch=batch, **function_kwargs)
@@ -221,6 +223,10 @@ def workflow(
             "workflow_id",
             "workflow_task_id",
             "input_filters",
+            "args_non_parallel",
+            "args_parallel",
+            "meta_parallel",
+            "meta_non_parallel",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_workflowtask(client, **function_kwargs)
