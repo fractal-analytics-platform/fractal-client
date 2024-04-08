@@ -74,12 +74,9 @@ def test_edit_project(
     res = invoke(cmd)
     debug(res)
 
-    if not new_name:
-        assert res.retcode == 1
+    assert res.retcode == 0
+    new_project = res.data
+    if new_name:
+        assert new_project["name"] == new_name
     else:
-        assert res.retcode == 0
-        new_project = res.data
-        if new_name:
-            assert new_project["name"] == new_name
-        else:
-            assert new_project["name"] == name
+        assert new_project["name"] == name
