@@ -492,12 +492,14 @@ def test_workflow_edit_task(
     workflow_task_id = res.data["id"]
     cmd = (
         f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
+        f"--args-parallel {args_parallel_file} "
         f"--meta-parallel {meta_parallel_file}"
     )
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
     assert res.data["meta_parallel"] == META_PARALLEL
+    assert res.data["args_parallel"] == ARGS_PARALLEL
 
     # Add a WorkflowTask with meta-non-parallel args
     t_non_parallel = task_factory(
