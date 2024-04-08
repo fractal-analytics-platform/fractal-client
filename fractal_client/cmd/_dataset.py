@@ -60,9 +60,6 @@ def patch_dataset(
             filters_from_file = json.load(f)
         dataset_update["filters"] = filters_from_file
 
-    if not dataset_update:
-        return Interface(retcode=1, data="Nothing to update")
-
     res = client.patch(
         (
             f"{settings.BASE_URL}/project/{project_id}/"

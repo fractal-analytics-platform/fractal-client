@@ -118,9 +118,6 @@ def user_edit(
     if new_username is not None:
         user_update["username"] = new_username
 
-    if not user_update:
-        return Interface(retcode=1, data="Nothing to update")
-
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update
     )
