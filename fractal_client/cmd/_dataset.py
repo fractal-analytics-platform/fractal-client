@@ -24,7 +24,7 @@ def post_dataset(
         batch: Dataset filters.
     """
     if filters is None:
-        filters_dict = {}
+        dataset = dict(name=dataset_name, zarr_dir=zarr_dir)
     else:
         with open(filters, "r") as f:
             filters_dict = json.load(f)
