@@ -55,8 +55,8 @@ def patch_dataset(
         dataset_update["name"] = new_name
     if filters:
         with open(filters, "r") as f:
-            filters = json.load(f)
-        dataset_update.update(filters=filters)
+            filters_from_file = json.load(f)
+        dataset_update["filters"] = filters_from_file
 
     if not dataset_update:
         return Interface(retcode=1, data="Nothing to update")
