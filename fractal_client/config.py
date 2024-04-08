@@ -35,7 +35,7 @@ class Settings:
 
     @property
     def BASE_URL(self) -> str:
-        return f"{self.FRACTAL_SERVER}/api/v1"
+        return f"{self.FRACTAL_SERVER}/api/v2"
 
 
 settings = Settings()

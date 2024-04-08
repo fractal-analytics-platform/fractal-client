@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 from pathlib import Path
 
 import pytest  # noqa F401
@@ -158,17 +157,33 @@ def test_workflow_add_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory()
+    t = task_factory(type="parallel")
 
-    # Add a WorkflowTask with --args-file and --meta-file arguments
-    ARGS = {"arg": "arg_value"}
-    META = {"executor": "some-executor"}
-    args_file = tmp_path / "args_file.json"
-    with args_file.open("w") as f:
-        json.dump(ARGS, f)
-    meta_file = tmp_path / "meta_file.json"
-    with meta_file.open("w") as f:
-        json.dump(META, f)
+    INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
+    ARGS_PARALLEL = {"image_dir": "/asdasd"}
+    ARGS_NON_PARALLEL = {"image_dir": "/dsadsa"}
+    META_PARALLEL = {"a": "b"}
+    META_NON_PARALLEL = {"c": "d"}
+
+    input_filters_file = tmp_path / "input_filters.json"
+    with input_filters_file.open("w") as f:
+        json.dump(INPUT_FILTERS, f)
+
+    args_parallel_file = tmp_path / "args_parallel_file.json"
+    with args_parallel_file.open("w") as f:
+        json.dump(ARGS_PARALLEL, f)
+
+    args_non_parallel_file = tmp_path / "args_non_parallel_file.json"
+    with args_non_parallel_file.open("w") as f:
+        json.dump(ARGS_NON_PARALLEL, f)
+
+    meta_parallel_file = tmp_path / "meta_paral.json"
+    with meta_parallel_file.open("w") as f:
+        json.dump(META_PARALLEL, f)
+
+    meta_non_parallel_file = tmp_path / "meta_non_paral.json"
+    with meta_non_parallel_file.open("w") as f:
+        json.dump(META_NON_PARALLEL, f)
 
     cmd = f"workflow add-task {project_id} {wf.id}"
     # Test fail with no task_id nor task_name
@@ -176,39 +191,89 @@ def test_workflow_add_task(
         invoke(cmd)
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
-        invoke(f"{cmd} --task-id {t.id} --task-name {t.name}")
+        invoke(
+            (
+                f"{cmd} --task-id {t.id} --task-name {t.name} "
+                f"--args-parallel {args_parallel_file}"
+            )
+        )
     # Test fail with both task_id and version
     with pytest.raises(SystemExit):
-        invoke(f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6")
+        invoke(
+            (
+                f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6 "
+                f"--args-parallel {args_parallel_file}"
+            )
+        )
     assert caplog.records[-1].msg == (
         "Too many arguments: cannot provide both `task_id` and `task_version`."
     )
 
-    cmd = (
-        f"{cmd} --task-id {t.id} "
-        f"--args-file {args_file} --meta-file {meta_file}"
+    cmd_args = (
+        f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
+        f"--args-parallel {args_parallel_file} "
     )
-    debug(cmd)
+    debug(cmd_args)
     # Test success
-    res = invoke(cmd)
+    res = invoke(cmd_args)
+    debug(res.data)
     assert res.retcode == 0
 
     workflow_task = res.data
     workflow_task_id_1 = workflow_task["id"]
     debug(workflow_task)
-    assert workflow_task["args"] == ARGS
-    assert workflow_task["meta"] == META
+    assert workflow_task["input_filters"] == INPUT_FILTERS
+    assert workflow_task["args_parallel"] == ARGS_PARALLEL
 
     # Add a WorkflowTask by Task.name with the --batch option
-    cmd = (
+    cmd_batch = (
         f"--batch workflow add-task {project_id} {wf.id} "
-        f"--task-name {t.name} --order 1"
+        f"--task-name {t.name} --order 1 --args-parallel {args_parallel_file}"
     )
-    debug(cmd)
-    res = invoke(cmd)
+    debug(cmd_batch)
+    res = invoke(cmd_batch)
     assert res.retcode == 0
     debug(res.data)
     workflow_task_id_2 = int(res.data)
+
+    # Add a WorkflowTask with meta-parallel args
+    cmd_meta = (
+        f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
+        f"--args-parallel {args_parallel_file} "
+        f"--meta-parallel {meta_parallel_file} "
+    )
+    debug(cmd_meta)
+    # Test success
+    res = invoke(cmd_meta)
+    debug(res.data)
+    assert res.retcode == 0
+
+    workflow_task = res.data
+    workflow_task_id_3 = workflow_task["id"]
+    assert workflow_task["meta_parallel"] == META_PARALLEL
+    assert workflow_task["args_parallel"] == ARGS_PARALLEL
+
+    # Add a WorkflowTask with meta-non-parallel args
+    t_non_parallel = task_factory(
+        type="non_parallel", source="source non_parallel"
+    )
+
+    cmd_meta = (
+        f"{cmd} --task-id {t_non_parallel.id} "
+        f"--input-filters {input_filters_file} "
+        f"--args-non-parallel {args_non_parallel_file} "
+        f"--meta-non-parallel {meta_non_parallel_file}"
+    )
+    debug(cmd_meta)
+    # Test success
+    res = invoke(cmd_meta)
+    debug(res.data)
+    assert res.retcode == 0
+
+    workflow_task = res.data
+    workflow_task_id_4 = workflow_task["id"]
+    assert workflow_task["meta_non_parallel"] == META_NON_PARALLEL
+    assert workflow_task["args_non_parallel"] == ARGS_NON_PARALLEL
 
     # Check that the WorkflowTask's in Workflow.task_list have the correct IDs
     cmd = f"workflow show {project_id} {wf.id}"
@@ -217,7 +282,12 @@ def test_workflow_add_task(
     workflow = res.data
     debug(workflow)
     list_IDs = [wftask["id"] for wftask in workflow["task_list"]]
-    assert list_IDs == [workflow_task_id_1, workflow_task_id_2]
+    assert list_IDs == [
+        workflow_task_id_1,
+        workflow_task_id_2,
+        workflow_task_id_3,
+        workflow_task_id_4,
+    ]
 
 
 def test_workflow_add_task_by_name(
@@ -236,10 +306,19 @@ def test_workflow_add_task_by_name(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    task = task_factory()
+    task = task_factory(type="parallel")
     debug(task)
 
-    cmd = f"workflow add-task {project_id} {wf.id} --task-name {task.name}"
+    ARGS = {"image_dir": "/asdasd"}
+
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
+
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-name {task.name} "
+        f"--args-parallel {args_file}"
+    )
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
@@ -249,7 +328,8 @@ def test_workflow_add_task_by_name(
     # Fail when adding task via a wrong name
     with pytest.raises(SystemExit):
         cmd = (
-            f"workflow add-task {project_id} {wf.id} --task-name INVALID_NAME"
+            f"workflow add-task {project_id} {wf.id} --task-name INVALID_NAME "
+            f"--args-parallel {args_file}"
         )
         debug(cmd)
         res = invoke(cmd)
@@ -274,10 +354,14 @@ def test_task_cache_with_non_unique_names(
 
     res = invoke("project new MyProject")
     project_id = res.data["id"]
+    ARGS = {"image_dir": "/asdasd"}
 
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
     # Create two tasks with the same name
-    task1 = task_factory()
-    task2 = task_factory()
+    task1 = task_factory(type="parallel")
+    task2 = task_factory(type="parallel")
     assert task1.name == task2.name
 
     # Verify that a warning is raised upon creating the cache file
@@ -290,7 +374,10 @@ def test_task_cache_with_non_unique_names(
     # Verify that adding tasks to a worfklow by name (as opposed to "by id")
     # fails because of missing cache file
     wf = workflow_factory(project_id=project_id)
-    cmd = f"workflow add-task {project_id} {wf.id} --task-name {task1.name}"
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-name {task1.name} "
+        f"--args-parallel {args_file}"
+    )
     debug(cmd)
     with pytest.raises(FileNotFoundError):
         res = invoke(cmd)
@@ -307,10 +394,19 @@ def test_workflow_rm_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory()
+    t = task_factory(type="parallel")
+
+    ARGS = {"image_dir": "/asdasd"}
+
+    args_file = tmp_path / "args_file.json"
+    with args_file.open("w") as f:
+        json.dump(ARGS, f)
 
     # Add task to workflow, twice
-    cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-id {t.id} "
+        f"--args-parallel {args_file}"
+    )
     res = invoke(cmd)
     assert res.retcode == 0
     res = invoke(cmd)
@@ -343,327 +439,94 @@ def test_workflow_edit_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory()
+    t = task_factory(type="parallel")
+
+    INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
+    ARGS_PARALLEL = {"image_dir": "/asdasd"}
+    ARGS_NON_PARALLEL = {"image_dir": "/dsadsa"}
+    META_PARALLEL = {"a": "b"}
+    META_NON_PARALLEL = {"c": "d"}
+
+    input_filters_file = tmp_path / "input_filters.json"
+    with input_filters_file.open("w") as f:
+        json.dump(INPUT_FILTERS, f)
+
+    args_parallel_file = tmp_path / "args_parallel_file.json"
+    with args_parallel_file.open("w") as f:
+        json.dump(ARGS_PARALLEL, f)
+
+    args_non_parallel_file = tmp_path / "args_non_parallel_file.json"
+    with args_non_parallel_file.open("w") as f:
+        json.dump(ARGS_NON_PARALLEL, f)
+
+    meta_parallel_file = tmp_path / "meta_paral.json"
+    with meta_parallel_file.open("w") as f:
+        json.dump(META_PARALLEL, f)
+
+    meta_non_parallel_file = tmp_path / "meta_non_paral.json"
+    with meta_non_parallel_file.open("w") as f:
+        json.dump(META_NON_PARALLEL, f)
 
     # Create task, without overriding arguments
-    cmd = f"workflow add-task {project_id} {wf.id} --task-id {t.id}"
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} --task-id {t.id} "
+        f"--args-parallel {args_parallel_file}"
+    )
     res = invoke(cmd)
     assert res.retcode == 0
-
-    # New arguments to be used
-    ARGS = {"some_arg": "some_value"}
-    META = {"executor": "cpu-low"}
-
-    args_file = tmp_path / "args_file.json"
-    with args_file.open("w") as f:
-        json.dump(ARGS, f)
-    meta_file = tmp_path / "meta_file.json"
-    with meta_file.open("w") as f:
-        json.dump(META, f)
 
     # Edit workflow task
     debug(res.data)
     workflow_task_id = res.data["id"]
     cmd = (
         f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
-        f"--args-file {args_file} --meta-file {meta_file}"
+        f"--input-filters {input_filters_file}"
     )
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
-    assert res.data["args"] == ARGS
-    assert res.data["meta"] == META
+    assert res.data["input_filters"] == INPUT_FILTERS
 
-    # Check that also the workflow in the db was correctly updated
-    res = invoke(f"workflow show {project_id} {wf.id}")
-    assert res.retcode == 0
+    # Edit workflow task
     debug(res.data)
-    assert res.data["task_list"][0]["args"] == ARGS
-    assert res.data["task_list"][0]["meta"] == META
-
-    # Check if the correct error is raised where parallelization_level
-    # is set
-    META_err = {"parallelization_level": "XXX"}
-    meta_file = tmp_path / "meta_file.json"
-    with meta_file.open("w") as f:
-        json.dump(META_err, f)
-
-    workflow_task_id = res.data["task_list"][0]["id"]
+    workflow_task_id = res.data["id"]
     cmd = (
         f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
-        f"--meta-file {meta_file}"
-    )
-    debug(cmd)
-    with pytest.raises(SystemExit):
-        res = invoke(cmd)
-
-
-def test_workflow_apply(
-    register_user, invoke, testdata_path: Path, tmp_path: Path
-):
-    """
-    GIVEN a project and a nontrivial workflow
-    WHEN the client requests to apply the workflow to the project
-    THEN the workflow is scheduled and executed, and the artifacts created
-    """
-
-    # Collect tasks
-    PACKAGE_NAME = (
-        testdata_path / "fractal_tasks_core_alpha-0.0.1a0-py3-none-any.whl"
-    )
-    WORKFLOW_NAME = "mywf"
-    DATASET_NAME = "myds"
-    res0 = invoke(f"task collect {PACKAGE_NAME}")
-    debug(res0)
-    venv_path = res0.data["data"]["venv_path"]
-    debug(venv_path)
-    state_id = res0.data["id"]
-
-    # Wait for task collection to end
-    starting_time = time.perf_counter()
-    while True:
-        res1 = invoke(f"task check-collection {state_id}")
-        if res1.data["data"]["status"] == "OK":
-            debug(res1.data)
-            break
-        time.sleep(1)
-        assert time.perf_counter() - starting_time < TIMEOUT
-
-    # Create a project
-    res = invoke("project new testproject")
-    assert res.retcode == 0
-    prj = res.data
-    prj_id = prj["id"]
-    res = invoke(f"project add-dataset {prj_id} test_name")
-    input_dataset_id = res.data["id"]
-
-    # Create output dataset
-    res = invoke(f"project add-dataset {prj_id} {DATASET_NAME}")
-    assert res.retcode == 0
-    dataset = res.data
-    output_dataset_id = dataset["id"]
-
-    # Add resources to datasets
-    for dataset_id in (input_dataset_id, output_dataset_id):
-        res = invoke(
-            f"dataset add-resource {prj_id} {dataset_id} {str(tmp_path)}"
-        )
-        assert res.retcode == 0
-
-    # Create workflow and add task twice
-    res = invoke(f"workflow new {WORKFLOW_NAME} {prj_id}")
-    workflow = res.data
-    workflow_id = workflow["id"]
-    debug(workflow)
-    assert res.retcode == 0
-    for _ in [0, 1]:
-        TASK_ID = 1
-        res = invoke(
-            f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
-        )
-        workflow_task = res.data
-        debug(workflow_task)
-        assert res.retcode == 0
-        TASK_NAME = res.data["task"]["name"]
-        debug(TASK_NAME)
-
-    # Call `workflow apply`
-    FIRST_TASK_INDEX = 0
-    LAST_TASK_INDEX = 0
-    cmd = (
-        f"workflow apply "
-        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id} "
-        f"--start {FIRST_TASK_INDEX} --end {LAST_TASK_INDEX} "
-        f'--worker-init "export SOMEVARIABLE=1"'
-    )
-    debug(cmd)
-    res = invoke(cmd)
-    job = res.data
-    debug(job)
-    assert res.retcode == 0
-    job_id = job["id"]
-    assert job["status"] == "submitted"
-
-    # Avoid immediately calling `job show` right after `workflow apply`
-    time.sleep(1)
-
-    # Check that job completed successfully
-    cmd = f"job show {prj_id} {job_id} --do-not-separate-logs"
-    starting_time = time.perf_counter()
-    debug(cmd)
-    while True:
-        res = invoke(cmd)
-        job = res.data
-        debug(job)
-        assert res.retcode == 0
-        if job["status"] == "done":
-            break
-        elif job["status"] == "failed":
-            raise RuntimeError(job)
-        time.sleep(1)
-        assert time.perf_counter() - starting_time < TIMEOUT
-
-    # Check that job has correct first_task_index and last_task_index
-    # attributes
-    assert job["first_task_index"] == FIRST_TASK_INDEX
-    assert job["last_task_index"] == LAST_TASK_INDEX
-
-    # Prepare and run a workflow with a failing task
-    args_file = str(tmp_path / "args.json")
-    with open(args_file, "w") as f:
-        json.dump({"raise_error": True}, f)
-    res = invoke(
-        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
-        f" --args-file {args_file}"
-    )
-    assert res.retcode == 0
-    cmd = (
-        f"workflow apply "
-        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
+        f"--args-parallel {args_parallel_file} "
+        f"--meta-parallel {meta_parallel_file}"
     )
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
-    job_id = res.data["id"]
+    assert res.data["meta_parallel"] == META_PARALLEL
+    assert res.data["args_parallel"] == ARGS_PARALLEL
 
-    # Avoid immediately calling `job show` right after `workflow apply`
-    time.sleep(1)
-
-    # Verify that status is failed, and that there is a log
-    cmd = f"job show {prj_id} {job_id} --do-not-separate-logs"
-    starting_time = time.perf_counter()
-    while True:
-        res = invoke(cmd)
-        job = res.data
-        debug(job)
-        assert res.retcode == 0
-        if job["status"] == "failed":
-            break
-        time.sleep(1)
-        assert time.perf_counter() - starting_time < TIMEOUT
-    assert job["log"] is not None
-
-    # Prepare and submit a workflow with --batch
-    res = invoke(f"workflow new OneMoreWorkflow {prj_id}")
-    workflow_id = res.data["id"]
-    res = invoke(
-        f"workflow add-task {prj_id} {workflow_id} --task-id {TASK_ID}"
+    # Add a WorkflowTask with meta-non-parallel args
+    t_non_parallel = task_factory(
+        type="non_parallel", source="source non_parallel"
     )
-    assert res.retcode == 0
+
     cmd = (
-        f"--batch workflow apply "
-        f"{prj_id} {workflow_id} {input_dataset_id} {output_dataset_id}"
+        f"workflow add-task {project_id} {wf.id} "
+        f"--task-id {t_non_parallel.id} "
+        f"--args-non-parallel {args_non_parallel_file}"
     )
-    debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
-    debug(res.data)
-    assert isinstance(res.data, int)
+    workflow_task_id = res.data["id"]
 
-
-def test_workflow_export(
-    register_user,
-    invoke,
-    workflow_factory,
-    tmp_path: Path,
-    task_factory,
-    caplog,
-):
-
-    res = invoke("project new testproject")
-    assert res.retcode == 0
-    project_id = res.data["id"]
-
-    NAME = "WorkFlow"
-    wf = workflow_factory(project_id=project_id, name=NAME)
-    prj_id = wf.project_id
-    wf_id = wf.id
-    filename = str(tmp_path / "exported_wf.json")
-
-    task = task_factory(owner="exact-lab")
-    res = invoke(f"workflow add-task {prj_id} {wf_id} --task-id {task.id}")
-    assert res.retcode == 0
-
-    res = invoke(f"workflow export {prj_id} {wf_id} --json-file {filename}")
-    assert res.retcode == 0
-    assert caplog.records[-1].msg == (
-        "This workflow includes custom tasks (the ones with sources: "
-        f"'{task.source}'), which are not meant to be portable; "
-        "re-importing this workflow may not work as expected."
+    cmd = (
+        f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
+        f"--input-filters {input_filters_file} "
+        f"--args-non-parallel {args_non_parallel_file} "
+        f"--meta-non-parallel {meta_non_parallel_file}"
     )
-    debug(res.data)
-    with open(filename, "r") as f:
-        exported_wf = json.load(f)
-        assert exported_wf["name"] == NAME
-        assert "id" not in exported_wf
-        assert "project_id" not in exported_wf
-        for wftask in exported_wf["task_list"]:
-            assert "id" not in wftask
-            assert "task_id" not in wftask
-            assert "workflow_id" not in wftask
-
-
-def test_workflow_import(
-    register_user,
-    invoke,
-    testdata_path: Path,
-    task_factory,
-    caplog,
-):
-    # collect tasks
-    PACKAGE_NAME = testdata_path / "fractal_tasks_dummy-0.1.0-py3-none-any.whl"
-    res0 = invoke(f"task collect {PACKAGE_NAME}")
-    assert res0.retcode == 0
-    state_id = res0.data["id"]
-    starting_time = time.perf_counter()
-    while True:
-        res1 = invoke(f"task check-collection {state_id}")
-        if res1.data["data"]["status"] == "OK":
-            break
-        time.sleep(1)
-        assert time.perf_counter() - starting_time < TIMEOUT
-
-    # create project
-    PROJECT_NAME = "project_name"
-    res_pj = invoke(f"project new {PROJECT_NAME}")
-    assert res_pj.retcode == 0
-    project_id = res_pj.data["id"]
-
-    task_factory(source="custom_source", owner="exact-lab")
-
-    # import workflow into project
-    filename = str(testdata_path / "import-export/workflow.json")
-    res = invoke(
-        f"workflow import --project-id {project_id} --json-file {filename}"
-    )
+    debug(cmd)
+    # Test success
+    res = invoke(cmd)
     debug(res.data)
     assert res.retcode == 0
-    assert caplog.records[-1].msg == (
-        "This workflow includes custom tasks (the ones with sources: "
-        "'custom_source'), which are not meant to be portable; "
-        "importing this workflow may not work as expected."
-    )
 
-    imported_workflow = res.data
-
-    # get the workflow from the server, and check that it is the same
-    workflow_id = res.data["id"]
-    res = invoke(f"workflow show {project_id} {workflow_id}")
-    assert res.retcode == 0
-    assert res.data == imported_workflow
-
-    # import workflow into project, with --batch
-    filename = str(testdata_path / "import-export/workflow_2.json")
-    res = invoke(
-        f"--batch workflow import --project-id {project_id} "
-        f"--json-file {filename}"
-    )
-    debug(res.data)
-    for _id in res.data.split():
-        assert _id.isdigit()
-    assert res.retcode == 0
-    assert caplog.records[-1].msg == (
-        "This workflow includes custom tasks (the ones with sources: "
-        "'custom_source'), which are not meant to be portable; "
-        "importing this workflow may not work as expected."
-    )
+    workflow_task = res.data
+    assert workflow_task["meta_non_parallel"] == META_NON_PARALLEL
+    assert workflow_task["args_non_parallel"] == ARGS_NON_PARALLEL

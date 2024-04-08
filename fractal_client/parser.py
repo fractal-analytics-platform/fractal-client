@@ -100,25 +100,21 @@ project_add_dataset_parser = project_subparsers.add_parser(
     allow_abbrev=False,
 )
 project_add_dataset_parser.add_argument(
-    "project_id", type=int, help="ID of project to add the new dataset to."
+    "project_id",
+    type=int,
+    help="ID of project to add the new dataset to.",
 )
 project_add_dataset_parser.add_argument(
-    "dataset_name", help="Name of new dataset."
+    "dataset_name",
+    help="Name of new dataset.",
 )
 project_add_dataset_parser.add_argument(
-    "--metadata",
-    help="Path to file containing dataset metadata in JSON format.",
+    "zarr_dir",
+    help="Path to zarr dir.",
 )
 project_add_dataset_parser.add_argument(
-    "--type",
-    help="Dataset type.",
-)
-project_add_dataset_parser.add_argument(
-    "--make-read-only",
-    action="store_true",
-    default=False,
-    required=False,
-    help="Make dataset read-only (not required).",
+    "--filters",
+    help="Path to JSON file with filters.",
 )
 
 
@@ -134,21 +130,6 @@ project_edit_parser.add_argument(
 project_edit_parser.add_argument(
     "--new-name", help="New project name.", required=False
 )
-project_edit_parser_read_only = (
-    project_edit_parser.add_mutually_exclusive_group()
-)
-project_edit_parser_read_only.add_argument(
-    "--make-read-only",
-    help="Set the read-only flag for this project.",
-    action="store_true",
-    required=False,
-)
-project_edit_parser_read_only.add_argument(
-    "--remove-read-only",
-    help="Remove the read-only flag for this project.",
-    action="store_true",
-    required=False,
-)
 
 
 # DATASET GROUP
@@ -161,37 +142,6 @@ dataset_subparsers = dataset_parser.add_subparsers(
     title="Valid sub-commands", dest="subcmd", required=True
 )
 
-# dataset add-resource
-dataset_add_resource_parser = dataset_subparsers.add_parser(
-    "add-resource",
-    description="Add resource to existing dataset.",
-    allow_abbrev=False,
-)
-dataset_add_resource_parser.add_argument(
-    "project_id", type=int, help="Project ID."
-)
-dataset_add_resource_parser.add_argument(
-    "dataset_id", type=int, help="Dataset ID."
-)
-dataset_add_resource_parser.add_argument(
-    "path", help="Absolute path to resource."
-)
-
-# dataset rm-resource
-dataset_rm_resource_parser = dataset_subparsers.add_parser(
-    "rm-resource",
-    description="Remove resource to existing dataset.",
-    allow_abbrev=False,
-)
-dataset_rm_resource_parser.add_argument(
-    "project_id", type=int, help="Project ID."
-)
-dataset_rm_resource_parser.add_argument(
-    "dataset_id", type=int, help="Dataset ID."
-)
-dataset_rm_resource_parser.add_argument(
-    "resource_id", type=int, help="Resource ID."
-)
 
 # dataset edit
 dataset_edit_parser = dataset_subparsers.add_parser(
@@ -203,24 +153,11 @@ dataset_edit_parser = dataset_subparsers.add_parser(
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 dataset_edit_parser.add_argument("--new-name", help="New name of dataset.")
-dataset_edit_parser.add_argument("--new-type", help="Dataset type.")
 dataset_edit_parser.add_argument(
-    "--meta-file",
+    "--filters",
     help="Path to JSON file with new metadata to replace the current ones.",
 )
-dataset_edit_parser_read = dataset_edit_parser.add_mutually_exclusive_group()
-dataset_edit_parser_read.add_argument(
-    "--make-read-only",
-    help="Set read-only flag of dataset.",
-    action="store_true",
-    required=False,
-)
-dataset_edit_parser_read.add_argument(
-    "--remove-read-only",
-    help="Remove read-only flag of dataset.",
-    action="store_true",
-    required=False,
-)
+
 
 # dataset show
 dataset_show_parser = dataset_subparsers.add_parser(
@@ -241,26 +178,6 @@ dataset_delete_parser = dataset_subparsers.add_parser(
 )
 dataset_delete_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
-
-# dataset history
-dataset_history_parser = dataset_subparsers.add_parser(
-    "history",
-    description="Export dataset history as a reproducible worfklow.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-dataset_history_parser.add_argument("project_id", type=int, help="Project ID.")
-dataset_history_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
-
-# dataset status
-dataset_status_parser = dataset_subparsers.add_parser(
-    "status",
-    description="Extract status of WorkflowTasks associated with dataset.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-dataset_status_parser.add_argument("project_id", type=int, help="Project ID.")
-dataset_status_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 
 # TASK GROUP
 task_parser = subparsers_main.add_parser(
@@ -335,142 +252,6 @@ task_check_collection_parser.add_argument(
     default=False,
     action="store_true",
     help="Also include task-collection logs.",
-)
-task_check_collection_parser.add_argument(
-    "--do-not-separate-logs",
-    dest="do_not_separate_logs",
-    help=(
-        "Show the task-collection logs in the main output, "
-        "instead of a separate field."
-    ),
-    action="store_true",
-    required=False,
-)
-
-
-# task new
-task_new_parser = task_subparsers.add_parser(
-    "new",
-    description="Create new task.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-task_new_parser.add_argument(
-    "name", help="A human readable name for the task."
-)
-task_new_parser.add_argument(
-    "command", help="The command that executes the task."
-)
-task_new_parser.add_argument("source", help="TBD")
-task_new_parser.add_argument(
-    "--input-type",
-    help="The type of data the task expects as input.",
-    default="Any",
-)
-task_new_parser.add_argument(
-    "--output-type",
-    help="The type of data the task expects as output.",
-    default="Any",
-)
-task_new_parser.add_argument(
-    "--version",
-    help="Task version.",
-)
-task_new_parser.add_argument(
-    "--meta-file",
-    help="Path to JSON file with additional parameters useful for execution.",
-)
-task_new_parser.add_argument(
-    "--args-schema",
-    help="Path to file containing JSON Schema for task arguments.",
-)
-task_new_parser.add_argument(
-    "--args-schema-version",
-    help=(
-        "Label encoding how the task-arguments JSON Schema was generated "
-        "(e.g. `pydantic_v1`)."
-    ),
-)
-
-# task edit
-task_edit_parser = task_subparsers.add_parser(
-    "edit",
-    description="Edit task.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-
-task_edit_id_or_name_group = task_edit_parser.add_mutually_exclusive_group(
-    required=True
-)
-task_edit_id_or_name_group.add_argument(
-    "--id", help="ID of the task to edit.", type=int
-)
-task_edit_id_or_name_group.add_argument(
-    "--name", help="Name of the task to edit."
-)
-
-task_edit_parser.add_argument(
-    "--version",
-    help=(
-        "Version of the task to edit "
-        "(only accepted in combination with `--name`)."
-    ),
-)
-task_edit_parser.add_argument("--new-name", help="New task name.")
-task_edit_parser.add_argument("--new-command", help="New task command.")
-task_edit_parser.add_argument(
-    "--new-input-type",
-    help="New input type.",
-)
-task_edit_parser.add_argument(
-    "--new-output-type",
-    help="New output type.",
-)
-task_edit_parser.add_argument(
-    "--meta-file",
-    help=(
-        "Path to JSON serialised file containing updates to the current "
-        "`meta` dictionary."
-    ),
-)
-task_edit_parser.add_argument(
-    "--new-version",
-    help="New version.",
-)
-task_edit_parser.add_argument(
-    "--new-args-schema",
-    help="Path to file containing the new JSON Schema for task arguments.",
-)
-task_edit_parser.add_argument(
-    "--new-args-schema-version",
-    help=(
-        "New label encoding how the task-arguments JSON Schema was generated."
-    ),
-)
-
-# task delete
-task_delete_parser = task_subparsers.add_parser(
-    "delete",
-    description="Delete task.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-task_delete_id_or_name_group = task_delete_parser.add_mutually_exclusive_group(
-    required=True
-)
-task_delete_id_or_name_group.add_argument(
-    "--id", help="ID of the task to delete.", type=int
-)
-task_delete_id_or_name_group.add_argument(
-    "--name", help="Name of the task to delete."
-)
-task_delete_parser.add_argument(
-    "--version",
-    help=(
-        "Version of the task to delete "
-        "(only accepted in combination with `--name`)."
-    ),
 )
 
 
@@ -565,7 +346,6 @@ workflow_add_task_id_or_name_group.add_argument(
 workflow_add_task_id_or_name_group.add_argument(
     "--task-name", help="Name of the task to add."
 )
-
 workflow_add_task_parser.add_argument(
     "--task-version",
     help=(
@@ -576,20 +356,28 @@ workflow_add_task_parser.add_argument(
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list."
 )
+
 workflow_add_task_parser.add_argument(
-    "--args-file",
-    help=(
-        "Path to json serialised file containing the arguments "
-        "overrides of the task."
-    ),
+    "--args-non-parallel", help="Args for non parallel tasks"
 )
+
 workflow_add_task_parser.add_argument(
-    "--meta-file",
-    help=(
-        "Path to json serialised file containing the meta "
-        "overrides of the task."
-    ),
+    "--args-parallel", help="Args for parallel tasks"
 )
+
+workflow_add_task_parser.add_argument(
+    "--meta-non-parallel", help="Metadata file fornon parallel tasks"
+)
+
+workflow_add_task_parser.add_argument(
+    "--meta-parallel", help="Metadata file for parallel tasks"
+)
+
+workflow_add_task_parser.add_argument(
+    "--input-filters",
+    help="Path to json file with filters.",
+)
+
 
 # workflow edit task
 workflow_edit_task_parser = workflow_subparsers.add_parser(
@@ -611,19 +399,28 @@ workflow_edit_task_parser.add_argument(
     help="Workflow task ID, the ID of a task inside the list of tasks.",
 )
 workflow_edit_task_parser.add_argument(
-    "--args-file",
+    "--input-filters",
     help=(
         "Path to json serialised file containing the arguments "
         "overrides of the task."
     ),
 )
 workflow_edit_task_parser.add_argument(
-    "--meta-file",
-    help=(
-        "Path to json serialised file containing the meta "
-        "overrides of the task."
-    ),
+    "--args-non-parallel", help="Args for non parallel tasks"
 )
+
+workflow_edit_task_parser.add_argument(
+    "--args-parallel", help="Args for parallel tasks"
+)
+
+workflow_edit_task_parser.add_argument(
+    "--meta-non-parallel", help="Metadata file fornon parallel tasks"
+)
+
+workflow_edit_task_parser.add_argument(
+    "--meta-parallel", help="Metadata file for parallel tasks"
+)
+
 
 # workflow remove task
 workflow_remove_task_parser = workflow_subparsers.add_parser(
@@ -645,43 +442,6 @@ workflow_remove_task_parser.add_argument(
     help="Workflow task ID (the ID of a task inside the list of tasks).",
 )
 
-# workflow apply
-workflow_apply_parser = workflow_subparsers.add_parser(
-    "apply",
-    description="Apply workflow to dataset.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-
-workflow_apply_parser.add_argument("project_id", type=int)
-workflow_apply_parser.add_argument("workflow_id", type=int)
-workflow_apply_parser.add_argument("input_dataset_id", type=int)
-workflow_apply_parser.add_argument("output_dataset_id", type=int)
-workflow_apply_parser.add_argument(
-    "--start",
-    dest="first_task_index",
-    type=int,
-    help=(
-        "Positional index of the first task to be executed"
-        " (starting from 0)."
-    ),
-    required=False,
-)
-workflow_apply_parser.add_argument(
-    "--end",
-    dest="last_task_index",
-    type=int,
-    help=(
-        "Positional index of the last task to be executed"
-        " (starting from 0)."
-    ),
-    required=False,
-)
-workflow_apply_parser.add_argument(
-    "-w",
-    "--worker-init",
-    help="Command to be run before starting a worker.",
-)
 
 # workflow import
 workflow_import_parser = workflow_subparsers.add_parser(
@@ -754,13 +514,6 @@ job_show_parser = job_subparsers.add_parser(
 )
 job_show_parser.add_argument("project_id", type=int, help="Project ID.")
 job_show_parser.add_argument("job_id", type=int, help="Job ID.")
-job_show_parser.add_argument(
-    "--do-not-separate-logs",
-    dest="do_not_separate_logs",
-    help="Show the job logs in the main output, instead of a separate field.",
-    action="store_true",
-    required=False,
-)
 
 # job download-logs
 job_download_logs_parser = job_subparsers.add_parser(
@@ -787,6 +540,44 @@ job_stop_parser = job_subparsers.add_parser(
 )
 job_stop_parser.add_argument("project_id", type=int, help="Project ID.")
 job_stop_parser.add_argument("job_id", type=int, help="Job ID.")
+
+
+# job submit
+job_submit_parser = job_subparsers.add_parser(
+    "submit",
+    description="Submit a job.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+
+job_submit_parser.add_argument("project_id", type=int)
+job_submit_parser.add_argument("workflow_id", type=int)
+job_submit_parser.add_argument("dataset_id", type=int)
+job_submit_parser.add_argument(
+    "--start",
+    dest="first_task_index",
+    type=int,
+    help=(
+        "Positional index of the first task to be executed"
+        " (starting from 0)."
+    ),
+    required=False,
+)
+job_submit_parser.add_argument(
+    "--end",
+    dest="last_task_index",
+    type=int,
+    help=(
+        "Positional index of the last task to be executed"
+        " (starting from 0)."
+    ),
+    required=False,
+)
+job_submit_parser.add_argument(
+    "-w",
+    "--worker-init",
+    help="Command to be run before starting a worker.",
+)
 
 
 # VERSION GROUP
