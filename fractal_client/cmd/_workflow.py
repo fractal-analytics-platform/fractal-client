@@ -67,7 +67,6 @@ def post_workflowtask(
     input_filters: str,
     args_non_parallel: Optional[dict[str, Any]],
     args_parallel: Optional[dict[str, Any]],
-    is_legacy_task: Optional[bool] = False,
     task_id: Optional[int] = None,
     task_name: Optional[str] = None,
     task_version: Optional[str] = None,
@@ -94,7 +93,7 @@ def post_workflowtask(
     if order is None:
         workflow_task = dict()
     else:
-        workflow_task = dict(order=order, is_legacy_task=is_legacy_task)
+        workflow_task = dict(order=order)
     if input_filters:
         with Path(input_filters).open("r") as f:
             i_filters = json.load(f)

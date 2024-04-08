@@ -212,7 +212,6 @@ def workflow(
             "args_non_parallel",
             "args_parallel",
             "input_filters",
-            "is_legacy_task",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_workflowtask(client, batch=batch, **function_kwargs)

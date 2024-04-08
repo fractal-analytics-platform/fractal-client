@@ -369,11 +369,7 @@ workflow_add_task_parser.add_argument(
     "--input-filters",
     help=("Path to json file with filters."),
 )
-workflow_add_task_parser.add_argument(
-    "--is-legacy-task",
-    action="store_true",
-    help=("Boolean for legacy task, if set it pass true."),
-)
+
 
 # workflow edit task
 workflow_edit_task_parser = workflow_subparsers.add_parser(
