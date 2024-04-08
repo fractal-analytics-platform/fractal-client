@@ -157,23 +157,33 @@ def test_workflow_add_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory()
+    t = task_factory(type="parallel")
 
     INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
-    ARGS = {"image_dir": "/asdasd"}
-    META = {"a": "b"}
+    ARGS_PARALLEL = {"image_dir": "/asdasd"}
+    ARGS_NON_PARALLEL = {"image_dir": "/dsadsa"}
+    META_PARALLEL = {"a": "b"}
+    META_NON_PARALLEL = {"c": "d"}
 
     input_filters_file = tmp_path / "input_filters.json"
     with input_filters_file.open("w") as f:
         json.dump(INPUT_FILTERS, f)
 
-    args_file = tmp_path / "args_file.json"
-    with args_file.open("w") as f:
-        json.dump(ARGS, f)
+    args_parallel_file = tmp_path / "args_parallel_file.json"
+    with args_parallel_file.open("w") as f:
+        json.dump(ARGS_PARALLEL, f)
 
-    meta_file = tmp_path / "meta.json"
-    with meta_file.open("w") as f:
-        json.dump(META, f)
+    args_non_parallel_file = tmp_path / "args_non_parallel_file.json"
+    with args_non_parallel_file.open("w") as f:
+        json.dump(ARGS_NON_PARALLEL, f)
+
+    meta_parallel_file = tmp_path / "meta_paral.json"
+    with meta_parallel_file.open("w") as f:
+        json.dump(META_PARALLEL, f)
+
+    meta_non_parallel_file = tmp_path / "meta_non_paral.json"
+    with meta_non_parallel_file.open("w") as f:
+        json.dump(META_NON_PARALLEL, f)
 
     cmd = f"workflow add-task {project_id} {wf.id}"
     # Test fail with no task_id nor task_name
@@ -184,7 +194,7 @@ def test_workflow_add_task(
         invoke(
             (
                 f"{cmd} --task-id {t.id} --task-name {t.name} "
-                f"--args-parallel {args_file}"
+                f"--args-parallel {args_parallel_file}"
             )
         )
     # Test fail with both task_id and version
@@ -192,7 +202,7 @@ def test_workflow_add_task(
         invoke(
             (
                 f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6 "
-                f"--args-parallel {args_file}"
+                f"--args-parallel {args_parallel_file}"
             )
         )
     assert caplog.records[-1].msg == (
@@ -201,7 +211,7 @@ def test_workflow_add_task(
 
     cmd_args = (
         f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
-        f"--args-parallel {args_file}"
+        f"--args-parallel {args_parallel_file} "
     )
     debug(cmd_args)
     # Test success
@@ -213,11 +223,12 @@ def test_workflow_add_task(
     workflow_task_id_1 = workflow_task["id"]
     debug(workflow_task)
     assert workflow_task["input_filters"] == INPUT_FILTERS
+    assert workflow_task["args_parallel"] == ARGS_PARALLEL
 
     # Add a WorkflowTask by Task.name with the --batch option
     cmd_batch = (
         f"--batch workflow add-task {project_id} {wf.id} "
-        f"--task-name {t.name} --order 1 --args-parallel {args_file}"
+        f"--task-name {t.name} --order 1 --args-parallel {args_parallel_file}"
     )
     debug(cmd_batch)
     res = invoke(cmd_batch)
@@ -228,7 +239,8 @@ def test_workflow_add_task(
     # Add a WorkflowTask with meta-parallel args
     cmd_meta = (
         f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
-        f"--args-parallel {args_file} --meta-parallel {meta_file}"
+        f"--args-parallel {args_parallel_file} "
+        f"--meta-parallel {meta_parallel_file} "
     )
     debug(cmd_meta)
     # Test success
@@ -238,7 +250,30 @@ def test_workflow_add_task(
 
     workflow_task = res.data
     workflow_task_id_3 = workflow_task["id"]
-    assert workflow_task["meta_parallel"] == META
+    assert workflow_task["meta_parallel"] == META_PARALLEL
+    assert workflow_task["args_parallel"] == ARGS_PARALLEL
+
+    # Add a WorkflowTask with meta-non-parallel args
+    t_non_parallel = task_factory(
+        type="non_parallel", source="source non_parallel"
+    )
+
+    cmd_meta = (
+        f"{cmd} --task-id {t_non_parallel.id} "
+        f"--input-filters {input_filters_file} "
+        f"--args-non-parallel {args_non_parallel_file} "
+        f"--meta-non-parallel {meta_non_parallel_file}"
+    )
+    debug(cmd_meta)
+    # Test success
+    res = invoke(cmd_meta)
+    debug(res.data)
+    assert res.retcode == 0
+
+    workflow_task = res.data
+    workflow_task_id_4 = workflow_task["id"]
+    assert workflow_task["meta_non_parallel"] == META_NON_PARALLEL
+    assert workflow_task["args_non_parallel"] == ARGS_NON_PARALLEL
 
     # Check that the WorkflowTask's in Workflow.task_list have the correct IDs
     cmd = f"workflow show {project_id} {wf.id}"
@@ -251,6 +286,7 @@ def test_workflow_add_task(
         workflow_task_id_1,
         workflow_task_id_2,
         workflow_task_id_3,
+        workflow_task_id_4,
     ]
 
 
@@ -270,7 +306,7 @@ def test_workflow_add_task_by_name(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    task = task_factory()
+    task = task_factory(type="parallel")
     debug(task)
 
     ARGS = {"image_dir": "/asdasd"}
@@ -324,8 +360,8 @@ def test_task_cache_with_non_unique_names(
     with args_file.open("w") as f:
         json.dump(ARGS, f)
     # Create two tasks with the same name
-    task1 = task_factory()
-    task2 = task_factory()
+    task1 = task_factory(type="parallel")
+    task2 = task_factory(type="parallel")
     assert task1.name == task2.name
 
     # Verify that a warning is raised upon creating the cache file
@@ -358,7 +394,7 @@ def test_workflow_rm_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory()
+    t = task_factory(type="parallel")
 
     ARGS = {"image_dir": "/asdasd"}
 
@@ -404,7 +440,7 @@ def test_workflow_edit_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory()
+    t = task_factory(type="parallel")
     ARGS = {"image_dir": "/asdasd"}
 
     args_file = tmp_path / "args_file.json"

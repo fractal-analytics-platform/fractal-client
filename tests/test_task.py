@@ -104,14 +104,11 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
         * TBD..
     """
 
-    res0 = invoke(f"task collect {PACKAGE_PATH}")
+    res0 = invoke(f"--batch task collect {PACKAGE_PATH}")
     debug(res0)
-    res0.show()
 
-    venv_path = res0.data["data"]["venv_path"]
-    state_id = res0.data["id"]
-    debug(venv_path)
-    debug(state_id)
+    state_id = res0.data[0]  # extract id from batch string
+    assert res0.data == "1 .fractal/fractal-tasks-mock0.0.1"
 
     time.sleep(0.5)
 
@@ -126,5 +123,5 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
 
     # Second collection
     res0 = invoke(f"task collect {PACKAGE_PATH}")
-    res0.show()
+    debug(res0.data)
     assert res0.data["data"]["info"] == "Already installed"
