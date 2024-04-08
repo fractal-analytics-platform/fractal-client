@@ -161,6 +161,7 @@ def test_workflow_add_task(
 
     INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
     ARGS = {"image_dir": "/asdasd"}
+    META = {"a": "b"}
 
     input_filters_file = tmp_path / "input_filters.json"
     with input_filters_file.open("w") as f:
@@ -169,6 +170,10 @@ def test_workflow_add_task(
     args_file = tmp_path / "args_file.json"
     with args_file.open("w") as f:
         json.dump(ARGS, f)
+
+    meta_file = tmp_path / "meta.json"
+    with meta_file.open("w") as f:
+        json.dump(META, f)
 
     cmd = f"workflow add-task {project_id} {wf.id}"
     # Test fail with no task_id nor task_name
@@ -194,13 +199,13 @@ def test_workflow_add_task(
         "Too many arguments: cannot provide both `task_id` and `task_version`."
     )
 
-    cmd = (
+    cmd_args = (
         f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
         f"--args-parallel {args_file}"
     )
-    debug(cmd)
+    debug(cmd_args)
     # Test success
-    res = invoke(cmd)
+    res = invoke(cmd_args)
     debug(res.data)
     assert res.retcode == 0
 
@@ -210,15 +215,29 @@ def test_workflow_add_task(
     assert workflow_task["input_filters"] == INPUT_FILTERS
 
     # Add a WorkflowTask by Task.name with the --batch option
-    cmd = (
+    cmd_batch = (
         f"--batch workflow add-task {project_id} {wf.id} "
         f"--task-name {t.name} --order 1 --args-parallel {args_file}"
     )
-    debug(cmd)
-    res = invoke(cmd)
+    debug(cmd_batch)
+    res = invoke(cmd_batch)
     assert res.retcode == 0
     debug(res.data)
     workflow_task_id_2 = int(res.data)
+
+    # Add a WorkflowTask with meta-parallel args
+    cmd_meta = (
+        f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
+        f"--args-parallel {args_file} --meta-parallel {meta_file}"
+    )
+    debug(cmd_meta)
+    # Test success
+    res = invoke(cmd_meta)
+    debug(res.data)
+    assert res.retcode == 0
+
+    workflow_task = res.data
+    workflow_task_id_3 = workflow_task["id"]
 
     # Check that the WorkflowTask's in Workflow.task_list have the correct IDs
     cmd = f"workflow show {project_id} {wf.id}"
@@ -227,7 +246,11 @@ def test_workflow_add_task(
     workflow = res.data
     debug(workflow)
     list_IDs = [wftask["id"] for wftask in workflow["task_list"]]
-    assert list_IDs == [workflow_task_id_1, workflow_task_id_2]
+    assert list_IDs == [
+        workflow_task_id_1,
+        workflow_task_id_2,
+        workflow_task_id_3,
+    ]
 
 
 def test_workflow_add_task_by_name(
