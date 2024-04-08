@@ -238,6 +238,7 @@ def test_workflow_add_task(
 
     workflow_task = res.data
     workflow_task_id_3 = workflow_task["id"]
+    assert workflow_task["meta_parallel"] == META
 
     # Check that the WorkflowTask's in Workflow.task_list have the correct IDs
     cmd = f"workflow show {project_id} {wf.id}"
@@ -434,3 +435,21 @@ def test_workflow_edit_task(
     res = invoke(cmd)
     assert res.retcode == 0
     assert res.data["input_filters"] == INPUT_FILTERS
+
+    META = {"a": "b"}
+
+    meta_file = tmp_path / "meta.json"
+    with meta_file.open("w") as f:
+        json.dump(META, f)
+
+    # Edit workflow task
+    debug(res.data)
+    workflow_task_id = res.data["id"]
+    cmd = (
+        f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
+        f"--meta-parallel {meta_file}"
+    )
+    debug(cmd)
+    res = invoke(cmd)
+    assert res.retcode == 0
+    assert res.data["meta_parallel"] == META
