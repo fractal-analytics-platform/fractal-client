@@ -421,7 +421,6 @@ def test_workflow_rm_task(
     debug(res.data)
 
 
-@pytest.mark.skip(reason="Skip until server will implement this feature")
 def test_workflow_edit_task(
     invoke,
     register_user,
@@ -441,24 +440,40 @@ def test_workflow_edit_task(
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
     t = task_factory(type="parallel")
-    ARGS = {"image_dir": "/asdasd"}
 
-    args_file = tmp_path / "args_file.json"
-    with args_file.open("w") as f:
-        json.dump(ARGS, f)
+    INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
+    ARGS_PARALLEL = {"image_dir": "/asdasd"}
+    ARGS_NON_PARALLEL = {"image_dir": "/dsadsa"}
+    META_PARALLEL = {"a": "b"}
+    META_NON_PARALLEL = {"c": "d"}
+
+    input_filters_file = tmp_path / "input_filters.json"
+    with input_filters_file.open("w") as f:
+        json.dump(INPUT_FILTERS, f)
+
+    args_parallel_file = tmp_path / "args_parallel_file.json"
+    with args_parallel_file.open("w") as f:
+        json.dump(ARGS_PARALLEL, f)
+
+    args_non_parallel_file = tmp_path / "args_non_parallel_file.json"
+    with args_non_parallel_file.open("w") as f:
+        json.dump(ARGS_NON_PARALLEL, f)
+
+    meta_parallel_file = tmp_path / "meta_paral.json"
+    with meta_parallel_file.open("w") as f:
+        json.dump(META_PARALLEL, f)
+
+    meta_non_parallel_file = tmp_path / "meta_non_paral.json"
+    with meta_non_parallel_file.open("w") as f:
+        json.dump(META_NON_PARALLEL, f)
+
     # Create task, without overriding arguments
     cmd = (
         f"workflow add-task {project_id} {wf.id} --task-id {t.id} "
-        f"--args-parallel {args_file}"
+        f"--args-parallel {args_parallel_file}"
     )
     res = invoke(cmd)
     assert res.retcode == 0
-
-    INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
-
-    input_filters_file = tmp_path / "input_filters_file.json"
-    with input_filters_file.open("w") as f:
-        json.dump(INPUT_FILTERS, f)
 
     # Edit workflow task
     debug(res.data)
@@ -472,20 +487,44 @@ def test_workflow_edit_task(
     assert res.retcode == 0
     assert res.data["input_filters"] == INPUT_FILTERS
 
-    META = {"a": "b"}
-
-    meta_file = tmp_path / "meta.json"
-    with meta_file.open("w") as f:
-        json.dump(META, f)
-
     # Edit workflow task
     debug(res.data)
     workflow_task_id = res.data["id"]
     cmd = (
         f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
-        f"--meta-parallel {meta_file}"
+        f"--meta-parallel {meta_parallel_file}"
     )
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
-    assert res.data["meta_parallel"] == META
+    assert res.data["meta_parallel"] == META_PARALLEL
+
+    # Add a WorkflowTask with meta-non-parallel args
+    t_non_parallel = task_factory(
+        type="non_parallel", source="source non_parallel"
+    )
+
+    cmd = (
+        f"workflow add-task {project_id} {wf.id} "
+        f"--task-id {t_non_parallel.id} "
+        f"--args-non-parallel {args_non_parallel_file}"
+    )
+    res = invoke(cmd)
+    assert res.retcode == 0
+    workflow_task_id = res.data["id"]
+
+    cmd = (
+        f"workflow edit-task {project_id} {wf.id} {workflow_task_id} "
+        f"--input-filters {input_filters_file} "
+        f"--args-non-parallel {args_non_parallel_file} "
+        f"--meta-non-parallel {meta_non_parallel_file}"
+    )
+    debug(cmd)
+    # Test success
+    res = invoke(cmd)
+    debug(res.data)
+    assert res.retcode == 0
+
+    workflow_task = res.data
+    assert workflow_task["meta_non_parallel"] == META_NON_PARALLEL
+    assert workflow_task["args_non_parallel"] == ARGS_NON_PARALLEL

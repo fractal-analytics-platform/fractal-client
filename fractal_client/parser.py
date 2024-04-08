@@ -405,6 +405,22 @@ workflow_edit_task_parser.add_argument(
         "overrides of the task."
     ),
 )
+workflow_edit_task_parser.add_argument(
+    "--args-non-parallel", help="Args for non parallel tasks"
+)
+
+workflow_edit_task_parser.add_argument(
+    "--args-parallel", help="Args for parallel tasks"
+)
+
+workflow_edit_task_parser.add_argument(
+    "--meta-non-parallel", help="Metadata file fornon parallel tasks"
+)
+
+workflow_edit_task_parser.add_argument(
+    "--meta-parallel", help="Metadata file for parallel tasks"
+)
+
 
 # workflow remove task
 workflow_remove_task_parser = workflow_subparsers.add_parser(
