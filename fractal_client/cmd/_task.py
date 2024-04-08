@@ -73,10 +73,7 @@ def task_collection_check(
     # Remove key-value pairs with None value
     state["data"] = {key: val for (key, val) in state["data"].items() if val}
 
-    if include_logs:
-        return Interface(retcode=0, data=state)
-    else:
-        return Interface(retcode=0, data=state["data"]["status"])
+    return Interface(retcode=0, data=state)
 
 
 def post_task() -> None:

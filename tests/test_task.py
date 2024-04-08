@@ -80,7 +80,7 @@ def test_task_collection(register_user, invoke, testdata_path):
         assert res1.retcode == 0
         res1.show()
         time.sleep(1)
-        if res1.data == "OK":
+        if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
@@ -120,7 +120,7 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
     while True:
         res1 = invoke(f"task check-collection {state_id}")
         time.sleep(1)
-        if res1.data == "OK":
+        if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
