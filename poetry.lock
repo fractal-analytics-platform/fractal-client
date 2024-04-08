@@ -636,7 +636,7 @@ typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
 name = "fractal-server"
-version = "2.0.0a0"
+version = "2.0.0a2"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -666,7 +666,7 @@ postgres = ["asyncpg (>=0.29.0,<0.30.0)", "psycopg2 (>=2.9.5,<3.0.0)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "e0b4cb0370669686646d434dbf654f36e3b0f458"
+resolved_reference = "e6d9833a3fb487b305d96f11834bd3a0dd035b38"
 
 [[package]]
 name = "ghp-import"
