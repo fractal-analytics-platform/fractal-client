@@ -1,27 +1,21 @@
 {
-    "name": "MyWorkflow",
+    "name": "MyWorkflow-V2",
     "task_list": [
         {
-            "args": {
-                "message": "task 0",
-                "arg": "value"
+            "args_parallel": {
+                "message_x": "task_x",
+                "arg_x": "value_x"
             },
-            "meta": {"key": "value"},
-            "task": {
-                "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy"
-            }
-        },
-        {
-            "args": {
-                "message": "task 1"
+            "args_non_parallel": {
+                "message_y": "task_y",
+                "arg_y": "value_y"
             },
+            "meta_parallel": {"key1": "value1"},
+            "meta_non_parallel": {"key2": "value2"},
+            "order": 0,
+            "is_legacy_task": false,
             "task": {
-                "source": "pip_local:fractal_tasks_dummy:0.1.0:::dummy_parallel"
-            }
-        },
-        {
-            "task": {
-                "source": "custom_source"
+                "source": "PKG_SOURCE:dummy2"
             }
         }
     ]

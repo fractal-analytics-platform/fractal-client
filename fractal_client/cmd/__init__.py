@@ -36,6 +36,7 @@ from ._workflow import patch_workflow
 from ._workflow import patch_workflowtask
 from ._workflow import post_workflow
 from ._workflow import post_workflowtask
+from ._workflow import workflow_import
 from fractal_client import __VERSION__
 
 
@@ -234,6 +235,10 @@ def workflow(
         parameters = ["project_id", "workflow_id", "workflow_task_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = delete_workflowtask(client, **function_kwargs)
+    elif subcmd == "import":
+        parameters = ["project_id", "json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = workflow_import(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface

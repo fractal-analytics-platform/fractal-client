@@ -222,8 +222,38 @@ def patch_workflow(
     return Interface(retcode=0, data=new_workflow)
 
 
-def workflow_import() -> None:
-    raise NotImplementedError
+def workflow_import(
+    client: AuthClient, *, project_id: int, json_file: str, batch: bool = False
+) -> Interface:
+    with Path(json_file).open("r") as f:
+        workflow = json.load(f)
+
+    res = client.post(
+        f"{settings.BASE_URL}/project/{project_id}/workflow/import/",
+        json=workflow,
+    )
+    wf_read = check_response(res, expected_status_code=201)
+
+    warnings = [
+        workflow_task["task"]["source"]
+        for workflow_task in wf_read["task_list"]
+        if workflow_task["task"]["owner"]
+    ]
+    if warnings:
+        sources_str = ", ".join([f"'{s}'" for s in warnings])
+        logging.warning(
+            "This workflow includes custom tasks (the ones with sources: "
+            f"{sources_str}), which are not meant to be portable; "
+            "importing this workflow may not work as expected."
+        )
+
+    if batch:
+        datastr = f"{wf_read['id']}"
+        for wftask in wf_read["task_list"]:
+            datastr += f" {wftask['id']}"
+        return Interface(retcode=0, data=datastr)
+    else:
+        return Interface(retcode=0, data=wf_read)
 
 
 def workflow_export() -> None:

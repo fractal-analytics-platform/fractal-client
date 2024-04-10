@@ -1,6 +1,8 @@
 import json
 import logging
+import time
 from pathlib import Path
+from urllib.request import urlretrieve
 
 import pytest  # noqa F401
 from devtools import debug
@@ -530,3 +532,75 @@ def test_workflow_edit_task(
     workflow_task = res.data
     assert workflow_task["meta_non_parallel"] == META_NON_PARALLEL
     assert workflow_task["args_non_parallel"] == ARGS_NON_PARALLEL
+
+
+def test_workflow_import(
+    register_user,
+    invoke,
+    testdata_path: Path,
+    task_factory,
+    caplog,
+):
+    # collect tasks
+    PACKAGE_URL = (
+        "https://github.com/fractal-analytics-platform/fractal-server/"
+        "raw/main/tests/v2/fractal_tasks_mock/dist/"
+        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    )
+    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
+
+    res0 = invoke(f"task collect {PACKAGE_PATH}")
+    assert res0.retcode == 0
+    state_id = res0.data["id"]
+    starting_time = time.perf_counter()
+    while True:
+        res1 = invoke(f"task check-collection {state_id}")
+        if res1.data["data"]["status"] == "OK":
+            break
+        time.sleep(1)
+        assert time.perf_counter() - starting_time < TIMEOUT
+
+    # create project
+    PROJECT_NAME = "project_name"
+    res_pj = invoke(f"project new {PROJECT_NAME}")
+    assert res_pj.retcode == 0
+    project_id = res_pj.data["id"]
+
+    task_factory(name="task", source="PKG_SOURCE:dummy2", owner="exact-lab")
+
+    # import workflow into project
+    filename = str(testdata_path / "import-export/workflow.json")
+    with open(filename, "r") as f:
+        debug(f.read())
+    res = invoke(
+        f"workflow import --project-id {project_id} --json-file {filename}"
+    )
+    debug(res.data)
+    assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
+        "importing this workflow may not work as expected."
+    )
+
+    imported_workflow = res.data
+
+    # get the workflow from the server, and check that it is the same
+    workflow_id = res.data["id"]
+    res = invoke(f"workflow show {project_id} {workflow_id}")
+    assert res.retcode == 0
+    assert res.data == imported_workflow
+
+    # import workflow into project, with --batch
+    filename = str(testdata_path / "import-export/workflow_2.json")
+    res = invoke(
+        f"--batch workflow import --project-id {project_id} "
+        f"--json-file {filename}"
+    )
+    assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
+        "importing this workflow may not work as expected."
+    )
