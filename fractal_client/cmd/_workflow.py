@@ -247,6 +247,10 @@ def workflow_import(
             "importing this workflow may not work as expected."
         )
 
+    from devtools import debug
+
+    debug(batch)
+
     if batch:
         datastr = f"{wf_read['id']}"
         for wftask in wf_read["task_list"]:

@@ -578,6 +578,7 @@ def test_workflow_import(
         f"--json-file {filename}"
     )
     assert res.retcode == 0
+    assert res.data == "2 2"
     assert caplog.records[-1].msg == (
         "This workflow includes custom tasks (the ones with sources: "
         "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
