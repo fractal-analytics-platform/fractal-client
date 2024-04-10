@@ -243,7 +243,7 @@ def workflow(
     elif subcmd == "export":
         parameters = ["project_id", "workflow_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_export(client, batch=batch, **function_kwargs)
+        iface = workflow_export(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command workflow {subcmd} not found")
     return iface
