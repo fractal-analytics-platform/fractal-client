@@ -530,3 +530,99 @@ def test_workflow_edit_task(
     workflow_task = res.data
     assert workflow_task["meta_non_parallel"] == META_NON_PARALLEL
     assert workflow_task["args_non_parallel"] == ARGS_NON_PARALLEL
+
+
+def test_workflow_import(
+    register_user,
+    invoke,
+    testdata_path: Path,
+    task_factory,
+    caplog,
+):
+
+    # create project
+    PROJECT_NAME = "project_name"
+    res_pj = invoke(f"project new {PROJECT_NAME}")
+    assert res_pj.retcode == 0
+    project_id = res_pj.data["id"]
+
+    task_factory(name="task", source="PKG_SOURCE:dummy2", owner="exact-lab")
+
+    # import workflow into project
+    filename = str(testdata_path / "import-export/workflow.json")
+    with open(filename, "r") as f:
+        debug(f.read())
+    res = invoke(
+        f"workflow import --project-id {project_id} --json-file {filename}"
+    )
+    debug(res.data)
+    assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
+        "importing this workflow may not work as expected."
+    )
+
+    imported_workflow = res.data
+
+    # get the workflow from the server, and check that it is the same
+    workflow_id = res.data["id"]
+    res = invoke(f"workflow show {project_id} {workflow_id}")
+    assert res.retcode == 0
+    assert res.data == imported_workflow
+
+    # import workflow into project, with --batch
+    filename = str(testdata_path / "import-export/workflow_2.json")
+    res = invoke(
+        f"--batch workflow import --project-id {project_id} "
+        f"--json-file {filename}"
+    )
+    assert res.retcode == 0
+    assert res.data == "2 2"
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
+        "importing this workflow may not work as expected."
+    )
+
+
+def test_workflow_export(
+    register_user,
+    invoke,
+    workflow_factory,
+    tmp_path: Path,
+    task_factory,
+    caplog,
+):
+
+    res = invoke("project new testproject")
+    assert res.retcode == 0
+    project_id = res.data["id"]
+
+    NAME = "WorkFlow"
+    wf = workflow_factory(project_id=project_id, name=NAME)
+    prj_id = wf.project_id
+    wf_id = wf.id
+    filename = str(tmp_path / "exported_wf.json")
+
+    task = task_factory(owner="exact-lab")
+    res = invoke(f"workflow add-task {prj_id} {wf_id} --task-id {task.id}")
+    assert res.retcode == 0
+
+    res = invoke(f"workflow export {prj_id} {wf_id} --json-file {filename}")
+    assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        f"'{task.source}'), which are not meant to be portable; "
+        "re-importing this workflow may not work as expected."
+    )
+    debug(res.data)
+    with open(filename, "r") as f:
+        exported_wf = json.load(f)
+        assert exported_wf["name"] == NAME
+        assert "id" not in exported_wf
+        assert "project_id" not in exported_wf
+        for wftask in exported_wf["task_list"]:
+            assert "id" not in wftask
+            assert "task_id" not in wftask
+            assert "workflow_id" not in wftask
