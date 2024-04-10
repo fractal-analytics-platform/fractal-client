@@ -141,13 +141,14 @@ def task(
     elif subcmd == "new":
         parameters = [
             "name",
-            "command",
             "source",
-            "input_type",
-            "output_type",
             "version",
-            "meta_file",
-            "args_schema",
+            "command_non_parallel",
+            "command_parallel",
+            "meta_non_parallel",
+            "meta_parallel",
+            "args_schema_non_parallel",
+            "args_schema_parallel",
             "args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)

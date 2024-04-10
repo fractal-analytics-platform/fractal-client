@@ -254,6 +254,52 @@ task_check_collection_parser.add_argument(
     help="Also include task-collection logs.",
 )
 
+# task new
+task_new_parser = task_subparsers.add_parser(
+    "new",
+    description="Create new task.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+task_new_parser.add_argument(
+    "name", help="A human readable name for the task."
+)
+task_new_parser.add_argument(
+    "--command-non-parallel",
+    help="The non parallel command that executes the task.",
+)
+task_new_parser.add_argument(
+    "--command-parallel", help="The  parallel command that executes the task."
+)
+task_new_parser.add_argument("source", help="The source of the task")
+task_new_parser.add_argument(
+    "--version",
+    help="Task version.",
+)
+task_new_parser.add_argument(
+    "--meta-non-parallel",
+    help="Path to JSON file with meta non parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--meta-parallel",
+    help="Path to JSON file with meta parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--args-schema-non-parallel",
+    help="Path to JSON file with args non parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--args-schema-parallel",
+    help="Path to JSON file with arg parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--args-schema-version",
+    help=(
+        "Label encoding how the task-arguments JSON Schema was generated "
+        "(e.g. `pydantic_v1`)."
+    ),
+)
+
 
 # WORKFLOW GROUP
 

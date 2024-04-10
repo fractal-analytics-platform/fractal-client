@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from typing import Optional
@@ -76,8 +77,53 @@ def task_collection_check(
     return Interface(retcode=0, data=state)
 
 
-def post_task() -> None:
-    raise NotImplementedError
+def post_task(
+    client: AuthClient,
+    *,
+    name: str,
+    source: str,
+    batch: bool = False,
+    command_non_parallel: Optional[str] = None,
+    command_parallel: Optional[str] = None,
+    version: Optional[str] = None,
+    meta_non_parallel: Optional[str] = None,
+    meta_parallel: Optional[str] = None,
+    args_schema_non_parallel: Optional[str] = None,
+    args_schema_parallel: Optional[str] = None,
+    args_schema_version: Optional[str] = None,
+) -> Interface:
+    task = dict(
+        name=name,
+        source=source,
+    )
+    if command_non_parallel:
+        task["command_non_parallel"] = command_non_parallel
+    if command_parallel:
+        task["command_parallel"] = command_parallel
+    if version:
+        task["version"] = version
+    if meta_non_parallel:
+        with open(meta_non_parallel, "r") as f:
+            task["meta_non_parallel"] = json.load(f)
+    if meta_parallel:
+        with open(meta_parallel, "r") as f:
+            task["meta_parallel"] = json.load(f)
+    if args_schema_parallel:
+        with open(args_schema_parallel, "r") as f:
+            task["args_schema_parallel"] = json.load(f)
+    if args_schema_non_parallel:
+        with open(args_schema_non_parallel, "r") as f:
+            task["args_schema_non_parallel"] = json.load(f)
+    if args_schema_version:
+        task["args_schema_version"] = args_schema_version
+
+    res = client.post(f"{settings.BASE_URL}/task/", json=task)
+    new_task = check_response(res, expected_status_code=201)
+
+    if batch:
+        return Interface(retcode=0, data=str(new_task["id"]))
+    else:
+        return Interface(retcode=0, data=new_task)
 
 
 def patch_task() -> None:

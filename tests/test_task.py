@@ -125,3 +125,59 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
     res0 = invoke(f"task collect {PACKAGE_PATH}")
     debug(res0.data)
     assert res0.data["data"]["info"] == "Already installed"
+
+
+def test_task_new(register_user, invoke, tmp_path):
+
+    # create a new task with just positional required args
+    args_path = str(tmp_path / "args.json")
+    args = {"image_dir": "/asdasd"}
+    with open(args_path, "w") as f:
+        json.dump(args, f)
+
+    meta_path = str(tmp_path / "meta.json")
+    meta = {"a": "b"}
+    with open(meta_path, "w") as f:
+        json.dump(meta, f)
+
+    res = invoke(
+        "task new _name  _source --command-parallel _command "
+        f"--version _version --meta-parallel {meta_path} "
+        f"--args-schema-parallel {args_path} "
+        f"--args-schema-version 1.0.0"
+    )
+    debug(res.data)
+    assert res.retcode == 0
+    assert res.data["name"] == "_name"
+    assert res.data["command_parallel"] == "_command"
+    assert res.data["source"] == f"{register_user['username']}:_source"
+    assert res.data["version"] == "_version"
+    assert res.data["meta_parallel"] == meta
+    assert res.data["args_schema_version"] == "1.0.0"
+
+    assert "owner" in res.data.keys()
+    first_task_id = int(res.data["id"])
+
+    # create a new task with batch option
+    res = invoke(
+        "--batch task new _name2 _source2 --command-parallel _command2"
+    )
+    res.show()
+    assert res.retcode == 0
+    assert res.data == str(first_task_id + 1)
+
+    # create a new task with same source as before. Note that in check_response
+    # we have sys.exit(1) when status code is not the expecte one
+    with pytest.raises(SystemExit) as e:
+        invoke("task new _name2 _source --command-parallel _command2")
+    assert e.value.code == 1
+
+    # create a new task passing not existing file
+    res = invoke(
+        (
+            "task new _name _source --command-parallel _command "
+            "--meta-parallel ./foo.pdf"
+        )
+    )
+    debug(res.data)
+    assert res.retcode == 1
