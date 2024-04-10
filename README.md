@@ -7,19 +7,19 @@
 | fractal\_client/\_\_init\_\_.py             |        1 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/authclient.py               |       78 |        2 |       14 |        1 |     97% |     82-83 |
 | fractal\_client/client.py                   |       58 |        9 |       20 |        4 |     83% |59-66, 75, 93-94, 132-134, 138 |
-| fractal\_client/cmd/\_\_init\_\_.py         |      188 |       18 |       66 |        6 |     88% |83, 112, 139-174, 238, 276, 333 |
+| fractal\_client/cmd/\_\_init\_\_.py         |      198 |       18 |       70 |        6 |     89% |85, 114, 141-176, 248, 286, 343 |
 | fractal\_client/cmd/\_aux\_task\_caching.py |       84 |        1 |       27 |        1 |     98% |       236 |
 | fractal\_client/cmd/\_dataset.py            |       35 |        0 |       12 |        0 |    100% |           |
 | fractal\_client/cmd/\_job.py                |       67 |       11 |       24 |        2 |     86% |68-76, 82-93, 121 |
 | fractal\_client/cmd/\_project.py            |       31 |        0 |        4 |        0 |    100% |           |
 | fractal\_client/cmd/\_task.py               |       42 |        8 |       16 |        1 |     74% |37-44, 80, 84, 88 |
 | fractal\_client/cmd/\_user.py               |       72 |        5 |       38 |        2 |     92% |36-41, 48->57 |
-| fractal\_client/cmd/\_workflow.py           |      106 |        2 |       50 |        0 |     99% |  226, 230 |
+| fractal\_client/cmd/\_workflow.py           |      129 |        0 |       62 |        2 |     99% |242->250, 285->293 |
 | fractal\_client/config.py                   |       15 |        0 |        2 |        0 |    100% |           |
 | fractal\_client/interface.py                |       10 |        0 |        2 |        0 |    100% |           |
 | fractal\_client/parser.py                   |      147 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/response.py                 |       29 |        0 |        6 |        0 |    100% |           |
-|                                   **TOTAL** |  **963** |   **56** |  **281** |   **17** | **93%** |           |
+|                                   **TOTAL** |  **996** |   **54** |  **297** |   **19** | **93%** |           |
 
 
 ## Setup coverage badge
