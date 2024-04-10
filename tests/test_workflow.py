@@ -1,8 +1,6 @@
 import json
 import logging
-import time
 from pathlib import Path
-from urllib.request import urlretrieve
 
 import pytest  # noqa F401
 from devtools import debug
@@ -541,25 +539,6 @@ def test_workflow_import(
     task_factory,
     caplog,
 ):
-    # collect tasks
-    PACKAGE_URL = (
-        "https://github.com/fractal-analytics-platform/fractal-server/"
-        "raw/main/tests/v2/fractal_tasks_mock/dist/"
-        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    )
-    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
-
-    res0 = invoke(f"task collect {PACKAGE_PATH}")
-    assert res0.retcode == 0
-    state_id = res0.data["id"]
-    starting_time = time.perf_counter()
-    while True:
-        res1 = invoke(f"task check-collection {state_id}")
-        if res1.data["data"]["status"] == "OK":
-            break
-        time.sleep(1)
-        assert time.perf_counter() - starting_time < TIMEOUT
 
     # create project
     PROJECT_NAME = "project_name"
@@ -604,3 +583,45 @@ def test_workflow_import(
         "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
         "importing this workflow may not work as expected."
     )
+
+
+def test_workflow_export(
+    register_user,
+    invoke,
+    workflow_factory,
+    tmp_path: Path,
+    task_factory,
+    caplog,
+):
+
+    res = invoke("project new testproject")
+    assert res.retcode == 0
+    project_id = res.data["id"]
+
+    NAME = "WorkFlow"
+    wf = workflow_factory(project_id=project_id, name=NAME)
+    prj_id = wf.project_id
+    wf_id = wf.id
+    filename = str(tmp_path / "exported_wf.json")
+
+    task = task_factory(owner="exact-lab")
+    res = invoke(f"workflow add-task {prj_id} {wf_id} --task-id {task.id}")
+    assert res.retcode == 0
+
+    res = invoke(f"workflow export {prj_id} {wf_id} --json-file {filename}")
+    assert res.retcode == 0
+    assert caplog.records[-1].msg == (
+        "This workflow includes custom tasks (the ones with sources: "
+        f"'{task.source}'), which are not meant to be portable; "
+        "re-importing this workflow may not work as expected."
+    )
+    debug(res.data)
+    with open(filename, "r") as f:
+        exported_wf = json.load(f)
+        assert exported_wf["name"] == NAME
+        assert "id" not in exported_wf
+        assert "project_id" not in exported_wf
+        for wftask in exported_wf["task_list"]:
+            assert "id" not in wftask
+            assert "task_id" not in wftask
+            assert "workflow_id" not in wftask
