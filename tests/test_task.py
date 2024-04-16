@@ -183,8 +183,20 @@ def test_task_new(register_user, invoke, tmp_path):
             "--meta-parallel ./foo.pdf"
         )
     )
-    debug(res.data)
     assert res.retcode == 1
+
+    metanp_path = str(tmp_path / "meta.json")
+    metanp = {"a": "b"}
+    with open(metanp_path, "w") as f:
+        json.dump(metanp, f)
+    res = invoke(
+        (
+            f"task new _name_np _source_np --command-non-parallel _command_np "
+            f"--meta-non-parallel {metanp_path} "
+            f"--args-schema-non-parallel {args_path} "
+        )
+    )
+    assert res.data["args_schema_non_parallel"] == args
 
 
 def test_task_edit(
