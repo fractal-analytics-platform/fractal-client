@@ -239,10 +239,25 @@ def test_task_edit(
     assert res.data["command_parallel"] == NEW_COMMAND_PARALLEL
     assert res.retcode == 0
 
+    # Add non-parallel task and test command-non-parallel
+
+    meta_path = str(tmp_path / "meta.json")
+    meta = {"a": "b"}
+    with open(meta_path, "w") as f:
+        json.dump(meta, f)
+
+    task_np = invoke(
+        (
+            f"task new _name_np _source_np "
+            f"--command-non-parallel _command_np "
+            f"--version 1.0.1 --meta-non-parallel {meta_path}"
+        )
+    )
+
     NEW_COMMAND_NON_PARALLEL = "run_non_parallel"
     res = invoke_as_superuser(
         (
-            f"task edit --id {task_id} "
+            f"task edit --id {task_np.data['id']} "
             f"--command-non-parallel {NEW_COMMAND_NON_PARALLEL}"
         )
     )
