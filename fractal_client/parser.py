@@ -254,6 +254,119 @@ task_check_collection_parser.add_argument(
     help="Also include task-collection logs.",
 )
 
+# task new
+task_new_parser = task_subparsers.add_parser(
+    "new",
+    description="Create new task.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+task_new_parser.add_argument(
+    "name", help="A human readable name for the task."
+)
+task_new_parser.add_argument(
+    "--command-non-parallel",
+    help="The non parallel command that executes the task.",
+)
+task_new_parser.add_argument(
+    "--command-parallel", help="The  parallel command that executes the task."
+)
+task_new_parser.add_argument("source", help="The source of the task")
+task_new_parser.add_argument(
+    "--version",
+    help="Task version.",
+)
+task_new_parser.add_argument(
+    "--meta-non-parallel",
+    help="Path to JSON file with meta non parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--meta-parallel",
+    help="Path to JSON file with meta parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--args-schema-non-parallel",
+    help="Path to JSON file with args non parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--args-schema-parallel",
+    help="Path to JSON file with arg parallel arguments.",
+)
+task_new_parser.add_argument(
+    "--args-schema-version",
+    help=(
+        "Label encoding how the task-arguments JSON Schema was generated "
+        "(e.g. `pydantic_v1`)."
+    ),
+)
+
+# task edit
+task_edit_parser = task_subparsers.add_parser(
+    "edit",
+    description="Edit task.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+
+task_edit_id_or_name_group = task_edit_parser.add_mutually_exclusive_group(
+    required=True
+)
+task_edit_id_or_name_group.add_argument(
+    "--id", help="ID of the task to edit.", type=int
+)
+task_edit_id_or_name_group.add_argument(
+    "--name", help="Name of the task to edit."
+)
+
+task_edit_parser.add_argument(
+    "--version",
+    help=(
+        "Version of the task to edit "
+        "(only accepted in combination with `--name`)."
+    ),
+)
+task_edit_parser.add_argument("--new-name", help="New task name.")
+task_edit_parser.add_argument("--new-version", help="New task version.")
+task_edit_parser.add_argument(
+    "--command-non-parallel", help="New task non parallel command."
+)
+task_edit_parser.add_argument(
+    "--command-parallel",
+    help="New task parallel command.",
+)
+task_edit_parser.add_argument(
+    "--input-types",
+    help=("Path to JSON file with new input types."),
+)
+task_edit_parser.add_argument(
+    "--output-types",
+    help=("Path to JSON file with new output types."),
+)
+
+# task delete
+task_delete_parser = task_subparsers.add_parser(
+    "delete",
+    description="Delete task.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+task_delete_id_or_name_group = task_delete_parser.add_mutually_exclusive_group(
+    required=True
+)
+task_delete_id_or_name_group.add_argument(
+    "--id", help="ID of the task to delete.", type=int
+)
+task_delete_id_or_name_group.add_argument(
+    "--name", help="Name of the task to delete."
+)
+task_delete_parser.add_argument(
+    "--version",
+    help=(
+        "Version of the task to delete "
+        "(only accepted in combination with `--name`)."
+    ),
+)
+
 
 # WORKFLOW GROUP
 

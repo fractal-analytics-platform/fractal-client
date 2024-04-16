@@ -141,13 +141,14 @@ def task(
     elif subcmd == "new":
         parameters = [
             "name",
-            "command",
             "source",
-            "input_type",
-            "output_type",
             "version",
-            "meta_file",
-            "args_schema",
+            "command_non_parallel",
+            "command_parallel",
+            "meta_non_parallel",
+            "meta_parallel",
+            "args_schema_non_parallel",
+            "args_schema_parallel",
             "args_schema_version",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -158,13 +159,11 @@ def task(
             "name",
             "version",
             "new_name",
-            "new_command",
-            "new_input_type",
-            "new_output_type",
             "new_version",
-            "meta_file",
-            "new_args_schema",
-            "new_args_schema_version",
+            "command_non_parallel",
+            "command_parallel",
+            "input_types",
+            "output_types",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_task(client, **function_kwargs)

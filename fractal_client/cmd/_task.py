@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from typing import Optional
@@ -6,6 +7,8 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
 from ..response import check_response
+from ._aux_task_caching import FractalCacheError
+from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
 
 
@@ -76,13 +79,127 @@ def task_collection_check(
     return Interface(retcode=0, data=state)
 
 
-def post_task() -> None:
-    raise NotImplementedError
+def post_task(
+    client: AuthClient,
+    *,
+    name: str,
+    source: str,
+    batch: bool = False,
+    command_non_parallel: Optional[str] = None,
+    command_parallel: Optional[str] = None,
+    version: Optional[str] = None,
+    meta_non_parallel: Optional[str] = None,
+    meta_parallel: Optional[str] = None,
+    args_schema_non_parallel: Optional[str] = None,
+    args_schema_parallel: Optional[str] = None,
+    args_schema_version: Optional[str] = None,
+) -> Interface:
+    task = dict(
+        name=name,
+        source=source,
+    )
+    if command_non_parallel:
+        task["command_non_parallel"] = command_non_parallel
+    if command_parallel:
+        task["command_parallel"] = command_parallel
+    if version:
+        task["version"] = version
+    if meta_non_parallel:
+        with open(meta_non_parallel, "r") as f:
+            task["meta_non_parallel"] = json.load(f)
+    if meta_parallel:
+        with open(meta_parallel, "r") as f:
+            task["meta_parallel"] = json.load(f)
+    if args_schema_parallel:
+        with open(args_schema_parallel, "r") as f:
+            task["args_schema_parallel"] = json.load(f)
+    if args_schema_non_parallel:
+        with open(args_schema_non_parallel, "r") as f:
+            task["args_schema_non_parallel"] = json.load(f)
+    if args_schema_version:
+        task["args_schema_version"] = args_schema_version
+
+    res = client.post(f"{settings.BASE_URL}/task/", json=task)
+    new_task = check_response(res, expected_status_code=201)
+
+    if batch:
+        return Interface(retcode=0, data=str(new_task["id"]))
+    else:
+        return Interface(retcode=0, data=new_task)
 
 
-def patch_task() -> None:
-    raise NotImplementedError
+def patch_task(
+    client: AuthClient,
+    *,
+    id: Optional[int] = None,
+    name: Optional[str] = None,
+    version: Optional[str] = None,
+    new_name: Optional[str] = None,
+    new_version: Optional[str] = None,
+    command_non_parallel: Optional[str] = None,
+    command_parallel: Optional[str] = None,
+    input_types: Optional[str] = None,
+    output_types: Optional[str] = None,
+) -> Interface:
+
+    if id:
+        if version:
+            logging.error(
+                "Too many arguments: cannot provide both `id` and `version`."
+            )
+            sys.exit(1)
+    else:
+        try:
+            id = get_task_id_from_cache(
+                client=client, task_name=name, version=version
+            )
+        except FractalCacheError as e:
+            print(e)
+            sys.exit(1)
+
+    task_update = {}
+    if new_name:
+        task_update["name"] = new_name
+    if new_version:
+        task_update["version"] = new_version
+    if command_non_parallel:
+        task_update["command_non_parallel"] = command_non_parallel
+    if command_parallel:
+        task_update["command_parallel"] = command_parallel
+    if input_types:
+        with open(input_types, "r") as f:
+            task_update["input_types"] = json.load(f)
+    if output_types:
+        with open(output_types, "r") as f:
+            task_update["output_types"] = json.load(f)
+
+    res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
+    new_task = check_response(res, expected_status_code=200)
+    return Interface(retcode=0, data=new_task)
 
 
-def delete_task() -> None:
-    raise NotImplementedError
+def delete_task(
+    client: AuthClient,
+    *,
+    id: Optional[int] = None,
+    name: Optional[str] = None,
+    version: Optional[str] = None,
+) -> Interface:
+
+    if id:
+        if version:
+            logging.error(
+                "Too many arguments: cannot provide both `id` and `version`."
+            )
+            sys.exit(1)
+    else:
+        try:
+            id = get_task_id_from_cache(
+                client=client, task_name=name, version=version
+            )
+        except FractalCacheError as e:
+            print(e)
+            sys.exit(1)
+    res = client.delete(f"{settings.BASE_URL}/task/{id}/")
+    check_response(res, expected_status_code=204)
+    return Interface(retcode=0, data="")
