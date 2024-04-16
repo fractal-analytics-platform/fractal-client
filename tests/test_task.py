@@ -280,6 +280,9 @@ def test_task_edit(
     assert caplog.records[-1].msg == (
         "Too many arguments: cannot provide both `id` and `version`."
     )
+    # Test fail "name and wrong version"
+    with pytest.raises(SystemExit):
+        invoke("task delete --name INVALID_NAME --version INVALID_VERSION")
 
     input_types = {"input": True, "output": False}
 
@@ -379,7 +382,6 @@ def test_task_delete(
         )
     )
 
-    # task = invoke(f"task new {NAME} _source --version {VERSION}")
     task.show()
     assert task.retcode == 0
     task_id = task.data["id"]
@@ -397,7 +399,7 @@ def test_task_delete(
     with pytest.raises(SystemExit):
         invoke(f"task delete --name {NAME} --version INVALID_VERSION")
 
-    # Test sucess
+    # Test success
     res = invoke("task list")
     task_list = res.data
     assert len(task_list) == 1

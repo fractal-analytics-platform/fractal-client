@@ -344,7 +344,6 @@ task_edit_parser.add_argument(
 )
 
 # task delete
-# task delete
 task_delete_parser = task_subparsers.add_parser(
     "delete",
     description="Delete task.",
