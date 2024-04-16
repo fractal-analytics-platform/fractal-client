@@ -337,3 +337,57 @@ def test_task_edit(
     )
     assert res.data["output_types"] == new_output_types
     assert res.retcode == 0
+
+
+def test_task_delete(
+    register_user,
+    user_factory,
+    invoke,
+    invoke_as_superuser,
+    tmp_path,
+):
+    """
+    Test task delete
+    """
+    NAME = "_name"
+    VERSION = "1.0.0"
+
+    meta_path = str(tmp_path / "meta.json")
+    meta = {"a": "b"}
+    with open(meta_path, "w") as f:
+        json.dump(meta, f)
+
+    task = invoke(
+        (
+            f"task new {NAME}  _source --command-parallel _command "
+            f"--version {VERSION} --meta-parallel {meta_path}"
+        )
+    )
+
+    # task = invoke(f"task new {NAME} _source --version {VERSION}")
+    task.show()
+    assert task.retcode == 0
+    task_id = task.data["id"]
+
+    # Test access control
+    with pytest.raises(SystemExit):
+        EMAIL = "someone@example.org"
+        PASSWORD = "123123"
+        user_factory(email=EMAIL, password=PASSWORD)
+        res = invoke(f"-u {EMAIL} -p {PASSWORD} task delete --id {task_id}")
+    # Test fail "id and version"
+    with pytest.raises(SystemExit):
+        invoke(f"task delete --id {task_id} --version {VERSION}")
+    # Test fail "name and wrong version"
+    with pytest.raises(SystemExit):
+        invoke(f"task delete --name {NAME} --version INVALID_VERSION")
+
+    # Test sucess
+    res = invoke("task list")
+    task_list = res.data
+    assert len(task_list) == 1
+    res = invoke(f"task delete --name {NAME} --version {VERSION}")
+    assert res.retcode == 0
+    res = invoke("task list")
+    task_list = res.data
+    assert len(task_list) == 0
