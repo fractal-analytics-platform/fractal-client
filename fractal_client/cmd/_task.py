@@ -7,6 +7,8 @@ from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
 from ..response import check_response
+from ._aux_task_caching import FractalCacheError
+from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
 
 
@@ -126,8 +128,54 @@ def post_task(
         return Interface(retcode=0, data=new_task)
 
 
-def patch_task() -> None:
-    raise NotImplementedError
+def patch_task(
+    client: AuthClient,
+    *,
+    id: Optional[int] = None,
+    name: Optional[str] = None,
+    version: Optional[str] = None,
+    new_name: Optional[str] = None,
+    new_version: Optional[str] = None,
+    command_non_parallel: Optional[str] = None,
+    command_parallel: Optional[str] = None,
+    input_types: Optional[str] = None,
+    output_types: Optional[str] = None,
+) -> Interface:
+
+    if id:
+        if version:
+            logging.error(
+                "Too many arguments: cannot provide both `id` and `version`."
+            )
+            sys.exit(1)
+    else:
+        try:
+            id = get_task_id_from_cache(
+                client=client, task_name=name, version=version
+            )
+        except FractalCacheError as e:
+            print(e)
+            sys.exit(1)
+
+    task_update = {}
+    if new_name:
+        task_update["name"] = new_name
+    if new_version:
+        task_update["version"] = new_version
+    if command_non_parallel:
+        task_update["command_non_parallel"] = command_non_parallel
+    if command_parallel:
+        task_update["command_parallel"] = command_parallel
+    if input_types:
+        with open(input_types, "r") as f:
+            task_update["input_types"] = json.load(f)
+    if output_types:
+        with open(output_types, "r") as f:
+            task_update["output_types"] = json.load(f)
+
+    res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
+    new_task = check_response(res, expected_status_code=200)
+    return Interface(retcode=0, data=new_task)
 
 
 def delete_task() -> None:

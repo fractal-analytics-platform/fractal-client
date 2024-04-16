@@ -300,6 +300,49 @@ task_new_parser.add_argument(
     ),
 )
 
+# task edit
+task_edit_parser = task_subparsers.add_parser(
+    "edit",
+    description="Edit task.",
+    argument_default=ap.SUPPRESS,
+    allow_abbrev=False,
+)
+
+task_edit_id_or_name_group = task_edit_parser.add_mutually_exclusive_group(
+    required=True
+)
+task_edit_id_or_name_group.add_argument(
+    "--id", help="ID of the task to edit.", type=int
+)
+task_edit_id_or_name_group.add_argument(
+    "--name", help="Name of the task to edit."
+)
+
+task_edit_parser.add_argument(
+    "--version",
+    help=(
+        "Version of the task to edit "
+        "(only accepted in combination with `--name`)."
+    ),
+)
+task_edit_parser.add_argument("--new-name", help="New task name.")
+task_edit_parser.add_argument("--new-version", help="New task version.")
+task_edit_parser.add_argument(
+    "--command-non-parallel", help="New task non parallel command."
+)
+task_edit_parser.add_argument(
+    "--command-parallel",
+    help="New task parallel command.",
+)
+task_edit_parser.add_argument(
+    "--input-types",
+    help=("Path to JSON file with new input types."),
+)
+task_edit_parser.add_argument(
+    "--output-types",
+    help=("Path to JSON file with new output types."),
+)
+
 
 # WORKFLOW GROUP
 
