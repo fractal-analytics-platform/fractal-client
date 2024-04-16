@@ -338,9 +338,7 @@ def test_task_edit(
     assert res.data["output_types"] == output_types
     assert res.retcode == 0
 
-    # Test failed update by name, after deleting cache
-    cache_file.unlink(missing_ok=True)
-
+    # Test failing invalid name
     fail_output_types = {"input": True, "output": False}
 
     f_o_types_path = str(tmp_path / "fotypes.json")
@@ -349,7 +347,7 @@ def test_task_edit(
 
     with pytest.raises(SystemExit):
         res = invoke_as_superuser(
-            f"task edit --name INVALID_NAME --output-type {f_o_types_path}"
+            f"task edit --name INVALID_NAME --output-types {f_o_types_path}"
         )
 
     # Test regular update by name, after creating an invalid cache
