@@ -243,10 +243,10 @@ def test_task_edit(
     res = invoke_as_superuser(
         (
             f"task edit --id {task_id} "
-            f"--command-parallel {NEW_COMMAND_NON_PARALLEL}"
+            f"--command-non-parallel {NEW_COMMAND_NON_PARALLEL}"
         )
     )
-    assert res.data["command_parallel"] == NEW_COMMAND_NON_PARALLEL
+    assert res.data["command_non_parallel"] == NEW_COMMAND_NON_PARALLEL
     assert res.retcode == 0
 
     # Test fail with no task_id nor task_name
