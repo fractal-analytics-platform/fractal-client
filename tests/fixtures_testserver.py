@@ -181,7 +181,6 @@ def job_factory(db):
                 id=1,
                 name="ds-in",
                 zarr_dir="/abc",
-                read_only=False,
                 project_id=1,
                 timestamp_created=str(get_timestamp()),
                 filters=dict(attributes=dict(a=1), types=dict(b=True)),
@@ -189,7 +188,6 @@ def job_factory(db):
             project_dump=dict(
                 id=1,
                 name="proj",
-                read_only=True,
                 timestamp_created=str(get_timestamp()),
             ),
             start_timestamp=get_timestamp(),
