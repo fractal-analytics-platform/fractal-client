@@ -194,6 +194,14 @@ def test_job_download_logs(
         contents = f.read()
     assert contents == LOG
 
+    # Check failure for invalid ID
+    output = tmp_path / "output_dir_for_logs"
+    cmd = "job download-logs 9999 9999 --output /somewhere/useless"
+    debug(cmd)
+    with pytest.raises(SystemExit) as e:
+        res = invoke(cmd)
+    debug(e.value)
+
 
 def test_job_stop(
     register_user,
