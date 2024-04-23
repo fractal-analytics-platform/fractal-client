@@ -10,7 +10,7 @@
 | fractal\_client/cmd/\_\_init\_\_.py         |      198 |        6 |       70 |        6 |     96% |85, 114, 175, 247, 285, 342 |
 | fractal\_client/cmd/\_aux\_task\_caching.py |       84 |        0 |       27 |        0 |    100% |           |
 | fractal\_client/cmd/\_dataset.py            |       35 |        0 |       12 |        0 |    100% |           |
-| fractal\_client/cmd/\_job.py                |       67 |       11 |       24 |        2 |     86% |68-76, 82-93, 121 |
+| fractal\_client/cmd/\_job.py                |       67 |        6 |       24 |        1 |     92% |82-93, 121 |
 | fractal\_client/cmd/\_project.py            |       31 |        0 |        4 |        0 |    100% |           |
 | fractal\_client/cmd/\_task.py               |      107 |        5 |       66 |        1 |     93% |     40-47 |
 | fractal\_client/cmd/\_user.py               |       72 |        5 |       38 |        2 |     92% |36-41, 48->57 |
@@ -19,7 +19,7 @@
 | fractal\_client/interface.py                |       10 |        0 |        2 |        0 |    100% |           |
 | fractal\_client/parser.py                   |      174 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/response.py                 |       29 |        0 |        6 |        0 |    100% |           |
-|                                   **TOTAL** | **1088** |   **38** |  **347** |   **18** | **96%** |           |
+|                                   **TOTAL** | **1088** |   **33** |  **347** |   **17** | **96%** |           |
 
 
 ## Setup coverage badge
