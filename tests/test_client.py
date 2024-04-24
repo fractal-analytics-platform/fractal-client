@@ -17,6 +17,12 @@ def test_no_command(invoke):
         invoke("")
 
 
+def test_debug(invoke):
+    res = invoke("--debug version")
+    assert res.retcode == 0
+    debug(res.data)
+
+
 def test_version(invoke):
     iface = invoke("version")
     debug(iface.data)
