@@ -12,6 +12,12 @@ from fractal_client.client import handle
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
+def test_debug(invoke):
+    res = invoke("--debug version")
+    assert res.retcode == 0
+    debug(res.data)
+
+
 def test_version(invoke):
     iface = invoke("version")
     debug(iface.data)
@@ -76,6 +82,20 @@ def test_missing_credentials(override_settings):
     res = handle(shlex.split("fractal user whoami"))
     debug(res.data)
     assert res.retcode == 1
+
+
+def test_missing_password(override_settings):
+    """
+    GIVEN an invocation with missing password
+    THEN the client raises a MissingCredentialsError
+    """
+    # Remove password from settings
+    override_settings(FRACTAL_USER="some_user", FRACTAL_PASSWORD=None)
+
+    res = handle(shlex.split("fractal user whoami"))
+    debug(res.data)
+    assert res.retcode == 1
+    assert "FRACTAL_PASSWORD variable not defined" in res.data
 
 
 def test_connecterror(client, override_settings):

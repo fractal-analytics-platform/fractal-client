@@ -10,7 +10,7 @@ def user_register(
     client: AuthClient,
     *,
     new_email: str,
-    new_password: Optional[str] = None,
+    new_password: str,
     slurm_user: Optional[str] = None,
     cache_dir: Optional[str] = None,
     username: Optional[str] = None,
@@ -29,16 +29,6 @@ def user_register(
         new_user["cache_dir"] = cache_dir
     if username:
         new_user["username"] = username
-
-    from getpass import getpass
-
-    if new_password is None:
-        new_password = getpass()
-        confirm_new_password = getpass("Confirm password: ")
-        if new_password == confirm_new_password:
-            new_user["password"] = new_password
-        else:
-            return Interface(retcode=1, data="Passwords do not match.")
 
     res = client.post(
         f"{settings.FRACTAL_SERVER}/auth/register/", json=new_user
