@@ -12,6 +12,11 @@ from fractal_client.client import handle
 DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
+def test_no_command(invoke):
+    with pytest.raises(SystemExit):
+        invoke("")
+
+
 def test_version(invoke):
     iface = invoke("version")
     debug(iface.data)
