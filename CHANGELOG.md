@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Update `poetry` version for development to 1.8.2.
+
 # 2.0.0
 
 Major version to align with `fractal-server` API v2.
