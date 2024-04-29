@@ -13,6 +13,7 @@ The following table shows some additional compatibility constraints for each
 
 | fractal-client | fractal-server |
 |----------------|----------------|
+| 2.0.0          | >=2.0.0        |
 | 1.4.3          | >=1.4.2        |
 | 1.4.2          | >=1.4.2        |
 | 1.4.1          | >=1.4.0        |
