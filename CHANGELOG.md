@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.0.0
+
+Major version to align with `fractal-server` API v2.
+
 # 1.4.4
 
 * Require user's verification to be specified when editing user's email (\#620).
