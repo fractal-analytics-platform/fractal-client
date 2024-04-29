@@ -1,5 +1,13 @@
 import pytest
 
+from fractal_client.cmd import dataset
+from fractal_client.cmd import job
+from fractal_client.cmd import NoCommandError
+from fractal_client.cmd import project
+from fractal_client.cmd import task
+from fractal_client.cmd import user
+from fractal_client.cmd import workflow
+
 
 def test_invalid_commands(invoke):
     for arg in ["", " INVALID"]:
@@ -13,3 +21,9 @@ def test_invalid_commands(invoke):
         ]:
             with pytest.raises(SystemExit):
                 invoke(f"{command}{arg}")
+
+
+def test_unit_invalid_subcommand():
+    for _function in [project, dataset, task, workflow, job, user]:
+        with pytest.raises(NoCommandError):
+            _function(client=None, subcmd="invalid")
