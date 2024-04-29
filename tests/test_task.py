@@ -115,7 +115,7 @@ def test_task_collection(register_user, invoke, testdata_path):
     assert res2.data["data"]["status"] == "OK"
 
     res = invoke("task list")
-    assert len(res.data) == 13
+    assert len(res.data) == 14
 
 
 def test_repeated_task_collection(register_user, invoke, testdata_path):
