@@ -45,7 +45,6 @@ def test_job_show(
             "name": "my workflow",
             "id": 1,
             "project_id": 1,
-            "task_list": [],
             "timestamp_created": str(get_timestamp()),
         },
     )
@@ -97,7 +96,6 @@ def test_job_list(
             "name": "my workflow",
             "id": 1,
             "project_id": 1,
-            "task_list": [],
             "timestamp_created": str(get_timestamp()),
         },
     )
@@ -109,7 +107,6 @@ def test_job_list(
             "name": "my workflow",
             "id": 1,
             "project_id": 1,
-            "task_list": [],
             "timestamp_created": str(get_timestamp()),
         },
     )
