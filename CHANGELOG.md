@@ -3,6 +3,7 @@
 # Unreleased
 
 * Update `poetry` version for development to 1.8.2.
+* Update CI for fractal-server 2.1.0 compatibility (\#655).
 
 # 2.0.0
 
