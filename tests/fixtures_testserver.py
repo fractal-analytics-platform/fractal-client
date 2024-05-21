@@ -237,7 +237,7 @@ def user_factory(testserver, db, client_superuser):
 
 @pytest.fixture
 def register_user(user_factory, db):
-    from fractal_server.app.models import UserOAuth
+    from fractal_server.app.models.security import UserOAuth
 
     created_user = user_factory(
         email=environ["FRACTAL_USER"],
