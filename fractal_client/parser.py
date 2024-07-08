@@ -14,6 +14,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import argparse as ap
+from typing import Any
 
 
 parser_main = ap.ArgumentParser(
@@ -234,6 +235,38 @@ task_collect_parser.add_argument(
         "pydantic=1.10.0`. Include `--pinned-dependency` multiple times to "
         "pin several packages to specific versions."
     ),
+)
+
+
+# task collect custom
+task_collect_custom_parser = task_subparsers.add_parser(
+    "collect-custom",
+    description="TBD",
+    allow_abbrev=False,
+)
+task_collect_custom_parser.add_argument(
+    "source",
+    help="TBD",
+)
+task_collect_custom_parser.add_argument(
+    "python_interpreter",
+    help="TBD",
+)
+task_collect_custom_parser.add_argument(
+    "manifest", help="TBD", type=dict[str, Any]
+)
+task_collect_custom_parser.add_argument(
+    "--version",
+    help="TBD",
+)
+tasktask_collect_custom_pkg_name_or_root = (
+    task_collect_custom_parser.add_mutually_exclusive_group(required=True)
+)
+tasktask_collect_custom_pkg_name_or_root.add_argument(
+    "--package_name", help="TBD"
+)
+tasktask_collect_custom_pkg_name_or_root.add_argument(
+    "--package_root", help="TBD"
 )
 
 # task check-collection
