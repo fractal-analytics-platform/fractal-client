@@ -241,30 +241,43 @@ task_collect_parser.add_argument(
 # task collect custom
 task_collect_custom_parser = task_subparsers.add_parser(
     "collect-custom",
-    description="TBD",
+    description="Collect all tasks from a local Python interpreter.",
     allow_abbrev=False,
 )
 task_collect_custom_parser.add_argument(
     "source",
-    help="TBD",
+    help="A common label identifying this package.",
 )
 task_collect_custom_parser.add_argument(
     "python_interpreter",
-    help="TBD",
+    help=(
+        "Absolute path to the Python interpreter to be used for running tasks."
+    ),
 )
-task_collect_custom_parser.add_argument("manifest", help="TBD")
+task_collect_custom_parser.add_argument(
+    "manifest", help="Path or URL of the Manifest of the Fractal task package"
+)
 task_collect_custom_parser.add_argument(
     "--version",
-    help="TBD",
+    help="Optional version of tasks to be collected.",
 )
 tasktask_collect_custom_pkg_name_or_root = (
     task_collect_custom_parser.add_mutually_exclusive_group(required=True)
 )
 tasktask_collect_custom_pkg_name_or_root.add_argument(
-    "--package-name", help="TBD"
+    "--package-name",
+    help=(
+        "Name of the package, as used in import <package_name>; "
+        "this is then used to extract the package directory (package_root) "
+        "via pip show <package_name>"
+    ),
 )
 tasktask_collect_custom_pkg_name_or_root.add_argument(
-    "--package-root", help="TBD"
+    "--package-root",
+    help=(
+        "The folder where the package is installed. If not provided, it will "
+        "be extracted via pip show (requires 'package_name' to be set)."
+    ),
 )
 
 # task check-collection
