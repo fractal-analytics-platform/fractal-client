@@ -80,7 +80,7 @@ def task_collect_custom(
             manifest_dict = json.loads(f.read())
     else:
         with open(manifest, "r") as f:
-            manifest_dict = json.loads(f)
+            manifest_dict = json.load(f)
 
     task_collect = dict(
         source=source,

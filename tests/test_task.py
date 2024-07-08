@@ -2,6 +2,7 @@ import json
 import sys
 import time
 from pathlib import Path
+from urllib.request import urlopen
 from urllib.request import urlretrieve
 
 import pytest
@@ -441,7 +442,7 @@ def test_task_delete(
     assert len(task_list) == 0
 
 
-def test_task_collection_custom(register_user, invoke):
+def test_task_collection_custom(register_user, tmp_path, invoke):
     python_interpreter = sys.executable
     source = "source"
     manifest = (
@@ -459,9 +460,15 @@ def test_task_collection_custom(register_user, invoke):
     assert res.retcode == 0
     assert isinstance(res.data, list)
 
+    with urlopen(manifest) as f:
+        manifest_dict = json.loads(f.read())
+    manifest_path = str(tmp_path / "manifest.json")
+    with open(manifest_path, "w") as f:
+        json.dump(manifest_dict, f)
+
     cmd = (
         "--batch task collect-custom --package-root /path --version 2 "
-        f"{source}2 {python_interpreter} {manifest}"
+        f"{source}2 {python_interpreter} {manifest_path}"
     )
     res = invoke(cmd)
     assert res.retcode == 0
