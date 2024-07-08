@@ -252,9 +252,7 @@ task_collect_custom_parser.add_argument(
     "python_interpreter",
     help="TBD",
 )
-task_collect_custom_parser.add_argument(
-    "manifest", help="TBD", type=dict[str, Any]
-)
+task_collect_custom_parser.add_argument("manifest", help="TBD")
 task_collect_custom_parser.add_argument(
     "--version",
     help="TBD",
@@ -263,10 +261,10 @@ tasktask_collect_custom_pkg_name_or_root = (
     task_collect_custom_parser.add_mutually_exclusive_group(required=True)
 )
 tasktask_collect_custom_pkg_name_or_root.add_argument(
-    "--package_name", help="TBD"
+    "--package-name", help="TBD"
 )
 tasktask_collect_custom_pkg_name_or_root.add_argument(
-    "--package_root", help="TBD"
+    "--package-root", help="TBD"
 )
 
 # task check-collection

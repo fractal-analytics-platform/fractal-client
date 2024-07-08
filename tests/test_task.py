@@ -1,4 +1,5 @@
 import json
+import sys
 import time
 from pathlib import Path
 from urllib.request import urlretrieve
@@ -438,3 +439,30 @@ def test_task_delete(
     res = invoke("task list")
     task_list = res.data
     assert len(task_list) == 0
+
+
+def test_task_collection_custom(register_user, invoke):
+    python_interpreter = sys.executable
+    source = "source"
+    manifest = (
+        "https://github.com/fractal-analytics-platform/fractal-server/"
+        "raw/main/tests/v2/fractal_tasks_mock/src/fractal_tasks_mock/"
+        "__FRACTAL_MANIFEST__.json"
+    )
+    package_name = "fractal-client"
+
+    cmd = (
+        f"task collect-custom --package-name {package_name} "
+        f"{source} {python_interpreter} {manifest}"
+    )
+    res = invoke(cmd)
+    assert res.retcode == 0
+    assert isinstance(res.data, list)
+
+    cmd = (
+        "--batch task collect-custom --package-root /path --version 2 "
+        f"{source}2 {python_interpreter} {manifest}"
+    )
+    res = invoke(cmd)
+    assert res.retcode == 0
+    assert isinstance(res.data, str)

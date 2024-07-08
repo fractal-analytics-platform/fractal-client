@@ -3,6 +3,7 @@ import logging
 import sys
 from typing import Any
 from typing import Optional
+from urllib.request import urlopen
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -67,17 +68,24 @@ def task_collect_custom(
     *,
     source: str,
     python_interpreter: str,
-    manifest: dict[str, Any],
+    manifest: str,
     version: Optional[str] = None,
     package_name: Optional[str] = None,
     package_root: Optional[str] = None,
     batch: bool = False,
 ) -> Interface:
 
+    if manifest.startswith("http"):
+        with urlopen(manifest) as f:  # nosec
+            manifest_dict = json.loads(f.read())
+    else:
+        with open(manifest, "r") as f:
+            manifest_dict = json.loads(f)
+
     task_collect = dict(
         source=source,
         python_interpreter=python_interpreter,
-        manifest=manifest,
+        manifest=manifest_dict,
     )
     if version:
         task_collect["version"] = version
@@ -92,7 +100,7 @@ def task_collect_custom(
 
     task_list = check_response(res, expected_status_code=201)
     if batch:
-        task_ids = [str(task.id) for task in task_list]
+        task_ids = [str(task["id"]) for task in task_list]
         return Interface(retcode=0, data=" ".join(task_ids))
     else:
         return Interface(retcode=0, data=task_list)
