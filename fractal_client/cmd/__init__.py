@@ -21,6 +21,7 @@ from ._task import delete_task
 from ._task import get_task_list
 from ._task import patch_task
 from ._task import post_task
+from ._task import task_collect_custom
 from ._task import task_collect_pip
 from ._task import task_collection_check
 from ._user import user_edit
@@ -134,6 +135,17 @@ def task(
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = task_collect_pip(client, batch=batch, **function_kwargs)
+    elif subcmd == "collect-custom":
+        parameters = [
+            "source",
+            "python_interpreter",
+            "manifest",
+            "version",
+            "package_name",
+            "package_root",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = task_collect_custom(client, batch=batch, **function_kwargs)
     elif subcmd == "check-collection":
         parameters = ["state_id", "include_logs", "do_not_separate_logs"]
         function_kwargs = get_kwargs(parameters, kwargs)

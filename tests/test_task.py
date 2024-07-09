@@ -1,6 +1,8 @@
 import json
+import sys
 import time
 from pathlib import Path
+from urllib.request import urlopen
 from urllib.request import urlretrieve
 
 import pytest
@@ -438,3 +440,45 @@ def test_task_delete(
     res = invoke("task list")
     task_list = res.data
     assert len(task_list) == 0
+
+
+def test_task_collection_custom(register_user, tmp_path, invoke):
+    python_interpreter = sys.executable
+    package_name = "fractal-client"
+    manifest = str(tmp_path / "manifest.json")
+
+    # Download and write a valid Manifest
+    manifest_url = (
+        "https://github.com/fractal-analytics-platform/fractal-server/"
+        "raw/main/tests/v2/fractal_tasks_mock/src/fractal_tasks_mock/"
+        "__FRACTAL_MANIFEST__.json"
+    )
+    with urlopen(manifest_url) as f:
+        manifest_dict = json.loads(f.read())
+    with open(manifest, "w") as f:
+        json.dump(manifest_dict, f)
+
+    cmd = (
+        f"task collect-custom --package-name {package_name} "
+        f"source {python_interpreter} {manifest}"
+    )
+    res = invoke(cmd)
+    assert res.retcode == 0
+    assert isinstance(res.data, list)
+
+    cmd = (
+        "--batch task collect-custom --package-root /path --version 2 "
+        f"source2 {python_interpreter} {manifest}"
+    )
+    res = invoke(cmd)
+    assert res.retcode == 0
+    assert isinstance(res.data, str)
+
+    # test that '--package-root' and '--package-name' are mutually exclusive
+    cmd = (
+        "task collect-custom "
+        f"--package-root /path --package-name {package_name} "
+        f"source3 {python_interpreter} {manifest}"
+    )
+    with pytest.raises(SystemExit) as e:
+        res = invoke(cmd)

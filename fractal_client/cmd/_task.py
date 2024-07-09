@@ -1,7 +1,9 @@
 import json
 import logging
 import sys
+from typing import Any
 from typing import Optional
+from urllib.request import urlopen
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -59,6 +61,45 @@ def task_collect_pip(
         return Interface(retcode=0, data=output)
     else:
         return Interface(retcode=0, data=state)
+
+
+def task_collect_custom(
+    client: AuthClient,
+    *,
+    source: str,
+    python_interpreter: str,
+    manifest: str,
+    version: Optional[str] = None,
+    package_name: Optional[str] = None,
+    package_root: Optional[str] = None,
+    batch: bool = False,
+) -> Interface:
+
+    with open(manifest, "r") as f:
+        manifest_dict = json.load(f)
+
+    task_collect = dict(
+        source=source,
+        python_interpreter=python_interpreter,
+        manifest=manifest_dict,
+    )
+    if version:
+        task_collect["version"] = version
+    if package_name:
+        task_collect["package_name"] = package_name
+    if package_root:
+        task_collect["package_root"] = package_root
+
+    res = client.post(
+        f"{settings.BASE_URL}/task/collect/custom/", json=task_collect
+    )
+
+    task_list = check_response(res, expected_status_code=201)
+    if batch:
+        task_ids = [str(task["id"]) for task in task_list]
+        return Interface(retcode=0, data=" ".join(task_ids))
+    else:
+        return Interface(retcode=0, data=task_list)
 
 
 def task_collection_check(

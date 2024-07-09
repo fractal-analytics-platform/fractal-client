@@ -14,6 +14,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import argparse as ap
+from typing import Any
 
 
 parser_main = ap.ArgumentParser(
@@ -233,6 +234,49 @@ task_collect_parser.add_argument(
         "the form `collect fractal-tasks-core --pinned-dependency "
         "pydantic=1.10.0`. Include `--pinned-dependency` multiple times to "
         "pin several packages to specific versions."
+    ),
+)
+
+
+# task collect custom
+task_collect_custom_parser = task_subparsers.add_parser(
+    "collect-custom",
+    description="Collect all tasks from a custom Python interpreter.",
+    allow_abbrev=False,
+)
+task_collect_custom_parser.add_argument(
+    "source",
+    help="A common label identifying this package.",
+)
+task_collect_custom_parser.add_argument(
+    "python_interpreter",
+    help=(
+        "Absolute path to the Python interpreter to be used for running tasks."
+    ),
+)
+task_collect_custom_parser.add_argument(
+    "manifest", help="Local path of the Manifest of the Fractal task package."
+)
+task_collect_custom_parser.add_argument(
+    "--version",
+    help="Version of tasks to be collected.",
+)
+tasktask_collect_custom_pkg_name_or_root = (
+    task_collect_custom_parser.add_mutually_exclusive_group(required=True)
+)
+tasktask_collect_custom_pkg_name_or_root.add_argument(
+    "--package-name",
+    help=(
+        "Name of the package, as used in 'import <package_name>'; "
+        "this is then used to extract the package directory (package_root) "
+        "via 'importlib.util.find_spec <package_name>'."
+    ),
+)
+tasktask_collect_custom_pkg_name_or_root.add_argument(
+    "--package-root",
+    help=(
+        "The folder where the package is installed. If not provided, "
+        "it will be  automatically inferred based on 'package_name'."
     ),
 )
 
