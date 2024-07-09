@@ -444,14 +444,19 @@ def test_task_delete(
 
 def test_task_collection_custom(register_user, tmp_path, invoke):
     python_interpreter = sys.executable
+    package_name = "fractal-client"
+    manifest = str(tmp_path / "manifest.json")
 
-    # Manifest from url
-    manifest = (
+    # Download and write a valid Manifest
+    manifest_url = (
         "https://github.com/fractal-analytics-platform/fractal-server/"
         "raw/main/tests/v2/fractal_tasks_mock/src/fractal_tasks_mock/"
         "__FRACTAL_MANIFEST__.json"
     )
-    package_name = "fractal-client"
+    with urlopen(manifest_url) as f:
+        manifest_dict = json.loads(f.read())
+    with open(manifest, "w") as f:
+        json.dump(manifest_dict, f)
 
     cmd = (
         f"task collect-custom --package-name {package_name} "
@@ -461,16 +466,9 @@ def test_task_collection_custom(register_user, tmp_path, invoke):
     assert res.retcode == 0
     assert isinstance(res.data, list)
 
-    # Manifest from file
-    with urlopen(manifest) as f:
-        manifest_dict = json.loads(f.read())
-    manifest_path = str(tmp_path / "manifest.json")
-    with open(manifest_path, "w") as f:
-        json.dump(manifest_dict, f)
-
     cmd = (
         "--batch task collect-custom --package-root /path --version 2 "
-        f"source2 {python_interpreter} {manifest_path}"
+        f"source2 {python_interpreter} {manifest}"
     )
     res = invoke(cmd)
     assert res.retcode == 0

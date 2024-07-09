@@ -255,7 +255,7 @@ task_collect_custom_parser.add_argument(
     ),
 )
 task_collect_custom_parser.add_argument(
-    "manifest", help="Path or URL of the Manifest of the Fractal task package"
+    "manifest", help="Path of the Manifest of the Fractal task package"
 )
 task_collect_custom_parser.add_argument(
     "--version",

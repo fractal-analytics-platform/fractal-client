@@ -75,12 +75,8 @@ def task_collect_custom(
     batch: bool = False,
 ) -> Interface:
 
-    if manifest.startswith("http"):
-        with urlopen(manifest) as f:  # nosec
-            manifest_dict = json.loads(f.read())
-    else:
-        with open(manifest, "r") as f:
-            manifest_dict = json.load(f)
+    with open(manifest, "r") as f:
+        manifest_dict = json.load(f)
 
     task_collect = dict(
         source=source,
