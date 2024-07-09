@@ -473,3 +473,12 @@ def test_task_collection_custom(register_user, tmp_path, invoke):
     res = invoke(cmd)
     assert res.retcode == 0
     assert isinstance(res.data, str)
+
+    # test that '--package-root' and '--package-name' are mutually exclusive
+    cmd = (
+        "task collect-custom "
+        f"--package-root /path --package-name {package_name} "
+        f"source3 {python_interpreter} {manifest}"
+    )
+    with pytest.raises(SystemExit) as e:
+        res = invoke(cmd)
