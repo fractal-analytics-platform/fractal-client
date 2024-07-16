@@ -26,7 +26,7 @@ jobs:
       - uses: fredrikaverpil/poetry-update@v1.2
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT }}
           delete-branch: true
