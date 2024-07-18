@@ -467,7 +467,7 @@ def test_task_collection_custom(register_user, tmp_path, invoke):
     assert isinstance(res.data, list)
 
     cmd = (
-        "--batch task collect-custom --package-root /path --version 2 "
+        "--batch task collect-custom --package-root /tmp --version 2 "
         f"source2 {python_interpreter} {manifest}"
     )
     res = invoke(cmd)
@@ -477,8 +477,8 @@ def test_task_collection_custom(register_user, tmp_path, invoke):
     # test that '--package-root' and '--package-name' are mutually exclusive
     cmd = (
         "task collect-custom "
-        f"--package-root /path --package-name {package_name} "
+        f"--package-root /tmp --package-name {package_name} "
         f"source3 {python_interpreter} {manifest}"
     )
-    with pytest.raises(SystemExit) as e:
+    with pytest.raises(SystemExit):
         res = invoke(cmd)
