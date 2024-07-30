@@ -2,7 +2,7 @@
 
 # Unreleased
 
-* Add new command `task collect-custom` (\#667).
+* Add new command `task collect-custom` (\#667, \#680).
 * Update `poetry` version for development to 1.8.2.
 * Testing:
     * Update CI for fractal-server 2.1.0 compatibility (\#655).
