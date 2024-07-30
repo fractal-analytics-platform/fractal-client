@@ -1,9 +1,7 @@
 import json
 import logging
 import sys
-from typing import Any
 from typing import Optional
-from urllib.request import urlopen
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -75,8 +73,15 @@ def task_collect_custom(
     batch: bool = False,
 ) -> Interface:
 
-    with open(manifest, "r") as f:
-        manifest_dict = json.load(f)
+    try:
+        with open(manifest, "r") as f:
+            manifest_dict = json.load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(
+            f"Fractal Client cannot find the file {manifest}."
+            "Note that the file must be on the same machine where the client "
+            f"is running.\nOriginal error: {e}."
+        )
 
     task_collect = dict(
         source=source,
