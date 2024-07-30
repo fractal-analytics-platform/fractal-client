@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from json.decoder import JSONDecodeError
@@ -45,10 +46,24 @@ def check_response(
         logging.error(
             f"Original request: {res._request.method} {res._request.url}"
         )
-        original_payload = res._request._content.decode("utf-8")
-        if len(original_payload) > 79:
-            original_payload = f"{original_payload[:76]}...[redacted]"
-        logging.error(f"Original payload: {original_payload}")
+
+        payload = res._request._content
+        if payload != b"":
+            request_content = json.loads(payload)
+            for k, v in request_content.items():
+                if len(str(v)) > 150:
+                    if isinstance(v, list):
+                        end = "]"
+                    elif isinstance(v, dict):
+                        end = "}"
+                    else:
+                        end = ""
+                    request_content[
+                        k
+                    ] = f"{str(v)[:150]}...['{k}' redacted]...{end}"
+            payload = json.dumps(request_content)
+
+        logging.error(f"Original payload: {payload}")
 
         error_msg = data
 
