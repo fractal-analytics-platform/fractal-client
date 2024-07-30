@@ -79,8 +79,8 @@ def task_collect_custom(
     except FileNotFoundError as e:
         raise FileNotFoundError(
             f"Fractal Client cannot find the file {manifest}."
-            "Note that the file must be on the same machine where the client "
-            f"is running.\nOriginal error: {e}."
+            "Note that the file must be on the same machine where Fractal "
+            f"Client is running.\nOriginal error: {e}."
         )
 
     task_collect = dict(
