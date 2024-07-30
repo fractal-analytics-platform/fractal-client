@@ -45,9 +45,10 @@ def check_response(
         logging.error(
             f"Original request: {res._request.method} {res._request.url}"
         )
-        logging.error(
-            f"Original payload: {res._request._content.decode('utf-8')}"
-        )
+        original_payload = res._request._content.decode("utf-8")
+        if len(original_payload) > 79:
+            original_payload = f"{original_payload[:76]}...[redacted]"
+        logging.error(f"Original payload: {original_payload}")
 
         error_msg = data
 
