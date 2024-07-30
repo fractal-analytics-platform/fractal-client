@@ -470,6 +470,15 @@ def test_task_collection_custom(register_user, tmp_path, invoke):
     with pytest.raises(SystemExit):
         res = invoke(cmd)
 
+    # wrong manifest
+    cmd = (
+        f"task collect-custom --package-name {package_name} "
+        f"source {python_interpreter} /foo/bar"
+    )
+    res = invoke(cmd)
+    assert res.retcode == 1
+    assert "file must be on the same machine" in res.data
+
     cmd = (
         "--batch task collect-custom --package-root /tmp --version 2 "
         f"source2 {python_interpreter} {manifest}"
