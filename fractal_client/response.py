@@ -7,7 +7,7 @@ from typing import Union
 
 from httpx import Response
 
-LONG_PAYLOAD_VALUE_LIMIT = 200
+LONG_PAYLOAD_VALUE_LIMIT = 300
 
 
 def check_response(
