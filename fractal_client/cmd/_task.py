@@ -99,7 +99,10 @@ def task_collect_custom(
         f"{settings.BASE_URL}/task/collect/custom/", json=task_collect
     )
 
-    task_list = check_response(res, expected_status_code=201)
+    task_list = check_response(
+        res, expected_status_code=201, redact_long_payload=True
+    )
+
     if batch:
         task_ids = [str(task["id"]) for task in task_list]
         return Interface(retcode=0, data=" ".join(task_ids))
