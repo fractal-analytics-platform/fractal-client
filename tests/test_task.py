@@ -442,7 +442,7 @@ def test_task_delete(
     assert len(task_list) == 0
 
 
-def test_task_collection_custom(register_user, tmp_path, invoke):
+def test_task_collection_custom(register_user, tmp_path, invoke, caplog):
     python_interpreter = sys.executable
     package_name = "fractal-client"
     manifest = str(tmp_path / "manifest.json")
@@ -466,11 +466,14 @@ def test_task_collection_custom(register_user, tmp_path, invoke):
     assert res.retcode == 0
     assert isinstance(res.data, list)
 
-    # invoke cmd again
+    # Second API call fails (tasks with the same sources already exist)
+    caplog.clear()
     with pytest.raises(SystemExit):
         res = invoke(cmd)
+    # Manifest was redacted, when logging the payload
+    assert '"manifest": "[value too long - redacted]"' in caplog.text
 
-    # wrong manifest
+    # Missing manifest file
     cmd = (
         f"task collect-custom --package-name {package_name} "
         f"source {python_interpreter} /foo/bar"
