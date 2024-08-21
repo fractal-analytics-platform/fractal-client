@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.0.2 (unreleased)
+
+* Documentation
+    * Bump `mkdocstrings[python]` to 0.25.2 (\#682).
+
 # 2.0.1
 
 * Add new command `task collect-custom` (\#667).

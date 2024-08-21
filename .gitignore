@@ -16,3 +16,4 @@ parsl_executors.log
 fractal.log
 site
 reference
+venv
