@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from json.decoder import JSONDecodeError
@@ -6,10 +7,13 @@ from typing import Union
 
 from httpx import Response
 
+LONG_PAYLOAD_VALUE_LIMIT = 300
+
 
 def check_response(
     res: Response,
     expected_status_code: Union[int, list[int]] = 200,
+    redact_long_payload: bool = False,
 ) -> Union[list[Any], dict[str, Any], str, int, float, bool]:
     """
     Check the validity of the http response from fractal server
@@ -22,6 +26,8 @@ def check_response(
     Args:
         res: Response from `fractal-server`.
         expected_status_code: Expected status code(s).
+        redact_long_payload: If `True`, redact payload values of more than
+            `LONG_PAYLOAD_VALUE_LIMIT` characters.
 
     Returns:
         The output of `res.json()`.
@@ -45,9 +51,16 @@ def check_response(
         logging.error(
             f"Original request: {res._request.method} {res._request.url}"
         )
-        logging.error(
-            f"Original payload: {res._request._content.decode('utf-8')}"
-        )
+
+        payload = res._request._content.decode("utf-8")
+        if redact_long_payload and len(payload) > 0:
+            payload_dict = json.loads(payload)
+            for key, value in payload_dict.items():
+                if len(str(value)) > LONG_PAYLOAD_VALUE_LIMIT:
+                    payload_dict[key] = "[value too long - redacted]"
+            payload = json.dumps(payload_dict)
+
+        logging.error(f"Original payload: {payload}")
 
         error_msg = data
 

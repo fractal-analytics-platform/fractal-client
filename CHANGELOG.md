@@ -2,6 +2,7 @@
 
 # 2.0.2 (unreleased)
 
+* Improve error handling in `task collect-custom` command (\#680).
 * Documentation
     * Bump `mkdocstrings[python]` to 0.25.2 (\#682).
 
