@@ -2,12 +2,13 @@
 
 # 2.0.2 (unreleased)
 
+* Improve `task collect-custom` command (\#680).
 * Documentation
     * Bump `mkdocstrings[python]` to 0.25.2 (\#682).
 
 # 2.0.1
 
-* Add new command `task collect-custom` (\#667, \#680).
+* Add new command `task collect-custom` (\#667).
 * Update `poetry` version for development to 1.8.2.
 * Testing:
     * Update CI for fractal-server 2.1.0 compatibility (\#655).
