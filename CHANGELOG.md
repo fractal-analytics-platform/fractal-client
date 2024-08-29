@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.0.3
+
+* Improve `workflow import` command (\#686).
+
 # 2.0.2
 
 * Improve error handling in `task collect-custom` command (\#680).
