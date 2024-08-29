@@ -548,6 +548,10 @@ def test_workflow_import(
 
     task_factory(name="task", source="PKG_SOURCE:dummy2", owner="exact-lab")
 
+    # Fail due to missing --json-file argument
+    with pytest.raises(SystemExit):
+        invoke(f"workflow import --project-id {project_id}")
+
     # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
     with open(filename, "r") as f:
@@ -584,6 +588,15 @@ def test_workflow_import(
         "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
         "importing this workflow may not work as expected."
     )
+
+    # import workflow into project, with --workflow-name
+    NEW_NAME = "new name for workflow"
+    res = invoke(
+        f"workflow import --project-id {project_id} --json-file {filename} "
+        f' --workflow-name "{NEW_NAME}"'
+    )
+    assert res.retcode == 0
+    assert res.data["name"] == NEW_NAME
 
 
 def test_workflow_export(

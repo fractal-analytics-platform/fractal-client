@@ -248,7 +248,7 @@ def workflow(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = delete_workflowtask(client, **function_kwargs)
     elif subcmd == "import":
-        parameters = ["project_id", "json_file"]
+        parameters = ["project_id", "json_file", "workflow_name"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = workflow_import(client, batch=batch, **function_kwargs)
     elif subcmd == "export":
