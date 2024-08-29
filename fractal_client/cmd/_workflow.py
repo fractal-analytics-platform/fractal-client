@@ -223,10 +223,18 @@ def patch_workflow(
 
 
 def workflow_import(
-    client: AuthClient, *, project_id: int, json_file: str, batch: bool = False
+    client: AuthClient,
+    *,
+    project_id: int,
+    json_file: str,
+    workflow_name: Optional[str] = None,
+    batch: bool = False,
 ) -> Interface:
     with Path(json_file).open("r") as f:
         workflow = json.load(f)
+
+    if workflow_name is not None:
+        workflow["name"] = workflow_name
 
     res = client.post(
         f"{settings.BASE_URL}/project/{project_id}/workflow/import/",

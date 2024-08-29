@@ -14,7 +14,6 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import argparse as ap
-from typing import Any
 
 
 parser_main = ap.ArgumentParser(
@@ -614,7 +613,15 @@ workflow_import_parser.add_argument(
 )
 workflow_import_parser.add_argument(
     "--json-file",
+    type=str,
     help="Path to a JSON file with the workflow to be imported.",
+    required=True,
+)
+workflow_import_parser.add_argument(
+    "--workflow-name",
+    type=str,
+    help="Name of the new workflow (if set, overrides the one in JSON file)",
+    required=False,
 )
 
 # workflow export
