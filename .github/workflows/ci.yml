@@ -35,7 +35,7 @@ jobs:
 
       - name: Test with pytest
         env:
-          COVERAGE_FILE: "coverage-data.${{ matrix.python_version }}"
+          COVERAGE_FILE: "coverage-data-${{ matrix.python_version }}"
         run: poetry run coverage run -m pytest tests/test_unit_versions.py  # FIXME
 
       - run: ls -lah .  # FIXME
