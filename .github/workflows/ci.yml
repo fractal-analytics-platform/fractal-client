@@ -64,6 +64,8 @@ jobs:
           pattern: coverage-data-*
           merge-multiple: true
 
+      - run: ls -lah . # FIXME
+
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
