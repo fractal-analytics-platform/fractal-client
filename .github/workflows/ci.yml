@@ -34,13 +34,15 @@ jobs:
         run: poetry install --with dev --without docs --no-interaction
 
       - name: Test with pytest
+        env:
+          COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: poetry run coverage run -m pytest
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         with:
-          name:  coverage-data-${{ matrix.python-version }}
-          path: "coverage-data-*"
+          name: coverage-data-${{ matrix.python-version }}
+          path: coverage-data-${{ matrix.python-version }}*
 
   coverage:
     name: Coverage
@@ -62,12 +64,19 @@ jobs:
           pattern: coverage-data-*
           merge-multiple: true
 
+      - name: Combine coverage
+        # Combines all the downloaded coverage artifacts in a single `.coverage` file,
+        # which will then be used by `py-cov-action/python-coverage-comment-action`.
+        # We added this step to replace the variable `MERGE_COVERAGE_FILES: true`
+        # in the next step, which had started to raise errors
+        # (https://github.com/fractal-analytics-platform/fractal-server/pull/1725).
+        run: coverage combine coverage-data-*
+
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
           GITHUB_TOKEN: ${{ github.token }}
-          MERGE_COVERAGE_FILES: true
           MINIMUM_GREEN: 90
           MINIMUM_ORANGE: 60
           ANNOTATE_MISSING_LINES: true
