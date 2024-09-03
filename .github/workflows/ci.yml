@@ -37,10 +37,10 @@ jobs:
         run: poetry run coverage run -m pytest
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage-data
-          path: ".coverage*"
+          path: "coverage*"
+          name:  coverage-data-${{ matrix.python-version }}
 
   coverage:
     name: Coverage
@@ -57,9 +57,11 @@ jobs:
         run: python -m pip install --upgrade coverage[toml]
 
       - name: Download data
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-data
+          pattern: coverage-data-*
+          merge-multiple: true
 
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
