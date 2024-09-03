@@ -66,9 +66,13 @@ jobs:
           pattern: coverage-data-*
           merge-multiple: true
 
+      - run: ls -lah .
+
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
+        env:
+          COVERAGE_FILE: "coverage-data-${{ matrix.python_version }}"
         with:
           GITHUB_TOKEN: ${{ github.token }}
           MERGE_COVERAGE_FILES: true
