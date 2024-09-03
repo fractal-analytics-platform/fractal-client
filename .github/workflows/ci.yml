@@ -68,7 +68,10 @@ jobs:
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
         env:
-          COVERAGE_FILE: "coverage-data-${{ matrix.python_version }}"
+          # Base name of the data files to operate on. Defaults to `.coverage'.
+          # [env: COVERAGE_FILE].
+          # (https://coverage.readthedocs.io/en/latest/cmd.html#cmd-combine)
+          COVERAGE_FILE: "coverage-data-"  
         with:
           GITHUB_TOKEN: ${{ github.token }}
           MERGE_COVERAGE_FILES: true
