@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Future release
+
+* Testing
+    * Update GitHub actions for upload/download/coverage (\#690).
+
 # 2.0.3
 
 * Improve `workflow import` command (\#686).
