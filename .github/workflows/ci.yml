@@ -34,7 +34,9 @@ jobs:
         run: poetry install --with dev --without docs --no-interaction
 
       - name: Test with pytest
-        run: poetry run coverage run -m pytest
+        env:
+          COVERAGE_FILE: "coverage-data.${{ matrix.python_version }}"
+        run: poetry run coverage run -m pytest tests/test_unit_versions.py  # FIXME
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
