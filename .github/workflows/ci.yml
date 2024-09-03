@@ -75,11 +75,6 @@ jobs:
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
-        env:
-          # Base name of the data files to operate on. Defaults to `.coverage'.
-          # [env: COVERAGE_FILE].
-          # (https://coverage.readthedocs.io/en/latest/cmd.html#cmd-combine)
-          COVERAGE_FILE: "coverage-data-"
         with:
           GITHUB_TOKEN: ${{ github.token }}
           MINIMUM_GREEN: 90
