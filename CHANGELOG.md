@@ -3,7 +3,7 @@
 # Future release
 
 * Testing
-    * Update GitHub actions for upload/download/coverage (\#690).
+    * Update GitHub actions for upload/download/coverage (\#688, \#690).
 
 # 2.0.3
 
