@@ -875,3 +875,64 @@ user_edit_parser_verified.add_argument(
     action="store_true",
     required=False,
 )
+
+
+# (USER)GROUP GROUP
+
+group_parser = subparsers_main.add_parser(
+    "group",
+    description="UserGroup commands.",
+    allow_abbrev=False,
+)
+group_subparsers = group_parser.add_subparsers(
+    title="Valid sub-commands", dest="subcmd", required=True
+)
+
+
+# group list
+group_list_parser = group_subparsers.add_parser(
+    "list", description="Get all groups.", allow_abbrev=False
+)
+group_list_parser.add_argument(
+    "--user-ids",
+    help="Also return the `user_ids` lists together with the groups",
+    action="store_true",
+    required=False,
+)
+
+# group get
+group_get_parser = group_subparsers.add_parser(
+    "get", description="Get single group.", allow_abbrev=False
+)
+group_get_parser.add_argument(
+    "group_id", help="ID of the group to get.", type=int
+)
+
+# group new
+group_new_parser = group_subparsers.add_parser(
+    "new", description="Create new group.", allow_abbrev=False
+)
+group_new_parser.add_argument("name", help="Name of the new group.", type=str)
+
+# group update
+group_update_parser = group_subparsers.add_parser(
+    "update", description="Update single group.", allow_abbrev=False
+)
+group_update_parser.add_argument(
+    "group_id", help="ID of the group to update.", type=int
+)
+group_update_parser.add_argument(
+    "--new-user-ids",
+    help="New list of user in the group",
+    required=True,
+    type=int,
+    nargs="+",
+)
+
+# group delete
+group_delete_parser = group_subparsers.add_parser(
+    "delete", description="Delete single group.", allow_abbrev=False
+)
+group_delete_parser.add_argument(
+    "group_id", help="ID of the group to delete.", type=int
+)
