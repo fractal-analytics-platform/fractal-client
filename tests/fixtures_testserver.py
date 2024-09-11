@@ -79,9 +79,7 @@ def testserver(override_server_settings):
 
         first_group = db.execute(select(UserGroup)).scalar()
         first_user = db.execute(select(UserOAuth)).scalar()
-        from devtools import debug
 
-        debug(first_group, first_user)
         link = LinkUserGroup(group_id=first_group.id, user_id=first_user.id)
         db.add(link)
         db.commit()
