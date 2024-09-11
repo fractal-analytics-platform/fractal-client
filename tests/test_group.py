@@ -1,9 +1,6 @@
 import pytest
 from fractal_server.app.security import FRACTAL_DEFAULT_GROUP_NAME
 
-EMAIL_USER = "test@testmail.com"
-PWD_USER = "testpassword"
-
 
 def test_group_commands_auth(register_user, invoke, caplog):
     """
