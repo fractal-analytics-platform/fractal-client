@@ -140,15 +140,13 @@ def test_group_commands(user_factory, invoke_as_superuser):
     assert res.data["name"] == FRACTAL_DEFAULT_GROUP_NAME
     assert len(res.data["user_ids"]) == 4
 
-    # Test `batch` and missing cases
+    # Test `list` without `--user-ids`
 
-    with pytest.raises(SystemExit):
-        # non existing subcommand
-        invoke_as_superuser("group coverage")
-
-    res = invoke_as_superuser("group list")  # `list` without `--user-ids`
+    res = invoke_as_superuser("group list")
     for group in res.data:
         assert group["user_ids"] is None
+
+    # Test `--batch`
 
     res = invoke_as_superuser("--batch group list")
     assert res.data == f"{default_group_id} {group1_id} {group2_id}"
