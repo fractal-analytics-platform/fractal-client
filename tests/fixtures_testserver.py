@@ -51,15 +51,44 @@ def testserver(override_server_settings):
     from fractal_server.app.db import DB
     import time
     from fractal_server.app.models.security import SQLModel
+    from fractal_server.app.models.security import UserOAuth
+    from fractal_server.app.models.security import UserGroup
+    from fractal_server.app.models.linkusergroup import LinkUserGroup
+    from fractal_server.app.security import _create_first_group
+
+    from sqlalchemy import select
 
     # INIT DB
     DB.set_sync_db()
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
+    _create_first_group()
+    with next(DB.get_sync_db()) as db:
+        user = UserOAuth(
+            email="admin@fractal.xy",
+            hashed_password=(  # "1234" hashed
+                "$2b$12$K0C4t7XILgpcQx35V3QE3enOODQ1IH9pzW49nqjHbrx2uQTMVYsQC"
+            ),
+            username=environ["FRACTAL_USERNAME"],
+            is_superuser=True,
+            is_verified=True,
+            is_active=True,
+        )
+        db.add(user)
+        db.commit()
+
+        first_group = db.execute(select(UserGroup)).scalar()
+        first_user = db.execute(select(UserOAuth)).scalar()
+        from devtools import debug
+
+        debug(first_group, first_user)
+        link = LinkUserGroup(group_id=first_group.id, user_id=first_user.id)
+        db.add(link)
+        db.commit()
+
     # Run testserver in a separate process
     # cf. https://stackoverflow.com/a/57816608/283972
-
     def run_server():
         uvicorn.run(
             "fractal_server.main:app",
