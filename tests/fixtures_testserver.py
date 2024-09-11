@@ -48,11 +48,19 @@ def override_server_settings(tmp_path):
 def testserver(override_server_settings):
     import uvicorn
     from multiprocessing import Process
+    from fractal_server.app.db import DB
     import time
-    from fractal_server.__main__ import set_db
+    from fractal_server.app.models.security import SQLModel
+
+    # INIT DB
+    DB.set_sync_db()
+    logger.debug(DB.engine_sync().url)
+    SQLModel.metadata.create_all(DB.engine_sync())
+
+    # Run testserver in a separate process
+    # cf. https://stackoverflow.com/a/57816608/283972
 
     def run_server():
-        set_db()
         uvicorn.run(
             "fractal_server.main:app",
             port=PORT,
@@ -60,8 +68,6 @@ def testserver(override_server_settings):
             timeout_keep_alive=10,
         )
 
-    # Run testserver in a separate process
-    # cf. https://stackoverflow.com/a/57816608/283972
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
 
