@@ -159,3 +159,6 @@ def test_group_commands(user_factory, invoke_as_superuser):
         f"--batch group update {group2_id} --new-user-ids {user1_id}"
     )
     assert res.data == group2_id
+
+    with pytest.raises(SystemExit):
+        invoke_as_superuser("group coverage")
