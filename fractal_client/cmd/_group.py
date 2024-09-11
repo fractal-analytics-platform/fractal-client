@@ -38,5 +38,19 @@ def group_new(client: AuthClient, *, name: str, batch: bool = False):
         return Interface(retcode=0, data=data)
 
 
-def group_update():
-    pass
+def group_update(
+    client: AuthClient,
+    *,
+    group_id: int,
+    new_user_ids: list[int],
+    batch: bool = False,
+):
+    res = client.patch(
+        f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/",
+        json=dict(new_user_ids=new_user_ids),
+    )
+    data = check_response(res, expected_status_code=200)
+    if batch:
+        return Interface(retcode=0, data=data["id"])
+    else:
+        return Interface(retcode=0, data=data)

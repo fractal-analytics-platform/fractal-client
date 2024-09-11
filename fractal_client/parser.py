@@ -923,7 +923,10 @@ group_update_parser.add_argument(
 )
 group_update_parser.add_argument(
     "--new-user-ids",
-    help="New list of user in the group (e.g. `--new-user-ids 4 15 16 23 42`)",
+    help=(
+        "New list of user in the group "
+        "(e.g. `--new-user-ids 4 8 15 16 23 42`)",
+    ),
     required=True,
     type=int,
     nargs="+",
