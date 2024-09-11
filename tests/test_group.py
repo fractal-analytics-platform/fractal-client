@@ -142,7 +142,11 @@ def test_group_commands(user_factory, invoke_as_superuser):
 
     # Test `batch` and missing cases
 
-    res = invoke_as_superuser("group list")  # without `--user-ids`
+    with pytest.raises(SystemExit):
+        # non existing subcommand
+        invoke_as_superuser("group coverage")
+
+    res = invoke_as_superuser("group list")  # `list` without `--user-ids`
     for group in res.data:
         assert group["user_ids"] is None
 
@@ -159,6 +163,3 @@ def test_group_commands(user_factory, invoke_as_superuser):
         f"--batch group update {group2_id} --new-user-ids {user1_id}"
     )
     assert res.data == group2_id
-
-    with pytest.raises(SystemExit):
-        invoke_as_superuser("group coverage")
