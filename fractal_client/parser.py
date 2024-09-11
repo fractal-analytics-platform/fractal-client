@@ -923,16 +923,8 @@ group_update_parser.add_argument(
 )
 group_update_parser.add_argument(
     "--new-user-ids",
-    help="New list of user in the group",
+    help="New list of user in the group (e.g. `--new-user-ids 4 15 16 23 42`)",
     required=True,
     type=int,
     nargs="+",
-)
-
-# group delete
-group_delete_parser = group_subparsers.add_parser(
-    "delete", description="Delete single group.", allow_abbrev=False
-)
-group_delete_parser.add_argument(
-    "group_id", help="ID of the group to delete.", type=int
 )

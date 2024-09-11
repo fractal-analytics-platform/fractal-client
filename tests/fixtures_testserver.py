@@ -1,9 +1,13 @@
 import logging
+import time
+from multiprocessing import Process
 from os import environ
 from typing import Optional
 
 import httpx
 import pytest
+import uvicorn
+from sqlmodel import select
 
 
 logger = logging.getLogger("fractal-client")
@@ -46,17 +50,12 @@ def override_server_settings(tmp_path):
 
 @pytest.fixture(scope="function", autouse=True)
 def testserver(override_server_settings):
-    import uvicorn
-    from multiprocessing import Process
     from fractal_server.app.db import DB
-    import time
     from fractal_server.app.models.security import SQLModel
     from fractal_server.app.models.security import UserOAuth
     from fractal_server.app.models.security import UserGroup
     from fractal_server.app.models.linkusergroup import LinkUserGroup
     from fractal_server.app.security import _create_first_group
-
-    from sqlalchemy import select
 
     # INIT DB
     DB.set_sync_db()
