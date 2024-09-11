@@ -2,6 +2,8 @@
 
 # Future release
 
+* Align with [`fractal-server` 2.4.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#240) (\#695).
+* Add `fractal group` command (\#695).
 * Testing
     * Update GitHub actions for upload/download/coverage (\#690, \#691).
 
