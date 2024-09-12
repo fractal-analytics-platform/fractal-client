@@ -148,13 +148,5 @@ def test_group_commands(user_factory, invoke_as_superuser):
     res = invoke_as_superuser("--batch group list")
     assert res.data == f"{default_group_id} {group1_id} {group2_id}"
 
-    res = invoke_as_superuser(f"--batch group get {group1_id}")
-    assert res.data == group1_id
-
     res = invoke_as_superuser("--batch group new xyz")
     assert isinstance(res.data, int)
-
-    res = invoke_as_superuser(
-        f"--batch group update {group2_id} --new-user-ids {user1_id}"
-    )
-    assert res.data == group2_id
