@@ -370,7 +370,7 @@ def group(
     elif subcmd == "get":
         parameters = ["group_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = group_get(client, batch=batch, **function_kwargs)
+        iface = group_get(client, **function_kwargs)
     elif subcmd == "new":
         parameters = ["name"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -378,7 +378,7 @@ def group(
     elif subcmd == "update":
         parameters = ["group_id", "new_user_ids"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = group_update(client, batch=batch, **function_kwargs)
+        iface = group_update(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'group {subcmd}' not found")
 

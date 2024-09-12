@@ -18,13 +18,10 @@ def group_list(
         return Interface(retcode=0, data=data)
 
 
-def group_get(client: AuthClient, *, group_id: int, batch: bool = False):
+def group_get(client: AuthClient, *, group_id: int):
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/")
     data = check_response(res, expected_status_code=200)
-    if batch:
-        return Interface(retcode=0, data=data["id"])
-    else:
-        return Interface(retcode=0, data=data)
+    return Interface(retcode=0, data=data)
 
 
 def group_new(client: AuthClient, *, name: str, batch: bool = False):
@@ -43,14 +40,10 @@ def group_update(
     *,
     group_id: int,
     new_user_ids: list[int],
-    batch: bool = False,
 ):
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/",
         json=dict(new_user_ids=new_user_ids),
     )
     data = check_response(res, expected_status_code=200)
-    if batch:
-        return Interface(retcode=0, data=data["id"])
-    else:
-        return Interface(retcode=0, data=data)
+    return Interface(retcode=0, data=data)
