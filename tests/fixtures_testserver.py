@@ -62,11 +62,17 @@ def testserver(override_server_settings):
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
+    # Create default group and first superuser
+    # NOTE: we have to do it here, because we are not calling the `set_db` function
+    # from fractal-server. This would change with
+    # https://github.com/fractal-analytics-platform/fractal-client/issues/697
+    # NOTE: `hashed_password` is the bcrypt hash of "1234", see
+    # https://github.com/fractal-analytics-platform/fractal-server/issues/1750
     _create_first_group()
     with next(DB.get_sync_db()) as db:
         user = UserOAuth(
             email="admin@fractal.xy",
-            hashed_password=(  # "1234" hashed
+            hashed_password=(
                 "$2b$12$K0C4t7XILgpcQx35V3QE3enOODQ1IH9pzW49nqjHbrx2uQTMVYsQC"
             ),
             username=environ["FRACTAL_USERNAME"],
