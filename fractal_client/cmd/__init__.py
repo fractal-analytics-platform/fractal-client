@@ -7,6 +7,10 @@ from ._dataset import delete_dataset
 from ._dataset import get_dataset
 from ._dataset import patch_dataset
 from ._dataset import post_dataset
+from ._group import group_get
+from ._group import group_list
+from ._group import group_new
+from ._group import group_update
 from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
@@ -83,7 +87,7 @@ def project(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = delete_project(client, **function_kwargs)
     else:
-        raise NoCommandError(f"Command project {subcmd} not found")
+        raise NoCommandError(f"Command 'project {subcmd}' not found")
 
     return iface
 
@@ -112,7 +116,7 @@ def dataset(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = delete_dataset(client, **function_kwargs)
     else:
-        raise NoCommandError(f"Command dataset {subcmd} not found")
+        raise NoCommandError(f"Command 'dataset {subcmd}' not found")
     return iface
 
 
@@ -184,7 +188,7 @@ def task(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = delete_task(client, **function_kwargs)
     else:
-        raise NoCommandError(f"Command task {subcmd} not found")
+        raise NoCommandError(f"Command 'task {subcmd}' not found")
     return iface
 
 
@@ -256,7 +260,7 @@ def workflow(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = workflow_export(client, **function_kwargs)
     else:
-        raise NoCommandError(f"Command workflow {subcmd} not found")
+        raise NoCommandError(f"Command 'workflow {subcmd}' not found")
     return iface
 
 
@@ -294,7 +298,7 @@ def job(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = job_submit(client, batch=batch, **function_kwargs)
     else:
-        raise NoCommandError(f"Command job {subcmd} not found")
+        raise NoCommandError(f"Command 'job {subcmd}' not found")
     return iface
 
 
@@ -351,6 +355,31 @@ def user(
     elif subcmd == "whoami":
         iface = user_whoami(client, batch=batch)
     else:
-        raise NoCommandError(f"Command user {subcmd} not found")
+        raise NoCommandError(f"Command 'user {subcmd}' not found")
+
+    return iface
+
+
+def group(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
+    if subcmd == "list":
+        parameters = ["user_ids"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = group_list(client, batch=batch, **function_kwargs)
+    elif subcmd == "get":
+        parameters = ["group_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = group_get(client, **function_kwargs)
+    elif subcmd == "new":
+        parameters = ["name"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = group_new(client, batch=batch, **function_kwargs)
+    elif subcmd == "update":
+        parameters = ["group_id", "new_user_ids"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = group_update(client, **function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'group {subcmd}' not found")
 
     return iface

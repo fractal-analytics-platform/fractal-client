@@ -1,9 +1,13 @@
 import logging
+import time
+from multiprocessing import Process
 from os import environ
 from typing import Optional
 
 import httpx
 import pytest
+import uvicorn
+from sqlmodel import select
 
 
 logger = logging.getLogger("fractal-client")
@@ -46,20 +50,48 @@ def override_server_settings(tmp_path):
 
 @pytest.fixture(scope="function", autouse=True)
 def testserver(override_server_settings):
-    import uvicorn
-    from multiprocessing import Process
     from fractal_server.app.db import DB
-    import time
     from fractal_server.app.models.security import SQLModel
+    from fractal_server.app.models.security import UserOAuth
+    from fractal_server.app.models.security import UserGroup
+    from fractal_server.app.models.linkusergroup import LinkUserGroup
+    from fractal_server.app.security import _create_first_group
 
     # INIT DB
     DB.set_sync_db()
     logger.debug(DB.engine_sync().url)
     SQLModel.metadata.create_all(DB.engine_sync())
 
+    # Create default group and first superuser
+    # NOTE: we have to do it here, because we are not calling the `set_db` function
+    # from fractal-server. This would change with
+    # https://github.com/fractal-analytics-platform/fractal-client/issues/697
+    # NOTE: `hashed_password` is the bcrypt hash of "1234", see
+    # https://github.com/fractal-analytics-platform/fractal-server/issues/1750
+    _create_first_group()
+    with next(DB.get_sync_db()) as db:
+        user = UserOAuth(
+            email="admin@fractal.xy",
+            hashed_password=(
+                "$2b$12$K0C4t7XILgpcQx35V3QE3enOODQ1IH9pzW49nqjHbrx2uQTMVYsQC"
+            ),
+            username=environ["FRACTAL_USERNAME"],
+            is_superuser=True,
+            is_verified=True,
+            is_active=True,
+        )
+        db.add(user)
+        db.commit()
+
+        first_group = db.execute(select(UserGroup)).scalar()
+        first_user = db.execute(select(UserOAuth)).scalar()
+
+        link = LinkUserGroup(group_id=first_group.id, user_id=first_user.id)
+        db.add(link)
+        db.commit()
+
     # Run testserver in a separate process
     # cf. https://stackoverflow.com/a/57816608/283972
-
     def run_server():
         uvicorn.run(
             "fractal_server.main:app",
