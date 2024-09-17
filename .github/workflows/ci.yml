@@ -31,7 +31,7 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --with dev --without docs --no-interaction
+        run: poetry install --with dev --without docs --no-interaction -E postgres-psycopg-binary
 
       - name: Test with pytest
         env:
