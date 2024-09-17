@@ -17,6 +17,20 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
 
+    services:
+      postgres:
+        image: "postgres"
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fractal_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
 
       - uses: actions/checkout@v4
@@ -31,7 +45,7 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --with dev --without docs --no-interaction -E postgres-psycopg-binary
+        run: poetry install --with dev --without docs --no-interaction
 
       - name: Test with pytest
         env:
