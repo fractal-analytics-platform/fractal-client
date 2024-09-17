@@ -102,12 +102,12 @@ def test_group_commands(user_factory, invoke_as_superuser):
     )
     assert res.retcode == 0
     assert res.data["id"] == group2_id
-    assert res.data["user_ids"] == [user2_id, user3_id]  # order
+    assert res.data["user_ids"] == [user3_id, user2_id]  # order
     # add also `superuser` to `group2`
     res = invoke_as_superuser(
         f"group update {group2_id} --new-user-ids {superuser_id}"
     )
-    assert res.data["user_ids"] == [superuser_id, user2_id, user3_id]  # order
+    assert res.data["user_ids"] == [user3_id, user2_id, superuser_id]  # order
 
     # Check groups are updated
 

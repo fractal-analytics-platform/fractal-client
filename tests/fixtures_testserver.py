@@ -25,7 +25,10 @@ def override_server_settings(tmp_path):
 
     tmp_db_path = tmp_path / "db/test.db"
     tmp_db_path.parent.mkdir()
-    settings.DB_ENGINE = "sqlite"
+
+    settings.DB_ENGINE = "postgres-psycopg"
+    settings.POSTGRES_DB = "fractal_test"
+
     settings.SQLITE_PATH = tmp_db_path
     settings.FRACTAL_RUNNER_BACKEND = "local"
 
@@ -50,6 +53,7 @@ def override_server_settings(tmp_path):
 
 @pytest.fixture(scope="function", autouse=True)
 def testserver(override_server_settings):
+
     from fractal_server.app.db import DB
     from fractal_server.app.models.security import SQLModel
     from fractal_server.app.models.security import UserOAuth
@@ -59,12 +63,13 @@ def testserver(override_server_settings):
 
     # INIT DB
     DB.set_sync_db()
-    logger.debug(DB.engine_sync().url)
-    SQLModel.metadata.create_all(DB.engine_sync())
+    engine_sync = DB.engine_sync()
+    logger.debug(engine_sync.url)
+    SQLModel.metadata.create_all(engine_sync)
 
     # Create default group and first superuser
-    # NOTE: we have to do it here, because we are not calling the `set_db` function
-    # from fractal-server. This would change with
+    # NOTE: we have to do it here, because we are not calling the `set_db`
+    # function from fractal-server. This would change with
     # https://github.com/fractal-analytics-platform/fractal-client/issues/697
     # NOTE: `hashed_password` is the bcrypt hash of "1234", see
     # https://github.com/fractal-analytics-platform/fractal-server/issues/1750
@@ -123,6 +128,12 @@ def testserver(override_server_settings):
 
     logger.debug(environ["FRACTAL_SERVER"])
     yield environ["FRACTAL_SERVER"]
+
+    # Cleanup DB
+    SQLModel.metadata.drop_all(engine_sync)
+    engine_sync.dispose()
+    logger.debug("Dropped all tables from the database.")
+
     proc.kill()
 
 
@@ -268,8 +279,7 @@ def user_factory(testserver, db, client_superuser):
 
 
 @pytest.fixture
-def register_user(user_factory, db):
-    from fractal_server.app.models.security import UserOAuth
+def register_user(user_factory):
 
     created_user = user_factory(
         email=environ["FRACTAL_USER"],
@@ -278,7 +288,3 @@ def register_user(user_factory, db):
     )
 
     yield created_user
-
-    db_user = db.get(UserOAuth, created_user["id"])
-    db.delete(db_user)
-    db.commit()
