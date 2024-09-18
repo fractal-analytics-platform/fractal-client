@@ -1,6 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Future release
+# 2.1.0
 
 * Align with [`fractal-server` 2.4.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#240) (\#695).
 * Add `fractal group` command (\#695).
