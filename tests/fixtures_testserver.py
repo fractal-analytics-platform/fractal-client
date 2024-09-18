@@ -62,7 +62,6 @@ def testserver(override_server_settings):
     from fractal_server.app.security import _create_first_group
 
     # INIT DB
-    DB.set_sync_db()
     engine_sync = DB.engine_sync()
     logger.debug(engine_sync.url)
     SQLModel.metadata.create_all(engine_sync)
@@ -131,7 +130,6 @@ def testserver(override_server_settings):
 
     # Cleanup DB
     SQLModel.metadata.drop_all(engine_sync)
-    engine_sync.dispose()
     logger.debug("Dropped all tables from the database.")
 
     proc.kill()
