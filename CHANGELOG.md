@@ -6,6 +6,7 @@
 * Add `fractal group` command (\#695).
 * Testing
     * Update GitHub actions for upload/download/coverage (\#690, \#691).
+    * Switch from SQLite to Postgres in CI (\#702).
 
 # 2.0.3
 
