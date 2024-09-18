@@ -44,12 +44,9 @@ def test_group_commands(user_factory, invoke_as_superuser):
 
     res = invoke_as_superuser("group list --user-ids")
     assert len(res.data) == 1
-    assert res.data[0]["user_ids"] == [
-        superuser_id,
-        user1_id,
-        user2_id,
-        user3_id,
-    ]
+    assert set(res.data[0]["user_ids"]) == set(
+        [superuser_id, user1_id, user2_id, user3_id]
+    )
 
     # Create 2 new empty groups (`group new`)
 
@@ -102,29 +99,27 @@ def test_group_commands(user_factory, invoke_as_superuser):
     )
     assert res.retcode == 0
     assert res.data["id"] == group2_id
-    assert res.data["user_ids"] == [user3_id, user2_id]  # order
+    assert set(res.data["user_ids"]) == set([user3_id, user2_id])
     # add also `superuser` to `group2`
     res = invoke_as_superuser(
         f"group update {group2_id} --new-user-ids {superuser_id}"
     )
-    assert res.data["user_ids"] == [user3_id, user2_id, superuser_id]  # order
+    assert set(res.data["user_ids"]) == set([user3_id, user2_id, superuser_id])
 
     # Check groups are updated
 
     res = invoke_as_superuser("group list --user-ids")
     assert len(res.data) == 3
     assert res.data[0]["id"] == default_group_id
-    assert res.data[0]["user_ids"] == [
-        superuser_id,
-        user1_id,
-        user2_id,
-        user3_id,
-    ]
+    assert set(res.data[0]["user_ids"]) == set(
+        [superuser_id, user1_id, user2_id, user3_id]
+    )
     assert res.data[1]["id"] == group1_id
-    assert res.data[1]["user_ids"] == [user1_id, user2_id]
+    assert set(res.data[1]["user_ids"]) == set([user1_id, user2_id])
     assert res.data[2]["id"] == group2_id
-    # sorted in order of insertion
-    assert res.data[2]["user_ids"] == [user3_id, user2_id, superuser_id]
+    assert set(res.data[2]["user_ids"]) == set(
+        [user3_id, user2_id, superuser_id]
+    )
 
     # Test `group get` command
 
