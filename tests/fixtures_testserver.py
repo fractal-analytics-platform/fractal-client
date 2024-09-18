@@ -129,6 +129,7 @@ def testserver(override_server_settings):
     yield environ["FRACTAL_SERVER"]
 
     # Cleanup DB
+    engine_sync.dispose()
     SQLModel.metadata.drop_all(engine_sync)
     logger.debug("Dropped all tables from the database.")
 
