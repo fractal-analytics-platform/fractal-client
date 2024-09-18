@@ -27,7 +27,7 @@ def override_server_settings(tmp_path):
     tmp_db_path.parent.mkdir()
 
     settings.DB_ENGINE = "postgres-psycopg"
-    settings.POSTGRES_DB = "fractal_test"
+    settings.POSTGRES_DB = "fractal_client_test"
 
     settings.SQLITE_PATH = tmp_db_path
     settings.FRACTAL_RUNNER_BACKEND = "local"

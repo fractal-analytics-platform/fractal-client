@@ -19,10 +19,10 @@ jobs:
 
     services:
       postgres:
-        image: "postgres"
+        image: postgres
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: fractal_test
+          POSTGRES_DB: fractal_client_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
