@@ -128,6 +128,13 @@ def testserver(override_server_settings):
 
     # Cleanup DB
     engine_sync.dispose()
+    try:
+        DB._engine_async
+        raise
+    except AttributeError:
+        # we show here that we do not need to dispose of `engine_async`,
+        # because it is never used.
+        pass
     SQLModel.metadata.drop_all(engine_sync)
     logger.debug("Dropped all tables from the database.")
 
