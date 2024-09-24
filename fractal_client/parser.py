@@ -830,7 +830,7 @@ user_edit_parser = user_subparsers.add_parser(
     "edit",
     description=(
         "Edit an existin user and/or their settings "
-        "(note: user and settings editing two independent steps)."
+        "(note: user and settings editing are two independent steps)."
     ),
     allow_abbrev=False,
 )
