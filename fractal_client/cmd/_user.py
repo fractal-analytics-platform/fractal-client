@@ -23,31 +23,47 @@ def user_register(
         email=new_email,
         password=new_password,
     )
-    if slurm_user:
-        new_user["slurm_user"] = slurm_user
-    if cache_dir:
-        new_user["cache_dir"] = cache_dir
     if username:
         new_user["username"] = username
+
+    new_settings = dict()
+    if slurm_user:
+        new_settings["slurm_user"] = slurm_user
+    if cache_dir:
+        new_settings["cache_dir"] = cache_dir
 
     res = client.post(
         f"{settings.FRACTAL_SERVER}/auth/register/", json=new_user
     )
-    data = check_response(res, expected_status_code=201)
+    user_data = check_response(res, expected_status_code=201)
 
     if superuser or verified:
         patch_payload = dict(is_superuser=superuser, is_verified=verified)
-        user_id = data["id"]
+        user_id = user_data["id"]
         res = client.patch(
             f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/",
             json=patch_payload,
         )
-        data = check_response(res, expected_status_code=200)
+        user_data = check_response(res, expected_status_code=200)
+
+    user_id = user_data["id"]
+    if new_settings == {}:
+        res = client.get(
+            f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/settings/"
+        )
+        user_settings = check_response(res, expected_status_code=200)
+    else:
+        res = client.patch(
+            f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/settings/",
+            json=new_settings,
+        )
+        user_settings = check_response(res, expected_status_code=200)
 
     if batch:
-        return Interface(retcode=0, data=data["id"])
+        return Interface(retcode=0, data=user_data["id"])
     else:
-        return Interface(retcode=0, data=data)
+        user_data_with_settings = dict(settings=user_settings, **user_data)
+        return Interface(retcode=0, data=user_data_with_settings)
 
 
 def user_list(client: AuthClient) -> Interface:
@@ -59,7 +75,13 @@ def user_list(client: AuthClient) -> Interface:
 def user_show(client: AuthClient, *, user_id: str) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/")
     user = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=user)
+    user_id = user["id"]
+    res = client.get(
+        f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/settings/"
+    )
+    user_settings = check_response(res, expected_status_code=200)
+    user_with_settings = dict(settings=user_settings, **user)
+    return Interface(retcode=0, data=user_with_settings)
 
 
 def user_edit(
@@ -78,6 +100,7 @@ def user_edit(
 ) -> Interface:
 
     user_update = dict()
+    settings_update = dict()
     if new_email is not None:
         if (make_verified is False) and (remove_verified is False):
             # Since `fastapi-users` sets `is_verified` to `False` each time the
@@ -101,12 +124,12 @@ def user_edit(
         user_update["is_verified"] = True
     if remove_verified:
         user_update["is_verified"] = False
-    if new_cache_dir is not None:
-        user_update["cache_dir"] = new_cache_dir
-    if new_slurm_user is not None:
-        user_update["slurm_user"] = new_slurm_user
     if new_username is not None:
         user_update["username"] = new_username
+    if new_cache_dir is not None:
+        settings_update["cache_dir"] = new_cache_dir
+    if new_slurm_user is not None:
+        settings_update["slurm_user"] = new_slurm_user
 
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update
@@ -122,7 +145,20 @@ def user_edit(
         )
         new_user = check_response(res, expected_status_code=200)
 
-    return Interface(retcode=0, data=new_user)
+    if settings_update == {}:
+        res = client.get(
+            f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/settings/"
+        )
+        user_settings = check_response(res, expected_status_code=200)
+    else:
+        res = client.patch(
+            f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/settings/",
+            json=settings_update,
+        )
+        user_settings = check_response(res, expected_status_code=200)
+
+    new_user_with_settings = dict(settings=user_settings, **new_user)
+    return Interface(retcode=0, data=new_user_with_settings)
 
 
 def user_whoami(client: AuthClient, *, batch: bool) -> Interface:
@@ -131,4 +167,8 @@ def user_whoami(client: AuthClient, *, batch: bool) -> Interface:
     if batch:
         return Interface(retcode=0, data=user["id"])
     else:
-        return Interface(retcode=0, data=user)
+        res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
+        user_settings = check_response(res, expected_status_code=200)
+        user_with_settings = user
+        user["settings"] = user_settings
+        return Interface(retcode=0, data=user_with_settings)
