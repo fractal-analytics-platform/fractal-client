@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.2.0
+
+* Align with [`fractal-server` 2.6.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#240) (\#705).
+
 # 2.1.0
 
 * Align with [`fractal-server` 2.4.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#240) (\#695).
