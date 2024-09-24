@@ -167,8 +167,9 @@ def user_whoami(client: AuthClient, *, batch: bool) -> Interface:
     if batch:
         return Interface(retcode=0, data=user["id"])
     else:
-        res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
+        res = client.get(
+            f"{settings.FRACTAL_SERVER}/auth/current-user/settings/"
+        )
         user_settings = check_response(res, expected_status_code=200)
-        user_with_settings = user
-        user["settings"] = user_settings
+        user_with_settings = dict(settings=user_settings, **user)
         return Interface(retcode=0, data=user_with_settings)
