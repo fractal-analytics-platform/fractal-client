@@ -55,6 +55,7 @@ def testserver(override_server_settings):
     from fractal_server.app.db import DB
     from fractal_server.app.models.security import SQLModel
     from fractal_server.app.models.security import UserOAuth
+    from fractal_server.app.models.user_settings import UserSettings
     from fractal_server.app.models.security import UserGroup
     from fractal_server.app.models.linkusergroup import LinkUserGroup
     from fractal_server.app.security import _create_first_group
@@ -82,6 +83,8 @@ def testserver(override_server_settings):
             is_verified=True,
             is_active=True,
         )
+        empty_user_settings = UserSettings()
+        user.settings = empty_user_settings
         db.add(user)
         db.commit()
 
