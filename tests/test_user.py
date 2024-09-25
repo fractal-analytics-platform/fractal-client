@@ -141,8 +141,6 @@ def test_edit_as_superuser(
         res = invoke_as_superuser(cmd)
         assert res.retcode == 0
         assert res.data["email"] == NEW_EMAIL
-        assert res.data["cache_dir"] == NEW_CACHE_DIR
-        assert res.data["slurm_user"] == NEW_SLURM_USER
         assert res.data["username"] == NEW_USERNAME
         assert res.data["is_superuser"] == new_is_superuser
         assert (
@@ -150,6 +148,8 @@ def test_edit_as_superuser(
             if new_is_verified
             else not res.data["is_verified"]
         )
+        assert res.data["settings"]["cache_dir"] == NEW_CACHE_DIR
+        assert res.data["settings"]["slurm_user"] == NEW_SLURM_USER
     else:
         res = invoke_as_superuser(cmd)
         assert res.retcode == 1

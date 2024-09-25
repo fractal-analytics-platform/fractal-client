@@ -773,7 +773,10 @@ user_whoami_parser = user_subparsers.add_parser(
 # user register
 user_register_parser = user_subparsers.add_parser(
     "register",
-    description="Register a new user with the Fractal server.",
+    description=(
+        "Register a new user with the Fractal server and edit their settings "
+        "(note: user creation and settings editing are two independent steps)."
+    ),
     allow_abbrev=False,
 )
 user_register_parser.add_argument(
@@ -825,7 +828,10 @@ user_show_parser.add_argument("user_id", help="ID of the user.", type=int)
 # user edit
 user_edit_parser = user_subparsers.add_parser(
     "edit",
-    description="Edit details of single user.",
+    description=(
+        "Edit an existin user and/or their settings "
+        "(note: user and settings editing are two independent steps)."
+    ),
     allow_abbrev=False,
 )
 user_edit_parser.add_argument("user_id", help="ID of the user.", type=int)
