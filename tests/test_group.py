@@ -155,6 +155,7 @@ def test_group_commands(user_factory, invoke_as_superuser):
     assert isinstance(res.data, int)
 
     # Test update of viewer-paths
+
     res_pre_patch = invoke_as_superuser(f"group get {group1_id}")
     assert res_pre_patch.retcode == 0
     res_pre_patch.data.pop("viewer_paths")
@@ -165,3 +166,13 @@ def test_group_commands(user_factory, invoke_as_superuser):
     viewer_paths_post_pach = res_post_patch.data.pop("viewer_paths")
     assert viewer_paths_post_pach == ["/a/b", "/c/d"]
     assert res_post_patch.data == res_pre_patch.data
+
+    # Test `whoami --viewer-paths`
+
+    invoke_as_superuser(
+        f"group update {group1_id} --new-user-ids {superuser_id}"
+    )
+    res = invoke_as_superuser("user whoami")
+    assert "viewer_paths" not in res.data
+    res = invoke_as_superuser("user whoami --viewer-paths")
+    assert set(res.data.get("viewer_paths")) == {"/a/b", "/c/d"}

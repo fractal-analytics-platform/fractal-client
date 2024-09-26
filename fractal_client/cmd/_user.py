@@ -161,15 +161,28 @@ def user_edit(
     return Interface(retcode=0, data=new_user_with_settings)
 
 
-def user_whoami(client: AuthClient, *, batch: bool) -> Interface:
+def user_whoami(
+    client: AuthClient, *, batch: bool, viewer_paths: bool = False
+) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
     user = check_response(res, expected_status_code=200)
+
     if batch:
         return Interface(retcode=0, data=user["id"])
-    else:
+
+    res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/settings/")
+    user_settings = check_response(res, expected_status_code=200)
+
+    if viewer_paths:
         res = client.get(
-            f"{settings.FRACTAL_SERVER}/auth/current-user/settings/"
+            f"{settings.FRACTAL_SERVER}/auth/current-user/viewer-paths/"
         )
-        user_settings = check_response(res, expected_status_code=200)
-        user_with_settings = dict(settings=user_settings, **user)
-        return Interface(retcode=0, data=user_with_settings)
+        returned_viewer_paths = check_response(res, expected_status_code=200)
+        user_viewer_paths = dict(viewer_paths=returned_viewer_paths)
+    else:
+        user_viewer_paths = dict()
+
+    return Interface(
+        retcode=0,
+        data=dict(**user, **user_viewer_paths, settings=user_settings),
+    )

@@ -353,7 +353,9 @@ def user(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = user_edit(client, **function_kwargs)
     elif subcmd == "whoami":
-        iface = user_whoami(client, batch=batch)
+        parameters = ["viewer_paths"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = user_whoami(client, **function_kwargs, batch=batch)
     else:
         raise NoCommandError(f"Command 'user {subcmd}' not found")
 

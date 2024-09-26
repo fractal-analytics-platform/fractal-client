@@ -769,6 +769,12 @@ user_whoami_parser = user_subparsers.add_parser(
     description="Get info on current user (fails if user is not registered).",
     allow_abbrev=False,
 )
+user_whoami_parser.add_argument(
+    "--viewer-paths",
+    help="User is returned with the `viewer_paths` attribute.",
+    action="store_true",
+    required=False,
+)
 
 # user register
 user_register_parser = user_subparsers.add_parser(
