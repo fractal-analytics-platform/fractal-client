@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
@@ -24,9 +26,20 @@ def group_get(client: AuthClient, *, group_id: int):
     return Interface(retcode=0, data=data)
 
 
-def group_new(client: AuthClient, *, name: str, batch: bool = False):
+def group_new(
+    client: AuthClient,
+    *,
+    name: str,
+    viewer_paths: Optional[list[str]],
+    batch: bool = False,
+):
+    request_body = dict(name=name)
+    if viewer_paths is not None:
+        request_body["viewer_paths"] = viewer_paths
+
     res = client.post(
-        f"{settings.FRACTAL_SERVER}/auth/group/", json=dict(name=name)
+        f"{settings.FRACTAL_SERVER}/auth/group/",
+        json=request_body,
     )
     data = check_response(res, expected_status_code=201)
     if batch:
@@ -39,11 +52,19 @@ def group_update(
     client: AuthClient,
     *,
     group_id: int,
-    new_user_ids: list[int],
+    new_user_ids: Optional[list[int]],
+    new_viewer_paths: Optional[list[str]],
 ):
+
+    request_body = dict()
+    if new_viewer_paths is not None:
+        request_body["viewer_paths"] = new_viewer_paths
+    if new_user_ids is not None:
+        request_body["new_user_ids"] = new_user_ids
+
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/",
-        json=dict(new_user_ids=new_user_ids),
+        json=request_body,
     )
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)

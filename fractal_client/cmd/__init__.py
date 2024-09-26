@@ -372,11 +372,11 @@ def group(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_get(client, **function_kwargs)
     elif subcmd == "new":
-        parameters = ["name"]
+        parameters = ["name", "viewer_paths"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_new(client, batch=batch, **function_kwargs)
     elif subcmd == "update":
-        parameters = ["group_id", "new_user_ids"]
+        parameters = ["group_id", "new_user_ids", "new_viewer_paths"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_update(client, **function_kwargs)
     else:

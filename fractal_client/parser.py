@@ -919,6 +919,16 @@ group_new_parser = group_subparsers.add_parser(
     "new", description="Create new group.", allow_abbrev=False
 )
 group_new_parser.add_argument("name", help="Name of the new group.", type=str)
+group_new_parser.add_argument(
+    "--viewer-paths",
+    help=(
+        "List of group's `viewer_paths` (e.g "
+        "`--viewer-paths /something /else`)",
+    ),
+    required=False,
+    type=str,
+    nargs="+",
+)
 
 # group update
 group_update_parser = group_subparsers.add_parser(
@@ -933,7 +943,19 @@ group_update_parser.add_argument(
         "New list of user in the group "
         "(e.g. `--new-user-ids 4 8 15 16 23 42`)",
     ),
-    required=True,
+    required=False,
     type=int,
     nargs="+",
+    default=None,
+)
+group_update_parser.add_argument(
+    "--new-viewer-paths",
+    help=(
+        "New list of group's `viewer_paths` (e.g "
+        "`--new-viewer-paths /something /else`)",
+    ),
+    required=False,
+    type=str,
+    nargs="+",
+    default=None,
 )
