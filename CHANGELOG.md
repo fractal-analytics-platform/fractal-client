@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.2.1
+
+* Support new `viewer-paths` commands in `fractal group` command (\# ).
+* Make `--new-user-ids` optional `fractal group` command (\# ).
+
 # 2.2.0
 
 * Align with [`fractal-server` 2.6.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#240) (\#705).
