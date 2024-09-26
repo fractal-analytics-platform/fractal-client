@@ -2,8 +2,8 @@
 
 # 2.2.1
 
-* Support new `viewer-paths` commands in `fractal group` command (\# ).
-* Make `--new-user-ids` optional `fractal group` command (\# ).
+* Support new `viewer-paths` commands in `fractal group` command (\#709).
+* Make `--new-user-ids` optional `fractal group` command (\#709).
 
 # 2.2.0
 
