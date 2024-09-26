@@ -30,7 +30,7 @@ def group_new(
     client: AuthClient,
     *,
     name: str,
-    viewer_paths: Optional[list[str]],
+    viewer_paths: Optional[list[str]] = None,
     batch: bool = False,
 ):
     request_body = dict(name=name)
@@ -52,8 +52,8 @@ def group_update(
     client: AuthClient,
     *,
     group_id: int,
-    new_user_ids: Optional[list[int]],
-    new_viewer_paths: Optional[list[str]],
+    new_user_ids: Optional[list[int]] = None,
+    new_viewer_paths: Optional[list[str]] = None,
 ):
 
     request_body = dict()
