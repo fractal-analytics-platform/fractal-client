@@ -69,12 +69,14 @@ def test_group_commands(user_factory, invoke_as_superuser):
 
     # Add users to groups (`group update`)
 
+    # empty update
+    res = invoke_as_superuser(f"group update {default_group_id}")
+    assert res.retcode == 0
+    assert res.data["id"] == default_group_id
+
     with pytest.raises(SystemExit):
         # missing 'group_id' and 'new_user_ids'
         invoke_as_superuser("group update")
-    with pytest.raises(SystemExit):
-        # missing 'new_user_ids'
-        invoke_as_superuser(f"group update {default_group_id}")
     with pytest.raises(SystemExit):
         # missing 'group_id'
         invoke_as_superuser(f"group update --new-user-ids {superuser_id}")
@@ -153,7 +155,7 @@ def test_group_commands(user_factory, invoke_as_superuser):
     assert isinstance(res.data, int)
 
     # Test update of viewer-paths
-    res_pre_patch = invoke_as_superuser(f"group show {group1_id}")
+    res_pre_patch = invoke_as_superuser(f"group get {group1_id}")
     assert res_pre_patch.retcode == 0
     res_pre_patch.data.pop("viewer_paths")
     res_post_patch = invoke_as_superuser(
