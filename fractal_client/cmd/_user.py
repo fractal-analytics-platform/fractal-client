@@ -18,7 +18,6 @@ def user_register(
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
 ) -> Interface:
-
     new_user = dict(
         email=new_email,
         password=new_password,
@@ -98,7 +97,6 @@ def user_edit(
     make_verified: bool = False,
     remove_verified: bool = False,
 ) -> Interface:
-
     user_update = dict()
     settings_update = dict()
     if new_email is not None:
@@ -172,17 +170,19 @@ def user_whoami(
 
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/settings/")
     user_settings = check_response(res, expected_status_code=200)
+    user_with_settings = dict(**user, settings=user_settings)
 
-    if viewer_paths:
+    if viewer_paths is None:
+        return Interface(retcode=0, data=user_with_settings)
+    else:
         res = client.get(
             f"{settings.FRACTAL_SERVER}/auth/current-user/viewer-paths/"
         )
         returned_viewer_paths = check_response(res, expected_status_code=200)
-        user_viewer_paths = dict(viewer_paths=returned_viewer_paths)
-    else:
-        user_viewer_paths = dict()
-
-    return Interface(
-        retcode=0,
-        data=dict(**user, **user_viewer_paths, settings=user_settings),
-    )
+        return Interface(
+            retcode=0,
+            data=dict(
+                **user_with_settings,
+                viewer_paths=returned_viewer_paths,
+            ),
+        )
