@@ -771,7 +771,7 @@ user_whoami_parser = user_subparsers.add_parser(
 )
 user_whoami_parser.add_argument(
     "--viewer-paths",
-    help="User is returned with the `viewer_paths` attribute.",
+    help="Include user's `viewer_paths` attribute.",
     action="store_true",
     required=False,
 )
