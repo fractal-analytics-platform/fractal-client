@@ -946,8 +946,9 @@ group_update_parser.add_argument(
 group_update_parser.add_argument(
     "--new-user-ids",
     help=(
-        "New list of user in the group "
-        "(e.g. `--new-user-ids 4 8 15 16 23 42`)",
+        "New list of users in the group "
+        "(e.g. `--new-user-ids 4 8 15 16 23 42`); "
+        "note that this replaces the existing one.",
     ),
     required=False,
     type=int,
@@ -957,8 +958,9 @@ group_update_parser.add_argument(
 group_update_parser.add_argument(
     "--new-viewer-paths",
     help=(
-        "New list of group's `viewer_paths` (e.g "
-        "`--new-viewer-paths /something /else`)",
+        "New list of group `viewer_paths` (e.g "
+        "`--new-viewer-paths /something /else`);"
+        "note that this replaces the existing one.",
     ),
     required=False,
     type=str,
