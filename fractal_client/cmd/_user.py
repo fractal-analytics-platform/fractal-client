@@ -172,9 +172,7 @@ def user_whoami(
     user_settings = check_response(res, expected_status_code=200)
     user_with_settings = dict(**user, settings=user_settings)
 
-    if viewer_paths is None:
-        return Interface(retcode=0, data=user_with_settings)
-    else:
+    if viewer_paths:
         res = client.get(
             f"{settings.FRACTAL_SERVER}/auth/current-user/viewer-paths/"
         )
@@ -186,3 +184,5 @@ def user_whoami(
                 viewer_paths=returned_viewer_paths,
             ),
         )
+    else:
+        return Interface(retcode=0, data=user_with_settings)
