@@ -54,23 +54,29 @@ def test_group_commands(user_factory, invoke_as_superuser):
         # missing 'name'
         invoke_as_superuser("group new")
 
-    res = invoke_as_superuser("group new foo")
+    res = invoke_as_superuser("group new foo --viewer-paths /a /b")
     assert res.retcode == 0
     assert res.data["name"] == "foo"
     assert res.data["user_ids"] == []
+    group1_viewer_paths = res.data["viewer_paths"]
+    assert group1_viewer_paths == ["/a", "/b"]
     group1_id = res.data["id"]
 
     res = invoke_as_superuser("group new bar")
     group2_id = res.data["id"]
+    group2_viewer_paths = res.data["viewer_paths"]
+    assert group2_viewer_paths == []
 
     # Add users to groups (`group update`)
+
+    # empty update
+    res = invoke_as_superuser(f"group update {default_group_id}")
+    assert res.retcode == 0
+    assert res.data["id"] == default_group_id
 
     with pytest.raises(SystemExit):
         # missing 'group_id' and 'new_user_ids'
         invoke_as_superuser("group update")
-    with pytest.raises(SystemExit):
-        # missing 'new_user_ids'
-        invoke_as_superuser(f"group update {default_group_id}")
     with pytest.raises(SystemExit):
         # missing 'group_id'
         invoke_as_superuser(f"group update --new-user-ids {superuser_id}")
@@ -92,6 +98,7 @@ def test_group_commands(user_factory, invoke_as_superuser):
     assert res.retcode == 0
     assert res.data["id"] == group1_id
     assert res.data["user_ids"] == [user1_id, user2_id]
+    assert res.data["viewer_paths"] == group1_viewer_paths
 
     # add `user3` and `user2` to `group2`
     res = invoke_as_superuser(
@@ -105,6 +112,7 @@ def test_group_commands(user_factory, invoke_as_superuser):
         f"group update {group2_id} --new-user-ids {superuser_id}"
     )
     assert set(res.data["user_ids"]) == set([user3_id, user2_id, superuser_id])
+    assert res.data["viewer_paths"] == group2_viewer_paths
 
     # Check groups are updated
 
@@ -145,3 +153,26 @@ def test_group_commands(user_factory, invoke_as_superuser):
 
     res = invoke_as_superuser("--batch group new xyz")
     assert isinstance(res.data, int)
+
+    # Test update of viewer-paths
+
+    res_pre_patch = invoke_as_superuser(f"group get {group1_id}")
+    assert res_pre_patch.retcode == 0
+    res_pre_patch.data.pop("viewer_paths")
+    res_post_patch = invoke_as_superuser(
+        f"group update {group1_id} --new-viewer-paths /a/b /c/d"
+    )
+    assert res_post_patch.retcode == 0
+    viewer_paths_post_pach = res_post_patch.data.pop("viewer_paths")
+    assert viewer_paths_post_pach == ["/a/b", "/c/d"]
+    assert res_post_patch.data == res_pre_patch.data
+
+    # Test `whoami --viewer-paths`
+
+    invoke_as_superuser(
+        f"group update {group1_id} --new-user-ids {superuser_id}"
+    )
+    res = invoke_as_superuser("user whoami")
+    assert "viewer_paths" not in res.data
+    res = invoke_as_superuser("user whoami --viewer-paths")
+    assert set(res.data.get("viewer_paths")) == {"/a/b", "/c/d"}

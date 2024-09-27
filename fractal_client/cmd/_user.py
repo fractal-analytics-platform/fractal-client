@@ -18,7 +18,6 @@ def user_register(
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
 ) -> Interface:
-
     new_user = dict(
         email=new_email,
         password=new_password,
@@ -98,7 +97,6 @@ def user_edit(
     make_verified: bool = False,
     remove_verified: bool = False,
 ) -> Interface:
-
     user_update = dict()
     settings_update = dict()
     if new_email is not None:
@@ -161,15 +159,30 @@ def user_edit(
     return Interface(retcode=0, data=new_user_with_settings)
 
 
-def user_whoami(client: AuthClient, *, batch: bool) -> Interface:
+def user_whoami(
+    client: AuthClient, *, batch: bool, viewer_paths: bool = False
+) -> Interface:
     res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/")
     user = check_response(res, expected_status_code=200)
+
     if batch:
         return Interface(retcode=0, data=user["id"])
-    else:
+
+    res = client.get(f"{settings.FRACTAL_SERVER}/auth/current-user/settings/")
+    user_settings = check_response(res, expected_status_code=200)
+    user_with_settings = dict(**user, settings=user_settings)
+
+    if viewer_paths:
         res = client.get(
-            f"{settings.FRACTAL_SERVER}/auth/current-user/settings/"
+            f"{settings.FRACTAL_SERVER}/auth/current-user/viewer-paths/"
         )
-        user_settings = check_response(res, expected_status_code=200)
-        user_with_settings = dict(settings=user_settings, **user)
+        returned_viewer_paths = check_response(res, expected_status_code=200)
+        return Interface(
+            retcode=0,
+            data=dict(
+                **user_with_settings,
+                viewer_paths=returned_viewer_paths,
+            ),
+        )
+    else:
         return Interface(retcode=0, data=user_with_settings)

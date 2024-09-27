@@ -769,6 +769,12 @@ user_whoami_parser = user_subparsers.add_parser(
     description="Get info on current user (fails if user is not registered).",
     allow_abbrev=False,
 )
+user_whoami_parser.add_argument(
+    "--viewer-paths",
+    help="Include user's `viewer_paths` attribute.",
+    action="store_true",
+    required=False,
+)
 
 # user register
 user_register_parser = user_subparsers.add_parser(
@@ -919,6 +925,16 @@ group_new_parser = group_subparsers.add_parser(
     "new", description="Create new group.", allow_abbrev=False
 )
 group_new_parser.add_argument("name", help="Name of the new group.", type=str)
+group_new_parser.add_argument(
+    "--viewer-paths",
+    help=(
+        "List of group's `viewer_paths` (e.g "
+        "`--viewer-paths /something /else`)",
+    ),
+    required=False,
+    type=str,
+    nargs="+",
+)
 
 # group update
 group_update_parser = group_subparsers.add_parser(
@@ -930,10 +946,24 @@ group_update_parser.add_argument(
 group_update_parser.add_argument(
     "--new-user-ids",
     help=(
-        "New list of user in the group "
-        "(e.g. `--new-user-ids 4 8 15 16 23 42`)",
+        "New list of users in the group "
+        "(e.g. `--new-user-ids 4 8 15 16 23 42`); "
+        "note that this replaces the existing one.",
     ),
-    required=True,
+    required=False,
     type=int,
     nargs="+",
+    default=None,
+)
+group_update_parser.add_argument(
+    "--new-viewer-paths",
+    help=(
+        "New list of group `viewer_paths` (e.g "
+        "`--new-viewer-paths /something /else`);"
+        "note that this replaces the existing one.",
+    ),
+    required=False,
+    type=str,
+    nargs="+",
+    default=None,
 )
