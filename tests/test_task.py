@@ -48,7 +48,6 @@ def test_task_new(register_user, invoke, tmp_path):
     assert res.data["meta_parallel"] == meta
     assert res.data["args_schema_version"] == "1.0.0"
 
-    assert "owner" in res.data.keys()
     first_task_id = int(res.data["id"])
 
     # create a new task with batch option

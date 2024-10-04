@@ -546,7 +546,7 @@ def test_workflow_import(
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
-    task_factory(name="task", source="PKG_SOURCE:dummy2", owner="exact-lab")
+    task_factory(name="task", source="PKG_SOURCE:dummy2")
 
     # Fail due to missing --json-file argument
     with pytest.raises(SystemExit):
@@ -618,7 +618,7 @@ def test_workflow_export(
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")
 
-    task = task_factory(owner="exact-lab")
+    task = task_factory()
     res = invoke(f"workflow add-task {prj_id} {wf_id} --task-id {task.id}")
     assert res.retcode == 0
 
