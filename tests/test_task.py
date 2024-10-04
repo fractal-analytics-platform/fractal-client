@@ -22,7 +22,6 @@ urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
 def test_task_new(register_user, invoke, tmp_path):
 
-    return
     # create a new task with just positional required args
     args_path = str(tmp_path / "args.json")
     args = {"image_dir": "/asdasd"}
