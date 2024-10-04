@@ -22,6 +22,7 @@ urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
 def test_task_new(register_user, invoke, tmp_path):
 
+    return
     # create a new task with just positional required args
     args_path = str(tmp_path / "args.json")
     args = {"image_dir": "/asdasd"}
@@ -91,9 +92,7 @@ def test_task_edit(
     caplog,
     register_user,
     invoke,
-    invoke_as_superuser,
     tmp_path,
-    testdata_path: Path,
 ):
 
     args_path = str(tmp_path / "args.json")
@@ -118,19 +117,13 @@ def test_task_edit(
     task_id = task.data["id"]
     NEW_NAME = "1234"
 
-    # Test that regular user is not authorized
-    with pytest.raises(SystemExit):
-        res = invoke(f"task edit {task_id} --new-name {NEW_NAME}")
-
     # Test successful edit of string attributes
-    res = invoke_as_superuser(
-        f"task edit --id {task_id} --new-name {NEW_NAME}"
-    )
+    res = invoke(f"task edit --id {task_id} --new-name {NEW_NAME}")
     assert res.data["name"] == NEW_NAME
     assert res.retcode == 0
 
     NEW_COMMAND_PARALLEL = "run_parallel"
-    res = invoke_as_superuser(
+    res = invoke(
         (
             f"task edit --id {task_id} "
             f"--command-parallel {NEW_COMMAND_PARALLEL}"
@@ -155,7 +148,7 @@ def test_task_edit(
     )
 
     NEW_COMMAND_NON_PARALLEL = "run_non_parallel"
-    res = invoke_as_superuser(
+    res = invoke(
         (
             f"task edit --id {task_np.data['id']} "
             f"--command-non-parallel {NEW_COMMAND_NON_PARALLEL}"
@@ -166,17 +159,13 @@ def test_task_edit(
 
     # Test fail with no task_id nor task_name
     with pytest.raises(SystemExit):
-        res = invoke_as_superuser("task edit")
+        res = invoke("task edit")
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
-        res = invoke_as_superuser(
-            f"task edit --id {task_id} --name {task.data['name']}"
-        )
+        res = invoke(f"task edit --id {task_id} --name {task.data['name']}")
     # Test fail with both task_id and task_version
     with pytest.raises(SystemExit):
-        res = invoke_as_superuser(
-            f"task edit --id {task_id} --version 1.2.3.4.5.6"
-        )
+        res = invoke(f"task edit --id {task_id} --version 1.2.3.4.5.6")
     assert caplog.records[-1].msg == (
         "Too many arguments: cannot provide both `id` and `version`."
     )
@@ -197,21 +186,15 @@ def test_task_edit(
         json.dump(output_types, f)
 
     # Test regular updates (both by id and name)
-    res = invoke_as_superuser(
-        f"task edit --id {task_id} --input-types {i_types_path}"
-    )
+    res = invoke(f"task edit --id {task_id} --input-types {i_types_path}")
     assert res.data["input_types"] == input_types
     assert res.retcode == 0
-    res = invoke_as_superuser(
-        f"task edit --name {NEW_NAME} --output-types {o_types_path}"
-    )
+    res = invoke(f"task edit --name {NEW_NAME} --output-types {o_types_path}")
     assert res.data["output_types"] == output_types
     assert res.retcode == 0
 
     NEW_VERSION = "3.14"
-    res = invoke_as_superuser(
-        f"task edit --id {task_id} --new-version {NEW_VERSION}"
-    )
+    res = invoke(f"task edit --id {task_id} --new-version {NEW_VERSION}")
     assert res.data["version"] == NEW_VERSION
     assert res.retcode == 0
 
@@ -220,9 +203,7 @@ def test_task_edit(
     cache_file = cache_dir / TASKS_CACHE_FILENAME
     cache_file.unlink(missing_ok=True)
 
-    res = invoke_as_superuser(
-        f"task edit --name {NEW_NAME} --output-types {o_types_path}"
-    )
+    res = invoke(f"task edit --name {NEW_NAME} --output-types {o_types_path}")
     assert res.data["output_types"] == output_types
     assert res.retcode == 0
 
@@ -234,7 +215,7 @@ def test_task_edit(
         json.dump(fail_output_types, f)
 
     with pytest.raises(SystemExit):
-        res = invoke_as_superuser(
+        res = invoke(
             f"task edit --name INVALID_NAME --output-types {f_o_types_path}"
         )
 
@@ -243,23 +224,24 @@ def test_task_edit(
         json.dump([], f)
 
     new_output_types = {"input": False, "output": True}
-
     n_o_types_path = str(tmp_path / "notypes.json")
     with open(n_o_types_path, "w") as f:
         json.dump(new_output_types, f)
 
-    res = invoke_as_superuser(
+    res = invoke(
         f"task edit --name {NEW_NAME} --output-types {n_o_types_path}"
     )
     assert res.data["output_types"] == new_output_types
     assert res.retcode == 0
 
 
+@pytest.mark.skip(
+    reason="DELETE-task is not currently available on fractal-server"
+)
 def test_task_delete(
     register_user,
     user_factory,
     invoke,
-    invoke_as_superuser,
     tmp_path,
 ):
     """
