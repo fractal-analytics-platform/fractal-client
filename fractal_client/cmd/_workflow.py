@@ -242,19 +242,6 @@ def workflow_import(
     )
     wf_read = check_response(res, expected_status_code=201)
 
-    warnings = [
-        workflow_task["task"]["source"]
-        for workflow_task in wf_read["task_list"]
-        if workflow_task["task"]["owner"]
-    ]
-    if warnings:
-        sources_str = ", ".join([f"'{s}'" for s in warnings])
-        logging.warning(
-            "This workflow includes custom tasks (the ones with sources: "
-            f"{sources_str}), which are not meant to be portable; "
-            "importing this workflow may not work as expected."
-        )
-
     if batch:
         datastr = f"{wf_read['id']}"
         for wftask in wf_read["task_list"]:
