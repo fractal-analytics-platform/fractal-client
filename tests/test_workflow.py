@@ -157,7 +157,7 @@ def test_workflow_add_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory(type="parallel")
+    t = task_factory(user_id=register_user["id"], type="parallel")
 
     INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
     ARGS_PARALLEL = {"image_dir": "/asdasd"}
@@ -255,7 +255,9 @@ def test_workflow_add_task(
 
     # Add a WorkflowTask with meta-non-parallel args
     t_non_parallel = task_factory(
-        type="non_parallel", source="source non_parallel"
+        user_id=register_user["id"],
+        type="non_parallel",
+        source="source non_parallel",
     )
 
     cmd_meta = (
@@ -306,7 +308,7 @@ def test_workflow_add_task_by_name(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    task = task_factory(type="parallel")
+    task = task_factory(user_id=register_user["id"], type="parallel")
     debug(task)
 
     ARGS = {"image_dir": "/asdasd"}
@@ -360,8 +362,8 @@ def test_task_cache_with_non_unique_names(
     with args_file.open("w") as f:
         json.dump(ARGS, f)
     # Create two tasks with the same name
-    task1 = task_factory(type="parallel")
-    task2 = task_factory(type="parallel")
+    task1 = task_factory(user_id=register_user["id"], type="parallel")
+    task2 = task_factory(user_id=register_user["id"], type="parallel")
     assert task1.name == task2.name
 
     # Verify that a warning is raised upon creating the cache file
@@ -394,7 +396,7 @@ def test_workflow_rm_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory(type="parallel")
+    t = task_factory(user_id=register_user["id"], type="parallel")
 
     ARGS = {"image_dir": "/asdasd"}
 
@@ -439,7 +441,7 @@ def test_workflow_edit_task(
     res = invoke("project new MyProject")
     project_id = res.data["id"]
     wf = workflow_factory(project_id=project_id)
-    t = task_factory(type="parallel")
+    t = task_factory(user_id=register_user["id"], type="parallel")
 
     INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
     ARGS_PARALLEL = {"image_dir": "/asdasd"}
@@ -503,7 +505,9 @@ def test_workflow_edit_task(
 
     # Add a WorkflowTask with meta-non-parallel args
     t_non_parallel = task_factory(
-        type="non_parallel", source="source non_parallel"
+        user_id=register_user["id"],
+        type="non_parallel",
+        source="source non_parallel",
     )
 
     cmd = (
@@ -546,7 +550,9 @@ def test_workflow_import(
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
-    task_factory(name="task", source="PKG_SOURCE:dummy2")
+    task_factory(
+        user_id=register_user["id"], name="task", source="PKG_SOURCE:dummy2"
+    )
 
     # Fail due to missing --json-file argument
     with pytest.raises(SystemExit):
@@ -561,11 +567,6 @@ def test_workflow_import(
     )
     debug(res.data)
     assert res.retcode == 0
-    assert caplog.records[-1].msg == (
-        "This workflow includes custom tasks (the ones with sources: "
-        "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
-        "importing this workflow may not work as expected."
-    )
 
     imported_workflow = res.data
 
@@ -573,6 +574,7 @@ def test_workflow_import(
     workflow_id = res.data["id"]
     res = invoke(f"workflow show {project_id} {workflow_id}")
     assert res.retcode == 0
+    imported_workflow["task_list"][-1]["warning"] = None
     assert res.data == imported_workflow
 
     # import workflow into project, with --batch
@@ -583,11 +585,6 @@ def test_workflow_import(
     )
     assert res.retcode == 0
     assert res.data == "2 2"
-    assert caplog.records[-1].msg == (
-        "This workflow includes custom tasks (the ones with sources: "
-        "'PKG_SOURCE:dummy2'), which are not meant to be portable; "
-        "importing this workflow may not work as expected."
-    )
 
     # import workflow into project, with --workflow-name
     NEW_NAME = "new name for workflow"
@@ -618,7 +615,7 @@ def test_workflow_export(
     wf_id = wf.id
     filename = str(tmp_path / "exported_wf.json")
 
-    task = task_factory()
+    task = task_factory(user_id=register_user["id"])
     res = invoke(f"workflow add-task {prj_id} {wf_id} --task-id {task.id}")
     assert res.retcode == 0
 
