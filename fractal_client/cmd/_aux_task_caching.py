@@ -56,12 +56,11 @@ def _fetch_task_list(client: AuthClient) -> _TaskList:
 
 def _sort_task_list(task_list: _TaskList) -> _TaskList:
     """
-    Sort tasks according to their (owner, name, version) attributes.
+    Sort tasks according to their (name, version) attributes.
     """
     new_task_list = sorted(
         task_list,
         key=lambda task: (
-            task["owner"] or "",
             task["name"],
             task["version"] or "",
         ),
@@ -115,12 +114,12 @@ def _format_task_list(task_list: _TaskList) -> str:
     Helper function to print a formatted task list with only a few task
     attributes, to be used in error messages.
     """
-    header = "  ID, Name, Version, Owner, Source"
+    header = "  ID, Name, Version, Source"
     formatted_list = "\n".join(
         [
             (
                 f'  {task["id"]}, "{task["name"]}", {task["version"]}, '
-                f'{task.get("owner")}, {task["source"]}'
+                f'{task["source"]}'
             )
             for task in task_list
         ]
