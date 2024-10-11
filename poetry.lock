@@ -731,7 +731,7 @@ postgres-psycopg-binary = ["psycopg[binary] (>=3.1.0,<4.0.0)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "428aa9de28e3e9758396e99d91526b782451df3c"
+resolved_reference = "4694170170a47a76572071797ed19a2e8c9173fc"
 
 [[package]]
 name = "ghp-import"
