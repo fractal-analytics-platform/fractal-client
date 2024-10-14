@@ -34,7 +34,7 @@ def test_task_new(register_user, invoke, tmp_path):
         json.dump(meta, f)
 
     res = invoke(
-        "task new _name --command-parallel _command "
+        "task new _name  _source --command-parallel _command "
         f"--version _version --meta-parallel {meta_path} "
         f"--args-schema-parallel {args_path} "
         f"--args-schema-version 1.0.0"
@@ -43,6 +43,7 @@ def test_task_new(register_user, invoke, tmp_path):
     assert res.retcode == 0
     assert res.data["name"] == "_name"
     assert res.data["command_parallel"] == "_command"
+    assert res.data["source"] == f"{register_user['username']}:_source"
     assert res.data["version"] == "_version"
     assert res.data["meta_parallel"] == meta
     assert res.data["args_schema_version"] == "1.0.0"
@@ -50,21 +51,23 @@ def test_task_new(register_user, invoke, tmp_path):
     first_task_id = int(res.data["id"])
 
     # create a new task with batch option
-    res = invoke("--batch task new _name2 --command-parallel _command2")
+    res = invoke(
+        "--batch task new _name2 _source2 --command-parallel _command2"
+    )
     res.show()
     assert res.retcode == 0
     assert res.data == str(first_task_id + 1)
 
-    # create a new task with same FIXME as before. Note that in check_response
+    # create a new task with same source as before. Note that in check_response
     # we have sys.exit(1) when status code is not the expecte one
     with pytest.raises(SystemExit) as e:
-        invoke("task new _name2 --command-parallel _command2")
+        invoke("task new _name2 _source --command-parallel _command2")
     assert e.value.code == 1
 
     # create a new task passing not existing file
     res = invoke(
         (
-            "task new _name --command-parallel _command "
+            "task new _name _source --command-parallel _command "
             "--meta-parallel ./foo.pdf"
         )
     )
@@ -76,7 +79,7 @@ def test_task_new(register_user, invoke, tmp_path):
         json.dump(metanp, f)
     res = invoke(
         (
-            f"task new _name_np --command-non-parallel _command_np "
+            f"task new _name_np _source_np --command-non-parallel _command_np "
             f"--meta-non-parallel {metanp_path} "
             f"--args-schema-non-parallel {args_path} "
         )

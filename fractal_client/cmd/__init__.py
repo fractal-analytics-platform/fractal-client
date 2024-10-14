@@ -157,6 +157,7 @@ def task(
     elif subcmd == "new":
         parameters = [
             "name",
+            "source",
             "version",
             "command_non_parallel",
             "command_parallel",
