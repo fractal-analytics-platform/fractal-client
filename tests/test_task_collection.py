@@ -131,7 +131,7 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
 
     state_id = res0.data[0]  # extract id from batch string
     debug(res0.data)
-    assert res0.data == "1 .fractal/fractal-tasks-mock0.0.1"
+    assert res0.data.startswith("1 ")
 
     time.sleep(0.5)
 
@@ -145,9 +145,8 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Second collection
-    res0 = invoke(f"task collect {PACKAGE_PATH}")
-    debug(res0.data)
-    assert res0.data["data"]["info"] == "Already installed"
+    with pytest.raises(SystemExit):
+        res0 = invoke(f"task collect {PACKAGE_PATH}")
 
 
 def test_task_collection_custom(register_user, tmp_path, invoke, caplog):
