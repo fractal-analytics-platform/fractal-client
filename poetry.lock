@@ -730,8 +730,8 @@ postgres-psycopg-binary = ["psycopg[binary] (>=3.1.0,<4.0.0)"]
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "main"
-resolved_reference = "8d8bed43daee8162cc1842644dfdcb84673ac8d1"
+reference = "task-export-v2-validator"
+resolved_reference = "29184caeae7424d89a07fd4305ac630b37aee27d"
 
 [[package]]
 name = "ghp-import"
@@ -2443,4 +2443,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "9944308972f3aa1860f7f35c8f7155dccf2cc1d5564d0fdaf27b04f830c4e503"
+content-hash = "c1fc17db1cddcd6bf95260a3a8d0e8ca2dba6e4c14041335d10a5eb42c65aa50"
