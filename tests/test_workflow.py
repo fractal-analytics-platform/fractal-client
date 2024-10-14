@@ -257,7 +257,6 @@ def test_workflow_add_task(
     t_non_parallel = task_factory(
         user_id=register_user["id"],
         type="non_parallel",
-        source="source non_parallel",
     )
 
     cmd_meta = (
@@ -507,7 +506,6 @@ def test_workflow_edit_task(
     t_non_parallel = task_factory(
         user_id=register_user["id"],
         type="non_parallel",
-        source="source non_parallel",
     )
 
     cmd = (
@@ -550,9 +548,7 @@ def test_workflow_import(
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
 
-    task_factory(
-        user_id=register_user["id"], name="task", source="PKG_SOURCE:dummy2"
-    )
+    task_factory(user_id=register_user["id"], name="task")
 
     # Fail due to missing --json-file argument
     with pytest.raises(SystemExit):

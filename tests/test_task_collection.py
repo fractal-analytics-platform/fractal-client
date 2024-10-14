@@ -167,7 +167,7 @@ def test_task_collection_custom(register_user, tmp_path, invoke, caplog):
 
     cmd = (
         f"task collect-custom --package-name {package_name} "
-        f"source {python_interpreter} {manifest}"
+        f"{python_interpreter} {manifest}"
     )
     res = invoke(cmd)
     assert res.retcode == 0
