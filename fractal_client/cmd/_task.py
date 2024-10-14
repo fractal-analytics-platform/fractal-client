@@ -64,7 +64,7 @@ def task_collect_pip(
 def task_collect_custom(
     client: AuthClient,
     *,
-    source: str,
+    label: str,
     python_interpreter: str,
     manifest: str,
     version: Optional[str] = None,
@@ -84,7 +84,7 @@ def task_collect_custom(
         )
 
     task_collect = dict(
-        source=source,
+        label=label,
         python_interpreter=python_interpreter,
         manifest=manifest_dict,
     )

@@ -244,7 +244,7 @@ task_collect_custom_parser = task_subparsers.add_parser(
     allow_abbrev=False,
 )
 task_collect_custom_parser.add_argument(
-    "source",
+    "label",
     help="A common label identifying this package.",
 )
 task_collect_custom_parser.add_argument(
