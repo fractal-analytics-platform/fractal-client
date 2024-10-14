@@ -314,7 +314,6 @@ task_new_parser.add_argument(
 task_new_parser.add_argument(
     "--command-parallel", help="The  parallel command that executes the task."
 )
-task_new_parser.add_argument("source", help="The source of the task")
 task_new_parser.add_argument(
     "--version",
     help="Task version.",

@@ -130,6 +130,7 @@ def test_repeated_task_collection(register_user, invoke, testdata_path):
     debug(res0)
 
     state_id = res0.data[0]  # extract id from batch string
+    debug(res0.data)
     assert res0.data == "1 .fractal/fractal-tasks-mock0.0.1"
 
     time.sleep(0.5)

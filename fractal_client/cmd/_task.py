@@ -132,7 +132,6 @@ def post_task(
     client: AuthClient,
     *,
     name: str,
-    source: str,
     batch: bool = False,
     command_non_parallel: Optional[str] = None,
     command_parallel: Optional[str] = None,
@@ -143,10 +142,7 @@ def post_task(
     args_schema_parallel: Optional[str] = None,
     args_schema_version: Optional[str] = None,
 ) -> Interface:
-    task = dict(
-        name=name,
-        source=source,
-    )
+    task = dict(name=name)
     if command_non_parallel:
         task["command_non_parallel"] = command_non_parallel
     if command_parallel:
@@ -184,7 +180,6 @@ def patch_task(
     name: Optional[str] = None,
     version: Optional[str] = None,
     new_name: Optional[str] = None,
-    new_version: Optional[str] = None,
     command_non_parallel: Optional[str] = None,
     command_parallel: Optional[str] = None,
     input_types: Optional[str] = None,
@@ -209,8 +204,6 @@ def patch_task(
     task_update = {}
     if new_name:
         task_update["name"] = new_name
-    if new_version:
-        task_update["version"] = new_version
     if command_non_parallel:
         task_update["command_non_parallel"] = command_non_parallel
     if command_parallel:

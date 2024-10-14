@@ -266,21 +266,6 @@ def workflow_export(
     )
     workflow = check_response(res, expected_status_code=200)
 
-    warnings = [
-        workflow_task["task"]["source"]
-        for workflow_task in workflow["task_list"]
-        if not workflow_task["task"]["source"].startswith(
-            ("pip_local:", "pip_remote:")
-        )
-    ]
-    if warnings:
-        sources_str = ", ".join([f"'{s}'" for s in warnings])
-        logging.warning(
-            "This workflow includes custom tasks (the ones with sources: "
-            f"{sources_str}), which are not meant to be portable; "
-            "re-importing this workflow may not work as expected."
-        )
-
     with Path(json_file).open("w") as f:
         json.dump(workflow, f, indent=2)
     return Interface(

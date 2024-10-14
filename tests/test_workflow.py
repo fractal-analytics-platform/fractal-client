@@ -228,7 +228,7 @@ def test_workflow_add_task(
     # Add a WorkflowTask by Task.name with the --batch option
     cmd_batch = (
         f"--batch workflow add-task {project_id} {wf.id} "
-        f"--task-name {t.name} --order 1 --args-parallel {args_parallel_file}"
+        f"--task-name {t.name} --args-parallel {args_parallel_file}"
     )
     debug(cmd_batch)
     res = invoke(cmd_batch)
@@ -257,7 +257,6 @@ def test_workflow_add_task(
     t_non_parallel = task_factory(
         user_id=register_user["id"],
         type="non_parallel",
-        source="source non_parallel",
     )
 
     cmd_meta = (
@@ -505,9 +504,7 @@ def test_workflow_edit_task(
 
     # Add a WorkflowTask with meta-non-parallel args
     t_non_parallel = task_factory(
-        user_id=register_user["id"],
-        type="non_parallel",
-        source="source non_parallel",
+        user_id=register_user["id"], type="non_parallel"
     )
 
     cmd = (
@@ -620,12 +617,9 @@ def test_workflow_export(
     assert res.retcode == 0
 
     res = invoke(f"workflow export {prj_id} {wf_id} --json-file {filename}")
+    debug(res.data)
     assert res.retcode == 0
-    assert caplog.records[-1].msg == (
-        "This workflow includes custom tasks (the ones with sources: "
-        f"'{task.source}'), which are not meant to be portable; "
-        "re-importing this workflow may not work as expected."
-    )
+
     debug(res.data)
     with open(filename, "r") as f:
         exported_wf = json.load(f)

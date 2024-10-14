@@ -161,11 +161,7 @@ def task_factory(db):
     from fractal_server.app.models.v2.task import TaskGroupV2
 
     def _task_factory(user_id: int, **task_args_override):
-        task_args = dict(
-            name="test_task",
-            type="parallel",
-            source="source",
-        )
+        task_args = dict(name="test_task", type="parallel")
         task_args.update(task_args_override)
         t = TaskV2(**task_args)
 
