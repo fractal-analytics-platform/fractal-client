@@ -158,16 +158,22 @@ def db(testserver):
 @pytest.fixture
 def task_factory(db):
     from fractal_server.app.models.v2.task import TaskV2
+    from fractal_server.app.models.v2.task import TaskGroupV2
 
-    def _task_factory(**task_args_override):
-        task_args = dict(
-            name="test_task",
-            type="parallel",
-            source="source",
-        )
+    def _task_factory(user_id: int, **task_args_override):
+        task_args = dict(name="test_task", type="parallel")
         task_args.update(task_args_override)
         t = TaskV2(**task_args)
-        db.add(t)
+
+        db.add(
+            TaskGroupV2(
+                user_id=user_id,
+                origin="other",
+                pkg_name=t.name,
+                task_list=[t],
+            )
+        )
+
         db.commit()
         db.refresh(t)
         return t
