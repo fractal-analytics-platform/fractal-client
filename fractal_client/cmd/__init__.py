@@ -141,6 +141,7 @@ def task(
         iface = task_collect_pip(client, batch=batch, **function_kwargs)
     elif subcmd == "collect-custom":
         parameters = [
+            "source",
             "python_interpreter",
             "manifest",
             "version",

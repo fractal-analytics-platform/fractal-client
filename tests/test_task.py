@@ -102,7 +102,7 @@ def test_task_edit(
         json.dump(meta, f)
 
     task = invoke(
-        "task new _name --command-parallel _command "
+        "task new _name  _source --command-parallel _command "
         f"--version _version --meta-parallel {meta_path} "
         f"--args-schema-parallel {args_path} "
         f"--args-schema-version 1.0.0"
@@ -137,7 +137,7 @@ def test_task_edit(
 
     task_np = invoke(
         (
-            f"task new _name_np "
+            f"task new _name_np _source_np "
             f"--command-non-parallel _command_np "
             f"--version 1.0.1 --meta-non-parallel {meta_path}"
         )
@@ -253,7 +253,7 @@ def test_task_delete(
 
     task = invoke(
         (
-            f"task new {NAME} --command-parallel _command "
+            f"task new {NAME}  _source --command-parallel _command "
             f"--version {VERSION} --meta-parallel {meta_path}"
         )
     )
