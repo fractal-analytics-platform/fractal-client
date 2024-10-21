@@ -141,7 +141,7 @@ def task(
         iface = task_collect_pip(client, batch=batch, **function_kwargs)
     elif subcmd == "collect-custom":
         parameters = [
-            "source",
+            "label",
             "python_interpreter",
             "manifest",
             "version",
@@ -157,7 +157,6 @@ def task(
     elif subcmd == "new":
         parameters = [
             "name",
-            "source",
             "version",
             "command_non_parallel",
             "command_parallel",
@@ -174,8 +173,6 @@ def task(
             "id",
             "name",
             "version",
-            "new_name",
-            "new_version",
             "command_non_parallel",
             "command_parallel",
             "input_types",

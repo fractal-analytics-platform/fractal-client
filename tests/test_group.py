@@ -34,13 +34,13 @@ def test_group_commands(user_factory, invoke_as_superuser):
     # create 3 standard users (by default in default group)
     user1 = user_factory(email="user1@fractal.xy", password="psw1")
     user1_id = user1["id"]
-    assert user1["group_ids"] == [default_group_id]
+    assert user1["group_ids_names"] == [[default_group_id, "All"]]
     user2 = user_factory(email="user2@fractal.xy", password="psw2")
     user2_id = user2["id"]
-    assert user2["group_ids"] == [default_group_id]
+    assert user2["group_ids_names"] == [[default_group_id, "All"]]
     user3 = user_factory(email="user3@fractal.xy", password="psw3")
     user3_id = user3["id"]
-    assert user3["group_ids"] == [default_group_id]
+    assert user3["group_ids_names"] == [[default_group_id, "All"]]
 
     res = invoke_as_superuser("group list --user-ids")
     assert len(res.data) == 1
