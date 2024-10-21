@@ -264,7 +264,7 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path):
     with pytest.raises(SystemExit, match="File does not exist."):
         res = invoke_as_superuser(cmd)
 
-    # Failure due to invalid keys file
+    # Failure due to invalid keys
     ssh_settings_file = tmp_path / "invalid-ssh.json"
     with ssh_settings_file.open("w") as f:
         json.dump(
