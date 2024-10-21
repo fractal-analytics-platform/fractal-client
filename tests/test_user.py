@@ -1,3 +1,4 @@
+import json
 from os import environ
 
 import pytest
@@ -182,6 +183,100 @@ def test_edit_as_superuser(
         debug(res.data)
         assert res.retcode == 0
         assert res.data["is_verified"]
+
+
+def test_edit_user_settings(invoke_as_superuser, tmp_path):
+
+    EMPTY_USER_SETTINGS = {
+        "ssh_host": None,
+        "ssh_username": None,
+        "ssh_private_key_path": None,
+        "ssh_tasks_dir": None,
+        "ssh_jobs_dir": None,
+        "slurm_user": None,
+        "slurm_accounts": [],
+        "cache_dir": None,
+    }
+    SSH_HOST = "something.somewhere"
+    SSH_PRIVATE_KEY_PATH = "/tmp/something.key"
+    NEW_USER_SETTINGS = {
+        "ssh_host": SSH_HOST,
+        "ssh_username": None,
+        "ssh_private_key_path": SSH_PRIVATE_KEY_PATH,
+        "ssh_tasks_dir": None,
+        "ssh_jobs_dir": None,
+        "slurm_user": None,
+        "slurm_accounts": [],
+        "cache_dir": None,
+    }
+
+    # Register a new user
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    assert res.retcode == 0
+    user_id = res.data["id"]
+
+    # Check empty user settings
+    res = invoke_as_superuser(f"user show {user_id}")
+    assert res.retcode == 0
+    user_settings = {
+        key: value
+        for key, value in res.data["settings"].items()
+        if key != "id"
+    }
+    debug(user_settings)
+    assert user_settings == EMPTY_USER_SETTINGS
+
+    # Call fractal user edit
+    ssh_settings_file = tmp_path / "ssh.json"
+    with ssh_settings_file.open("w") as f:
+        json.dump(
+            {
+                "ssh_host": SSH_HOST,
+                "ssh_private_key_path": SSH_PRIVATE_KEY_PATH,
+            },
+            f,
+        )
+    cmd = (
+        f"user edit {user_id} "
+        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
+    )
+    res = invoke_as_superuser(cmd)
+    assert res.retcode == 0
+    debug(res.data)
+
+    # Check edited user settings
+    res = invoke_as_superuser(f"user show {user_id}")
+    assert res.retcode == 0
+    user_settings = {
+        key: value
+        for key, value in res.data["settings"].items()
+        if key != "id"
+    }
+    debug(user_settings)
+    assert user_settings == NEW_USER_SETTINGS
+
+    # Failure due to missing file
+    ssh_settings_file = tmp_path / "invalid-ssh.json"
+    cmd = (
+        f"user edit {user_id} "
+        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
+    )
+    with pytest.raises(SystemExit, match="File does not exist."):
+        res = invoke_as_superuser(cmd)
+
+    # Failure due to invalid keys file
+    ssh_settings_file = tmp_path / "invalid-ssh.json"
+    with ssh_settings_file.open("w") as f:
+        json.dump(
+            dict(invalid="invalid"),
+            f,
+        )
+    cmd = (
+        f"user edit {user_id} "
+        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
+    )
+    with pytest.raises(SystemExit, match="Invalid key"):
+        res = invoke_as_superuser(cmd)
 
 
 def test_edit_arguments(invoke_as_superuser):
