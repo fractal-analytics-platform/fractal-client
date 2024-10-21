@@ -1,5 +1,6 @@
 import json
 import sys
+from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Optional
 
@@ -137,7 +138,10 @@ def user_edit(
         if not new_ssh_settings_json_path.exists():
             sys.exit(f"Invalid {new_ssh_settings_json=}. File does not exist.")
         with new_ssh_settings_json_path.open("r") as f:
-            ssh_settings = json.load(f)
+            try:
+                ssh_settings = json.load(f)
+            except JSONDecodeError:
+                sys.exit(f"{new_ssh_settings_json_path} is not a valid JSON.")
         __ALLOWED_KEYS__ = (
             "ssh_host",
             "ssh_username",

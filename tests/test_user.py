@@ -264,6 +264,17 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path):
     with pytest.raises(SystemExit, match="File does not exist."):
         res = invoke_as_superuser(cmd)
 
+    # Failure due to file not being a valid JSON
+    invalid_json = tmp_path / "invalid-json.foo"
+    with invalid_json.open("w") as f:
+        f.write("hello world")
+    cmd = (
+        f"user edit {user_id} "
+        f"--new-ssh-settings-json {invalid_json.as_posix()}"
+    )
+    with pytest.raises(SystemExit, match="not a valid JSON"):
+        res = invoke_as_superuser(cmd)
+
     # Failure due to invalid keys
     ssh_settings_file = tmp_path / "invalid-ssh.json"
     with ssh_settings_file.open("w") as f:
