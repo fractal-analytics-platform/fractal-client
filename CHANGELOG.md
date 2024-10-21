@@ -1,5 +1,12 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.3.0
+
+* Align with [`fractal-server` 2.7.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#270) (\#712).
+* Remove `--new-name` and `--new-version` options from `task edit` command (\#712).
+* Rename `source` into `label` `task collect-custom` command (\#712).
+* Do not rely on tasks' `source` or `owner` attributes (\#712).
+
 # 2.2.1
 
 * Support new `viewer-paths` commands in `fractal group` commands (\#709).
@@ -8,7 +15,7 @@
 
 # 2.2.0
 
-* Align with [`fractal-server` 2.6.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#240) (\#705).
+* Align with [`fractal-server` 2.6.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#260) (\#705).
 
 # 2.1.0
 
