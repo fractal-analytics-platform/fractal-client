@@ -35,7 +35,7 @@ pre-commit = "^2.19.0"
 pytest = "^7.1.2"
 bumpver = "^2022.1118"
 coverage = {extras = ["toml"], version = "^6.5.0"}
-fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "task-export-v2-validator", extras = ["postgres-psycopg-binary"] }
+fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "main", extras = ["postgres-psycopg-binary"] }
 
 
 [tool.poetry.group.docs]
