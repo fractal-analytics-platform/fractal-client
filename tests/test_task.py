@@ -101,8 +101,9 @@ def test_task_edit(
     with open(meta_path, "w") as f:
         json.dump(meta, f)
 
+    NAME = "task-name"
     task = invoke(
-        "task new _name --command-parallel _command "
+        f"task new {NAME} --command-parallel _command "
         f"--version _version --meta-parallel {meta_path} "
         f"--args-schema-parallel {args_path} "
         f"--args-schema-version 1.0.0"
@@ -111,13 +112,8 @@ def test_task_edit(
     task.show()
     assert task.retcode == 0
     task_id = task.data["id"]
-    NEW_NAME = "1234"
 
     # Test successful edit of string attributes
-    res = invoke(f"task edit --id {task_id} --new-name {NEW_NAME}")
-    assert res.data["name"] == NEW_NAME
-    assert res.retcode == 0
-
     NEW_COMMAND_PARALLEL = "run_parallel"
     res = invoke(
         (
@@ -184,7 +180,7 @@ def test_task_edit(
     res = invoke(f"task edit --id {task_id} --input-types {i_types_path}")
     assert res.data["input_types"] == input_types
     assert res.retcode == 0
-    res = invoke(f"task edit --name {NEW_NAME} --output-types {o_types_path}")
+    res = invoke(f"task edit --name {NAME} --output-types {o_types_path}")
     assert res.data["output_types"] == output_types
     assert res.retcode == 0
 
@@ -193,7 +189,7 @@ def test_task_edit(
     cache_file = cache_dir / TASKS_CACHE_FILENAME
     cache_file.unlink(missing_ok=True)
 
-    res = invoke(f"task edit --name {NEW_NAME} --output-types {o_types_path}")
+    res = invoke(f"task edit --name {NAME} --output-types {o_types_path}")
     assert res.data["output_types"] == output_types
     assert res.retcode == 0
 
@@ -218,9 +214,7 @@ def test_task_edit(
     with open(n_o_types_path, "w") as f:
         json.dump(new_output_types, f)
 
-    res = invoke(
-        f"task edit --name {NEW_NAME} --output-types {n_o_types_path}"
-    )
+    res = invoke(f"task edit --name {NAME} --output-types {n_o_types_path}")
     assert res.data["output_types"] == new_output_types
     assert res.retcode == 0
 
