@@ -6,6 +6,7 @@
 * Remove `--new-name` and `--new-version` options from `task edit` command (\#712).
 * Rename `source` into `label` `task collect-custom` command (\#712).
 * Do not rely on tasks' `source` or `owner` attributes (\#712).
+* Add `--new-ssh-settings-json` to `fractal user edit` (\#715).
 
 # 2.2.1
 
