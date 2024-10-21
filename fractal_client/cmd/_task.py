@@ -179,7 +179,6 @@ def patch_task(
     id: Optional[int] = None,
     name: Optional[str] = None,
     version: Optional[str] = None,
-    new_name: Optional[str] = None,
     command_non_parallel: Optional[str] = None,
     command_parallel: Optional[str] = None,
     input_types: Optional[str] = None,
@@ -202,8 +201,6 @@ def patch_task(
             sys.exit(1)
 
     task_update = {}
-    if new_name:
-        task_update["name"] = new_name
     if command_non_parallel:
         task_update["command_non_parallel"] = command_non_parallel
     if command_parallel:

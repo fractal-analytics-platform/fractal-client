@@ -173,7 +173,6 @@ def task(
             "id",
             "name",
             "version",
-            "new_name",
             "command_non_parallel",
             "command_parallel",
             "input_types",

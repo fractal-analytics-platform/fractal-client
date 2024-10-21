@@ -367,7 +367,6 @@ task_edit_parser.add_argument(
         "(only accepted in combination with `--name`)."
     ),
 )
-task_edit_parser.add_argument("--new-name", help="New task name.")
 task_edit_parser.add_argument("--new-version", help="New task version.")
 task_edit_parser.add_argument(
     "--command-non-parallel", help="New task non parallel command."
