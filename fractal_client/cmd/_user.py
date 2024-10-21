@@ -1,3 +1,7 @@
+import json
+import sys
+from json.decoder import JSONDecodeError
+from pathlib import Path
 from typing import Optional
 
 from ..authclient import AuthClient
@@ -89,9 +93,10 @@ def user_edit(
     user_id: str,
     new_email: Optional[str] = None,
     new_password: Optional[str] = None,
+    new_username: Optional[str] = None,
     new_slurm_user: Optional[str] = None,
     new_cache_dir: Optional[str] = None,
-    new_username: Optional[str] = None,
+    new_ssh_settings_json: Optional[str] = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
     make_verified: bool = False,
@@ -128,6 +133,27 @@ def user_edit(
         settings_update["cache_dir"] = new_cache_dir
     if new_slurm_user is not None:
         settings_update["slurm_user"] = new_slurm_user
+    if new_ssh_settings_json is not None:
+        new_ssh_settings_json_path = Path(new_ssh_settings_json)
+        if not new_ssh_settings_json_path.exists():
+            sys.exit(f"Invalid {new_ssh_settings_json=}. File does not exist.")
+        with new_ssh_settings_json_path.open("r") as f:
+            try:
+                ssh_settings = json.load(f)
+            except JSONDecodeError:
+                sys.exit(f"{new_ssh_settings_json_path} is not a valid JSON.")
+        __ALLOWED_KEYS__ = (
+            "ssh_host",
+            "ssh_username",
+            "ssh_private_key_path",
+            "ssh_tasks_dir",
+            "ssh_jobs_dir",
+        )
+        for key, value in ssh_settings.items():
+            if key in __ALLOWED_KEYS__:
+                settings_update[key] = value
+            else:
+                sys.exit(f"Invalid {key=} in {new_ssh_settings_json=}.")
 
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/", json=user_update

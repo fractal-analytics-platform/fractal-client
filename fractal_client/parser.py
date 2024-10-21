@@ -846,6 +846,9 @@ user_edit_parser.add_argument(
     "--new-password", help="New password.", required=False
 )
 user_edit_parser.add_argument(
+    "--new-username", help="New user username.", required=False
+)
+user_edit_parser.add_argument(
     "--new-cache-dir",
     help=(
         "New user's cache directory absolute path "
@@ -856,9 +859,18 @@ user_edit_parser.add_argument(
 user_edit_parser.add_argument(
     "--new-slurm-user", help="New SLURM username.", required=False
 )
+
 user_edit_parser.add_argument(
-    "--new-username", help="New user username.", required=False
+    "--new-ssh-settings-json",
+    help=(
+        "Path to JSON file with (a subset of) following settings: "
+        "ssh_host, ssh_username, ssh_private_key_path, "
+        "ssh_tasks_dir, ssh_jobs_dir."
+    ),
+    type=str,
+    required=False,
 )
+
 user_edit_parser_superuser = user_edit_parser.add_mutually_exclusive_group()
 user_edit_parser_superuser.add_argument(
     "--make-superuser",

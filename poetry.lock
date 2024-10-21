@@ -649,18 +649,18 @@ pytest = ["pytest (>=7)"]
 
 [[package]]
 name = "fastapi"
-version = "0.112.4"
+version = "0.115.2"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "fastapi-0.112.4-py3-none-any.whl", hash = "sha256:6d4f9c3301825d4620665cace8e2bc34e303f61c05a5382d1d61a048ea7f2f37"},
-    {file = "fastapi-0.112.4.tar.gz", hash = "sha256:b1f72e1f72afe7902ccd639ba320abb5d57a309804f45c10ab0ce3693cadeb33"},
+    {file = "fastapi-0.115.2-py3-none-any.whl", hash = "sha256:61704c71286579cc5a598763905928f24ee98bfcc07aabe84cfefb98812bbc86"},
+    {file = "fastapi-0.115.2.tar.gz", hash = "sha256:3995739e0b09fa12f984bce8fa9ae197b35d433750d3d312422d846e283697ee"},
 ]
 
 [package.dependencies]
 pydantic = ">=1.7.4,<1.8 || >1.8,<1.8.1 || >1.8.1,<2.0.0 || >2.0.0,<2.0.1 || >2.0.1,<2.1.0 || >2.1.0,<3.0.0"
-starlette = ">=0.37.2,<0.39.0"
+starlette = ">=0.37.2,<0.41.0"
 typing-extensions = ">=4.8.0"
 
 [package.extras]
@@ -711,7 +711,7 @@ typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
 name = "fractal-server"
-version = "2.7.0a7"
+version = "2.7.0a8"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.9"
@@ -725,7 +725,7 @@ bcrypt = "4.0.1"
 cloudpickle = ">=3.0.0,<3.1.0"
 clusterfutures = "^0.5"
 fabric = "^3.2.2"
-fastapi = "^0.112.0"
+fastapi = "^0.115.0"
 fastapi-users = {version = "^12.1.0", extras = ["oauth"]}
 packaging = "^23.2"
 psutil = "^5.9.8"
@@ -746,7 +746,7 @@ postgres-psycopg-binary = ["psycopg[binary] (>=3.1.0,<4.0.0)"]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "65c4b5e8a65172cac001ebfa5716e854a5bde349"
+resolved_reference = "e4542238f7b816f5e712ac3cbc5fb0f38656d309"
 
 [[package]]
 name = "ghp-import"
@@ -2193,13 +2193,13 @@ SQLAlchemy = ">=2.0.14,<2.1.0"
 
 [[package]]
 name = "starlette"
-version = "0.38.6"
+version = "0.40.0"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "starlette-0.38.6-py3-none-any.whl", hash = "sha256:4517a1409e2e73ee4951214ba012052b9e16f60e90d73cfb06192c19203bbb05"},
-    {file = "starlette-0.38.6.tar.gz", hash = "sha256:863a1588f5574e70a821dadefb41e4881ea451a47a3cd1b4df359d4ffefe5ead"},
+    {file = "starlette-0.40.0-py3-none-any.whl", hash = "sha256:c494a22fae73805376ea6bf88439783ecfba9aac88a43911b48c653437e784c4"},
+    {file = "starlette-0.40.0.tar.gz", hash = "sha256:1a3139688fb298ce5e2d661d37046a66ad996ce94be4d4983be019a23a04ea35"},
 ]
 
 [package.dependencies]
