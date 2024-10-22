@@ -93,6 +93,7 @@ def testserver():
         if server_process.poll() is None:
             os.kill(server_process.pid, signal.SIGTERM)
             server_process.wait()
+        env_file.unlink()
 
 
 @pytest.fixture
