@@ -1,5 +1,4 @@
 import shlex
-from os import environ
 
 import httpx
 import pytest
@@ -7,9 +6,6 @@ from devtools import debug
 
 from fractal_client import __VERSION__
 from fractal_client.client import handle
-
-
-DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
 def test_debug(invoke):
@@ -36,12 +32,12 @@ def test_server():
     assert res.status_code == 200
 
 
-def test_register_user(register_user, invoke):
+def test_register_user(tester, invoke):
     res = invoke("user whoami")
     user = res.data
     debug(user)
     assert res.retcode == 0
-    assert user["email"] == DEFAULT_TEST_EMAIL
+    assert user["email"] == tester["email"]
 
 
 def test_user_override(user_factory, invoke):
