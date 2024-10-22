@@ -1,0 +1,12 @@
+DB_ENGINE=postgres-psycopg
+POSTGRES_DB=fractal_client_test
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+FRACTAL_RUNNER_BACKEND=local
+JWT_SECRET_KEY=secret_key
+FRACTAL_TASKS_DIR=FRACTAL_TASKS_DIR
+FRACTAL_RUNNER_WORKING_BASE_DIR=FRACTAL_RUNNER_WORKING_BASE_DIR
+FRACTAL_LOGGING_LEVEL=10
+
+poetry run fractalctl set-db
+poetry run fractalctl start --port 10080

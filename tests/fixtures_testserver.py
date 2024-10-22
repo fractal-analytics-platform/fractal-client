@@ -1,13 +1,12 @@
 import logging
+import os
+import signal
+import subprocess
 import time
-from multiprocessing import Process
-from os import environ
 from typing import Optional
 
 import httpx
 import pytest
-import uvicorn
-from sqlmodel import select
 
 
 logger = logging.getLogger("fractal-client")
@@ -16,98 +15,14 @@ logger.setLevel(logging.DEBUG)
 PORT = 10080
 
 
-@pytest.fixture(scope="session")
-def override_server_settings(tmp_path_factory):
-
-    from fractal_server.config import Settings, get_settings
-    from fractal_server.syringe import Inject
-
-    settings = Settings()
-
-    settings.DB_ENGINE = "postgres-psycopg"
-    settings.POSTGRES_DB = "fractal_client_test"
-    settings.POSTGRES_USER = "postgres"
-    settings.POSTGRES_PASSWORD = "postgres"
-
-    settings.FRACTAL_RUNNER_BACKEND = "local"
-
-    settings.JWT_SECRET_KEY = "secret_key"
-    base_folder = tmp_path_factory.mktemp("tmp_path")
-    settings.FRACTAL_TASKS_DIR = base_folder / "FRACTAL_TASKS_DIR"
-    settings.FRACTAL_RUNNER_WORKING_BASE_DIR = (
-        base_folder / "FRACTAL_RUNNER_WORKING_BASE_DIR"
-    )
-    settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
-    settings.FRACTAL_API_SUBMIT_RATE_LIMIT = 0
-
-    def _get_settings():
-        return settings
-
-    Inject.override(get_settings, _get_settings)
-    try:
-        yield
-    finally:
-        Inject.pop(get_settings)
-
-
 @pytest.fixture(scope="session", autouse=True)
-def testserver(override_server_settings):
+def testserver(tmp_path_factory):
 
-    from fractal_server.app.db import DB
-    from fractal_server.app.models.security import SQLModel
-    from fractal_server.app.models.security import UserOAuth
-    from fractal_server.app.models.user_settings import UserSettings
-    from fractal_server.app.models.security import UserGroup
-    from fractal_server.app.models.linkusergroup import LinkUserGroup
-    from fractal_server.app.security import _create_first_group
-
-    # INIT DB
-    engine_sync = DB.engine_sync()
-    logger.debug(engine_sync.url)
-    SQLModel.metadata.create_all(engine_sync)
-
-    # Create default group and first superuser
-    # NOTE: we have to do it here, because we are not calling the `set_db`
-    # function from fractal-server. This would change with
-    # https://github.com/fractal-analytics-platform/fractal-client/issues/697
-    # NOTE: `hashed_password` is the bcrypt hash of "1234", see
-    # https://github.com/fractal-analytics-platform/fractal-server/issues/1750
-    _create_first_group()
-    with next(DB.get_sync_db()) as db:
-        user = UserOAuth(
-            email="admin@fractal.xy",
-            hashed_password=(
-                "$2b$12$K0C4t7XILgpcQx35V3QE3enOODQ1IH9pzW49nqjHbrx2uQTMVYsQC"
-            ),
-            username=environ["FRACTAL_USERNAME"],
-            is_superuser=True,
-            is_verified=True,
-            is_active=True,
-        )
-        empty_user_settings = UserSettings()
-        user.settings = empty_user_settings
-        db.add(user)
-        db.commit()
-
-        first_group = db.execute(select(UserGroup)).scalar()
-        first_user = db.execute(select(UserOAuth)).scalar()
-
-        link = LinkUserGroup(group_id=first_group.id, user_id=first_user.id)
-        db.add(link)
-        db.commit()
-
-    # Run testserver in a separate process
-    # cf. https://stackoverflow.com/a/57816608/283972
-    def run_server():
-        uvicorn.run(
-            "fractal_server.main:app",
-            port=PORT,
-            log_level="debug",
-            timeout_keep_alive=10,
-        )
-
-    proc = Process(target=run_server, args=(), daemon=True)
-    proc.start()
+    server_process = subprocess.Popen(
+        ["bash", "tests/run_test_server.sh"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
     # Wait until the server is up
     TIMEOUT = 8
@@ -127,22 +42,12 @@ def testserver(override_server_settings):
                     " in `testserver` fixture."
                 )
 
-    logger.debug(environ["FRACTAL_SERVER"])
-    yield environ["FRACTAL_SERVER"]
-
-    # Cleanup DB
-    engine_sync.dispose()
     try:
-        DB._engine_async
-        raise
-    except AttributeError:
-        # we show here that we do not need to dispose of `engine_async`,
-        # because it is never used.
-        pass
-    SQLModel.metadata.drop_all(engine_sync)
-    logger.debug("Dropped all tables from the database.")
-
-    proc.kill()
+        yield server_process
+    finally:
+        if server_process.poll() is None:
+            os.kill(server_process.pid, signal.SIGTERM)
+            server_process.wait()
 
 
 @pytest.fixture
@@ -195,7 +100,7 @@ def project_factory(invoke):
 @pytest.fixture
 def workflow_factory(invoke):
     def _workflow_factory(name: str, project_id: int):
-        res = invoke(f"worklow new {name} {project_id}")
+        res = invoke(f"workflow new {name} {project_id}")
         return res.data
 
     return _workflow_factory
