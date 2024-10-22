@@ -4,18 +4,11 @@ from os import environ
 from pathlib import Path
 
 import pytest
-from httpx import Client
-
-from fractal_client.client import handle
 
 
-# These three variables must be defined before the first import of config.py
+# This variable must be defined before the first import of config.py
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
-environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
-environ["FRACTAL_PASSWORD"] = "password"
-
-environ["FRACTAL_USERNAME"] = "myusername"
-
+from fractal_client.client import handle  # noqa: E402
 
 # set_start_method("fork") necessary to run tests on MacOS
 # https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228
@@ -40,12 +33,6 @@ def clear_cache(tmp_path, monkeypatch):
 @pytest.fixture(scope="session")
 def testdata_path() -> Path:
     return Path(__file__).parent / "data"
-
-
-@pytest.fixture
-def client():
-    with Client(timeout=10) as client:
-        yield client
 
 
 @pytest.fixture

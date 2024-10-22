@@ -8,9 +8,11 @@ from devtools import debug
 TIMEOUT = 15.0
 
 
-def test_workflow_new(register_user, invoke):
+def test_workflow_new(invoke):
     PROJECT_NAME = "project_name"
     res = invoke(f"project new {PROJECT_NAME}")
+    debug(res)
+    debug(res.data)
     proj = res.data
     assert proj["name"] == PROJECT_NAME
     project_id = proj["id"]
@@ -31,7 +33,7 @@ def test_workflow_new(register_user, invoke):
     assert isinstance(res.data, int)
 
 
-def test_workflow_delete(register_user, invoke):
+def test_workflow_delete(invoke):
     # Create project
     res_pj = invoke("project new project_name")
     assert res_pj.retcode == 0
@@ -59,7 +61,7 @@ def test_workflow_delete(register_user, invoke):
     assert len(res_list.data) == 0
 
 
-def test_workflow_edit(register_user, invoke):
+def test_workflow_edit(invoke):
     # Create a project
     res_pj = invoke("project new project_name_1")
     assert res_pj.retcode == 0
@@ -90,7 +92,7 @@ def test_workflow_edit(register_user, invoke):
     assert res.data["name"] == NAME
 
 
-def test_workflow_list(register_user, invoke):
+def test_workflow_list(invoke):
     PROJECT_NAME = "project_name"
     res_pj = invoke(f"project new {PROJECT_NAME}")
     project_id = res_pj.data["id"]
@@ -111,7 +113,7 @@ def test_workflow_list(register_user, invoke):
     assert len(res_list.data) == 2
 
 
-def test_workflow_list_when_two_projects_exist(register_user, invoke):
+def test_workflow_list_when_two_projects_exist(invoke):
     res_pj1 = invoke("project new PRJ1")
     res_pj2 = invoke("project new PRJ2")
     project_id_1 = res_pj1.data["id"]
@@ -140,7 +142,6 @@ def test_workflow_list_when_two_projects_exist(register_user, invoke):
 def test_workflow_add_task(
     caplog,
     invoke,
-    register_user,
     task_factory,
     workflow_factory,
     tmp_path: Path,

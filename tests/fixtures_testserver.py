@@ -6,10 +6,10 @@ import time
 from pathlib import Path
 from typing import Optional
 
+import fractal_server
 import httpx
 import pytest
 
-TESTER = dict(email="client_tester@fractal.xy", password="pytest")
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
@@ -17,8 +17,13 @@ logger.setLevel(logging.DEBUG)
 PORT = 10080
 
 
+@pytest.fixture(scope="session")
+def tester():
+    return dict(email="client_tester@fractal.xy", password="pytest")
+
+
 @pytest.fixture(scope="session", autouse=True)
-def testserver():
+def testserver(tester):
 
     env_file = Path(".fractal_server.env")
     with env_file.open("w") as f:
@@ -73,7 +78,7 @@ def testserver():
     res = httpx.post(
         f"http://localhost:{PORT}/auth/register/",
         headers=dict(Authorization=f"Bearer {token}"),
-        json=TESTER,
+        json=tester,
     )
     if res.status_code == 400:
         pass
@@ -93,6 +98,21 @@ def testserver():
         if server_process.poll() is None:
             os.kill(server_process.pid, signal.SIGTERM)
             server_process.wait()
+        alembic_ini = Path(fractal_server.__path__[0]) / "alembic.ini"
+        subprocess.run(
+            [
+                "poetry",
+                "run",
+                "alembic",
+                "--config",
+                alembic_ini.as_posix(),
+                "downgrade",
+                "base",
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         env_file.unlink()
 
 

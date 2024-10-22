@@ -1,19 +1,18 @@
 import pytest
 from devtools import debug
 
-from .fixtures_testserver import TESTER
 from fractal_client.authclient import AuthenticationError
 from fractal_client.authclient import AuthToken
 
 
-def test_auth_registered(client):
+def test_auth_registered(client, tester):
     """
     GIVEN an existing user
     WHEN fetching a token
     THEN authentication goes through
     """
     auth = AuthToken(
-        client, username=TESTER["email"], password=TESTER["password"]
+        client, username=tester["email"], password=tester["password"]
     )
     token = auth()
     assert token
