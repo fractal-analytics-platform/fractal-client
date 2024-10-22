@@ -123,4 +123,16 @@ def override_settings(monkeypatch, tmp_path):
     return _override_settings
 
 
+@pytest.fixture(scope="session")
+def new_name():
+    counter = 0
+
+    def _next_name():
+        nonlocal counter
+        counter += 1
+        return f"name{counter}"
+
+    return _next_name
+
+
 from .fixtures_testserver import *  # noqa: 401
