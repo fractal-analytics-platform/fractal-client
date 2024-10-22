@@ -6,7 +6,6 @@ import time
 from pathlib import Path
 from typing import Optional
 
-import fractal_server
 import httpx
 import pytest
 
@@ -98,17 +97,14 @@ def testserver(tester):
         if server_process.poll() is None:
             os.kill(server_process.pid, signal.SIGTERM)
             server_process.wait()
-        alembic_ini = Path(fractal_server.__path__[0]) / "alembic.ini"
         subprocess.run(
-            [
-                "poetry",
-                "run",
-                "alembic",
-                "--config",
-                alembic_ini.as_posix(),
-                "downgrade",
-                "base",
-            ],
+            ["dropdb", "fractal_client_test"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        subprocess.run(
+            ["createdb", "fractal_client_test"],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
