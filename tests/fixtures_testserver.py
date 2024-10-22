@@ -9,6 +9,7 @@ from typing import Optional
 import httpx
 import pytest
 
+TESTER = dict(email="client_tester@fractal.xy", password="pytest")
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
@@ -72,7 +73,7 @@ def testserver():
     res = httpx.post(
         f"http://localhost:{PORT}/auth/register/",
         headers=dict(Authorization=f"Bearer {token}"),
-        json=dict(email="client_tester@fractal.xy", password="pytest"),
+        json=TESTER,
     )
     if res.status_code == 400:
         pass

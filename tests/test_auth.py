@@ -1,22 +1,19 @@
-from os import environ
-
 import pytest
 from devtools import debug
 
+from .fixtures_testserver import TESTER
 from fractal_client.authclient import AuthenticationError
 from fractal_client.authclient import AuthToken
 
 
-def test_auth_registered(client, register_user):
+def test_auth_registered(client):
     """
     GIVEN an existing user
     WHEN fetching a token
     THEN authentication goes through
     """
     auth = AuthToken(
-        client,
-        username=environ.get("FRACTAL_USER"),
-        password=environ.get("FRACTAL_PASSWORD"),
+        client, username=TESTER["email"], password=TESTER["password"]
     )
     token = auth()
     assert token
