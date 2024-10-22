@@ -43,7 +43,7 @@ def testserver():
                 )
 
     try:
-        yield server_process
+        yield
     finally:
         if server_process.poll() is None:
             os.kill(server_process.pid, signal.SIGTERM)
