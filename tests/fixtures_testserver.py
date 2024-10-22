@@ -97,18 +97,11 @@ def testserver(tester):
         if server_process.poll() is None:
             os.kill(server_process.pid, signal.SIGTERM)
             server_process.wait()
-        subprocess.run(
-            ["dropdb", "fractal_client_test"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        subprocess.run(
-            ["createdb", "fractal_client_test"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        from fractal_server.app.db import DB
+        from fractal_server.app.models.security import SQLModel
+
+        DB.engine_sync().dispose()
+        SQLModel.metadata.drop_all(DB.engine_sync())
         env_file.unlink()
 
 
