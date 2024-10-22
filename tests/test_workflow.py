@@ -156,8 +156,9 @@ def test_workflow_add_task(
     """
     res = invoke("project new MyProject")
     project_id = res.data["id"]
-    wf = workflow_factory(project_id=project_id)
-    t = task_factory(user_id=register_user["id"], type="parallel")
+
+    wf = workflow_factory(name="wf", project_id=project_id)
+    t = task_factory(name="task", command_parallel="pwd")
 
     INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
     ARGS_PARALLEL = {"image_dir": "/asdasd"}
@@ -185,7 +186,7 @@ def test_workflow_add_task(
     with meta_non_parallel_file.open("w") as f:
         json.dump(META_NON_PARALLEL, f)
 
-    cmd = f"workflow add-task {project_id} {wf.id}"
+    cmd = f"workflow add-task {project_id} {wf['id']}"
     # Test fail with no task_id nor task_name
     with pytest.raises(SystemExit):
         invoke(cmd)
@@ -193,7 +194,7 @@ def test_workflow_add_task(
     with pytest.raises(SystemExit):
         invoke(
             (
-                f"{cmd} --task-id {t.id} --task-name {t.name} "
+                f"{cmd} --task-id {t['id']} --task-name {t['name']} "
                 f"--args-parallel {args_parallel_file}"
             )
         )
@@ -201,7 +202,7 @@ def test_workflow_add_task(
     with pytest.raises(SystemExit):
         invoke(
             (
-                f"{cmd} --task-id {t.id} --task-version 1.2.3.4.5.6 "
+                f"{cmd} --task-id {t['id']} --task-version 1.2.3.4.5.6 "
                 f"--args-parallel {args_parallel_file}"
             )
         )
@@ -210,7 +211,7 @@ def test_workflow_add_task(
     )
 
     cmd_args = (
-        f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
+        f"{cmd} --task-id {t['id']} --input-filters {input_filters_file} "
         f"--args-parallel {args_parallel_file} "
     )
     debug(cmd_args)
@@ -227,8 +228,8 @@ def test_workflow_add_task(
 
     # Add a WorkflowTask by Task.name with the --batch option
     cmd_batch = (
-        f"--batch workflow add-task {project_id} {wf.id} "
-        f"--task-name {t.name} --args-parallel {args_parallel_file}"
+        f"--batch workflow add-task {project_id} {wf['id']} "
+        f"--task-name {t['name']} --args-parallel {args_parallel_file}"
     )
     debug(cmd_batch)
     res = invoke(cmd_batch)
@@ -238,7 +239,7 @@ def test_workflow_add_task(
 
     # Add a WorkflowTask with meta-parallel args
     cmd_meta = (
-        f"{cmd} --task-id {t.id} --input-filters {input_filters_file} "
+        f"{cmd} --task-id {t['id']} --input-filters {input_filters_file} "
         f"--args-parallel {args_parallel_file} "
         f"--meta-parallel {meta_parallel_file} "
     )
@@ -255,12 +256,12 @@ def test_workflow_add_task(
 
     # Add a WorkflowTask with meta-non-parallel args
     t_non_parallel = task_factory(
-        user_id=register_user["id"],
-        type="non_parallel",
+        name="task",
+        command_non_parallel="pwd",
     )
 
     cmd_meta = (
-        f"{cmd} --task-id {t_non_parallel.id} "
+        f"{cmd} --task-id {t_non_parallel['id']} "
         f"--input-filters {input_filters_file} "
         f"--args-non-parallel {args_non_parallel_file} "
         f"--meta-non-parallel {meta_non_parallel_file}"
