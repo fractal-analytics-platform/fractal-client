@@ -8,6 +8,7 @@ from typing import Optional
 import httpx
 import pytest
 
+from fractal_client.authclient import AuthClient
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
@@ -41,6 +42,26 @@ def testserver():
                     f"Could not start up server within {TIMEOUT} seconds,"
                     " in `testserver` fixture."
                 )
+
+    # Register register user if not already registered
+    with AuthClient(
+        username="admin@fractal.xy", password="1234"
+    ) as client_superuser:
+        res = client_superuser.post(
+            f"http://localhost:{PORT}/auth/register/",
+            json=dict(email="client_tester@fractal.xy", password="pytest"),
+        )
+        if res.status_code == 201:
+            user_id = res.json()["id"]
+            res = client_superuser.patch(
+                f"http://localhost:{PORT}/auth/users/{user_id}/",
+                json=dict(is_verified=True),
+            )
+            assert res.status_code == 200
+        elif res.status_code == 400:
+            pass
+        else:
+            raise RuntimeError("Error obtained by registering the tester user")
 
     try:
         yield
@@ -132,42 +153,27 @@ def job_factory(invoke):
 
 
 @pytest.fixture
-def user_factory(client_superuser):
-    def __register_user(
+def user_factory(invoke_as_superuser):
+    def __user_factory(
         email: str,
         password: str,
+        cache_dir: Optional[str] = None,
         slurm_user: Optional[str] = None,
         username: Optional[str] = None,
+        superuser: bool = False,
     ):
-        # Prepare payload
-        new_user = dict(email=email, password=password)
-        if slurm_user:
-            new_user["slurm_user"] = slurm_user
-        if username:
-            new_user["username"] = username
-        # Register user via API call
-        res = client_superuser.post(
-            f"http://localhost:{PORT}/auth/register/",
-            json=new_user,
-        )
-        assert res.status_code == 201
-        user_id = res.json()["id"]
-        # Make user verified via API call
-        res = client_superuser.patch(
-            f"http://localhost:{PORT}/auth/users/{user_id}/",
-            json=dict(is_verified=True),
-        )
-        assert res.status_code == 200
-        return res.json()
+        cmd = "user register"
+        if cache_dir is not None:
+            cmd += f" --cache-dir {cache_dir}"
+        if slurm_user is not None:
+            cmd += f" --slurm-user {slurm_user}"
+        if username is not None:
+            cmd += f" --username {username}"
+        if superuser is True:
+            cmd += " --superuser"
+        cmd += f" {email} {password}"
 
-    return __register_user
+        res = invoke_as_superuser(cmd)
+        return res.data
 
-
-@pytest.fixture
-def register_user(user_factory, tmp_path, override_settings):
-    user = tmp_path.as_posix().split("/")[-1]
-    created_user = user_factory(
-        email=f"{user}@fractal.xy", password=user, username=user
-    )
-    override_settings(FRACTAL_USER=f"{user}@fractal.xy", FRACTAL_PASSWORD=user)
-    yield created_user
+    return __user_factory

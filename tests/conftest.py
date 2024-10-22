@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 from httpx import Client
 
+from fractal_client.client import handle
+
 
 # These three variables must be defined before the first import of config.py
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
@@ -71,22 +73,29 @@ def _remove_session():
 
 @pytest.fixture
 def invoke():
-    from fractal_client.client import handle
-
     def __invoke(args: str):
         _remove_session()
-        return handle(_clisplit(args))
+        new_args = f"--user client_tester@fractal.xy --password pytest {args}"
+        return handle(_clisplit(new_args))
 
     return __invoke
 
 
 @pytest.fixture
 def invoke_as_superuser():
-    from fractal_client.client import handle
-
     def __invoke(args: str):
         _remove_session()
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
+        return handle(_clisplit(new_args))
+
+    return __invoke
+
+
+@pytest.fixture
+def invoke_as_custom_user():
+    def __invoke(args: str, email: str, password: str):
+        _remove_session()
+        new_args = f"--user {email} --password {password} {args}"
         return handle(_clisplit(new_args))
 
     return __invoke
