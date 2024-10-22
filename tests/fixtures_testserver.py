@@ -146,105 +146,82 @@ def testserver(override_server_settings):
 
 
 @pytest.fixture
-def task_factory(db):
-    from fractal_server.app.models.v2.task import TaskV2
-    from fractal_server.app.models.v2.task import TaskGroupV2
+def task_factory(invoke):
+    def _task_factory(
+        name: str,
+        command_non_parallel: Optional[str] = None,
+        command_parallel: Optional[str] = None,
+        version: Optional[str] = None,
+        meta_non_parallel: Optional[str] = None,
+        meta_parallel: Optional[str] = None,
+        args_schema_non_parallel: Optional[str] = None,
+        args_schema_parallel: Optional[str] = None,
+        args_schema_version: Optional[str] = None,
+    ):
+        cmd = "task new"
+        if command_non_parallel is not None:
+            cmd += f" --command-non-parallel {command_non_parallel}"
+        if command_parallel is not None:
+            cmd += f" --command-parallel {command_parallel}"
+        if version is not None:
+            cmd += f" --version {version}"
+        if meta_non_parallel is not None:
+            cmd += f" --meta-non-parallel {meta_non_parallel}"
+        if meta_parallel is not None:
+            cmd += f" --meta-parallel {meta_parallel}"
+        if args_schema_non_parallel is not None:
+            cmd += f" --args-schema-non-parallel {args_schema_non_parallel}"
+        if args_schema_parallel is not None:
+            cmd += f" --args-schema-parallel {args_schema_parallel}"
+        if args_schema_version is not None:
+            cmd += f" --args-schema-version {args_schema_version}"
+        cmd += f" {name}"
 
-    def _task_factory(user_id: int, **task_args_override):
-        task_args = dict(name="test_task", type="parallel")
-        task_args.update(task_args_override)
-        t = TaskV2(**task_args)
-
-        db.add(
-            TaskGroupV2(
-                user_id=user_id,
-                origin="other",
-                pkg_name=t.name,
-                task_list=[t],
-            )
-        )
-
-        db.commit()
-        db.refresh(t)
-        return t
+        res = invoke(cmd)
+        return res.data
 
     return _task_factory
 
 
 @pytest.fixture
-def project_factory(db):
-    from fractal_server.app.models.v2.project import ProjectV2
-
-    def _project_factory(user_id=None, **project_args_override):
-        project_args = dict(name="name")
-        project_args.update(project_args_override)
-        p = ProjectV2(**project_args)
-        if user_id:
-            from fractal_server.app.security import User
-
-            user = db.get(User, user_id)
-            p.user_list.append(user)
-        db.add(p)
-        db.commit()
-        db.refresh(p)
-        return p
+def project_factory(invoke):
+    def _project_factory(name: str):
+        res = invoke(f"project new {name}")
+        return res.data
 
     return _project_factory
 
 
 @pytest.fixture
-def workflow_factory(db, project_factory):
-    from fractal_server.app.models.v2.workflow import WorkflowV2
-
-    def _workflow_factory(**wf_args_override):
-        wf_args = dict(name="name")
-        wf_args.update(wf_args_override)
-        wf = WorkflowV2(**wf_args)
-        db.add(wf)
-        db.commit()
-        db.refresh(wf)
-        return wf
+def workflow_factory(invoke):
+    def _workflow_factory(name: str, project_id: int):
+        res = invoke(f"worklow new {name} {project_id}")
+        return res.data
 
     return _workflow_factory
 
 
 @pytest.fixture
-def job_factory(db):
-    from fractal_server.app.models.v2.job import JobV2
-    from fractal_server.utils import get_timestamp
+def job_factory(invoke):
+    def _job_factory(
+        project_id: int,
+        workflow_id: int,
+        dataset_id: int,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        worker_init: Optional[str] = None,
+    ):
+        cmd = "job submit"
+        if start is not None:
+            cmd += f" --start {start}"
+        if end is not None:
+            cmd += f" --end {end}"
+        if worker_init is not None:
+            cmd += f" --worker-init {worker_init}"
+        cmd += f" {project_id} {workflow_id} {dataset_id}"
 
-    def _job_factory(**job_args_override):
-        job_args = dict(
-            project_id=1,
-            input_dataset_id=1,
-            output_dataset_id=2,
-            workflow_id=1,
-            worker_init="WORKER_INIT string",
-            first_task_index=9999,
-            last_task_index=9999,
-            workflow_dump={},
-            dataset_dump=dict(
-                id=1,
-                name="ds-in",
-                zarr_dir="/abc",
-                project_id=1,
-                timestamp_created=str(get_timestamp()),
-                filters=dict(attributes=dict(a=1), types=dict(b=True)),
-            ),
-            project_dump=dict(
-                id=1,
-                name="proj",
-                timestamp_created=str(get_timestamp()),
-            ),
-            start_timestamp=get_timestamp(),
-            user_email="test@test.test",
-        )
-        job_args.update(job_args_override)
-        j = JobV2(**job_args)
-        db.add(j)
-        db.commit()
-        db.refresh(j)
-        return j
+        res = invoke(cmd)
+        return res.data
 
     return _job_factory
 
