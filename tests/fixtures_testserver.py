@@ -3,12 +3,12 @@ import os
 import signal
 import subprocess
 import time
+from pathlib import Path
 from typing import Optional
 
 import httpx
 import pytest
 
-from fractal_client.authclient import AuthClient
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
@@ -19,8 +19,27 @@ PORT = 10080
 @pytest.fixture(scope="session", autouse=True)
 def testserver():
 
+    env_file = Path(".fractal_server.env")
+    with env_file.open("w") as f:
+        f.write(
+            "DB_ENGINE=postgres-psycopg\n"
+            "POSTGRES_DB=fractal_client_test\n"
+            "POSTGRES_USER=postgres\n"
+            "POSTGRES_PASSWORD=postgres\n"
+            "FRACTAL_RUNNER_BACKEND=local\n"
+            "JWT_SECRET_KEY=secret_key\n"
+            "FRACTAL_TASKS_DIR=FRACTAL_TASKS_DIR\n"
+            "FRACTAL_RUNNER_WORKING_BASE_DIR=FRACTAL_RUNNER_WORKING_BASE_DIR\n"
+            "FRACTAL_LOGGING_LEVEL=10\n"
+        )
+    subprocess.run(
+        ["poetry", "run", "fractalctl", "set-db"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     server_process = subprocess.Popen(
-        ["bash", "tests/run_test_server.sh"],
+        ["poetry", "run", "fractalctl", "start", "--port", "10080"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -44,24 +63,28 @@ def testserver():
                 )
 
     # Register tester user if not already registered
-    with AuthClient(
-        username="admin@fractal.xy", password="1234"
-    ) as client_superuser:
-        res = client_superuser.post(
-            f"http://localhost:{PORT}/auth/register/",
-            json=dict(email="client_tester@fractal.xy", password="pytest"),
+    res = httpx.post(
+        f"http://localhost:{PORT}/auth/token/login/",
+        data=dict(username="admin@fractal.xy", password=1234),
+    )
+    assert res.status_code == 200
+    token = res.json()["access_token"]
+    res = httpx.post(
+        f"http://localhost:{PORT}/auth/register/",
+        headers=dict(Authorization=f"Bearer {token}"),
+        json=dict(email="client_tester@fractal.xy", password="pytest"),
+    )
+    if res.status_code == 400:
+        pass
+    else:
+        assert res.status_code == 201
+        user_id = res.json()["id"]
+        res = httpx.patch(
+            f"http://localhost:{PORT}/auth/users/{user_id}/",
+            headers=dict(Authorization=f"Bearer {token}"),
+            json=dict(is_verified=True),
         )
-        if res.status_code == 201:
-            user_id = res.json()["id"]
-            res = client_superuser.patch(
-                f"http://localhost:{PORT}/auth/users/{user_id}/",
-                json=dict(is_verified=True),
-            )
-            assert res.status_code == 200
-        elif res.status_code == 400:
-            pass
-        else:
-            raise RuntimeError("Error obtained by registering the tester user")
+        assert res.status_code == 200
 
     try:
         yield
