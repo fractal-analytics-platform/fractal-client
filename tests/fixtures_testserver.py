@@ -8,6 +8,9 @@ from typing import Optional
 
 import httpx
 import pytest
+from fractal_server.app.db import DB
+from fractal_server.app.models.security import SQLModel
+from sqlalchemy import text
 
 
 logger = logging.getLogger("fractal-client")
@@ -43,6 +46,7 @@ def testserver(tester):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+
     server_process = subprocess.Popen(
         ["poetry", "run", "fractalctl", "start", "--port", "10080"],
         stdout=subprocess.PIPE,
@@ -97,11 +101,22 @@ def testserver(tester):
         if server_process.poll() is None:
             os.kill(server_process.pid, signal.SIGTERM)
             server_process.wait()
-        from fractal_server.app.db import DB
-        from fractal_server.app.models.security import SQLModel
+
+        with DB.engine_sync().begin() as connection:
+            tables_to_truncate = [
+                table.name
+                for table in SQLModel.metadata.sorted_tables
+                if table.name != "alembic_version"
+            ]
+            if tables_to_truncate:
+                connection.execute(
+                    text(
+                        f"TRUNCATE TABLE {', '.join(tables_to_truncate)} "
+                        "RESTART IDENTITY CASCADE;"
+                    )
+                )
 
         DB.engine_sync().dispose()
-        SQLModel.metadata.drop_all(DB.engine_sync())
         env_file.unlink()
 
 
