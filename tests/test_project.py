@@ -30,11 +30,17 @@ def test_project_delete(register_user, invoke):
 
 
 def test_project_create_batch(register_user, invoke):
+    res = invoke("project list")
+    initial_projects = res.data
+
     res = invoke("--batch project new MyProj1")
     debug(res)
     debug(res.data)
-    project_id = int(res.data)
-    assert project_id == 1
+    project_id = res.data
+
+    res = invoke("project list")
+    assert len(res.data) == len(initial_projects) + 1
+    assert any(project["id"] == project_id for project in res.data)
 
 
 def test_project_list(register_user, invoke):
@@ -56,12 +62,7 @@ def test_project_list(register_user, invoke):
 
 
 @pytest.mark.parametrize("new_name", ["new_name", None])
-def test_edit_project(
-    register_user,
-    invoke,
-    new_name,
-    tmp_path,
-):
+def test_edit_project(register_user, invoke, new_name):
     name = "name"
     res = invoke(f"project new {name}")
     project = res.data
