@@ -43,7 +43,7 @@ def testserver():
                     " in `testserver` fixture."
                 )
 
-    # Register register user if not already registered
+    # Register tester user if not already registered
     with AuthClient(
         username="admin@fractal.xy", password="1234"
     ) as client_superuser:
