@@ -16,7 +16,7 @@ PORT = 10080
 
 
 @pytest.fixture(scope="session", autouse=True)
-def testserver(tmp_path_factory):
+def testserver():
 
     server_process = subprocess.Popen(
         ["bash", "tests/run_test_server.sh"],
