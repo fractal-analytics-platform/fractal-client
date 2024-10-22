@@ -16,8 +16,9 @@ logger.setLevel(logging.DEBUG)
 PORT = 10080
 
 
-@pytest.fixture
-def override_server_settings(tmp_path):
+@pytest.fixture(scope="session")
+def override_server_settings(tmp_path_factory):
+
     from fractal_server.config import Settings, get_settings
     from fractal_server.syringe import Inject
 
@@ -31,7 +32,7 @@ def override_server_settings(tmp_path):
     settings.FRACTAL_RUNNER_BACKEND = "local"
 
     settings.JWT_SECRET_KEY = "secret_key"
-    base_folder = tmp_path
+    base_folder = tmp_path_factory.mktemp("tmp_path")
     settings.FRACTAL_TASKS_DIR = base_folder / "FRACTAL_TASKS_DIR"
     settings.FRACTAL_RUNNER_WORKING_BASE_DIR = (
         base_folder / "FRACTAL_RUNNER_WORKING_BASE_DIR"
@@ -49,7 +50,7 @@ def override_server_settings(tmp_path):
         Inject.pop(get_settings)
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def testserver(override_server_settings):
 
     from fractal_server.app.db import DB
@@ -142,17 +143,6 @@ def testserver(override_server_settings):
     logger.debug("Dropped all tables from the database.")
 
     proc.kill()
-
-
-@pytest.fixture
-def db(testserver):
-    """
-    NOTE: Only use this fixture within other fixtures!!!
-    """
-    from fractal_server.app.db import get_sync_db
-
-    for db in get_sync_db():
-        yield db
 
 
 @pytest.fixture
@@ -260,7 +250,7 @@ def job_factory(db):
 
 
 @pytest.fixture
-def user_factory(testserver, db, client_superuser):
+def user_factory(client_superuser):
     def __register_user(
         email: str,
         password: str,
@@ -292,12 +282,10 @@ def user_factory(testserver, db, client_superuser):
 
 
 @pytest.fixture
-def register_user(user_factory):
-
+def register_user(user_factory, tmp_path, override_settings):
+    user = tmp_path.as_posix().split("/")[-1]
     created_user = user_factory(
-        email=environ["FRACTAL_USER"],
-        password=environ["FRACTAL_PASSWORD"],
-        username=environ["FRACTAL_USERNAME"],
+        email=f"{user}@fractal.xy", password=user, username=user
     )
-
+    override_settings(FRACTAL_USER=f"{user}@fractal.xy", FRACTAL_PASSWORD=user)
     yield created_user
