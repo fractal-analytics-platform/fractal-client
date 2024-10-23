@@ -167,6 +167,7 @@ def task(
             "args_schema_non_parallel",
             "args_schema_parallel",
             "args_schema_version",
+            "private",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_task(client, batch=batch, **function_kwargs)

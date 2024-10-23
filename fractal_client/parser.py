@@ -353,6 +353,12 @@ task_new_parser.add_argument(
         "(e.g. `pydantic_v1`)."
     ),
 )
+task_new_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Make task group private.",
+)
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(

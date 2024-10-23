@@ -152,6 +152,7 @@ def post_task(
     args_schema_non_parallel: Optional[str] = None,
     args_schema_parallel: Optional[str] = None,
     args_schema_version: Optional[str] = None,
+    private: bool = False,
 ) -> Interface:
     task = dict(name=name)
     if command_non_parallel:
@@ -174,8 +175,12 @@ def post_task(
             task["args_schema_non_parallel"] = json.load(f)
     if args_schema_version:
         task["args_schema_version"] = args_schema_version
+    if private is True:
+        is_private = "?private=true"
+    else:
+        is_private = ""
 
-    res = client.post(f"{settings.BASE_URL}/task/", json=task)
+    res = client.post(f"{settings.BASE_URL}/task/{is_private}", json=task)
     new_task = check_response(res, expected_status_code=201)
 
     if batch:
