@@ -7,9 +7,10 @@ import time
 from pathlib import Path
 from typing import Optional
 
-import httpx
 import pytest
+from httpx import ConnectError
 
+from fractal_client.client import handle
 
 DB_NAME = "pytest-fractal-client"
 
@@ -84,10 +85,9 @@ def testserver(tester, tmpdir_factory):
     time_used = 0
     while True:
         try:
-            res = httpx.get(f"http://localhost:{PORT}/api/alive/")
-            assert res.status_code == 200
+            handle(shlex.split("fractal version"))
             break
-        except httpx.ConnectError:
+        except ConnectError:
             logger.debug("Fractal server not ready, wait one more second.")
             time.sleep(1)
             time_used += 1
@@ -97,29 +97,14 @@ def testserver(tester, tmpdir_factory):
                     " in `testserver` fixture."
                 )
 
-    # Register tester user if not already registered
-    res = httpx.post(
-        f"http://localhost:{PORT}/auth/token/login/",
-        data=dict(username="admin@fractal.xy", password=1234),
-    )
-    assert res.status_code == 200
-    token = res.json()["access_token"]
-    res = httpx.post(
-        f"http://localhost:{PORT}/auth/register/",
-        headers=dict(Authorization=f"Bearer {token}"),
-        json=tester,
-    )
-    if res.status_code == 400:
-        pass
-    else:
-        assert res.status_code == 201
-        user_id = res.json()["id"]
-        res = httpx.patch(
-            f"http://localhost:{PORT}/auth/users/{user_id}/",
-            headers=dict(Authorization=f"Bearer {token}"),
-            json=dict(is_verified=True),
+    handle(
+        shlex.split(
+            (
+                "fractal --user admin@fractal.xy --password 1234 "
+                f"user register {tester['email']} {tester['password']}"
+            )
         )
-        assert res.status_code == 200
+    )
 
     try:
         yield
