@@ -85,8 +85,11 @@ def testserver(tester, tmpdir_factory):
     time_used = 0
     while True:
         try:
-            handle(shlex.split("fractal version"))
-            break
+            res = handle(shlex.split("fractal version"))
+            if res.retcode == 0:
+                break
+            else:
+                raise ConnectError("fractal-server not ready")
         except ConnectError:
             logger.debug("Fractal server not ready, wait one more second.")
             time.sleep(1)
