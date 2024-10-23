@@ -20,7 +20,7 @@ PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
 urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
 
-def test_task_new(register_user, invoke, tmp_path):
+def test_task_new(invoke, tmp_path, new_name):
 
     # create a new task with just positional required args
     args_path = str(tmp_path / "args.json")
@@ -33,15 +33,16 @@ def test_task_new(register_user, invoke, tmp_path):
     with open(meta_path, "w") as f:
         json.dump(meta, f)
 
+    TASK_NAME = new_name()
     res = invoke(
-        "task new _name --command-parallel _command "
+        f"task new {TASK_NAME} --command-parallel _command "
         f"--version _version --meta-parallel {meta_path} "
         f"--args-schema-parallel {args_path} "
         f"--args-schema-version 1.0.0"
     )
     debug(res.data)
     assert res.retcode == 0
-    assert res.data["name"] == "_name"
+    assert res.data["name"] == TASK_NAME
     assert res.data["command_parallel"] == "_command"
     assert res.data["version"] == "_version"
     assert res.data["meta_parallel"] == meta
@@ -50,7 +51,10 @@ def test_task_new(register_user, invoke, tmp_path):
     first_task_id = int(res.data["id"])
 
     # create a new task with batch option
-    res = invoke("--batch task new _name2 --command-parallel _command2")
+    TASK_NAME_2 = new_name()
+    res = invoke(
+        f"--batch task new {TASK_NAME_2} --command-parallel _command2"
+    )
     res.show()
     assert res.retcode == 0
     assert res.data == str(first_task_id + 1)
@@ -58,14 +62,14 @@ def test_task_new(register_user, invoke, tmp_path):
     # create a new task with same source as before. Note that in check_response
     # we have sys.exit(1) when status code is not the expecte one
     with pytest.raises(SystemExit) as e:
-        invoke("task new _name2 --command-parallel _command2")
+        invoke(f"task new {TASK_NAME_2} --command-parallel _command2")
     assert e.value.code == 1
 
     # create a new task passing not existing file
     res = invoke(
         (
-            "task new _name --command-parallel _command --meta-parallel "
-            "./foo.pdf"
+            f"task new {new_name()} --command-parallel _command "
+            "--meta-parallel ./foo.pdf"
         )
     )
     assert res.retcode == 1
@@ -76,7 +80,7 @@ def test_task_new(register_user, invoke, tmp_path):
         json.dump(metanp, f)
     res = invoke(
         (
-            f"task new _name_np --command-non-parallel _command_np "
+            f"task new {new_name()} --command-non-parallel _command_np "
             f"--meta-non-parallel {metanp_path} "
             f"--args-schema-non-parallel {args_path} "
         )
@@ -86,9 +90,9 @@ def test_task_new(register_user, invoke, tmp_path):
 
 def test_task_edit(
     caplog,
-    register_user,
     invoke,
     tmp_path,
+    new_name,
 ):
 
     args_path = str(tmp_path / "args.json")
@@ -101,7 +105,7 @@ def test_task_edit(
     with open(meta_path, "w") as f:
         json.dump(meta, f)
 
-    NAME = "task-name"
+    NAME = new_name()
     task = invoke(
         f"task new {NAME} --command-parallel _command "
         f"--version _version --meta-parallel {meta_path} "
@@ -133,7 +137,7 @@ def test_task_edit(
 
     task_np = invoke(
         (
-            f"task new _name_np --command-non-parallel _command_np "
+            f"task new {new_name()} --command-non-parallel _command_np "
             f"--version 1.0.1 --meta-non-parallel {meta_path}"
         )
     )
@@ -223,15 +227,15 @@ def test_task_edit(
     reason="DELETE-task is not currently available on fractal-server"
 )
 def test_task_delete(
-    register_user,
     user_factory,
     invoke,
     tmp_path,
+    new_name,
 ):
     """
     Test task delete
     """
-    NAME = "_name"
+    NAME = new_name()
     VERSION = "1.0.0"
 
     meta_path = str(tmp_path / "meta.json")
@@ -252,7 +256,7 @@ def test_task_delete(
 
     # Test access control
     with pytest.raises(SystemExit):
-        EMAIL = "someone@example.org"
+        EMAIL = f"{new_name()}@example.org"
         PASSWORD = "123123"
         user_factory(email=EMAIL, password=PASSWORD)
         res = invoke(f"-u {EMAIL} -p {PASSWORD} task delete --id {task_id}")
