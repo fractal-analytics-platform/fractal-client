@@ -17,6 +17,3 @@ fractal.log
 site
 reference
 venv
-
-FRACTAL_RUNNER_WORKING_BASE_DIR/*
-FRACTAL_TASKS_DIR/*
