@@ -46,6 +46,7 @@ def testserver(tester):
     with env_file.open("w") as f:
         f.write(
             "DB_ENGINE=postgres-psycopg\n"
+            "POSTGRES_HOST=localhost\n"
             f"POSTGRES_DB={DB_NAME}\n"
             "POSTGRES_USER=postgres\n"
             "POSTGRES_PASSWORD=postgres\n"
