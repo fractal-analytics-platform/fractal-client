@@ -14,7 +14,6 @@ LOG = "Here are some logs"
 
 @pytest.mark.parametrize("status", ["done", "failed"])
 def test_job_show(
-    register_user,
     invoke,
     tmp_path: Path,
     status: str,
@@ -68,7 +67,6 @@ def test_job_show(
 
 
 def test_job_list(
-    register_user,
     invoke,
     tmp_path: Path,
     project_factory,
@@ -135,7 +133,6 @@ def test_job_list(
 
 
 def test_job_download_logs(
-    register_user,
     invoke,
     tmp_path: Path,
     workflow_factory,
@@ -201,7 +198,6 @@ def test_job_download_logs(
 
 
 def test_job_stop(
-    register_user,
     invoke,
     tmp_path: Path,
     workflow_factory,
@@ -244,9 +240,7 @@ def test_job_stop(
     caplog.clear()
 
 
-def test_job_submit(
-    register_user, invoke, testdata_path: Path, tmp_path: Path
-):
+def test_job_submit(invoke, tmp_path: Path):
     """
     GIVEN a project and a nontrivial workflow
     WHEN the client requests to apply the workflow to the project
