@@ -56,6 +56,9 @@ def testserver(tester):
             "FRACTAL_RUNNER_WORKING_BASE_DIR=FRACTAL_RUNNER_WORKING_BASE_DIR\n"
             "FRACTAL_LOGGING_LEVEL=10\n"
         )
+    _run_command(
+        f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"
+    )
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command("poetry run fractalctl set-db")
 
