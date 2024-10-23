@@ -136,6 +136,7 @@ def task(
             "python_version",
             "package_extras",
             "pinned_dependency",
+            "private",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = task_collect_pip(client, batch=batch, **function_kwargs)
@@ -147,6 +148,7 @@ def task(
             "version",
             "package_name",
             "package_root",
+            "private",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = task_collect_custom(client, batch=batch, **function_kwargs)

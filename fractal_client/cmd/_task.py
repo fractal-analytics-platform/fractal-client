@@ -25,6 +25,7 @@ def task_collect_pip(
     python_version: Optional[str] = None,
     package_extras: Optional[str] = None,
     pinned_dependency: Optional[list[str]] = None,
+    private: bool = False,
     batch: bool = False,
 ) -> Interface:
 
@@ -48,9 +49,13 @@ def task_collect_pip(
             _name: _version
             for _name, _version in (p.split("=") for p in pinned_dependency)
         }
+    if private is True:
+        is_private = "?private=true"
+    else:
+        is_private = ""
 
     res = client.post(
-        f"{settings.BASE_URL}/task/collect/pip/", json=task_collect
+        f"{settings.BASE_URL}/task/collect/pip/{is_private}", json=task_collect
     )
 
     state = check_response(res, expected_status_code=[200, 201])
@@ -70,6 +75,7 @@ def task_collect_custom(
     version: Optional[str] = None,
     package_name: Optional[str] = None,
     package_root: Optional[str] = None,
+    private: bool = False,
     batch: bool = False,
 ) -> Interface:
 
@@ -94,9 +100,14 @@ def task_collect_custom(
         task_collect["package_name"] = package_name
     if package_root:
         task_collect["package_root"] = package_root
+    if private is True:
+        is_private = "?private=true"
+    else:
+        is_private = ""
 
     res = client.post(
-        f"{settings.BASE_URL}/task/collect/custom/", json=task_collect
+        f"{settings.BASE_URL}/task/collect/custom/{is_private}",
+        json=task_collect,
     )
 
     task_list = check_response(
