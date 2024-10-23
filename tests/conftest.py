@@ -7,7 +7,7 @@ import pytest
 
 
 # This variable must be defined before the first import of config.py
-environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
+environ["FRACTAL_SERVER"] = "http://127.0.0.1:8765"
 from fractal_client.client import handle  # noqa: E402
 
 # set_start_method("fork") necessary to run tests on MacOS

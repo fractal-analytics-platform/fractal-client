@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 import signal
 import subprocess
 import time
@@ -8,20 +9,34 @@ from typing import Optional
 
 import httpx
 import pytest
-from fractal_server.app.db import DB
-from fractal_server.app.models.security import SQLModel
-from sqlalchemy import text
 
+
+DB_NAME = f"pytest-fractal-client-{time.time()}"
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
 
-PORT = 10080
+PORT = 8765
 
 
 @pytest.fixture(scope="session")
 def tester():
     return dict(email="client_tester@fractal.xy", password="pytest")
+
+
+def _run_command(cmd: str) -> str:
+    logging.warning(f"Now running {cmd=}")
+    res = subprocess.run(
+        shlex.split(cmd),
+        capture_output=True,
+        encoding="utf-8",
+    )
+    if res.returncode != 0:
+        logging.error(f"{res.stdout=}")
+        logging.error(f"{res.stderr=}")
+        raise RuntimeError(res.stderr)
+    else:
+        return res.stdout
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -31,7 +46,7 @@ def testserver(tester):
     with env_file.open("w") as f:
         f.write(
             "DB_ENGINE=postgres-psycopg\n"
-            "POSTGRES_DB=fractal_client_test\n"
+            f"POSTGRES_DB={DB_NAME}\n"
             "POSTGRES_USER=postgres\n"
             "POSTGRES_PASSWORD=postgres\n"
             "FRACTAL_RUNNER_BACKEND=local\n"
@@ -40,15 +55,11 @@ def testserver(tester):
             "FRACTAL_RUNNER_WORKING_BASE_DIR=FRACTAL_RUNNER_WORKING_BASE_DIR\n"
             "FRACTAL_LOGGING_LEVEL=10\n"
         )
-    subprocess.run(
-        ["poetry", "run", "fractalctl", "set-db"],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    _run_command(f"createdb {DB_NAME}")
+    _run_command("poetry run fractalctl set-db")
 
     server_process = subprocess.Popen(
-        ["poetry", "run", "fractalctl", "start", "--port", "10080"],
+        ["poetry", "run", "fractalctl", "start", "--port", PORT],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -102,21 +113,7 @@ def testserver(tester):
             os.kill(server_process.pid, signal.SIGTERM)
             server_process.wait()
 
-        with DB.engine_sync().begin() as connection:
-            tables_to_truncate = [
-                table.name
-                for table in SQLModel.metadata.sorted_tables
-                if table.name != "alembic_version"
-            ]
-            if tables_to_truncate:
-                connection.execute(
-                    text(
-                        f"TRUNCATE TABLE {', '.join(tables_to_truncate)} "
-                        "RESTART IDENTITY CASCADE;"
-                    )
-                )
-
-        DB.engine_sync().dispose()
+        _run_command(f"dropdb {DB_NAME}")
         env_file.unlink()
 
 
