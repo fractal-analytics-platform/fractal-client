@@ -59,7 +59,7 @@ def testserver(tester):
     _run_command("poetry run fractalctl set-db")
 
     server_process = subprocess.Popen(
-        ["poetry", "run", "fractalctl", "start", "--port", PORT],
+        shlex.split(f"poetry run fractalctl start --port {PORT}"),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
