@@ -50,6 +50,7 @@ jobs:
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
+          PGPASSWORD: postgres
         run: poetry run coverage run -m pytest
 
       - name: Upload coverage data
