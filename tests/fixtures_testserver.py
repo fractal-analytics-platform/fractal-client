@@ -56,7 +56,7 @@ def testserver(tester):
             "FRACTAL_RUNNER_WORKING_BASE_DIR=FRACTAL_RUNNER_WORKING_BASE_DIR\n"
             "FRACTAL_LOGGING_LEVEL=10\n"
         )
-    _run_command(f"createdb {DB_NAME}")
+    _run_command(f"createdb --host localhost {DB_NAME}")
     _run_command("poetry run fractalctl set-db")
 
     server_process = subprocess.Popen(
@@ -114,7 +114,7 @@ def testserver(tester):
             os.kill(server_process.pid, signal.SIGTERM)
             server_process.wait()
 
-        _run_command(f"dropdb {DB_NAME}")
+        _run_command(f"dropdb --host localhost {DB_NAME}")
         env_file.unlink()
 
 
