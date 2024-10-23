@@ -1,7 +1,6 @@
 import logging
 import os
 import shlex
-import shutil
 import signal
 import subprocess
 import time
@@ -46,12 +45,12 @@ def _run_command(cmd: str) -> str:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def testserver(tester):
+def testserver(tester, tmpdir_factory):
 
-    FRACTAL_TASK_DIR = Path("/tmp/FRACTAL_TASKS_DIR")  # FIXME
-    FRACTAL_RUNNER_WORKING_BASE_DIR = Path(
-        "/tmp/FRACTAL_RUNNER_WORKING_BASE_DIR"
-    )  # FIXME
+    FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("FRACTAL_TASK_DIR"))
+    FRACTAL_RUNNER_WORKING_BASE_DIR = str(
+        tmpdir_factory.mktemp("FRACTAL_RUNNER_WORKING_BASE_DIR")
+    )
 
     env_file = Path(".fractal_server.env")
     with env_file.open("w") as f:
@@ -63,9 +62,9 @@ def testserver(tester):
             "POSTGRES_PASSWORD=postgres\n"
             "FRACTAL_RUNNER_BACKEND=local\n"
             "JWT_SECRET_KEY=secret_key\n"
-            f"FRACTAL_TASKS_DIR={FRACTAL_TASK_DIR.as_posix()}\n"
+            f"FRACTAL_TASKS_DIR={FRACTAL_TASK_DIR}\n"
             "FRACTAL_RUNNER_WORKING_BASE_DIR="
-            f"{FRACTAL_RUNNER_WORKING_BASE_DIR.as_posix()}\n"
+            f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
             "FRACTAL_LOGGING_LEVEL=10\n"
         )
     _run_command(
@@ -130,10 +129,6 @@ def testserver(tester):
             server_process.wait()
 
         _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
-        if FRACTAL_TASK_DIR.exists():
-            shutil.rmtree(FRACTAL_TASK_DIR)
-        if FRACTAL_RUNNER_WORKING_BASE_DIR.exists():
-            shutil.rmtree(FRACTAL_RUNNER_WORKING_BASE_DIR)
         env_file.unlink()
 
 
