@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from urllib.request import urlretrieve
 
 import pytest
 from devtools import debug
@@ -10,14 +9,6 @@ from fractal_client.config import settings
 
 
 COLLECTION_TIMEOUT = 15.0
-
-PACKAGE_URL = (
-    "https://github.com/fractal-analytics-platform/fractal-server/"
-    "raw/main/tests/v2/fractal_tasks_mock/dist/"
-    "fractal_tasks_mock-0.0.1-py3-none-any.whl"
-)
-PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
-urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
 
 def test_task_new(invoke, tmp_path, new_name):
