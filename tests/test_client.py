@@ -94,7 +94,7 @@ def test_missing_password(override_settings):
     assert "FRACTAL_PASSWORD variable not defined" in res.data
 
 
-def test_connecterror(client, override_settings):
+def test_connecterror(override_settings):
     override_settings(
         FRACTAL_USER="admin@fractal.xy",
         FRACTAL_PASSWORD="1234",
