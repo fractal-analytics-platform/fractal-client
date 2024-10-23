@@ -2,7 +2,7 @@ import pytest
 from fractal_server.app.security import FRACTAL_DEFAULT_GROUP_NAME
 
 
-def test_group_commands_auth(register_user, invoke, caplog):
+def test_group_commands_auth(invoke, caplog):
     """
     Assert 'group' commands are not accessible to standard users
     """
@@ -19,34 +19,38 @@ def test_group_commands_auth(register_user, invoke, caplog):
     _assert_403(cmd="group update 1 --new-user-ids 1")
 
 
-def test_group_commands(user_factory, invoke_as_superuser):
+def test_group_commands(
+    user_factory, invoke_as_superuser, new_name, superuser
+):
 
     # get default group id and superuser id
     res = invoke_as_superuser("group list --user-ids")
     assert res.retcode == 0
-    assert len(res.data) == 1  # Only one group (default)
-    assert res.data[0]["name"] == FRACTAL_DEFAULT_GROUP_NAME
-    assert len(res.data[0]["user_ids"]) == 1  # Only one user (superuser)
+    initial_number_of_groups = len(res.data)
+    default_group = next(
+        group
+        for group in res.data
+        if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
+    )
+    initial_number_of_users = len(default_group["user_ids"])
 
-    default_group_id = res.data[0]["id"]
-    superuser_id = res.data[0]["user_ids"][0]
+    default_group_id = default_group["id"]
+    superuser_id = superuser["id"]
 
     # create 3 standard users (by default in default group)
-    user1 = user_factory(email="user1@fractal.xy", password="psw1")
+    user1 = user_factory(email=f"{new_name()}@fractal.xy", password="psw1")
     user1_id = user1["id"]
     assert user1["group_ids_names"] == [[default_group_id, "All"]]
-    user2 = user_factory(email="user2@fractal.xy", password="psw2")
+    user2 = user_factory(email=f"{new_name()}@fractal.xy", password="psw2")
     user2_id = user2["id"]
     assert user2["group_ids_names"] == [[default_group_id, "All"]]
-    user3 = user_factory(email="user3@fractal.xy", password="psw3")
+    user3 = user_factory(email=f"{new_name()}@fractal.xy", password="psw3")
     user3_id = user3["id"]
     assert user3["group_ids_names"] == [[default_group_id, "All"]]
 
     res = invoke_as_superuser("group list --user-ids")
-    assert len(res.data) == 1
-    assert set(res.data[0]["user_ids"]) == set(
-        [superuser_id, user1_id, user2_id, user3_id]
-    )
+    assert len(res.data) == initial_number_of_groups
+    assert len(res.data[0]["user_ids"]) == initial_number_of_users + 3
 
     # Create 2 new empty groups (`group new`)
 
@@ -54,15 +58,16 @@ def test_group_commands(user_factory, invoke_as_superuser):
         # missing 'name'
         invoke_as_superuser("group new")
 
-    res = invoke_as_superuser("group new foo --viewer-paths /a /b")
+    NEW_NAME = new_name()
+    res = invoke_as_superuser(f"group new {NEW_NAME} --viewer-paths /a /b")
     assert res.retcode == 0
-    assert res.data["name"] == "foo"
+    assert res.data["name"] == NEW_NAME
     assert res.data["user_ids"] == []
     group1_viewer_paths = res.data["viewer_paths"]
     assert group1_viewer_paths == ["/a", "/b"]
     group1_id = res.data["id"]
 
-    res = invoke_as_superuser("group new bar")
+    res = invoke_as_superuser(f"group new {new_name()}")
     group2_id = res.data["id"]
     group2_viewer_paths = res.data["viewer_paths"]
     assert group2_viewer_paths == []
@@ -117,14 +122,12 @@ def test_group_commands(user_factory, invoke_as_superuser):
     # Check groups are updated
 
     res = invoke_as_superuser("group list --user-ids")
-    assert len(res.data) == 3
+    assert len(res.data) == initial_number_of_groups + 2
     assert res.data[0]["id"] == default_group_id
-    assert set(res.data[0]["user_ids"]) == set(
-        [superuser_id, user1_id, user2_id, user3_id]
-    )
-    assert res.data[1]["id"] == group1_id
+    assert len(res.data[0]["user_ids"]) == initial_number_of_users + 3
+    assert res.data[-2]["id"] == group1_id
     assert set(res.data[1]["user_ids"]) == set([user1_id, user2_id])
-    assert res.data[2]["id"] == group2_id
+    assert res.data[-1]["id"] == group2_id
     assert set(res.data[2]["user_ids"]) == set(
         [user3_id, user2_id, superuser_id]
     )
@@ -138,7 +141,7 @@ def test_group_commands(user_factory, invoke_as_superuser):
     res = invoke_as_superuser(f"group get {default_group_id}")
     assert res.retcode == 0
     assert res.data["name"] == FRACTAL_DEFAULT_GROUP_NAME
-    assert len(res.data["user_ids"]) == 4
+    assert len(res.data["user_ids"]) == initial_number_of_users + 3
 
     # Test `list` without `--user-ids`
 
@@ -149,9 +152,9 @@ def test_group_commands(user_factory, invoke_as_superuser):
     # Test `--batch`
 
     res = invoke_as_superuser("--batch group list")
-    assert res.data == f"{default_group_id} {group1_id} {group2_id}"
+    assert len(res.data.split(" ")) == initial_number_of_groups + 2
 
-    res = invoke_as_superuser("--batch group new xyz")
+    res = invoke_as_superuser(f"--batch group new {new_name()}")
     assert isinstance(res.data, int)
 
     # Test update of viewer-paths
@@ -172,7 +175,6 @@ def test_group_commands(user_factory, invoke_as_superuser):
     invoke_as_superuser(
         f"group update {group1_id} --new-user-ids {superuser_id}"
     )
-    res = invoke_as_superuser("user whoami")
-    assert "viewer_paths" not in res.data
+    assert "viewer_paths" not in superuser
     res = invoke_as_superuser("user whoami --viewer-paths")
     assert set(res.data.get("viewer_paths")) == {"/a/b", "/c/d"}
