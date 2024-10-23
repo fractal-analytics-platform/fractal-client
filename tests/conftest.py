@@ -35,17 +35,6 @@ def testdata_path() -> Path:
     return Path(__file__).parent / "data"
 
 
-@pytest.fixture
-def client_superuser():
-    from fractal_client.authclient import AuthClient
-
-    with AuthClient(
-        username="admin@fractal.xy",
-        password="1234",
-    ) as client_superuser:
-        yield client_superuser
-
-
 def _clisplit(args: str):
     return shlex.split(f"fractal {args}")
 
