@@ -11,7 +11,7 @@ import httpx
 import pytest
 
 
-DB_NAME = f"pytest-fractal-client-{time.time()}"
+DB_NAME = "pytest-fractal-client"
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
