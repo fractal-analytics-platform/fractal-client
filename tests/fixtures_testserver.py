@@ -44,7 +44,7 @@ def _run_command(cmd: str) -> str:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def testserver(tester, tmpdir_factory):
+def testserver(tester, tmpdir_factory, request):
 
     FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("FRACTAL_TASK_DIR"))
     FRACTAL_RUNNER_WORKING_BASE_DIR = str(
@@ -73,8 +73,11 @@ def testserver(tester, tmpdir_factory):
     _run_command("poetry run fractalctl set-db")
 
     LOGS = tmpdir_factory.mktemp("LOGS")
-    f_out = (LOGS / "out").open("w")
-    f_err = (LOGS / "err").open("w")
+    path_out = LOGS / "out"
+    path_err = LOGS / "err"
+    f_out = path_out.open("w")
+    f_err = path_err.open("w")
+
     server_process = subprocess.Popen(
         shlex.split(f"poetry run fractalctl start --port {PORT}"),
         stdout=f_out,
@@ -113,6 +116,15 @@ def testserver(tester, tmpdir_factory):
     try:
         yield
     finally:
+        # 'capmanager' is used to print even without `pytest -s`
+        # https://stackoverflow.com/a/76539910/12932447
+        capmanager = request.config.pluginmanager.getplugin("capturemanager")
+        with capmanager.global_and_fixture_disabled():
+            print(
+                "\n\nTerminating Fractal Server...\n"
+                f"stdout -> {path_out}\n"
+                f"stderr -> {path_err}\n"
+            )
         server_process.terminate()
         server_process.kill()
         _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
