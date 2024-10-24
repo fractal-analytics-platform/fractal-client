@@ -74,8 +74,8 @@ def testserver(tester, tmpdir_factory, request):
     _run_command("poetry run fractalctl set-db")
 
     LOGS = Path(
-        environ.get("GHA_FRACTAL_SERVER_LOG")
-    ) or tmpdir_factory.mktemp("LOGS")
+        environ.get("GHA_FRACTAL_SERVER_LOG") or tmpdir_factory.mktemp("LOGS")
+    )
     path_out = LOGS / "server_out"
     path_err = LOGS / "server_err"
     f_out = path_out.open("w")
