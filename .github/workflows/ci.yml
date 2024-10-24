@@ -31,6 +31,7 @@ jobs:
         ports:
           - 5432:5432
 
+
     steps:
 
       - uses: actions/checkout@v4
@@ -46,6 +47,9 @@ jobs:
 
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
+
+      - name: Run fractal-server
+        run: sh tests/serve.sh
 
       - name: Test with pytest
         env:
