@@ -558,7 +558,6 @@ def test_workflow_import(
     # Fail due to missing --json-file argument
     with pytest.raises(SystemExit):
         invoke(f"workflow import --project-id {project_id}")
-
     # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
     res = invoke(
@@ -572,7 +571,7 @@ def test_workflow_import(
     # get the workflow from the server, and check that it is the same
     workflow_id = res.data["id"]
     res = invoke(f"workflow show {project_id} {workflow_id}")
-    debug(res.data)
+    debug(res.retcode, res.data)
     assert res.retcode == 0
     res.data["task_list"][-1]["warning"] = None
     assert res.data == imported_workflow
@@ -583,7 +582,7 @@ def test_workflow_import(
         f"--batch workflow import --project-id {project_id} "
         f"--json-file {filename}"
     )
-    debug(res.data)
+    debug(res.retcode, res.data)
     assert res.retcode == 0
 
     # import workflow into project, with --workflow-name
