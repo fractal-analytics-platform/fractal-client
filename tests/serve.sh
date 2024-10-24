@@ -14,4 +14,4 @@ export FRACTAL_LOGGING_LEVEL=0
 dropdb pytest-fractal-client --host=localhost
 createdb pytest-fractal-client --host=localhost
 poetry run fractalctl set-db
-poetry run fractalctl start --port 8765 > /dev/null 2>&1 &
+poetry run fractalctl start --port 8765
