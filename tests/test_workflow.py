@@ -537,25 +537,14 @@ def test_workflow_import(
     new_name,
 ):
 
+    invoke("task new --command-parallel pwd --command-non-parallel pwd dummy")
+    invoke("task new --command-parallel pwd --command-non-parallel pwd dummy2")
+
     # create project
     PROJECT_NAME = new_name()
     res_pj = invoke(f"project new {PROJECT_NAME}")
     assert res_pj.retcode == 0
     project_id = res_pj.data["id"]
-
-    from fractal_server.app.db import get_sync_db
-    from fractal_server.app.models.v2 import TaskV2
-
-    db = next(get_sync_db())
-    db.add(
-        TaskV2(
-            name=new_name(),
-            type="parallel",
-            command_parallel="pwd",
-            source="PKG_SOURCE:dummy2",
-        )
-    )
-    db.commit()
 
     # Fail due to missing --json-file argument
     with pytest.raises(SystemExit):
@@ -563,8 +552,6 @@ def test_workflow_import(
 
     # import workflow into project
     filename = str(testdata_path / "import-export/workflow.json")
-    with open(filename, "r") as f:
-        debug(f.read())
     res = invoke(
         f"workflow import --project-id {project_id} --json-file {filename}"
     )
@@ -577,7 +564,7 @@ def test_workflow_import(
     workflow_id = res.data["id"]
     res = invoke(f"workflow show {project_id} {workflow_id}")
     assert res.retcode == 0
-    res.data["task_list"][-1].pop("warning")
+    res.data["task_list"][-1]["warning"] = None
     assert res.data == imported_workflow
 
     # import workflow into project, with --batch
@@ -589,13 +576,12 @@ def test_workflow_import(
     assert res.retcode == 0
 
     # import workflow into project, with --workflow-name
-    NEW_NAME = new_name()
     res = invoke(
         f"workflow import --project-id {project_id} --json-file {filename} "
-        f' --workflow-name "{NEW_NAME}"'
+        f" --workflow-name MyWorkflow-V2-xxx"
     )
     assert res.retcode == 0
-    assert res.data["name"] == NEW_NAME
+    assert res.data["name"] == "MyWorkflow-V2-xxx"
 
 
 def test_workflow_export(
