@@ -2,6 +2,7 @@ import logging
 import shlex
 import subprocess
 import time
+from os import environ
 from pathlib import Path
 from typing import Optional
 
@@ -72,9 +73,11 @@ def testserver(tester, tmpdir_factory, request):
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command("poetry run fractalctl set-db")
 
-    LOGS = tmpdir_factory.mktemp("LOGS")
-    path_out = LOGS / "out"
-    path_err = LOGS / "err"
+    LOGS = Path(
+        environ.get("GHA_FRACTAL_SERVER_LOG")
+    ) or tmpdir_factory.mktemp("LOGS")
+    path_out = LOGS / "server_out"
+    path_err = LOGS / "server_err"
     f_out = path_out.open("w")
     f_err = path_err.open("w")
 
