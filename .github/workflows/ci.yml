@@ -48,7 +48,6 @@ jobs:
         run: poetry install --with dev --without docs --no-interaction
 
       - name: Test with pytest
-        id: pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           PGPASSWORD: postgres
@@ -56,11 +55,11 @@ jobs:
         run: poetry run coverage run -m pytest
 
       - name: Log server STDOUT if pytest failed
-        if: steps.pytest.outcome == 'failure'
+        if: failure()
         run: cat /tmp/server_out
 
       - name: Log server STDERR if pytest failed
-        if: steps.pytest.outcome == 'failure'
+        if: failure()
         run: cat /tmp/server_err
 
       - name: Upload coverage data
