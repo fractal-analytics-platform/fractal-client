@@ -49,13 +49,13 @@ jobs:
         run: poetry install --with dev --without docs --no-interaction
 
       - name: Run fractal-server
-        run: sh tests/serve.sh
+        run: sh tests/serve.sh > /dev/null 2>&1 &
 
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           PGPASSWORD: postgres
-        run: poetry run coverage run -m pytest > /dev/null 2>&1 &
+        run: poetry run coverage run -m pytest
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
