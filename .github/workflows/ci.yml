@@ -51,15 +51,19 @@ jobs:
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           PGPASSWORD: postgres
-          GHA_FRACTAL_SERVER_LOG: '/tmp'
+          GHA_FRACTAL_SERVER_LOG: /tmp
         run: poetry run coverage run -m pytest
 
-      - name: Print file 1 if pytest fails
+      - name: Log server if pytest failed
         # Only runs if the previous step fails
         if: failure()
         run: |
-          cat tmp/server_out
-          cat tmp/server_err
+          echo FRACTAL SERVER STDOUT
+          echo ----------------------------------------------------------------
+          cat /tmp/server_out
+          echo FRACTAL SERVER STDERR
+          echo ----------------------------------------------------------------
+          cat /tmp/server_err
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
