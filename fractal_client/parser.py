@@ -235,6 +235,12 @@ task_collect_parser.add_argument(
         "pin several packages to specific versions."
     ),
 )
+task_collect_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Make task group private.",
+)
 
 
 # task collect custom
@@ -277,6 +283,12 @@ tasktask_collect_custom_pkg_name_or_root.add_argument(
         "The folder where the package is installed. If not provided, "
         "it will be  automatically inferred based on 'package_name'."
     ),
+)
+task_collect_custom_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Make task group private.",
 )
 
 # task check-collection
@@ -340,6 +352,12 @@ task_new_parser.add_argument(
         "Label encoding how the task-arguments JSON Schema was generated "
         "(e.g. `pydantic_v1`)."
     ),
+)
+task_new_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Make task group private.",
 )
 
 # task edit

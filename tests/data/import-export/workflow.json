@@ -6,14 +6,15 @@
                 "message_x": "task_x",
                 "arg_x": "value_x"
             },
+            "meta_parallel": {"key1": "value1"},
             "args_non_parallel": {
                 "message_y": "task_y",
                 "arg_y": "value_y"
             },
-            "meta_parallel": {"key1": "value1"},
             "meta_non_parallel": {"key2": "value2"},
             "task": {
-                "source": "PKG_SOURCE:dummy2"
+                "name": "dummy",
+                "pkg_name": "dummy"
             }
         }
     ]

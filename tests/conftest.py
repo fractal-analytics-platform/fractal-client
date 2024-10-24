@@ -4,16 +4,11 @@ from os import environ
 from pathlib import Path
 
 import pytest
-from httpx import Client
 
 
-# These three variables must be defined before the first import of config.py
-environ["FRACTAL_SERVER"] = "http://127.0.0.1:10080"
-environ["FRACTAL_USER"] = "test@fake-exact-lab.it"
-environ["FRACTAL_PASSWORD"] = "password"
-
-environ["FRACTAL_USERNAME"] = "myusername"
-
+# This variable must be defined before the first import of config.py
+environ["FRACTAL_SERVER"] = "http://127.0.0.1:8765"
+from fractal_client.client import handle  # noqa: E402
 
 # set_start_method("fork") necessary to run tests on MacOS
 # https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228
@@ -40,23 +35,6 @@ def testdata_path() -> Path:
     return Path(__file__).parent / "data"
 
 
-@pytest.fixture
-def client():
-    with Client(timeout=10) as client:
-        yield client
-
-
-@pytest.fixture
-def client_superuser():
-    from fractal_client.authclient import AuthClient
-
-    with AuthClient(
-        username="admin@fractal.xy",
-        password="1234",
-    ) as client_superuser:
-        yield client_superuser
-
-
 def _clisplit(args: str):
     return shlex.split(f"fractal {args}")
 
@@ -71,22 +49,29 @@ def _remove_session():
 
 @pytest.fixture
 def invoke():
-    from fractal_client.client import handle
-
     def __invoke(args: str):
         _remove_session()
-        return handle(_clisplit(args))
+        new_args = f"--user client_tester@fractal.xy --password pytest {args}"
+        return handle(_clisplit(new_args))
 
     return __invoke
 
 
 @pytest.fixture
 def invoke_as_superuser():
-    from fractal_client.client import handle
-
     def __invoke(args: str):
         _remove_session()
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
+        return handle(_clisplit(new_args))
+
+    return __invoke
+
+
+@pytest.fixture
+def invoke_as_custom_user():
+    def __invoke(args: str, email: str, password: str):
+        _remove_session()
+        new_args = f"--user {email} --password {password} {args}"
         return handle(_clisplit(new_args))
 
     return __invoke
@@ -125,6 +110,18 @@ def override_settings(monkeypatch, tmp_path):
             )
 
     return _override_settings
+
+
+@pytest.fixture(scope="session")
+def new_name():
+    counter = 0
+
+    def _next_name():
+        nonlocal counter
+        counter += 1
+        return f"name{counter}"
+
+    return _next_name
 
 
 from .fixtures_testserver import *  # noqa: 401

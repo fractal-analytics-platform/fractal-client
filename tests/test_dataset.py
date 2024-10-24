@@ -3,12 +3,12 @@ import json
 from devtools import debug
 
 
-def test_create_dataset(register_user, invoke, tmp_path):
+def test_create_dataset(invoke, tmp_path, new_name):
     """
     Test some specific branches of the post_dataset function and parser.
     """
 
-    res = invoke("project new prj0")
+    res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
     FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
@@ -19,7 +19,7 @@ def test_create_dataset(register_user, invoke, tmp_path):
 
     res = invoke(
         (
-            f"project add-dataset {project_id} MyDS /tmp "
+            f"project add-dataset {project_id} {new_name()} /tmp "
             f"--filters {file_filters}"
         )
     )
@@ -28,19 +28,19 @@ def test_create_dataset(register_user, invoke, tmp_path):
     assert res.retcode == 0
     assert res.data["filters"] == FILTERS
 
-    res = invoke(f"--batch project add-dataset {project_id} MyNewDS /tmp")
+    res = invoke(f"--batch project add-dataset {project_id} {new_name()} /tmp")
     debug(res.data)
     assert res.retcode == 0
 
 
-def test_edit_dataset(register_user, invoke, tmp_path):
-    res = invoke("project new prj0")
+def test_edit_dataset(invoke, tmp_path, new_name):
+    res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    res = invoke(f"project add-dataset {project_id} test_name /tmp")
+    res = invoke(f"project add-dataset {project_id} {new_name()} /tmp")
     dataset_id = res.data["id"]
 
-    NAME = "this_new_name"
+    NAME = new_name()
     FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
     FILTERS_FILE = str(tmp_path / "meta.json")
     with open(FILTERS_FILE, "w") as f:
@@ -60,12 +60,12 @@ def test_edit_dataset(register_user, invoke, tmp_path):
     assert res.retcode == 0
 
 
-def test_delete_dataset(register_user, invoke):
+def test_delete_dataset(invoke, new_name):
     # Create a project with its default dataset
-    res = invoke("project new prj0")
+    res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    res = invoke(f"project add-dataset {project_id} test_name /tmp")
+    res = invoke(f"project add-dataset {project_id} {new_name()} /tmp")
     dataset_id = res.data["id"]
 
     # Delete dataset
@@ -76,11 +76,11 @@ def test_delete_dataset(register_user, invoke):
     assert res.data["detail"] == "Dataset not found"
 
 
-def test_show_dataset(register_user, invoke):
+def test_show_dataset(invoke, new_name):
     # Create a project with its default dataset
-    res = invoke("project new prj0")
+    res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
-    res = invoke(f"project add-dataset {project_id} test_name /tmp")
+    res = invoke(f"project add-dataset {project_id} {new_name()} /tmp")
     dataset_id = res.data["id"]
 
     res = invoke(f"dataset show {project_id} {dataset_id}")
