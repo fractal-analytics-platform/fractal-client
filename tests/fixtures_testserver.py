@@ -64,7 +64,7 @@ def testserver(tester, tmpdir_factory):
             f"FRACTAL_TASKS_DIR={FRACTAL_TASK_DIR}\n"
             "FRACTAL_RUNNER_WORKING_BASE_DIR="
             f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
-            "FRACTAL_LOGGING_LEVEL=10\n"
+            "FRACTAL_LOGGING_LEVEL=0\n"
         )
     _run_command(
         f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"
@@ -72,10 +72,13 @@ def testserver(tester, tmpdir_factory):
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command("poetry run fractalctl set-db")
 
+    LOGS = tmpdir_factory.mktemp("LOGS")
+    f_out = (LOGS / "out").open("w")
+    f_err = (LOGS / "err").open("w")
     server_process = subprocess.Popen(
         shlex.split(f"poetry run fractalctl start --port {PORT}"),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=f_out,
+        stderr=f_err,
     )
 
     # Wait until the server is up
@@ -114,6 +117,8 @@ def testserver(tester, tmpdir_factory):
         server_process.kill()
         _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
         env_file.unlink()
+        f_out.close()
+        f_err.close()
 
 
 @pytest.fixture
