@@ -1,6 +1,8 @@
 import logging
 import shlex
+import subprocess
 import time
+from pathlib import Path
 from typing import Optional
 
 import pytest
@@ -13,6 +15,8 @@ DB_NAME = "pytest-fractal-client"
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
 
+PORT = 8765
+
 
 @pytest.fixture
 def superuser(invoke_as_superuser):
@@ -24,8 +28,58 @@ def tester():
     return dict(email="client_tester@fractal.xy", password="pytest")
 
 
+def _run_command(cmd: str) -> str:
+    logging.warning(f"Now running {cmd=}")
+    res = subprocess.run(
+        shlex.split(cmd),
+        capture_output=True,
+        encoding="utf-8",
+    )
+    if res.returncode != 0:
+        logging.error(f"{res.stdout=}")
+        logging.error(f"{res.stderr=}")
+        raise RuntimeError(res.stderr)
+    else:
+        return res.stdout
+
+
 @pytest.fixture(scope="session", autouse=True)
-def testserver(tester):
+def testserver(tester, tmpdir_factory):
+
+    FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("FRACTAL_TASK_DIR"))
+    FRACTAL_RUNNER_WORKING_BASE_DIR = str(
+        tmpdir_factory.mktemp("FRACTAL_RUNNER_WORKING_BASE_DIR")
+    )
+
+    env_file = Path(".fractal_server.env")
+    with env_file.open("w") as f:
+        f.write(
+            "DB_ENGINE=postgres-psycopg\n"
+            "POSTGRES_HOST=localhost\n"
+            f"POSTGRES_DB={DB_NAME}\n"
+            "POSTGRES_USER=postgres\n"
+            "POSTGRES_PASSWORD=postgres\n"
+            "FRACTAL_RUNNER_BACKEND=local\n"
+            "JWT_SECRET_KEY=secret_key\n"
+            f"FRACTAL_TASKS_DIR={FRACTAL_TASK_DIR}\n"
+            "FRACTAL_RUNNER_WORKING_BASE_DIR="
+            f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
+            "FRACTAL_LOGGING_LEVEL=0\n"
+        )
+    _run_command(
+        f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"
+    )
+    _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
+    _run_command("poetry run fractalctl set-db")
+
+    LOGS = tmpdir_factory.mktemp("LOGS")
+    f_out = (LOGS / "out").open("w")
+    f_err = (LOGS / "err").open("w")
+    server_process = subprocess.Popen(
+        shlex.split(f"poetry run fractalctl start --port {PORT}"),
+        stdout=f_out,
+        stderr=f_err,
+    )
 
     # Wait until the server is up
     TIMEOUT = 8
@@ -55,7 +109,16 @@ def testserver(tester):
             )
         )
     )
-    yield
+
+    try:
+        yield
+    finally:
+        server_process.terminate()
+        server_process.kill()
+        _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
+        env_file.unlink()
+        f_out.close()
+        f_err.close()
 
 
 @pytest.fixture
