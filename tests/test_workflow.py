@@ -537,8 +537,17 @@ def test_workflow_import(
     new_name,
 ):
 
-    invoke("task new --command-parallel pwd --command-non-parallel pwd dummy")
-    invoke("task new --command-parallel pwd --command-non-parallel pwd dummy2")
+    res = invoke(
+        "task new --command-parallel pwd --command-non-parallel pwd dummy"
+    )
+    debug(res.data)
+    assert res.retcode == 0
+
+    res = invoke(
+        "task new --command-parallel pwd --command-non-parallel pwd dummy2"
+    )
+    debug(res.data)
+    assert res.retcode == 0
 
     # create project
     PROJECT_NAME = new_name()
@@ -563,6 +572,7 @@ def test_workflow_import(
     # get the workflow from the server, and check that it is the same
     workflow_id = res.data["id"]
     res = invoke(f"workflow show {project_id} {workflow_id}")
+    debug(res.data)
     assert res.retcode == 0
     res.data["task_list"][-1]["warning"] = None
     assert res.data == imported_workflow
@@ -573,6 +583,7 @@ def test_workflow_import(
         f"--batch workflow import --project-id {project_id} "
         f"--json-file {filename}"
     )
+    debug(res.data)
     assert res.retcode == 0
 
     # import workflow into project, with --workflow-name
@@ -580,6 +591,7 @@ def test_workflow_import(
         f"workflow import --project-id {project_id} --json-file {filename} "
         f" --workflow-name MyWorkflow-V2-xxx"
     )
+    debug(res.data)
     assert res.retcode == 0
     assert res.data["name"] == "MyWorkflow-V2-xxx"
 
