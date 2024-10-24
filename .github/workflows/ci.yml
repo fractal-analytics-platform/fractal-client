@@ -48,22 +48,20 @@ jobs:
         run: poetry install --with dev --without docs --no-interaction
 
       - name: Test with pytest
+        id: pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           PGPASSWORD: postgres
           GHA_FRACTAL_SERVER_LOG: /tmp
         run: poetry run coverage run -m pytest
 
-      - name: Log server if pytest failed
-        # Only runs if the previous step fails
-        if: failure()
-        run: |
-          echo FRACTAL SERVER STDOUT
-          echo ----------------------------------------------------------------
-          cat /tmp/server_out
-          echo FRACTAL SERVER STDERR
-          echo ----------------------------------------------------------------
-          cat /tmp/server_err
+      - name: Log server STDOUT if pytest failed
+        if: steps.pytest.outcome == 'failure'
+        run: cat /tmp/server_out
+
+      - name: Log server STDERR if pytest failed
+        if: steps.pytest.outcome == 'failure'
+        run: cat /tmp/server_err
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
