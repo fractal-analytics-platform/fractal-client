@@ -1,9 +1,6 @@
 import logging
-import os
 import shlex
-import signal
 import subprocess
-import threading
 import time
 from pathlib import Path
 from typing import Optional
@@ -79,25 +76,7 @@ def testserver(tester, tmpdir_factory):
         shlex.split(f"poetry run fractalctl start --port {PORT}"),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,  # Ensure we receive strings instead of bytes
     )
-
-    # Thread to stream stdout
-    def stream_output(pipe, stream_name):
-        with pipe:
-            for line in iter(pipe.readline, ""):
-                print(f"[{stream_name}] {line}", end="")
-
-    threading.Thread(
-        target=stream_output,
-        args=(server_process.stdout, "STDOUT"),
-        daemon=True,
-    ).start()
-    threading.Thread(
-        target=stream_output,
-        args=(server_process.stderr, "STDERR"),
-        daemon=True,
-    ).start()
 
     # Wait until the server is up
     TIMEOUT = 8
@@ -131,10 +110,8 @@ def testserver(tester, tmpdir_factory):
     try:
         yield
     finally:
-        if server_process.poll() is None:
-            os.kill(server_process.pid, signal.SIGTERM)
-            server_process.wait()
-
+        server_process.terminate()
+        server_process.kill()
         _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
         env_file.unlink()
 
