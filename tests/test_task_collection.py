@@ -8,17 +8,6 @@ import pytest
 from devtools import debug
 
 
-COLLECTION_TIMEOUT = 15.0
-
-PACKAGE_URL = (
-    "https://github.com/fractal-analytics-platform/fractal-server/"
-    "raw/main/tests/v2/fractal_tasks_mock/dist/"
-    "fractal_tasks_mock-0.0.1-py3-none-any.whl"
-)
-PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
-urlretrieve(PACKAGE_URL, PACKAGE_PATH)
-
-
 def test_task_collection_command(invoke, caplog):
     """
     Test that all `task collect` options are correctly parsed and included in
@@ -82,6 +71,16 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
         * the collection is initiated in the background
         * the server returns immediately
     """
+    COLLECTION_TIMEOUT = 15.0
+
+    PACKAGE_URL = (
+        "https://github.com/fractal-analytics-platform/fractal-server/"
+        "raw/main/tests/v2/fractal_tasks_mock/dist/"
+        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    )
+    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
+
     new_user = dict(email=f"{new_name()}@fractal.xy", password="1234")
     user_factory(**new_user)
 
@@ -125,42 +124,6 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
 
     res = invoke_as_custom_user("task list", **new_user)
     assert len(res.data) == initial_task_list + 14
-
-
-def test_repeated_task_collection(
-    user_factory, invoke_as_custom_user, new_name
-):
-    """
-    GIVEN
-        * a pip installable package containing fractal-compatible tasks
-        * a successful collection subcommand was executed
-    WHEN the collection subcommand is called a second time
-    THEN
-        * TBD..
-    """
-    new_user = dict(email=f"{new_name()}@fractal.xy", password="1234")
-    user_factory(**new_user)
-
-    res0 = invoke_as_custom_user(
-        f"--batch task collect --private {PACKAGE_PATH}", **new_user
-    )
-    debug(res0)
-
-    state_id = res0.data[0]  # extract id from batch string
-    debug(res0.data)
-
-    time.sleep(0.5)
-
-    # Wait until collection is complete
-    starting_time = time.perf_counter()
-    while True:
-        res1 = invoke_as_custom_user(
-            f"task check-collection {state_id}", **new_user
-        )
-        time.sleep(1)
-        if res1.data["data"]["status"] == "OK":
-            break
-        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Second collection
     with pytest.raises(SystemExit):
