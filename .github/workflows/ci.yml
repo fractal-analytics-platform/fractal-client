@@ -51,7 +51,7 @@ jobs:
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           PGPASSWORD: postgres
-        run: poetry run coverage run -m pytest -v
+        run: poetry run coverage run -m pytest -s -v
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
