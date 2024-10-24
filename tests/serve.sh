@@ -11,5 +11,7 @@ export FRACTAL_TASKS_DIR=FRACTAL_TASK_DIR
 export FRACTAL_RUNNER_WORKING_BASE_DIR=FRACTAL_RUNNER_WORKING_BASE_DIR
 export FRACTAL_LOGGING_LEVEL=0
 
+dropdb pytest-fractal-client
+createdb pytest-fractal-client
 poetry run fractalctl set-db
 poetry run fractalctl start --port 8765 > /dev/null 2>&1 &
