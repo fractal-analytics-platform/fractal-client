@@ -2,11 +2,20 @@
 
 # 2.3.0
 
+> WARNING: Starting from this release, Python3.9 is not supported any more.
+
+
 * Align with [`fractal-server` 2.7.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#270) (\#712).
 * Remove `--new-name` and `--new-version` options from `task edit` command (\#712).
-* Rename `source` into `label` `task collect-custom` command (\#712).
-* Do not rely on tasks' `source` or `owner` attributes (\#712).
-* Add `--new-ssh-settings-json` to `fractal user edit` (\#715).
+* Rename `source` into `label`, for `task collect-custom` command (\#712).
+* Do not refer to obsolete task attributes `source` or `owner` (\#712, \#717).
+* Add `--new-ssh-settings-json` option to `fractal user edit` (\#715).
+* Add `--private` option to task-creating commands (\#717).
+* Drop `task delete` command (\#717).
+* Testing:
+    * Run all tests against a single `fractal-server` instance (\#717).
+    * Run tests in random module order, based on `pytest-randomly` (\#717).
+    * Include Python3.12 in GitHub CI (\#717).
 
 # 2.2.1
 
