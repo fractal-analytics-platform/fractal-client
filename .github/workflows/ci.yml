@@ -50,7 +50,6 @@ jobs:
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
-          PGPASSWORD: postgres
           GHA_FRACTAL_SERVER_LOG: /tmp
         run: poetry run coverage run -m pytest
 
