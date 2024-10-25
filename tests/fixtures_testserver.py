@@ -196,44 +196,19 @@ def workflow_factory(invoke):
 def dataset_factory(invoke):
     def _dataset_factory(
         project_id: int,
-        dataset_name: str,
+        name: str,
         zarr_dir: str,
         filters: Optional[str] = None,
     ):
         cmd = "project add-dataset"
         if filters is not None:
             cmd += f" --filters {filters}"
-        cmd += f" {project_id} {dataset_name} {zarr_dir}"
+        cmd += f" {project_id} {name} {zarr_dir}"
 
         res = invoke(cmd)
         return res.data
 
     return _dataset_factory
-
-
-@pytest.fixture
-def job_factory(invoke):
-    def _job_factory(
-        project_id: int,
-        workflow_id: int,
-        dataset_id: int,
-        start: Optional[int] = None,
-        end: Optional[int] = None,
-        worker_init: Optional[str] = None,
-    ):
-        cmd = "job submit"
-        if start is not None:
-            cmd += f" --start {start}"
-        if end is not None:
-            cmd += f" --end {end}"
-        if worker_init is not None:
-            cmd += f" --worker-init {worker_init}"
-        cmd += f" {project_id} {workflow_id} {dataset_id}"
-
-        res = invoke(cmd)
-        return res.data
-
-    return _job_factory
 
 
 @pytest.fixture
