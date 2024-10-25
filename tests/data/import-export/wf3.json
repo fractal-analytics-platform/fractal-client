@@ -1,0 +1,20 @@
+{
+    "name": "Generic WF",
+    "task_list": [
+        {
+            "task": {
+                "name": "generic_task",
+                "pkg_name": "fractal-tasks-mock"
+            }
+        },
+        {
+            "args_non_parallel": {
+                "raise_error": true
+            },
+            "task": {
+                "name": "generic_task",
+                "pkg_name": "fractal-tasks-mock"
+            }
+        }
+    ]
+}
