@@ -36,14 +36,14 @@ def test_search_in_task_list():
     """Test all possible cases for function `_search_in_task_list`"""
 
     TASK_LIST = [
-        dict(name="dummy1", id=101, version="1.0.1", source="a"),
-        dict(name="dummy2", id=201, version=None, source="b"),
-        dict(name="dummy2", id=202, version="2.0.0", source="c"),
-        dict(name="dummy3", id=301, version="3.0.0", source="d"),
-        dict(name="dummy3", id=302, version="3.1.4", source="e"),
-        dict(name="dummy4", id=401, version="4.0.0", source="f"),
-        dict(name="dummy4", id=402, version="4.1.1", source="g"),
-        dict(name="dummy4", id=401, version="4.1.1", source="h"),
+        dict(name="dummy1", id=101, version="1.0.1"),
+        dict(name="dummy2", id=201, version=None),
+        dict(name="dummy2", id=202, version="2.0.0"),
+        dict(name="dummy3", id=301, version="3.0.0"),
+        dict(name="dummy3", id=302, version="3.1.4"),
+        dict(name="dummy4", id=401, version="4.0.0"),
+        dict(name="dummy4", id=402, version="4.1.1"),
+        dict(name="dummy4", id=401, version="4.1.1"),
     ]
 
     # TEST zero matching

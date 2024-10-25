@@ -153,13 +153,13 @@ def test_task_collection_custom(
 
     cmd = (
         f"task collect-custom --private --package-name {package_name} "
-        f"source {python_interpreter} {manifest}"
+        f"label {python_interpreter} {manifest}"
     )
     res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 0
     assert isinstance(res.data, list)
 
-    # Second API call fails (tasks with the same sources already exist)
+    # Second API call fails (tasks with the same identity already exist)
     caplog.clear()
     with pytest.raises(SystemExit):
         res = invoke_as_custom_user(cmd, **new_user)
@@ -169,7 +169,7 @@ def test_task_collection_custom(
     # Missing manifest file
     cmd = (
         f"task collect-custom --package-name {package_name} "
-        f"source {python_interpreter} /foo/bar"
+        f"label {python_interpreter} /foo/bar"
     )
     res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 1
@@ -177,7 +177,7 @@ def test_task_collection_custom(
 
     cmd = (
         "--batch task collect-custom --private --package-root /tmp --version 2"
-        f" source2 {python_interpreter} {manifest}"
+        f" label2 {python_interpreter} {manifest}"
     )
     res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 0
@@ -187,7 +187,7 @@ def test_task_collection_custom(
     cmd = (
         "task collect-custom --private"
         f"--package-root /tmp --package-name {package_name} "
-        f"source3 {python_interpreter} {manifest}"
+        f"label3 {python_interpreter} {manifest}"
     )
     with pytest.raises(SystemExit):
         res = invoke_as_custom_user(cmd, **new_user)
