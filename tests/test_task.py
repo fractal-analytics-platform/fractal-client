@@ -11,7 +11,13 @@ from fractal_client.config import settings
 COLLECTION_TIMEOUT = 15.0
 
 
-def test_task_new(invoke, tmp_path, new_name):
+def test_task_new(
+    invoke,
+    invoke_as_custom_user,
+    tmp_path,
+    new_name,
+    user_factory,
+):
 
     # create a new task with just positional required args
     args_path = str(tmp_path / "args.json")
@@ -29,7 +35,8 @@ def test_task_new(invoke, tmp_path, new_name):
         f"task new {TASK_NAME} --command-parallel _command "
         f"--version _version --meta-parallel {meta_path} "
         f"--args-schema-parallel {args_path} "
-        f"--args-schema-version 1.0.0"
+        f"--args-schema-version 1.0.0 "
+        "--private"
     )
     debug(res.data)
     assert res.retcode == 0
@@ -38,8 +45,17 @@ def test_task_new(invoke, tmp_path, new_name):
     assert res.data["version"] == "_version"
     assert res.data["meta_parallel"] == meta
     assert res.data["args_schema_version"] == "1.0.0"
-
     first_task_id = int(res.data["id"])
+
+    # Check that task is actually private
+    new_user_credentials = dict(
+        email=f"{new_name()}@example.org",
+        password="1234",
+    )
+    user_factory(**new_user_credentials)
+    res = invoke_as_custom_user("task list", **new_user_credentials)
+    assert res.retcode == 0
+    assert res.data == []
 
     # create a new task with batch option
     TASK_NAME_2 = new_name()
