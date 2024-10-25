@@ -49,10 +49,8 @@ def task_collect_pip(
             _name: _version
             for _name, _version in (p.split("=") for p in pinned_dependency)
         }
-    if private is True:
-        is_private = "?private=true"
-    else:
-        is_private = ""
+
+    is_private = "?private=true" if private else ""
 
     res = client.post(
         f"{settings.BASE_URL}/task/collect/pip/{is_private}", json=task_collect
@@ -100,10 +98,7 @@ def task_collect_custom(
         task_collect["package_name"] = package_name
     if package_root:
         task_collect["package_root"] = package_root
-    if private is True:
-        is_private = "?private=true"
-    else:
-        is_private = ""
+    is_private = "?private=true" if private else ""
 
     res = client.post(
         f"{settings.BASE_URL}/task/collect/custom/{is_private}",
@@ -175,10 +170,7 @@ def post_task(
             task["args_schema_non_parallel"] = json.load(f)
     if args_schema_version:
         task["args_schema_version"] = args_schema_version
-    if private is True:
-        is_private = "?private=true"
-    else:
-        is_private = ""
+    is_private = "?private=true" if private else ""
 
     res = client.post(f"{settings.BASE_URL}/task/{is_private}", json=task)
     new_task = check_response(res, expected_status_code=201)
