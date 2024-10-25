@@ -21,7 +21,6 @@ from ._project import get_project
 from ._project import get_project_list
 from ._project import patch_project
 from ._project import post_project
-from ._task import delete_task
 from ._task import get_task_list
 from ._task import patch_task
 from ._task import post_task
@@ -183,10 +182,6 @@ def task(
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_task(client, **function_kwargs)
-    elif subcmd == "delete":
-        parameters = ["id", "name", "version"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = delete_task(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'task {subcmd}' not found")
     return iface

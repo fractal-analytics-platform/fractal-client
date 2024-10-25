@@ -402,31 +402,6 @@ task_edit_parser.add_argument(
     help=("Path to JSON file with new output types."),
 )
 
-# task delete
-task_delete_parser = task_subparsers.add_parser(
-    "delete",
-    description="Delete task.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-task_delete_id_or_name_group = task_delete_parser.add_mutually_exclusive_group(
-    required=True
-)
-task_delete_id_or_name_group.add_argument(
-    "--id", help="ID of the task to delete.", type=int
-)
-task_delete_id_or_name_group.add_argument(
-    "--name", help="Name of the task to delete."
-)
-task_delete_parser.add_argument(
-    "--version",
-    help=(
-        "Version of the task to delete "
-        "(only accepted in combination with `--name`)."
-    ),
-)
-
-
 # WORKFLOW GROUP
 
 workflow_parser = subparsers_main.add_parser(

@@ -223,30 +223,3 @@ def patch_task(
     res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
     new_task = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=new_task)
-
-
-def delete_task(
-    client: AuthClient,
-    *,
-    id: Optional[int] = None,
-    name: Optional[str] = None,
-    version: Optional[str] = None,
-) -> Interface:
-
-    if id:
-        if version:
-            logging.error(
-                "Too many arguments: cannot provide both `id` and `version`."
-            )
-            sys.exit(1)
-    else:
-        try:
-            id = get_task_id_from_cache(
-                client=client, task_name=name, version=version
-            )
-        except FractalCacheError as e:
-            print(e)
-            sys.exit(1)
-    res = client.delete(f"{settings.BASE_URL}/task/{id}/")
-    check_response(res, expected_status_code=204)
-    return Interface(retcode=0, data="")
