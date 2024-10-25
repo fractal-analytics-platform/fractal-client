@@ -53,9 +53,11 @@ def test_task_new(
         password="1234",
     )
     user_factory(**new_user_credentials)
-    res = invoke_as_custom_user("task list", **new_user_credentials)
-    assert res.retcode == 0
-    assert res.data == []
+    with pytest.raises(SystemExit):
+        res = invoke_as_custom_user(
+            f"task show {first_task_id}",
+            **new_user_credentials,
+        )
 
     # create a new task with batch option
     TASK_NAME_2 = new_name()
