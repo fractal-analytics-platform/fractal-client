@@ -51,7 +51,7 @@ def _remove_session():
 def invoke():
     def __invoke(args: str):
         _remove_session()
-        new_args = f"--user client_tester@fractal.xy --password pytest {args}"
+        new_args = f"--user client_tester@example.org --password pytest {args}"
         return handle(_clisplit(new_args))
 
     return __invoke

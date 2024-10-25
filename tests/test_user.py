@@ -17,7 +17,7 @@ def test_register_as_user(invoke, caplog):
 def test_register_as_superuser(
     invoke_as_superuser, is_superuser: bool, new_name
 ):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     if is_superuser:
         res = invoke_as_superuser(
             f"user register {EMAIL_USER} {PWD_USER} --superuser"
@@ -41,7 +41,7 @@ def test_register_as_superuser(
 
 
 def test_register_as_superuser_with_batch(invoke_as_superuser, new_name):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     # Register a user with the --batch flag
     res = invoke_as_superuser(f"--batch user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data
@@ -72,7 +72,7 @@ def test_list_as_superuser(invoke_as_superuser, superuser, tester):
 
 
 def test_show_as_user(invoke, invoke_as_superuser, caplog, new_name):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
     res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
@@ -84,7 +84,7 @@ def test_show_as_user(invoke, invoke_as_superuser, caplog, new_name):
 
 
 def test_show_as_superuser(invoke_as_superuser, new_name):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
     res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
@@ -96,7 +96,7 @@ def test_show_as_superuser(invoke_as_superuser, new_name):
 
 
 def test_edit_as_user(invoke, invoke_as_superuser, caplog, new_name):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
     res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
@@ -120,13 +120,13 @@ def test_edit_as_superuser(
     new_is_non_verified,
     new_name,
 ):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
     res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     assert res.retcode == 0
     user_id = res.data["id"]
     # Call fractal user edit
-    NEW_EMAIL = f"{new_name()}@fractal.xy"
+    NEW_EMAIL = f"{new_name()}@example.org"
     NEW_CACHE_DIR = "/tmp/xxx"
     NEW_SLURM_USER = "new_slurm"
     NEW_USERNAME = "new_username"
@@ -196,7 +196,7 @@ def test_edit_as_superuser(
 
 
 def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
 
     EMPTY_USER_SETTINGS = {
         "ssh_host": None,
@@ -312,7 +312,7 @@ def test_edit_arguments(invoke_as_superuser):
     reason="Delete-user endpoint was removed in fractal-server 1.4.0"
 )
 def test_delete_as_user(invoke, invoke_as_superuser, caplog, new_name):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
     res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]
@@ -327,7 +327,7 @@ def test_delete_as_user(invoke, invoke_as_superuser, caplog, new_name):
     reason="Delete-user endpoint was removed in fractal-server 1.4.0"
 )
 def test_delete_as_superuser(invoke_as_superuser, caplog, new_name):
-    EMAIL_USER = f"{new_name()}@fractal.xy"
+    EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
     res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
     user_id = res.data["id"]

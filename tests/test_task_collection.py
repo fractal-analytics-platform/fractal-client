@@ -81,7 +81,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
     urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
-    new_user = dict(email=f"{new_name()}@fractal.xy", password="1234")
+    new_user = dict(email=f"{new_name()}@example.org", password="1234")
     user_factory(**new_user)
 
     res = invoke_as_custom_user("task list", **new_user)
@@ -133,7 +133,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
 def test_task_collection_custom(
     user_factory, new_name, tmp_path, invoke_as_custom_user, caplog
 ):
-    new_user = dict(email=f"{new_name()}@fractal.xy", password="1234")
+    new_user = dict(email=f"{new_name()}@example.org", password="1234")
     user_factory(**new_user)
 
     python_interpreter = sys.executable

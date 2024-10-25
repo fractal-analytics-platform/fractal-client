@@ -38,13 +38,13 @@ def test_group_commands(
     superuser_id = superuser["id"]
 
     # create 3 standard users (by default in default group)
-    user1 = user_factory(email=f"{new_name()}@fractal.xy", password="psw1")
+    user1 = user_factory(email=f"{new_name()}@example.org", password="psw1")
     user1_id = user1["id"]
     assert user1["group_ids_names"] == [[default_group_id, "All"]]
-    user2 = user_factory(email=f"{new_name()}@fractal.xy", password="psw2")
+    user2 = user_factory(email=f"{new_name()}@example.org", password="psw2")
     user2_id = user2["id"]
     assert user2["group_ids_names"] == [[default_group_id, "All"]]
-    user3 = user_factory(email=f"{new_name()}@fractal.xy", password="psw3")
+    user3 = user_factory(email=f"{new_name()}@example.org", password="psw3")
     user3_id = user3["id"]
     assert user3["group_ids_names"] == [[default_group_id, "All"]]
 

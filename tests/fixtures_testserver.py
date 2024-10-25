@@ -26,7 +26,7 @@ def superuser(invoke_as_superuser):
 
 @pytest.fixture(scope="session")
 def tester():
-    return dict(email="client_tester@fractal.xy", password="pytest")
+    return dict(email="client_tester@example.org", password="pytest")
 
 
 def _run_command(cmd: str) -> str:
