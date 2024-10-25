@@ -31,16 +31,10 @@ def tester():
 
 def _run_command(cmd: str) -> str:
     logging.warning(f"Now running {cmd=}")
-
-    if "PGPASSWORD" not in os.environ:
-        pg_env = dict(PGPASSWORD="postgres")
-    else:
-        pg_env = dict()
-
     res = subprocess.run(
         shlex.split(cmd),
         capture_output=True,
-        env=dict(**pg_env, **os.environ),
+        env=dict(PGPASSWORD="postgres", **os.environ),
         encoding="utf-8",
     )
     if res.returncode != 0:
