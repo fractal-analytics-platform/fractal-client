@@ -193,6 +193,25 @@ def workflow_factory(invoke):
 
 
 @pytest.fixture
+def dataset_factory(invoke):
+    def _dataset_factory(
+        project_id: int,
+        dataset_name: str,
+        zarr_dir: str,
+        filters: Optional[str] = None,
+    ):
+        cmd = "project add-dataset"
+        if filters is not None:
+            cmd += f" --filters {filters}"
+        cmd += f" {project_id} {dataset_name} {zarr_dir}"
+
+        res = invoke(cmd)
+        return res.data
+
+    return _dataset_factory
+
+
+@pytest.fixture
 def job_factory(invoke):
     def _job_factory(
         project_id: int,
