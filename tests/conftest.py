@@ -114,14 +114,16 @@ def override_settings(monkeypatch, tmp_path):
 
 @pytest.fixture(scope="session")
 def new_name():
-    counter = 0
+    class Counter(object):
+        ind: int = 0
 
-    def _next_name():
-        nonlocal counter
-        counter += 1
-        return f"name{counter}"
+        def __next__(self):
+            self.ind = self.ind + 1
+            return f"name{self.ind - 1}"
 
-    return _next_name
+    names = Counter()
+
+    return lambda: next(names)
 
 
 from .fixtures_testserver import *  # noqa: 401
