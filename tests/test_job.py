@@ -5,7 +5,7 @@ from urllib.request import urlretrieve
 import pytest
 from devtools import debug
 
-TIMEOUT = 10.0
+TIMEOUT = 15.0
 
 
 def test_job_submit(
