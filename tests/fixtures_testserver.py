@@ -1,8 +1,8 @@
 import logging
+import os
 import shlex
 import subprocess
 import time
-from os import environ
 from pathlib import Path
 from typing import Optional
 
@@ -34,6 +34,7 @@ def _run_command(cmd: str) -> str:
     res = subprocess.run(
         shlex.split(cmd),
         capture_output=True,
+        env=dict(PGPASSWORD="postgres", **os.environ),
         encoding="utf-8",
     )
     if res.returncode != 0:
@@ -47,10 +48,8 @@ def _run_command(cmd: str) -> str:
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory, request):
 
-    FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("FRACTAL_TASK_DIR"))
-    FRACTAL_RUNNER_WORKING_BASE_DIR = str(
-        tmpdir_factory.mktemp("FRACTAL_RUNNER_WORKING_BASE_DIR")
-    )
+    FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("TASKS"))
+    FRACTAL_RUNNER_WORKING_BASE_DIR = str(tmpdir_factory.mktemp("JOBS"))
 
     env_file = Path(".fractal_server.env")
     with env_file.open("w") as f:
@@ -73,11 +72,14 @@ def testserver(tester, tmpdir_factory, request):
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command("poetry run fractalctl set-db")
 
-    LOGS = Path(
-        environ.get("GHA_FRACTAL_SERVER_LOG") or tmpdir_factory.mktemp("LOGS")
+    LOG_DIR = Path(
+        os.environ.get(
+            "GHA_FRACTAL_SERVER_LOG",
+            tmpdir_factory.mktemp("LOGS"),
+        ),
     )
-    path_out = LOGS / "server_out"
-    path_err = LOGS / "server_err"
+    path_out = LOG_DIR / "server_out"
+    path_err = LOG_DIR / "server_err"
     f_out = path_out.open("w")
     f_err = path_err.open("w")
 
@@ -116,24 +118,22 @@ def testserver(tester, tmpdir_factory, request):
         )
     )
 
-    try:
-        yield
-    finally:
-        # 'capmanager' is used to print even without `pytest -s`
-        # https://stackoverflow.com/a/76539910/12932447
-        capmanager = request.config.pluginmanager.getplugin("capturemanager")
-        with capmanager.global_and_fixture_disabled():
-            print(
-                "\n\nTerminating Fractal Server...\n"
-                f"stdout -> {path_out}\n"
-                f"stderr -> {path_err}\n"
-            )
-        server_process.terminate()
-        server_process.kill()
-        _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
-        env_file.unlink()
-        f_out.close()
-        f_err.close()
+    yield
+
+    request.session.warn(
+        Warning(
+            f"\n\nTerminating Fractal Server (PID: {server_process.pid}).\n"
+            f"stdout -> {path_out}\n"
+            f"stderr -> {path_err}\n"
+        )
+    )
+
+    server_process.terminate()
+    server_process.kill()
+    _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
+    env_file.unlink()
+    f_out.close()
+    f_err.close()
 
 
 @pytest.fixture
