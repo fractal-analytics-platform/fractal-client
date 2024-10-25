@@ -114,13 +114,10 @@ def _format_task_list(task_list: _TaskList) -> str:
     Helper function to print a formatted task list with only a few task
     attributes, to be used in error messages.
     """
-    header = "  ID, Name, Version, Source"
+    header = "  ID, Name, Version"
     formatted_list = "\n".join(
         [
-            (
-                f'  {task["id"]}, "{task["name"]}", {task["version"]}, '
-                f'{task["source"]}'
-            )
+            f'  {task["id"]}, "{task["name"]}", {task["version"]}'
             for task in task_list
         ]
     )
