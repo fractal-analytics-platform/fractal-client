@@ -90,8 +90,8 @@ def testserver(tester, tmpdir_factory, request):
     )
 
     # Wait until the server is up
-    TIMEOUT = 8
-    time_used = 0
+    TIMEOUT = 8.0
+    t_start = time.perf_counter()
     while True:
         try:
             res = handle(shlex.split("fractal version"))
@@ -101,13 +101,12 @@ def testserver(tester, tmpdir_factory, request):
                 raise ConnectError("fractal-server not ready")
         except ConnectError:
             logger.debug("Fractal server not ready, wait one more second.")
-            time.sleep(1)
-            time_used += 1
-            if time_used > TIMEOUT:
+            if time.perf_counter() - t_start > TIMEOUT:
                 raise RuntimeError(
                     f"Could not start up server within {TIMEOUT} seconds,"
                     " in `testserver` fixture."
                 )
+            time.sleep(0.1)
 
     handle(
         shlex.split(

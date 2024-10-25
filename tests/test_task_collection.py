@@ -98,8 +98,6 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     state_id = res0.data["id"]
     debug(state_id)
 
-    time.sleep(0.5)
-
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
@@ -109,7 +107,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
         debug(res1.data)
         assert res1.retcode == 0
         res1.show()
-        time.sleep(1)
+        time.sleep(0.1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
