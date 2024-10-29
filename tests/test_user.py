@@ -40,6 +40,53 @@ def test_register_as_superuser(
     assert res.data["is_verified"]
 
 
+def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
+
+    EMAIL_USER = f"{new_name()}@example.org"
+
+    with pytest.raises(SystemExit, match="File does not exist"):
+        invoke_as_superuser(
+            f"user register {EMAIL_USER} {PWD_USER} --ssh-settings-json xy.z"
+        )
+
+    invalid_json = tmp_path / "not-a-json.foo"
+    with invalid_json.open("w") as f:
+        f.write("hello world")
+    with pytest.raises(SystemExit, match="not a valid JSON"):
+        invoke_as_superuser(
+            f"user register {EMAIL_USER} {PWD_USER} "
+            f"--ssh-settings-json {invalid_json}"
+        )
+
+    invalid_key_json = tmp_path / "invalid-key.json"
+    with invalid_key_json.open("w") as f:
+        json.dump(dict(invalid="invalid"), f)
+    with pytest.raises(SystemExit, match="Invalid key"):
+        invoke_as_superuser(
+            f"user register {EMAIL_USER} {PWD_USER} "
+            f"--ssh-settings-json {invalid_key_json}"
+        )
+
+    valid_json = tmp_path / "ssh-config.json"
+    with valid_json.open("w") as f:
+        json.dump(
+            dict(
+                ssh_host="SSH_HOST",
+                ssh_private_key_path="/SSH_PRIVATE_KEY_PATH",
+            ),
+            f,
+        )
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} "
+        f"--ssh-settings-json {valid_json}"
+    )
+    assert res.retcode == 0
+    assert res.data["settings"]["ssh_host"] == "SSH_HOST"
+    assert res.data["settings"]["ssh_private_key_path"] == (
+        "/SSH_PRIVATE_KEY_PATH"
+    )
+
+
 def test_register_as_superuser_with_batch(invoke_as_superuser, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a user with the --batch flag
