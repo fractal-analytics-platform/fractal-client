@@ -322,6 +322,7 @@ def user(
             "cache_dir",
             "slurm_user",
             "username",
+            "ssh_settings_json",
             "superuser",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)

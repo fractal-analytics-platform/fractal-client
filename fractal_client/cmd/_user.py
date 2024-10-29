@@ -18,6 +18,7 @@ def user_register(
     slurm_user: Optional[str] = None,
     cache_dir: Optional[str] = None,
     username: Optional[str] = None,
+    ssh_settings_json: Optional[str] = None,
     superuser: bool = False,
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
@@ -34,6 +35,27 @@ def user_register(
         new_settings["slurm_user"] = slurm_user
     if cache_dir:
         new_settings["cache_dir"] = cache_dir
+    if ssh_settings_json is not None:
+        ssh_settings_json_path = Path(ssh_settings_json)
+        if not ssh_settings_json_path.exists():
+            sys.exit(f"Invalid {ssh_settings_json=}. File does not exist.")
+        with ssh_settings_json_path.open("r") as f:
+            try:
+                ssh_settings = json.load(f)
+            except JSONDecodeError:
+                sys.exit(f"{ssh_settings_json_path} is not a valid JSON.")
+        __ALLOWED_KEYS__ = (
+            "ssh_host",
+            "ssh_username",
+            "ssh_private_key_path",
+            "ssh_tasks_dir",
+            "ssh_jobs_dir",
+        )
+        for key, value in ssh_settings.items():
+            if key in __ALLOWED_KEYS__:
+                new_settings[key] = value
+            else:
+                sys.exit(f"Invalid {key=} in {ssh_settings_json=}.")
 
     res = client.post(
         f"{settings.FRACTAL_SERVER}/auth/register/", json=new_user
