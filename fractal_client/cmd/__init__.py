@@ -303,7 +303,7 @@ def version(client: Client, **kwargs) -> Interface:
         res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
         data = res.json()
         server_str = (
-            f"\turl: {settings.FRACTAL_SERVER}" f"\tversion: {data['version']}"
+            f"\turl: {settings.FRACTAL_SERVER}\tversion: {data['version']}"
         )
     except ConnectError:
         server_str = f"\tConnection to '{settings.FRACTAL_SERVER}' refused"
