@@ -1,303 +1,237 @@
 import logging
+import os
+import shlex
+import subprocess
 import time
-from multiprocessing import Process
-from os import environ
+from pathlib import Path
 from typing import Optional
 
-import httpx
 import pytest
-import uvicorn
-from sqlmodel import select
+from httpx import ConnectError
 
+from fractal_client.client import handle
+
+DB_NAME = "pytest-fractal-client"
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
 
-PORT = 10080
+PORT = 8765
 
 
 @pytest.fixture
-def override_server_settings(tmp_path):
-    from fractal_server.config import Settings, get_settings
-    from fractal_server.syringe import Inject
+def superuser(invoke_as_superuser):
+    return invoke_as_superuser("user whoami").data
 
-    settings = Settings()
 
-    settings.DB_ENGINE = "postgres-psycopg"
-    settings.POSTGRES_DB = "fractal_client_test"
-    settings.POSTGRES_USER = "postgres"
-    settings.POSTGRES_PASSWORD = "postgres"
+@pytest.fixture(scope="session")
+def tester():
+    return dict(email="client_tester@example.org", password="pytest")
 
-    settings.FRACTAL_RUNNER_BACKEND = "local"
 
-    settings.JWT_SECRET_KEY = "secret_key"
-    base_folder = tmp_path
-    settings.FRACTAL_TASKS_DIR = base_folder / "FRACTAL_TASKS_DIR"
-    settings.FRACTAL_RUNNER_WORKING_BASE_DIR = (
-        base_folder / "FRACTAL_RUNNER_WORKING_BASE_DIR"
+def _run_command(cmd: str) -> str:
+    logging.warning(f"Now running {cmd=}")
+    res = subprocess.run(
+        shlex.split(cmd),
+        capture_output=True,
+        env=dict(PGPASSWORD="postgres", **os.environ),
+        encoding="utf-8",
     )
-    settings.FRACTAL_LOGGING_LEVEL = logging.DEBUG
-    settings.FRACTAL_API_SUBMIT_RATE_LIMIT = 0
-
-    def _get_settings():
-        return settings
-
-    Inject.override(get_settings, _get_settings)
-    try:
-        yield
-    finally:
-        Inject.pop(get_settings)
+    if res.returncode != 0:
+        logging.error(f"{res.stdout=}")
+        logging.error(f"{res.stderr=}")
+        raise RuntimeError(res.stderr)
+    else:
+        return res.stdout
 
 
-@pytest.fixture(scope="function", autouse=True)
-def testserver(override_server_settings):
+@pytest.fixture(scope="session", autouse=True)
+def testserver(tester, tmpdir_factory, request):
 
-    from fractal_server.app.db import DB
-    from fractal_server.app.models.security import SQLModel
-    from fractal_server.app.models.security import UserOAuth
-    from fractal_server.app.models.user_settings import UserSettings
-    from fractal_server.app.models.security import UserGroup
-    from fractal_server.app.models.linkusergroup import LinkUserGroup
-    from fractal_server.app.security import _create_first_group
+    FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("TASKS"))
+    FRACTAL_RUNNER_WORKING_BASE_DIR = str(tmpdir_factory.mktemp("JOBS"))
 
-    # INIT DB
-    engine_sync = DB.engine_sync()
-    logger.debug(engine_sync.url)
-    SQLModel.metadata.create_all(engine_sync)
-
-    # Create default group and first superuser
-    # NOTE: we have to do it here, because we are not calling the `set_db`
-    # function from fractal-server. This would change with
-    # https://github.com/fractal-analytics-platform/fractal-client/issues/697
-    # NOTE: `hashed_password` is the bcrypt hash of "1234", see
-    # https://github.com/fractal-analytics-platform/fractal-server/issues/1750
-    _create_first_group()
-    with next(DB.get_sync_db()) as db:
-        user = UserOAuth(
-            email="admin@fractal.xy",
-            hashed_password=(
-                "$2b$12$K0C4t7XILgpcQx35V3QE3enOODQ1IH9pzW49nqjHbrx2uQTMVYsQC"
-            ),
-            username=environ["FRACTAL_USERNAME"],
-            is_superuser=True,
-            is_verified=True,
-            is_active=True,
+    env_file = Path(".fractal_server.env")
+    with env_file.open("w") as f:
+        f.write(
+            "DB_ENGINE=postgres-psycopg\n"
+            "POSTGRES_HOST=localhost\n"
+            f"POSTGRES_DB={DB_NAME}\n"
+            "POSTGRES_USER=postgres\n"
+            "POSTGRES_PASSWORD=postgres\n"
+            "FRACTAL_RUNNER_BACKEND=local\n"
+            "JWT_SECRET_KEY=secret_key\n"
+            f"FRACTAL_TASKS_DIR={FRACTAL_TASK_DIR}\n"
+            "FRACTAL_RUNNER_WORKING_BASE_DIR="
+            f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
+            "FRACTAL_LOGGING_LEVEL=0\n"
         )
-        empty_user_settings = UserSettings()
-        user.settings = empty_user_settings
-        db.add(user)
-        db.commit()
+    _run_command(
+        f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"
+    )
+    _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
+    _run_command("poetry run fractalctl set-db")
 
-        first_group = db.execute(select(UserGroup)).scalar()
-        first_user = db.execute(select(UserOAuth)).scalar()
+    LOG_DIR = Path(
+        os.environ.get(
+            "GHA_FRACTAL_SERVER_LOG",
+            tmpdir_factory.mktemp("LOGS"),
+        ),
+    )
+    path_out = LOG_DIR / "server_out"
+    path_err = LOG_DIR / "server_err"
+    f_out = path_out.open("w")
+    f_err = path_err.open("w")
 
-        link = LinkUserGroup(group_id=first_group.id, user_id=first_user.id)
-        db.add(link)
-        db.commit()
-
-    # Run testserver in a separate process
-    # cf. https://stackoverflow.com/a/57816608/283972
-    def run_server():
-        uvicorn.run(
-            "fractal_server.main:app",
-            port=PORT,
-            log_level="debug",
-            timeout_keep_alive=10,
-        )
-
-    proc = Process(target=run_server, args=(), daemon=True)
-    proc.start()
+    server_process = subprocess.Popen(
+        shlex.split(f"poetry run fractalctl start --port {PORT}"),
+        stdout=f_out,
+        stderr=f_err,
+    )
 
     # Wait until the server is up
-    TIMEOUT = 8
-    time_used = 0
+    TIMEOUT = 8.0
+    t_start = time.perf_counter()
     while True:
         try:
-            res = httpx.get(f"http://localhost:{PORT}/api/alive/")
-            assert res.status_code == 200
-            break
-        except httpx.ConnectError:
+            res = handle(shlex.split("fractal version"))
+            if res.retcode == 0:
+                break
+            else:
+                raise ConnectError("fractal-server not ready")
+        except ConnectError:
             logger.debug("Fractal server not ready, wait one more second.")
-            time.sleep(1)
-            time_used += 1
-            if time_used > TIMEOUT:
+            if time.perf_counter() - t_start > TIMEOUT:
                 raise RuntimeError(
                     f"Could not start up server within {TIMEOUT} seconds,"
                     " in `testserver` fixture."
                 )
+            time.sleep(0.1)
 
-    logger.debug(environ["FRACTAL_SERVER"])
-    yield environ["FRACTAL_SERVER"]
-
-    # Cleanup DB
-    engine_sync.dispose()
-    try:
-        DB._engine_async
-        raise
-    except AttributeError:
-        # we show here that we do not need to dispose of `engine_async`,
-        # because it is never used.
-        pass
-    SQLModel.metadata.drop_all(engine_sync)
-    logger.debug("Dropped all tables from the database.")
-
-    proc.kill()
-
-
-@pytest.fixture
-def db(testserver):
-    """
-    NOTE: Only use this fixture within other fixtures!!!
-    """
-    from fractal_server.app.db import get_sync_db
-
-    for db in get_sync_db():
-        yield db
-
-
-@pytest.fixture
-def task_factory(db):
-    from fractal_server.app.models.v2.task import TaskV2
-    from fractal_server.app.models.v2.task import TaskGroupV2
-
-    def _task_factory(user_id: int, **task_args_override):
-        task_args = dict(name="test_task", type="parallel")
-        task_args.update(task_args_override)
-        t = TaskV2(**task_args)
-
-        db.add(
-            TaskGroupV2(
-                user_id=user_id,
-                origin="other",
-                pkg_name=t.name,
-                task_list=[t],
+    handle(
+        shlex.split(
+            (
+                "fractal --user admin@fractal.xy --password 1234 "
+                f"user register {tester['email']} {tester['password']}"
             )
         )
+    )
 
-        db.commit()
-        db.refresh(t)
-        return t
+    yield
+
+    request.session.warn(
+        Warning(
+            f"\n\nTerminating Fractal Server (PID: {server_process.pid}).\n"
+            f"stdout -> {path_out}\n"
+            f"stderr -> {path_err}\n"
+        )
+    )
+
+    server_process.terminate()
+    server_process.kill()
+    _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
+    env_file.unlink()
+    f_out.close()
+    f_err.close()
+
+
+@pytest.fixture
+def task_factory(invoke):
+    def _task_factory(
+        name: str,
+        command_non_parallel: Optional[str] = None,
+        command_parallel: Optional[str] = None,
+        version: Optional[str] = None,
+        meta_non_parallel: Optional[str] = None,
+        meta_parallel: Optional[str] = None,
+        args_schema_non_parallel: Optional[str] = None,
+        args_schema_parallel: Optional[str] = None,
+        args_schema_version: Optional[str] = None,
+    ):
+        cmd = "task new"
+        if command_non_parallel is not None:
+            cmd += f" --command-non-parallel {command_non_parallel}"
+        if command_parallel is not None:
+            cmd += f" --command-parallel {command_parallel}"
+        if version is not None:
+            cmd += f" --version {version}"
+        if meta_non_parallel is not None:
+            cmd += f" --meta-non-parallel {meta_non_parallel}"
+        if meta_parallel is not None:
+            cmd += f" --meta-parallel {meta_parallel}"
+        if args_schema_non_parallel is not None:
+            cmd += f" --args-schema-non-parallel {args_schema_non_parallel}"
+        if args_schema_parallel is not None:
+            cmd += f" --args-schema-parallel {args_schema_parallel}"
+        if args_schema_version is not None:
+            cmd += f" --args-schema-version {args_schema_version}"
+        cmd += f" {name}"
+
+        res = invoke(cmd)
+        return res.data
 
     return _task_factory
 
 
 @pytest.fixture
-def project_factory(db):
-    from fractal_server.app.models.v2.project import ProjectV2
-
-    def _project_factory(user_id=None, **project_args_override):
-        project_args = dict(name="name")
-        project_args.update(project_args_override)
-        p = ProjectV2(**project_args)
-        if user_id:
-            from fractal_server.app.security import User
-
-            user = db.get(User, user_id)
-            p.user_list.append(user)
-        db.add(p)
-        db.commit()
-        db.refresh(p)
-        return p
+def project_factory(invoke):
+    def _project_factory(name: str):
+        res = invoke(f"project new {name}")
+        return res.data
 
     return _project_factory
 
 
 @pytest.fixture
-def workflow_factory(db, project_factory):
-    from fractal_server.app.models.v2.workflow import WorkflowV2
-
-    def _workflow_factory(**wf_args_override):
-        wf_args = dict(name="name")
-        wf_args.update(wf_args_override)
-        wf = WorkflowV2(**wf_args)
-        db.add(wf)
-        db.commit()
-        db.refresh(wf)
-        return wf
+def workflow_factory(invoke):
+    def _workflow_factory(name: str, project_id: int):
+        res = invoke(f"workflow new {name} {project_id}")
+        return res.data
 
     return _workflow_factory
 
 
 @pytest.fixture
-def job_factory(db):
-    from fractal_server.app.models.v2.job import JobV2
-    from fractal_server.utils import get_timestamp
+def dataset_factory(invoke):
+    def _dataset_factory(
+        project_id: int,
+        name: str,
+        zarr_dir: str,
+        filters: Optional[str] = None,
+    ):
+        cmd = "project add-dataset"
+        if filters is not None:
+            cmd += f" --filters {filters}"
+        cmd += f" {project_id} {name} {zarr_dir}"
 
-    def _job_factory(**job_args_override):
-        job_args = dict(
-            project_id=1,
-            input_dataset_id=1,
-            output_dataset_id=2,
-            workflow_id=1,
-            worker_init="WORKER_INIT string",
-            first_task_index=9999,
-            last_task_index=9999,
-            workflow_dump={},
-            dataset_dump=dict(
-                id=1,
-                name="ds-in",
-                zarr_dir="/abc",
-                project_id=1,
-                timestamp_created=str(get_timestamp()),
-                filters=dict(attributes=dict(a=1), types=dict(b=True)),
-            ),
-            project_dump=dict(
-                id=1,
-                name="proj",
-                timestamp_created=str(get_timestamp()),
-            ),
-            start_timestamp=get_timestamp(),
-            user_email="test@test.test",
-        )
-        job_args.update(job_args_override)
-        j = JobV2(**job_args)
-        db.add(j)
-        db.commit()
-        db.refresh(j)
-        return j
+        res = invoke(cmd)
+        return res.data
 
-    return _job_factory
+    return _dataset_factory
 
 
 @pytest.fixture
-def user_factory(testserver, db, client_superuser):
-    def __register_user(
+def user_factory(invoke_as_superuser):
+    def __user_factory(
         email: str,
         password: str,
+        cache_dir: Optional[str] = None,
         slurm_user: Optional[str] = None,
         username: Optional[str] = None,
+        superuser: bool = False,
     ):
-        # Prepare payload
-        new_user = dict(email=email, password=password)
-        if slurm_user:
-            new_user["slurm_user"] = slurm_user
-        if username:
-            new_user["username"] = username
-        # Register user via API call
-        res = client_superuser.post(
-            f"http://localhost:{PORT}/auth/register/",
-            json=new_user,
-        )
-        assert res.status_code == 201
-        user_id = res.json()["id"]
-        # Make user verified via API call
-        res = client_superuser.patch(
-            f"http://localhost:{PORT}/auth/users/{user_id}/",
-            json=dict(is_verified=True),
-        )
-        assert res.status_code == 200
-        return res.json()
+        cmd = "user register"
+        if cache_dir is not None:
+            cmd += f" --cache-dir {cache_dir}"
+        if slurm_user is not None:
+            cmd += f" --slurm-user {slurm_user}"
+        if username is not None:
+            cmd += f" --username {username}"
+        if superuser is True:
+            cmd += " --superuser"
+        cmd += f" {email} {password}"
 
-    return __register_user
+        res = invoke_as_superuser(cmd)
+        return res.data
 
-
-@pytest.fixture
-def register_user(user_factory):
-
-    created_user = user_factory(
-        email=environ["FRACTAL_USER"],
-        password=environ["FRACTAL_PASSWORD"],
-        username=environ["FRACTAL_USERNAME"],
-    )
-
-    yield created_user
+    return __user_factory

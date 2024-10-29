@@ -1,5 +1,4 @@
 import shlex
-from os import environ
 
 import httpx
 import pytest
@@ -7,9 +6,6 @@ from devtools import debug
 
 from fractal_client import __VERSION__
 from fractal_client.client import handle
-
-
-DEFAULT_TEST_EMAIL = environ["FRACTAL_USER"]
 
 
 def test_debug(invoke):
@@ -31,17 +27,17 @@ def test_server():
     WHEN it gets called
     THEN it replies
     """
-    res = httpx.get("http://localhost:10080/api/alive/")
+    res = httpx.get("http://localhost:8765/api/alive/")
     debug(res.json())
     assert res.status_code == 200
 
 
-def test_register_user(register_user, invoke):
+def test_register_user(tester, invoke):
     res = invoke("user whoami")
     user = res.data
     debug(user)
     assert res.retcode == 0
-    assert user["email"] == DEFAULT_TEST_EMAIL
+    assert user["email"] == tester["email"]
 
 
 def test_user_override(user_factory, invoke):
@@ -98,7 +94,7 @@ def test_missing_password(override_settings):
     assert "FRACTAL_PASSWORD variable not defined" in res.data
 
 
-def test_connecterror(client, override_settings):
+def test_connecterror(override_settings):
     override_settings(
         FRACTAL_USER="admin@fractal.xy",
         FRACTAL_PASSWORD="1234",

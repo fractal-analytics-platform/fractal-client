@@ -235,6 +235,12 @@ task_collect_parser.add_argument(
         "pin several packages to specific versions."
     ),
 )
+task_collect_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Make task group private.",
+)
 
 
 # task collect custom
@@ -277,6 +283,12 @@ tasktask_collect_custom_pkg_name_or_root.add_argument(
         "The folder where the package is installed. If not provided, "
         "it will be  automatically inferred based on 'package_name'."
     ),
+)
+task_collect_custom_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Make task group private.",
 )
 
 # task check-collection
@@ -341,6 +353,12 @@ task_new_parser.add_argument(
         "(e.g. `pydantic_v1`)."
     ),
 )
+task_new_parser.add_argument(
+    "--private",
+    default=False,
+    action="store_true",
+    help="Make task group private.",
+)
 
 # task edit
 task_edit_parser = task_subparsers.add_parser(
@@ -383,31 +401,6 @@ task_edit_parser.add_argument(
     "--output-types",
     help=("Path to JSON file with new output types."),
 )
-
-# task delete
-task_delete_parser = task_subparsers.add_parser(
-    "delete",
-    description="Delete task.",
-    argument_default=ap.SUPPRESS,
-    allow_abbrev=False,
-)
-task_delete_id_or_name_group = task_delete_parser.add_mutually_exclusive_group(
-    required=True
-)
-task_delete_id_or_name_group.add_argument(
-    "--id", help="ID of the task to delete.", type=int
-)
-task_delete_id_or_name_group.add_argument(
-    "--name", help="Name of the task to delete."
-)
-task_delete_parser.add_argument(
-    "--version",
-    help=(
-        "Version of the task to delete "
-        "(only accepted in combination with `--name`)."
-    ),
-)
-
 
 # WORKFLOW GROUP
 

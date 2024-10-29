@@ -8,18 +8,7 @@ import pytest
 from devtools import debug
 
 
-COLLECTION_TIMEOUT = 15.0
-
-PACKAGE_URL = (
-    "https://github.com/fractal-analytics-platform/fractal-server/"
-    "raw/main/tests/v2/fractal_tasks_mock/dist/"
-    "fractal_tasks_mock-0.0.1-py3-none-any.whl"
-)
-PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
-urlretrieve(PACKAGE_URL, PACKAGE_PATH)
-
-
-def test_task_collection_command(register_user, invoke, caplog):
+def test_task_collection_command(invoke, caplog):
     """
     Test that all `task collect` options are correctly parsed and included in
     the the payload for the API request.
@@ -74,7 +63,7 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     assert "Invalid pin:" in log_lines[0]
 
 
-def test_task_collection(register_user, invoke, testdata_path):
+def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
     WHEN the collection subcommand is called
@@ -82,8 +71,25 @@ def test_task_collection(register_user, invoke, testdata_path):
         * the collection is initiated in the background
         * the server returns immediately
     """
+    COLLECTION_TIMEOUT = 15.0
 
-    res0 = invoke(f"task collect {PACKAGE_PATH}")
+    PACKAGE_URL = (
+        "https://github.com/fractal-analytics-platform/fractal-server/"
+        "raw/main/tests/v2/fractal_tasks_mock/dist/"
+        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    )
+    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
+
+    new_user = dict(email=f"{new_name()}@example.org", password="1234")
+    user_factory(**new_user)
+
+    res = invoke_as_custom_user("task list", **new_user)
+    initial_task_list = len(res.data)
+
+    res0 = invoke_as_custom_user(
+        f"task collect --private {PACKAGE_PATH}", **new_user
+    )
     debug(res0)
     res0.show()
 
@@ -92,64 +98,44 @@ def test_task_collection(register_user, invoke, testdata_path):
     state_id = res0.data["id"]
     debug(state_id)
 
-    time.sleep(0.5)
-
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
-        res1 = invoke(f"task check-collection {state_id}")
+        res1 = invoke_as_custom_user(
+            f"task check-collection {state_id}", **new_user
+        )
         debug(res1.data)
         assert res1.retcode == 0
         res1.show()
-        time.sleep(1)
+        time.sleep(0.1)
         if res1.data["data"]["status"] == "OK":
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
-    res2 = invoke(f"task check-collection {state_id}" " --include-logs")
+    res2 = invoke_as_custom_user(
+        f"task check-collection {state_id} --include-logs", **new_user
+    )
     debug(res2.data)
     assert res2.retcode == 0j
     res2.show()
     assert res2.data["data"]["status"] == "OK"
 
-    res = invoke("task list")
-    assert len(res.data) == 14
-
-
-def test_repeated_task_collection(register_user, invoke, testdata_path):
-    """
-    GIVEN
-        * a pip installable package containing fractal-compatible tasks
-        * a successful collection subcommand was executed
-    WHEN the collection subcommand is called a second time
-    THEN
-        * TBD..
-    """
-
-    res0 = invoke(f"--batch task collect {PACKAGE_PATH}")
-    debug(res0)
-
-    state_id = res0.data[0]  # extract id from batch string
-    debug(res0.data)
-    assert res0.data.startswith("1 ")
-
-    time.sleep(0.5)
-
-    # Wait until collection is complete
-    starting_time = time.perf_counter()
-    while True:
-        res1 = invoke(f"task check-collection {state_id}")
-        time.sleep(1)
-        if res1.data["data"]["status"] == "OK":
-            break
-        assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
+    res = invoke_as_custom_user("task list", **new_user)
+    assert len(res.data) == initial_task_list + 14
 
     # Second collection
     with pytest.raises(SystemExit):
-        res0 = invoke(f"task collect {PACKAGE_PATH}")
+        res0 = invoke_as_custom_user(
+            f"task collect {PACKAGE_PATH}", **new_user
+        )
 
 
-def test_task_collection_custom(register_user, tmp_path, invoke, caplog):
+def test_task_collection_custom(
+    user_factory, new_name, tmp_path, invoke_as_custom_user, caplog
+):
+    new_user = dict(email=f"{new_name()}@example.org", password="1234")
+    user_factory(**new_user)
+
     python_interpreter = sys.executable
     package_name = "fractal-client"
     manifest = str(tmp_path / "manifest.json")
@@ -166,42 +152,42 @@ def test_task_collection_custom(register_user, tmp_path, invoke, caplog):
         json.dump(manifest_dict, f)
 
     cmd = (
-        f"task collect-custom --package-name {package_name} "
-        f"source {python_interpreter} {manifest}"
+        f"task collect-custom --private --package-name {package_name} "
+        f"label {python_interpreter} {manifest}"
     )
-    res = invoke(cmd)
+    res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 0
     assert isinstance(res.data, list)
 
-    # Second API call fails (tasks with the same sources already exist)
+    # Second API call fails (tasks with the same identity already exist)
     caplog.clear()
     with pytest.raises(SystemExit):
-        res = invoke(cmd)
+        res = invoke_as_custom_user(cmd, **new_user)
     # Manifest was redacted, when logging the payload
     assert '"manifest": "[value too long - redacted]"' in caplog.text
 
     # Missing manifest file
     cmd = (
         f"task collect-custom --package-name {package_name} "
-        f"source {python_interpreter} /foo/bar"
+        f"label {python_interpreter} /foo/bar"
     )
-    res = invoke(cmd)
+    res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 1
     assert "file must be on the same machine" in res.data
 
     cmd = (
-        "--batch task collect-custom --package-root /tmp --version 2 "
-        f"source2 {python_interpreter} {manifest}"
+        "--batch task collect-custom --private --package-root /tmp --version 2"
+        f" label2 {python_interpreter} {manifest}"
     )
-    res = invoke(cmd)
+    res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 0
     assert isinstance(res.data, str)
 
     # test that '--package-root' and '--package-name' are mutually exclusive
     cmd = (
-        "task collect-custom "
+        "task collect-custom --private"
         f"--package-root /tmp --package-name {package_name} "
-        f"source3 {python_interpreter} {manifest}"
+        f"label3 {python_interpreter} {manifest}"
     )
     with pytest.raises(SystemExit):
-        res = invoke(cmd)
+        res = invoke_as_custom_user(cmd, **new_user)

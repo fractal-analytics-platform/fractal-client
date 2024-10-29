@@ -25,6 +25,7 @@ def task_collect_pip(
     python_version: Optional[str] = None,
     package_extras: Optional[str] = None,
     pinned_dependency: Optional[list[str]] = None,
+    private: bool = False,
     batch: bool = False,
 ) -> Interface:
 
@@ -49,8 +50,10 @@ def task_collect_pip(
             for _name, _version in (p.split("=") for p in pinned_dependency)
         }
 
+    is_private = "?private=true" if private else ""
+
     res = client.post(
-        f"{settings.BASE_URL}/task/collect/pip/", json=task_collect
+        f"{settings.BASE_URL}/task/collect/pip/{is_private}", json=task_collect
     )
 
     state = check_response(res, expected_status_code=[200, 201])
@@ -70,6 +73,7 @@ def task_collect_custom(
     version: Optional[str] = None,
     package_name: Optional[str] = None,
     package_root: Optional[str] = None,
+    private: bool = False,
     batch: bool = False,
 ) -> Interface:
 
@@ -94,9 +98,11 @@ def task_collect_custom(
         task_collect["package_name"] = package_name
     if package_root:
         task_collect["package_root"] = package_root
+    is_private = "?private=true" if private else ""
 
     res = client.post(
-        f"{settings.BASE_URL}/task/collect/custom/", json=task_collect
+        f"{settings.BASE_URL}/task/collect/custom/{is_private}",
+        json=task_collect,
     )
 
     task_list = check_response(
@@ -141,6 +147,7 @@ def post_task(
     args_schema_non_parallel: Optional[str] = None,
     args_schema_parallel: Optional[str] = None,
     args_schema_version: Optional[str] = None,
+    private: bool = False,
 ) -> Interface:
     task = dict(name=name)
     if command_non_parallel:
@@ -163,8 +170,9 @@ def post_task(
             task["args_schema_non_parallel"] = json.load(f)
     if args_schema_version:
         task["args_schema_version"] = args_schema_version
+    is_private = "?private=true" if private else ""
 
-    res = client.post(f"{settings.BASE_URL}/task/", json=task)
+    res = client.post(f"{settings.BASE_URL}/task/{is_private}", json=task)
     new_task = check_response(res, expected_status_code=201)
 
     if batch:
@@ -215,30 +223,3 @@ def patch_task(
     res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
     new_task = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=new_task)
-
-
-def delete_task(
-    client: AuthClient,
-    *,
-    id: Optional[int] = None,
-    name: Optional[str] = None,
-    version: Optional[str] = None,
-) -> Interface:
-
-    if id:
-        if version:
-            logging.error(
-                "Too many arguments: cannot provide both `id` and `version`."
-            )
-            sys.exit(1)
-    else:
-        try:
-            id = get_task_id_from_cache(
-                client=client, task_name=name, version=version
-            )
-        except FractalCacheError as e:
-            print(e)
-            sys.exit(1)
-    res = client.delete(f"{settings.BASE_URL}/task/{id}/")
-    check_response(res, expected_status_code=204)
-    return Interface(retcode=0, data="")

@@ -21,7 +21,6 @@ from ._project import get_project
 from ._project import get_project_list
 from ._project import patch_project
 from ._project import post_project
-from ._task import delete_task
 from ._task import get_task_list
 from ._task import patch_task
 from ._task import post_task
@@ -136,6 +135,7 @@ def task(
             "python_version",
             "package_extras",
             "pinned_dependency",
+            "private",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = task_collect_pip(client, batch=batch, **function_kwargs)
@@ -147,6 +147,7 @@ def task(
             "version",
             "package_name",
             "package_root",
+            "private",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = task_collect_custom(client, batch=batch, **function_kwargs)
@@ -165,6 +166,7 @@ def task(
             "args_schema_non_parallel",
             "args_schema_parallel",
             "args_schema_version",
+            "private",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_task(client, batch=batch, **function_kwargs)
@@ -180,10 +182,6 @@ def task(
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_task(client, **function_kwargs)
-    elif subcmd == "delete":
-        parameters = ["id", "name", "version"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = delete_task(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'task {subcmd}' not found")
     return iface
