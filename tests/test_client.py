@@ -21,6 +21,19 @@ def test_version(invoke):
     assert iface.retcode == 0
 
 
+def test_version_connect_error(invoke, monkeypatch):
+    monkeypatch.setattr(
+        "fractal_client.cmd.__init__.settings.FRACTAL_SERVER",
+        "http://localhost:9999",
+    )
+
+    iface = invoke("version")
+    debug(iface.data)
+    assert f"version: {__VERSION__}" in iface.data
+    assert "refused" in iface.data
+    assert iface.retcode == 0
+
+
 def test_server():
     """
     GIVEN a testserver

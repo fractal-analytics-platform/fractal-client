@@ -1,4 +1,5 @@
 from httpx import Client
+from httpx import ConnectError
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -298,16 +299,20 @@ def job(
 
 
 def version(client: Client, **kwargs) -> Interface:
-    res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
-    data = res.json()
+    try:
+        res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
+        data = res.json()
+        server_str = (
+            f"\turl: {settings.FRACTAL_SERVER}" f"\tversion: {data['version']}"
+        )
+    except ConnectError:
+        server_str = f"\tConnection to '{settings.FRACTAL_SERVER}' refused"
 
     return Interface(
         retcode=0,
         data=(
             f"Fractal client\n\tversion: {__VERSION__}\n"
-            "Fractal server:\n"
-            f"\turl: {settings.FRACTAL_SERVER}"
-            f"\tversion: {data['version']}"
+            f"Fractal server:\n{server_str}"
         ),
     )
 
