@@ -47,11 +47,18 @@ def _remove_session():
     cache_file.unlink(missing_ok=True)
 
 
+@pytest.fixture(scope="session")
+def tester():
+    return dict(email="client_tester@example.org", password="pytest")
+
+
 @pytest.fixture
-def invoke():
+def invoke(tester):
     def __invoke(args: str):
         _remove_session()
-        new_args = f"--user client_tester@example.org --password pytest {args}"
+        new_args = (
+            f"--user {tester['email']} --password {tester['password']} {args}"
+        )
         return handle(_clisplit(new_args))
 
     return __invoke
@@ -75,6 +82,11 @@ def invoke_as_custom_user():
         return handle(_clisplit(new_args))
 
     return __invoke
+
+
+@pytest.fixture
+def superuser(invoke_as_superuser):
+    return invoke_as_superuser("user whoami").data
 
 
 @pytest.fixture(scope="function")
