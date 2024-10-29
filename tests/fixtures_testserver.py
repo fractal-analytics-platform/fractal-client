@@ -95,7 +95,7 @@ def testserver(tester, tmpdir_factory, request):
     while True:
         try:
             res = handle(shlex.split("fractal version"))
-            if res.retcode == 0:
+            if "refused" not in res.data:
                 break
             else:
                 raise ConnectError("fractal-server not ready")

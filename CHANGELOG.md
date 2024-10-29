@@ -13,6 +13,7 @@
 * Add `--ssh-settings-json` option to `fractal user register` (\#722).
 * Add `--private` option to task-creating commands (\#717).
 * Drop `task delete` command (\#717).
+* Handle missing server in `fractal version` (\#724).
 * Testing:
     * Run all tests against a single `fractal-server` instance (\#717).
     * Run tests in random module order, based on `pytest-randomly` (\#717).
