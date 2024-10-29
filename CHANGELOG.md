@@ -10,6 +10,7 @@
 * Rename `source` into `label`, for `task collect-custom` command (\#712).
 * Do not refer to obsolete task attributes `source` or `owner` (\#712, \#717).
 * Add `--new-ssh-settings-json` option to `fractal user edit` (\#715).
+* Add `--ssh-settings-json` option to `fractal user register` (\#722).
 * Add `--private` option to task-creating commands (\#717).
 * Drop `task delete` command (\#717).
 * Testing:
