@@ -18,6 +18,8 @@ markdown_extensions:
 
 theme:
   name: "material"
+  logo: 'assets/fractal_logo.png'
+  favicon: 'assets/fractal_favicon.png'
   custom_dir: "docs/overrides"
   features:
     - content.code.annotate
@@ -39,6 +41,8 @@ theme:
       name: Switch to light mode
   icon:
     repo: fontawesome/brands/github
+  navigation:
+    expand: true
 
 
 nav:
@@ -78,8 +82,7 @@ extra_css:
   - extra.css
 
 copyright: |
-  © Copyright 2022
-  Friedrich Miescher Institute for Biomedical Research and
+  © Copyright 2024
   University of Zurich
   (see <u><a href="https://github.com/fractal-analytics-platform/fractal/blob/main/LICENSE">
   LICENSE
