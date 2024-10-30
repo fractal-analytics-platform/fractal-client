@@ -6,6 +6,7 @@
 
 
 * Align with [`fractal-server` 2.7.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#270) (\#712).
+* Align with `fractal-server 2.7.1 and drop use of pip extras (\#727).
 * Remove `--new-name` and `--new-version` options from `task edit` command (\#712).
 * Rename `source` into `label`, for `task collect-custom` command (\#712).
 * Do not refer to obsolete task attributes `source` or `owner` (\#712, \#717).
