@@ -116,7 +116,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
         f"task check-collection {state_id} --include-logs", **new_user
     )
     debug(res2.data)
-    assert res2.retcode == 0j
+    assert res2.retcode == 0
     res2.show()
     assert res2.data["data"]["status"] == "OK"
 
