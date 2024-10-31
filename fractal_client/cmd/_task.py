@@ -123,13 +123,13 @@ def task_collection_check(
     include_logs: bool,
 ) -> Interface:
 
-    res = client.get(
-        f"{settings.BASE_URL}/task/collect/{state_id}/?verbose={include_logs}"
-    )
+    res = client.get(f"{settings.BASE_URL}/task/collect/{state_id}/")
     state = check_response(res, expected_status_code=200)
 
     # Remove key-value pairs with None value
     state["data"] = {key: val for (key, val) in state["data"].items() if val}
+    if (include_logs is False) and ("log" in state["data"]):
+        state["data"]["log"] = None
 
     return Interface(retcode=0, data=state)
 
