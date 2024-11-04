@@ -113,12 +113,19 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     res2 = invoke_as_custom_user(
+        f"task check-collection {state_id}", **new_user
+    )
+    assert res2.retcode == 0
+    assert res2.data["data"]["log"] is None
+
+    res3 = invoke_as_custom_user(
         f"task check-collection {state_id} --include-logs", **new_user
     )
-    debug(res2.data)
-    assert res2.retcode == 0j
-    res2.show()
-    assert res2.data["data"]["status"] == "OK"
+    assert res3.retcode == 0
+    assert res3.data["data"]["log"] is not None
+
+    res3.show()
+    assert res3.data["data"]["status"] == "OK"
 
     res = invoke_as_custom_user("task list", **new_user)
     assert len(res.data) == initial_task_list + 14

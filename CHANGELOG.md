@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.3.1 (unreleased)
+
+* Internal:
+    * Update effect of `include_logs` for task-collection check command (\#730).
+
 # 2.3.0
 
 > WARNING: Starting from this release, Python3.9 is not supported any more.
