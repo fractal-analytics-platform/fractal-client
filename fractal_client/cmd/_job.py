@@ -1,7 +1,6 @@
 import logging
 import os
 from pathlib import Path
-from typing import Optional
 from zipfile import ZipFile
 
 from ..authclient import AuthClient
@@ -129,9 +128,9 @@ def job_submit(
     project_id: int,
     workflow_id: int,
     dataset_id: int,
-    first_task_index: Optional[int] = None,
-    last_task_index: Optional[int] = None,
-    worker_init: Optional[str] = None,
+    first_task_index: int | None = None,
+    last_task_index: int | None = None,
+    worker_init: str | None = None,
     batch: bool = False,
 ) -> Interface:
 

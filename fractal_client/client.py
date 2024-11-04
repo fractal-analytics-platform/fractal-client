@@ -16,7 +16,6 @@ import logging
 from sys import argv
 from typing import List
 from typing import Tuple
-from typing import Union
 
 from httpx import Client
 from httpx import ConnectError
@@ -34,7 +33,7 @@ class MissingCredentialsError(RuntimeError):
 
 
 def _check_credentials(
-    *, username: Union[str, None], password: Union[str, None]
+    *, username: str | None, password: str | None
 ) -> Tuple[str, str]:
     """
     Check that username and password are defined

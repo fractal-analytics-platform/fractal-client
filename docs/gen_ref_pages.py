@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 from textwrap import fill
 from typing import Any
-from typing import Optional
 
 import mkdocs_gen_files  # type: ignore[import]
 from mkdocs_gen_files import Nav
@@ -17,7 +16,7 @@ from fractal_client.parser import parser_main  # noqa
 def to_markdown(
     data: dict[str, Any],
     level: int,
-    parent_cmd: Optional[str] = None,
+    parent_cmd: str | None = None,
 ) -> str:
     """
     Given a `data` object with keys `name`, `description` and `usage`, produce

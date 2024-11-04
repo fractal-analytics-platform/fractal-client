@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
@@ -47,7 +45,7 @@ def patch_project(
     client: AuthClient,
     *,
     project_id: int,
-    new_name: Optional[str] = None,
+    new_name: str | None = None,
 ) -> Interface:
     project_update = {}
     if new_name:

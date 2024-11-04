@@ -2,7 +2,6 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -63,16 +62,16 @@ def post_workflowtask(
     *,
     project_id: int,
     workflow_id: int,
-    input_filters: Optional[str] = None,
-    args_non_parallel: Optional[str] = None,
-    args_parallel: Optional[str] = None,
-    meta_non_parallel: Optional[str] = None,
-    meta_parallel: Optional[str] = None,
-    task_id: Optional[int] = None,
-    task_name: Optional[str] = None,
-    task_version: Optional[str] = None,
+    input_filters: str | None = None,
+    args_non_parallel: str | None = None,
+    args_parallel: str | None = None,
+    meta_non_parallel: str | None = None,
+    meta_parallel: str | None = None,
+    task_id: int | None = None,
+    task_name: str | None = None,
+    task_version: str | None = None,
     batch: bool = False,
-    order: Optional[int] = None,
+    order: int | None = None,
 ) -> Interface:
 
     if task_id:
@@ -143,11 +142,11 @@ def patch_workflowtask(
     project_id: int,
     workflow_id: int,
     workflow_task_id: int,
-    input_filters: Optional[str] = None,
-    args_non_parallel: Optional[str] = None,
-    args_parallel: Optional[str] = None,
-    meta_non_parallel: Optional[str] = None,
-    meta_parallel: Optional[str] = None,
+    input_filters: str | None = None,
+    args_non_parallel: str | None = None,
+    args_parallel: str | None = None,
+    meta_non_parallel: str | None = None,
+    meta_parallel: str | None = None,
 ) -> Interface:
 
     payload = {}
@@ -227,7 +226,7 @@ def workflow_import(
     *,
     project_id: int,
     json_file: str,
-    workflow_name: Optional[str] = None,
+    workflow_name: str | None = None,
     batch: bool = False,
 ) -> Interface:
     with Path(json_file).open("r") as f:

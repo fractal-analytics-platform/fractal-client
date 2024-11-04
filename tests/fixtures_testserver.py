@@ -4,7 +4,6 @@ import shlex
 import subprocess
 import time
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from httpx import ConnectError
@@ -139,14 +138,14 @@ def testserver(tester, tmpdir_factory, request):
 def task_factory(invoke):
     def _task_factory(
         name: str,
-        command_non_parallel: Optional[str] = None,
-        command_parallel: Optional[str] = None,
-        version: Optional[str] = None,
-        meta_non_parallel: Optional[str] = None,
-        meta_parallel: Optional[str] = None,
-        args_schema_non_parallel: Optional[str] = None,
-        args_schema_parallel: Optional[str] = None,
-        args_schema_version: Optional[str] = None,
+        command_non_parallel: str | None = None,
+        command_parallel: str | None = None,
+        version: str | None = None,
+        meta_non_parallel: str | None = None,
+        meta_parallel: str | None = None,
+        args_schema_non_parallel: str | None = None,
+        args_schema_parallel: str | None = None,
+        args_schema_version: str | None = None,
     ):
         cmd = "task new"
         if command_non_parallel is not None:
@@ -197,7 +196,7 @@ def dataset_factory(invoke):
         project_id: int,
         name: str,
         zarr_dir: str,
-        filters: Optional[str] = None,
+        filters: str | None = None,
     ):
         cmd = "project add-dataset"
         if filters is not None:
@@ -215,9 +214,9 @@ def user_factory(invoke_as_superuser):
     def __user_factory(
         email: str,
         password: str,
-        cache_dir: Optional[str] = None,
-        slurm_user: Optional[str] = None,
-        username: Optional[str] = None,
+        cache_dir: str | None = None,
+        slurm_user: str | None = None,
+        username: str | None = None,
         superuser: bool = False,
     ):
         cmd = "user register"

@@ -13,7 +13,6 @@ Zurich.
 """
 from os import getenv
 from pathlib import Path
-from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -23,8 +22,8 @@ load_dotenv(".fractal.env")
 class Settings:
     def __init__(self):
 
-        self.FRACTAL_USER: Optional[str] = getenv("FRACTAL_USER")
-        self.FRACTAL_PASSWORD: Optional[str] = getenv("FRACTAL_PASSWORD")
+        self.FRACTAL_USER: str | None = getenv("FRACTAL_USER")
+        self.FRACTAL_PASSWORD: str | None = getenv("FRACTAL_PASSWORD")
 
         self.FRACTAL_SERVER: str = getenv(
             "FRACTAL_SERVER", "http://localhost:8000"
