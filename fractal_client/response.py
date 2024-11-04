@@ -3,7 +3,6 @@ import logging
 import sys
 from json.decoder import JSONDecodeError
 from typing import Any
-from typing import Union
 
 from httpx import Response
 
@@ -12,9 +11,9 @@ LONG_PAYLOAD_VALUE_LIMIT = 300
 
 def check_response(
     res: Response,
-    expected_status_code: Union[int, list[int]] = 200,
+    expected_status_code: int | list[int] = 200,
     redact_long_payload: bool = False,
-) -> Union[list[Any], dict[str, Any], str, int, float, bool]:
+) -> list[Any] | dict[str, Any] | str | int | float | bool:
     """
     Check the validity of the http response from fractal server
 
