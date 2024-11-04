@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -13,7 +12,7 @@ def post_dataset(
     project_id: int,
     dataset_name: str,
     zarr_dir: str,
-    filters: Optional[str] = None,
+    filters: str | None = None,
     batch: bool = False,
 ) -> Interface:
     """
@@ -48,8 +47,8 @@ def patch_dataset(
     *,
     project_id: int,
     dataset_id: int,
-    new_name: Optional[str] = None,
-    filters: Optional[str] = None,
+    new_name: str | None = None,
+    filters: str | None = None,
 ) -> Interface:
     # Prepare payload
     dataset_update = {}

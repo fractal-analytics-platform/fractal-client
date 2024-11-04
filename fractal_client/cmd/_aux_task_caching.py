@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 from typing import Any
-from typing import Optional
 
 import packaging.version
 
@@ -92,7 +91,7 @@ def _get_matching_tasks(
     task_list: _TaskList,
     *,
     name: str,
-    version: Optional[str] = None,
+    version: str | None = None,
 ) -> _TaskList:
     """
     Given a task list, extract all the tasks matching some conditions.
@@ -128,7 +127,7 @@ def _search_in_task_list(
     *,
     task_list: _TaskList,
     name: str,
-    version: Optional[str] = None,
+    version: str | None = None,
 ) -> int:
     """
     Search for a single task in `task_list` based on the provided `name`
@@ -194,7 +193,7 @@ def _search_in_task_list(
 
 
 def get_task_id_from_cache(
-    client: AuthClient, task_name: str, version: Optional[str] = None
+    client: AuthClient, task_name: str, version: str | None = None
 ) -> int:
     """
     Retrieve the `id` of a task from the cache based on the provided

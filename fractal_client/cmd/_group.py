@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
@@ -30,7 +28,7 @@ def group_new(
     client: AuthClient,
     *,
     name: str,
-    viewer_paths: Optional[list[str]] = None,
+    viewer_paths: list[str] | None = None,
     batch: bool = False,
 ):
     request_body = dict(name=name)
@@ -52,8 +50,8 @@ def group_update(
     client: AuthClient,
     *,
     group_id: int,
-    new_user_ids: Optional[list[int]] = None,
-    new_viewer_paths: Optional[list[str]] = None,
+    new_user_ids: list[int] | None = None,
+    new_viewer_paths: list[str] | None = None,
 ):
 
     request_body = dict()

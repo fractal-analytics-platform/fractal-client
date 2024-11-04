@@ -2,7 +2,6 @@ import json
 import sys
 from json.decoder import JSONDecodeError
 from pathlib import Path
-from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -44,10 +43,10 @@ def user_register(
     *,
     new_email: str,
     new_password: str,
-    slurm_user: Optional[str] = None,
-    cache_dir: Optional[str] = None,
-    username: Optional[str] = None,
-    ssh_settings_json: Optional[str] = None,
+    slurm_user: str | None = None,
+    cache_dir: str | None = None,
+    username: str | None = None,
+    ssh_settings_json: str | None = None,
     superuser: bool = False,
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
@@ -124,12 +123,12 @@ def user_edit(
     client: AuthClient,
     *,
     user_id: str,
-    new_email: Optional[str] = None,
-    new_password: Optional[str] = None,
-    new_username: Optional[str] = None,
-    new_slurm_user: Optional[str] = None,
-    new_cache_dir: Optional[str] = None,
-    new_ssh_settings_json: Optional[str] = None,
+    new_email: str | None = None,
+    new_password: str | None = None,
+    new_username: str | None = None,
+    new_slurm_user: str | None = None,
+    new_cache_dir: str | None = None,
+    new_ssh_settings_json: str | None = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
     make_verified: bool = False,

@@ -1,7 +1,6 @@
 import json
 import logging
 import sys
-from typing import Optional
 
 from ..authclient import AuthClient
 from ..config import settings
@@ -21,10 +20,10 @@ def task_collect_pip(
     client: AuthClient,
     *,
     package: str,
-    package_version: Optional[str] = None,
-    python_version: Optional[str] = None,
-    package_extras: Optional[str] = None,
-    pinned_dependency: Optional[list[str]] = None,
+    package_version: str | None = None,
+    python_version: str | None = None,
+    package_extras: str | None = None,
+    pinned_dependency: list[str] | None = None,
     private: bool = False,
     batch: bool = False,
 ) -> Interface:
@@ -70,9 +69,9 @@ def task_collect_custom(
     label: str,
     python_interpreter: str,
     manifest: str,
-    version: Optional[str] = None,
-    package_name: Optional[str] = None,
-    package_root: Optional[str] = None,
+    version: str | None = None,
+    package_name: str | None = None,
+    package_root: str | None = None,
     private: bool = False,
     batch: bool = False,
 ) -> Interface:
@@ -139,14 +138,14 @@ def post_task(
     *,
     name: str,
     batch: bool = False,
-    command_non_parallel: Optional[str] = None,
-    command_parallel: Optional[str] = None,
-    version: Optional[str] = None,
-    meta_non_parallel: Optional[str] = None,
-    meta_parallel: Optional[str] = None,
-    args_schema_non_parallel: Optional[str] = None,
-    args_schema_parallel: Optional[str] = None,
-    args_schema_version: Optional[str] = None,
+    command_non_parallel: str | None = None,
+    command_parallel: str | None = None,
+    version: str | None = None,
+    meta_non_parallel: str | None = None,
+    meta_parallel: str | None = None,
+    args_schema_non_parallel: str | None = None,
+    args_schema_parallel: str | None = None,
+    args_schema_version: str | None = None,
     private: bool = False,
 ) -> Interface:
     task = dict(name=name)
@@ -184,13 +183,13 @@ def post_task(
 def patch_task(
     client: AuthClient,
     *,
-    id: Optional[int] = None,
-    name: Optional[str] = None,
-    version: Optional[str] = None,
-    command_non_parallel: Optional[str] = None,
-    command_parallel: Optional[str] = None,
-    input_types: Optional[str] = None,
-    output_types: Optional[str] = None,
+    id: int | None = None,
+    name: str | None = None,
+    version: str | None = None,
+    command_non_parallel: str | None = None,
+    command_parallel: str | None = None,
+    input_types: str | None = None,
+    output_types: str | None = None,
 ) -> Interface:
 
     if id:
