@@ -1,7 +1,7 @@
 # Fractal Client
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e8aef41e-b177-4f34-8681-8a5e756d6e38" alt="Fractal client" width="400">
+  <img src="https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/projects/fractal_client.png" alt="Fractal client" width="400">
 </p>
 
 [![PyPI version](https://img.shields.io/pypi/v/fractal-client?color=gree)](https://pypi.org/project/fractal-client/)

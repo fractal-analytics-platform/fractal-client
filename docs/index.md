@@ -6,7 +6,7 @@ hide:
 # Welcome to Fractal Command-line Client's documentation!
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e8aef41e-b177-4f34-8681-8a5e756d6e38" alt="Fractal client" width="400">
+  <img src="https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/projects/fractal_client.png" alt="Fractal client" width="400">
 </p>
 
 Fractal is a framework developed at the [BioVisionCenter](https://www.biovisioncenter.uzh.ch/en.html) to process bioimaging data at scale in the OME-Zarr format and prepare the images for interactive visualization.
