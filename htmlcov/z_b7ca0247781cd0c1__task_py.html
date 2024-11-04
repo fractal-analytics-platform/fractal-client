@@ -55,8 +55,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">112 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">110<span class="text"> run</span></button>
+            <span class="text">114 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">112<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">2<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">1<span class="text"> partial</span></button>
@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_b7ca0247781cd0c1__user_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2024-10-30 15:37 +0000
+            created at 2024-11-04 08:09 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -207,13 +207,13 @@
     <p class="pln"><span class="n"><a id="t123" href="#t123">123</a></span><span class="t">    <span class="nam">include_logs</span><span class="op">:</span> <span class="nam">bool</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t124" href="#t124">124</a></span><span class="t"><span class="op">)</span> <span class="op">-></span> <span class="nam">Interface</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t125" href="#t125">125</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t126" href="#t126">126</a></span><span class="t">    <span class="nam">res</span> <span class="op">=</span> <span class="nam">client</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t">        <span class="fst">f"</span><span class="op">{</span><span class="nam">settings</span><span class="op">.</span><span class="nam">BASE_URL</span><span class="op">}</span><span class="fst">/task/collect/</span><span class="op">{</span><span class="nam">state_id</span><span class="op">}</span><span class="fst">/?verbose=</span><span class="op">{</span><span class="nam">include_logs</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t128" href="#t128">128</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t">    <span class="nam">state</span> <span class="op">=</span> <span class="nam">check_response</span><span class="op">(</span><span class="nam">res</span><span class="op">,</span> <span class="nam">expected_status_code</span><span class="op">=</span><span class="num">200</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t131" href="#t131">131</a></span><span class="t">    <span class="com"># Remove key-value pairs with None value</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t132" href="#t132">132</a></span><span class="t">    <span class="nam">state</span><span class="op">[</span><span class="str">"data"</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="nam">key</span><span class="op">:</span> <span class="nam">val</span> <span class="key">for</span> <span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="nam">val</span><span class="op">)</span> <span class="key">in</span> <span class="nam">state</span><span class="op">[</span><span class="str">"data"</span><span class="op">]</span><span class="op">.</span><span class="nam">items</span><span class="op">(</span><span class="op">)</span> <span class="key">if</span> <span class="nam">val</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t126" href="#t126">126</a></span><span class="t">    <span class="nam">res</span> <span class="op">=</span> <span class="nam">client</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="fst">f"</span><span class="op">{</span><span class="nam">settings</span><span class="op">.</span><span class="nam">BASE_URL</span><span class="op">}</span><span class="fst">/task/collect/</span><span class="op">{</span><span class="nam">state_id</span><span class="op">}</span><span class="fst">/</span><span class="fst">"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t">    <span class="nam">state</span> <span class="op">=</span> <span class="nam">check_response</span><span class="op">(</span><span class="nam">res</span><span class="op">,</span> <span class="nam">expected_status_code</span><span class="op">=</span><span class="num">200</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t128" href="#t128">128</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t">    <span class="com"># Remove key-value pairs with None value</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t">    <span class="nam">state</span><span class="op">[</span><span class="str">"data"</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="nam">key</span><span class="op">:</span> <span class="nam">val</span> <span class="key">for</span> <span class="op">(</span><span class="nam">key</span><span class="op">,</span> <span class="nam">val</span><span class="op">)</span> <span class="key">in</span> <span class="nam">state</span><span class="op">[</span><span class="str">"data"</span><span class="op">]</span><span class="op">.</span><span class="nam">items</span><span class="op">(</span><span class="op">)</span> <span class="key">if</span> <span class="nam">val</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t131" href="#t131">131</a></span><span class="t">    <span class="key">if</span> <span class="op">(</span><span class="nam">include_logs</span> <span class="key">is</span> <span class="key">False</span><span class="op">)</span> <span class="key">and</span> <span class="op">(</span><span class="str">"log"</span> <span class="key">in</span> <span class="nam">state</span><span class="op">[</span><span class="str">"data"</span><span class="op">]</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t132" href="#t132">132</a></span><span class="t">        <span class="nam">state</span><span class="op">[</span><span class="str">"data"</span><span class="op">]</span><span class="op">[</span><span class="str">"log"</span><span class="op">]</span> <span class="op">=</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t133" href="#t133">133</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t134" href="#t134">134</a></span><span class="t">    <span class="key">return</span> <span class="nam">Interface</span><span class="op">(</span><span class="nam">retcode</span><span class="op">=</span><span class="num">0</span><span class="op">,</span> <span class="nam">data</span><span class="op">=</span><span class="nam">state</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t135" href="#t135">135</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -316,7 +316,7 @@
             <a class="nav" href="z_b7ca0247781cd0c1__user_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2024-10-30 15:37 +0000
+            created at 2024-11-04 08:09 +0000
         </p>
     </div>
 </footer>

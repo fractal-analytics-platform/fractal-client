@@ -13,14 +13,14 @@
 | fractal\_client/cmd/\_group.py              |       34 |        0 |       10 |        0 |    100% |           |
 | fractal\_client/cmd/\_job.py                |       67 |        8 |       18 |        4 |     86% |82-93, 117-121, 140->142, 142->144, 144->148 |
 | fractal\_client/cmd/\_project.py            |       31 |        0 |        4 |        0 |    100% |           |
-| fractal\_client/cmd/\_task.py               |      112 |        2 |       52 |        1 |     98% |     61-62 |
+| fractal\_client/cmd/\_task.py               |      114 |        2 |       54 |        1 |     98% |     61-62 |
 | fractal\_client/cmd/\_user.py               |      117 |        0 |       50 |        1 |     99% |    76->85 |
 | fractal\_client/cmd/\_workflow.py           |      121 |        1 |       36 |        1 |     99% |        97 |
 | fractal\_client/config.py                   |       15 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/interface.py                |       10 |        0 |        2 |        0 |    100% |           |
 | fractal\_client/parser.py                   |      195 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/response.py                 |       38 |        0 |       12 |        0 |    100% |           |
-|                                   **TOTAL** | **1224** |   **22** |  **308** |   **10** | **98%** |           |
+|                                   **TOTAL** | **1226** |   **22** |  **310** |   **10** | **98%** |           |
 
 
 ## Setup coverage badge
