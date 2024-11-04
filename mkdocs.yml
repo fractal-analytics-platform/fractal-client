@@ -18,8 +18,8 @@ markdown_extensions:
 
 theme:
   name: "material"
-  logo: 'assets/fractal_logo.png'
-  favicon: 'assets/fractal_favicon.png'
+  logo: https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_logo.png
+  favicon: https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_favicon.png
   custom_dir: "docs/overrides"
   features:
     - content.code.annotate
