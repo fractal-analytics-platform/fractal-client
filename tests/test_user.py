@@ -254,9 +254,11 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
         "slurm_user": None,
         "slurm_accounts": [],
         "cache_dir": None,
+        "project_dir": None,
     }
     SSH_HOST = "something.somewhere"
     SSH_PRIVATE_KEY_PATH = "/tmp/something.key"
+    NEW_PROJECT_DIR = "/somewhere/else/"
     NEW_USER_SETTINGS = {
         "ssh_host": SSH_HOST,
         "ssh_username": None,
@@ -266,6 +268,7 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
         "slurm_user": None,
         "slurm_accounts": [],
         "cache_dir": None,
+        "project_dir": NEW_PROJECT_DIR,
     }
 
     # Register a new user
@@ -296,6 +299,7 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
         )
     cmd = (
         f"user edit {user_id} "
+        f"--new-project-dir {NEW_PROJECT_DIR} "
         f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
     )
     res = invoke_as_superuser(cmd)

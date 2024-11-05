@@ -791,6 +791,11 @@ user_register_parser.add_argument(
     required=False,
 )
 user_register_parser.add_argument(
+    "--project-dir",
+    help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
+    required=False,
+)
+user_register_parser.add_argument(
     "--slurm-user",
     help="Username to login into SLURM cluster.",
     required=False,
@@ -857,6 +862,11 @@ user_edit_parser.add_argument(
         "New user's cache directory absolute path "
         "(necessary for workflow execution when using the SLURM backend)."
     ),
+    required=False,
+)
+user_edit_parser.add_argument(
+    "--new-project-dir",
+    help="New value of `project_dir`.",
     required=False,
 )
 user_edit_parser.add_argument(
