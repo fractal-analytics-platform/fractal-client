@@ -51,7 +51,9 @@ def test_edit_dataset(invoke, tmp_path, new_name):
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    res = invoke(f"project add-dataset {project_id} {new_name()} /tmp")
+    res = invoke(
+        f"project add-dataset {project_id} {new_name()} --zarr-dir /tmp"
+    )
     dataset_id = res.data["id"]
 
     NAME = new_name()
@@ -79,7 +81,9 @@ def test_delete_dataset(invoke, new_name):
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    res = invoke(f"project add-dataset {project_id} {new_name()} /tmp")
+    res = invoke(
+        f"project add-dataset {project_id} {new_name()} --zarr-dir /tmp"
+    )
     dataset_id = res.data["id"]
 
     # Delete dataset
@@ -94,7 +98,9 @@ def test_show_dataset(invoke, new_name):
     # Create a project with its default dataset
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
-    res = invoke(f"project add-dataset {project_id} {new_name()} /tmp")
+    res = invoke(
+        f"project add-dataset {project_id} {new_name()} --zarr-dir /tmp"
+    )
     dataset_id = res.data["id"]
 
     res = invoke(f"dataset show {project_id} {dataset_id}")
