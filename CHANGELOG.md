@@ -1,6 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.3.1
+# 2.4.0
 
 > WARNING: This release has a breaking change in the `project add-dataset` command.
 
