@@ -201,7 +201,7 @@ def dataset_factory(invoke):
         cmd = "project add-dataset"
         if filters is not None:
             cmd += f" --filters {filters}"
-        cmd += f" {project_id} {name} {zarr_dir}"
+        cmd += f" {project_id} {name} --zarr-dir {zarr_dir}"
 
         res = invoke(cmd)
         return res.data

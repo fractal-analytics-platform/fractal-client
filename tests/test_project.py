@@ -52,7 +52,8 @@ def test_project_list(invoke, new_name):
     res = invoke(f"--batch project new {new_name()}")
     project0_id = res.data
     res = invoke(
-        f"--batch project add-dataset {project0_id} {new_name()} /tmp"
+        "--batch "
+        f"project add-dataset {project0_id} {new_name()} --zarr-dir /tmp"
     )
     res = invoke(f"--batch project new {new_name()}")
 

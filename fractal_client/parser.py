@@ -109,8 +109,9 @@ project_add_dataset_parser.add_argument(
     help="Name of new dataset.",
 )
 project_add_dataset_parser.add_argument(
-    "zarr_dir",
+    "--zarr-dir",
     help="Path to zarr dir.",
+    required=False,
 )
 project_add_dataset_parser.add_argument(
     "--filters",
@@ -791,6 +792,11 @@ user_register_parser.add_argument(
     required=False,
 )
 user_register_parser.add_argument(
+    "--project-dir",
+    help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
+    required=False,
+)
+user_register_parser.add_argument(
     "--slurm-user",
     help="Username to login into SLURM cluster.",
     required=False,
@@ -857,6 +863,11 @@ user_edit_parser.add_argument(
         "New user's cache directory absolute path "
         "(necessary for workflow execution when using the SLURM backend)."
     ),
+    required=False,
+)
+user_edit_parser.add_argument(
+    "--new-project-dir",
+    help="New value of `project_dir`.",
     required=False,
 )
 user_edit_parser.add_argument(

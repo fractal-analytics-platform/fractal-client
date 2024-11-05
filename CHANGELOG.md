@@ -1,14 +1,17 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.3.1 (unreleased)
+# 2.3.1
 
+> WARNING: This release has a breaking change in the `project add-dataset` command.
+
+* Move to from positional `zarr_dir` argument to optional `--zarr-dir` argument, for `project add-dataset` (\#736).
+* Add support for user-settings `project_dir`, introduced in fractal-server 2.8.0 (\#736).
 * Internal:
     * Update effect of `include_logs` for task-collection check command (\#730).
 
 # 2.3.0
 
 > WARNING: Starting from this release, Python3.9 is not supported any more.
-
 
 * Align with [`fractal-server` 2.7.0](https://fractal-analytics-platform.github.io/fractal-server/changelog/#270) (\#712).
 * Align with `fractal-server 2.7.1 and drop use of pip extras (\#727).

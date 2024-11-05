@@ -11,7 +11,7 @@ def post_dataset(
     *,
     project_id: int,
     dataset_name: str,
-    zarr_dir: str,
+    zarr_dir: str | None = None,
     filters: str | None = None,
     batch: bool = False,
 ) -> Interface:
@@ -22,14 +22,13 @@ def post_dataset(
         filters: Path to file containing dataset filters in JSON format.
         batch: Dataset filters.
     """
-    if filters is None:
-        dataset = dict(name=dataset_name, zarr_dir=zarr_dir)
-    else:
+    dataset = dict(name=dataset_name)
+    if zarr_dir is not None:
+        dataset["zarr_dir"] = zarr_dir
+    if filters is not None:
         with open(filters, "r") as f:
             filters_dict = json.load(f)
-        dataset = dict(
-            name=dataset_name, filters=filters_dict, zarr_dir=zarr_dir
-        )
+        dataset["filters"] = filters_dict
 
     res = client.post(
         f"{settings.BASE_URL}/project/{project_id}/dataset/",
