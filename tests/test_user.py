@@ -76,11 +76,14 @@ def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
             ),
             f,
         )
+    PROJECT_DIR = "/somewhere/"
     res = invoke_as_superuser(
         f"user register {EMAIL_USER} {PWD_USER} "
+        f"--project-dir {PROJECT_DIR} "
         f"--ssh-settings-json {valid_json}"
     )
     assert res.retcode == 0
+    assert res.data["settings"]["project_dir"] == PROJECT_DIR
     assert res.data["settings"]["ssh_host"] == "SSH_HOST"
     assert res.data["settings"]["ssh_private_key_path"] == (
         "/SSH_PRIVATE_KEY_PATH"
