@@ -355,40 +355,6 @@ def test_edit_arguments(invoke_as_superuser):
         invoke_as_superuser(cmd)
 
 
-@pytest.mark.skip(
-    reason="Delete-user endpoint was removed in fractal-server 1.4.0"
-)
-def test_delete_as_user(invoke, invoke_as_superuser, caplog, new_name):
-    EMAIL_USER = f"{new_name()}@example.org"
-    # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
-    user_id = res.data["id"]
-    # Call fractal user edit
-    with pytest.raises(SystemExit):
-        invoke(f"user delete {user_id}")
-    debug(caplog.text)
-    assert "403" in caplog.text
-
-
-@pytest.mark.skip(
-    reason="Delete-user endpoint was removed in fractal-server 1.4.0"
-)
-def test_delete_as_superuser(invoke_as_superuser, caplog, new_name):
-    EMAIL_USER = f"{new_name()}@example.org"
-    # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
-    user_id = res.data["id"]
-    # Call fractal user delete
-    res = invoke_as_superuser(f"user delete {user_id}")
-    assert res.retcode == 0
-    # Check that user was not found
-    with pytest.raises(SystemExit):
-        res = invoke_as_superuser(f"user show {user_id}")
-    debug(caplog.text)
-    assert "404" in caplog.text
-    assert "Not Found" in caplog.text
-
-
 def test_whoami_as_user(invoke, tester):
     res = invoke("user whoami")
     assert res.retcode == 0
