@@ -109,8 +109,9 @@ project_add_dataset_parser.add_argument(
     help="Name of new dataset.",
 )
 project_add_dataset_parser.add_argument(
-    "zarr_dir",
+    "--zarr-dir",
     help="Path to zarr dir.",
+    required=False,
 )
 project_add_dataset_parser.add_argument(
     "--filters",

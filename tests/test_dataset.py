@@ -3,7 +3,12 @@ import json
 from devtools import debug
 
 
-def test_create_dataset(invoke, tmp_path, new_name):
+def test_create_dataset(
+    invoke,
+    tmp_path,
+    new_name,
+    invoke_as_superuser,
+):
     """
     Test some specific branches of the post_dataset function and parser.
     """
@@ -19,7 +24,8 @@ def test_create_dataset(invoke, tmp_path, new_name):
 
     res = invoke(
         (
-            f"project add-dataset {project_id} {new_name()} /tmp "
+            f"project add-dataset {project_id} {new_name()} "
+            "--zarr-dir /tmp "
             f"--filters {file_filters}"
         )
     )
@@ -28,7 +34,15 @@ def test_create_dataset(invoke, tmp_path, new_name):
     assert res.retcode == 0
     assert res.data["filters"] == FILTERS
 
-    res = invoke(f"--batch project add-dataset {project_id} {new_name()} /tmp")
+    # Add a project_dir to user-settings
+    res = invoke("--batch user whoami")
+    assert res.retcode == 0
+    user_id = res.data
+    res = invoke_as_superuser(
+        f"user edit {user_id} --new-project-dir /something"
+    )
+    assert res.retcode == 0
+    res = invoke(f"--batch project add-dataset {project_id} {new_name()}")
     debug(res.data)
     assert res.retcode == 0
 
