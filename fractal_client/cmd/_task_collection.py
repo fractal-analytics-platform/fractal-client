@@ -49,8 +49,7 @@ def task_collect_pip(
 
     state = check_response(res, expected_status_code=202)
     if batch:
-        output = f"{state['id']} {state['data']['venv_path']}"
-        return Interface(retcode=0, data=output)
+        return Interface(retcode=0, data=state["id"])
     else:
         return Interface(retcode=0, data=state)
 
