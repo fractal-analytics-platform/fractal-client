@@ -25,9 +25,9 @@ from ._project import post_project
 from ._task import get_task_list
 from ._task import patch_task
 from ._task import post_task
-from ._task import task_collect_custom
-from ._task import task_collect_pip
-from ._task import task_collection_check
+from ._task_collection import task_collect_custom
+from ._task_collection import task_collect_pip
+from ._task_collection import task_collection_check
 from ._user import user_edit
 from ._user import user_list
 from ._user import user_register
