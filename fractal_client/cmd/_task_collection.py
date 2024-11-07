@@ -44,14 +44,15 @@ def task_collect_pip(
     is_private = "?private=true" if private else ""
 
     res = client.post(
-        f"{settings.BASE_URL}/task/collect/pip/{is_private}", json=task_collect
+        f"{settings.BASE_URL}/task/collect/pip/{is_private}",
+        json=task_collect,
     )
 
-    state = check_response(res, expected_status_code=202)
+    task_group_activity = check_response(res, expected_status_code=202)
     if batch:
-        return Interface(retcode=0, data=state["id"])
+        return Interface(retcode=0, data=task_group_activity["id"])
     else:
-        return Interface(retcode=0, data=state)
+        return Interface(retcode=0, data=task_group_activity)
 
 
 def task_collect_custom(
@@ -106,19 +107,19 @@ def task_collect_custom(
         return Interface(retcode=0, data=task_list)
 
 
-def task_collection_check(
+def show_task_group_activity(
     client: AuthClient,
     *,
-    state_id: int,
+    task_group_activity_id: int,
     include_logs: bool,
 ) -> Interface:
-
-    res = client.get(f"{settings.BASE_URL}/task/collect/{state_id}/")
-    state = check_response(res, expected_status_code=200)
+    res = client.get(
+        f"{settings.BASE_URL}/task-group/activity/{task_group_activity_id}/"
+    )
+    task_group_activity = check_response(res, expected_status_code=200)
 
     # Remove key-value pairs with None value
-    state["data"] = {key: val for (key, val) in state["data"].items() if val}
-    if (include_logs is False) and ("log" in state["data"]):
-        state["data"]["log"] = None
+    if include_logs is False:
+        task_group_activity["log"] = None
 
-    return Interface(retcode=0, data=state)
+    return Interface(retcode=0, data=task_group_activity)

@@ -25,9 +25,9 @@ from ._project import post_project
 from ._task import get_task_list
 from ._task import patch_task
 from ._task import post_task
+from ._task_collection import show_task_group_activity
 from ._task_collection import task_collect_custom
 from ._task_collection import task_collect_pip
-from ._task_collection import task_collection_check
 from ._user import user_edit
 from ._user import user_list
 from ._user import user_register
@@ -153,9 +153,13 @@ def task(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = task_collect_custom(client, batch=batch, **function_kwargs)
     elif subcmd == "check-collection":
-        parameters = ["state_id", "include_logs", "do_not_separate_logs"]
+        parameters = [
+            "task_group_activity_id",
+            "include_logs",
+            "do_not_separate_logs",
+        ]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = task_collection_check(client, **function_kwargs)
+        iface = show_task_group_activity(client, **function_kwargs)
     elif subcmd == "new":
         parameters = [
             "name",
