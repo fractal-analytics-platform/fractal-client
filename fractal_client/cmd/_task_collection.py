@@ -47,7 +47,7 @@ def task_collect_pip(
         f"{settings.BASE_URL}/task/collect/pip/{is_private}", json=task_collect
     )
 
-    state = check_response(res, expected_status_code=[200, 201])
+    state = check_response(res, expected_status_code=202)
     if batch:
         output = f"{state['id']} {state['data']['venv_path']}"
         return Interface(retcode=0, data=output)
