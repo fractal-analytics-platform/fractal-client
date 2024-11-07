@@ -25,9 +25,9 @@ def test_job_submit(
     PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
     urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
-    res = invoke(f"task collect {PACKAGE_PATH}")
+    res = invoke(f"--batch task collect {PACKAGE_PATH}")
     assert res.retcode == 0
-    activity_id = res.data["id"]
+    activity_id = res.data
 
     # Create a project
     project = project_factory(name=new_name())
