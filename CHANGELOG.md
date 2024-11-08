@@ -3,6 +3,7 @@
 # 2.5.0
 
 * Update task-collection commands, to align with fractal-server 2.9.0 (\#738).
+* Remove (internal) obsolete `do_not_separate_logs` argument (\#738).
 
 # 2.4.0
 
