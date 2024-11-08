@@ -90,51 +90,45 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     res0 = invoke_as_custom_user(
         f"task collect --private {PACKAGE_PATH}", **new_user
     )
-    debug(res0)
-    res0.show()
-
-    venv_path = res0.data["data"]["venv_path"]
-    debug(venv_path)
-    state_id = res0.data["id"]
-    debug(state_id)
+    debug(res0.data)
+    activity_id = res0.data["id"]
 
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
         res1 = invoke_as_custom_user(
-            f"task check-collection {state_id}", **new_user
+            f"task check-collection {activity_id}", **new_user
         )
-        debug(res1.data)
         assert res1.retcode == 0
-        res1.show()
         time.sleep(0.1)
-        if res1.data["data"]["status"] == "OK":
+        if res1.data["status"] == "OK":
+            debug(res1.data)
             break
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
+    # Check successful status and no logs
     res2 = invoke_as_custom_user(
-        f"task check-collection {state_id}", **new_user
+        f"task check-collection {activity_id}", **new_user
     )
     assert res2.retcode == 0
-    assert res2.data["data"]["log"] is None
+    assert res2.data["status"] == "OK"
+    assert res2.data["log"] is None
 
+    # Check logs
     res3 = invoke_as_custom_user(
-        f"task check-collection {state_id} --include-logs", **new_user
+        f"task check-collection {activity_id} --include-logs", **new_user
     )
     assert res3.retcode == 0
-    assert res3.data["data"]["log"] is not None
+    assert res3.data["status"] == "OK"
+    assert res3.data["log"] is not None
 
-    res3.show()
-    assert res3.data["data"]["status"] == "OK"
-
+    # Check task list
     res = invoke_as_custom_user("task list", **new_user)
     assert len(res.data) == initial_task_list + 14
 
     # Second collection
     with pytest.raises(SystemExit):
-        res0 = invoke_as_custom_user(
-            f"task collect {PACKAGE_PATH}", **new_user
-        )
+        invoke_as_custom_user(f"task collect {PACKAGE_PATH}", **new_user)
 
 
 def test_task_collection_custom(

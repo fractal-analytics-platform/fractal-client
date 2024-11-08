@@ -299,8 +299,8 @@ task_check_collection_parser = task_subparsers.add_parser(
     allow_abbrev=False,
 )
 task_check_collection_parser.add_argument(
-    "state_id",
-    help="State ID of the collection (see output of task collect).",
+    "task_group_activity_id",
+    help="Activity ID of the collection (see output of `task collect`).",
     type=int,
 )
 task_check_collection_parser.add_argument(

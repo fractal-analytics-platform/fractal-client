@@ -25,9 +25,9 @@ def test_job_submit(
     PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
     urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
-    res = invoke(f"task collect {PACKAGE_PATH}")
+    res = invoke(f"--batch task collect {PACKAGE_PATH}")
     assert res.retcode == 0
-    state_id = res.data["id"]
+    activity_id = res.data
 
     # Create a project
     project = project_factory(name=new_name())
@@ -41,8 +41,8 @@ def test_job_submit(
     # Wait for task collection to end
     starting_time = time.perf_counter()
     while True:
-        res1 = invoke(f"task check-collection {state_id}")
-        if res1.data["data"]["status"] == "OK":
+        res1 = invoke(f"task check-collection {activity_id}")
+        if res1.data["status"] == "OK":
             debug(res1.data)
             break
         time.sleep(0.1)
