@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.5.0
+
+* Update task-collection commands, to align with fractal-server 2.9.0 (\#738).
+
 # 2.4.0
 
 > WARNING: This release has a breaking change in the `project add-dataset` command.
