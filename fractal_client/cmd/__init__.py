@@ -156,7 +156,6 @@ def task(
         parameters = [
             "task_group_activity_id",
             "include_logs",
-            "do_not_separate_logs",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = show_task_group_activity(client, **function_kwargs)
@@ -275,7 +274,7 @@ def job(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = get_job_list(client, batch=batch, **function_kwargs)
     elif subcmd == "show":
-        parameters = ["project_id", "job_id", "do_not_separate_logs"]
+        parameters = ["project_id", "job_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = get_job(client, batch=batch, **function_kwargs)
     elif subcmd == "download-logs":
