@@ -53,7 +53,6 @@ def testserver(tester, tmpdir_factory, request):
     env_file = Path(".fractal_server.env")
     with env_file.open("w") as f:
         f.write(
-            "DB_ENGINE=postgres-psycopg\n"
             "POSTGRES_HOST=localhost\n"
             f"POSTGRES_DB={DB_NAME}\n"
             "POSTGRES_USER=postgres\n"

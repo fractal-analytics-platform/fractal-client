@@ -4,6 +4,8 @@
 
 * Update task-collection commands, to align with [fractal-server 2.9.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#290) (\#738).
 * Remove (internal) obsolete `do_not_separate_logs` argument (\#738).
+* Testing:
+    * Align with fractal-server 2.9.0 removal of `DB_ENGINE` variable (\#743).
 
 # 2.4.0
 
