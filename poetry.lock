@@ -696,7 +696,7 @@ typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
 name = "fractal-server"
-version = "2.9.0a1"
+version = "2.9.0a3"
 description = "Server component of the Fractal analytics platform"
 optional = false
 python-versions = "^3.10"
@@ -726,7 +726,7 @@ uvicorn-worker = "^0.2.0"
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "main"
-resolved_reference = "31666a6b4d9e48e2a0790c043e51b255011c9c39"
+resolved_reference = "cc03c91805d5a54befd712b7c0a28acb6a00a424"
 
 [[package]]
 name = "ghp-import"
