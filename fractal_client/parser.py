@@ -971,8 +971,8 @@ group_update_parser.add_argument(
     "--new-viewer-paths",
     help=(
         "New list of group `viewer_paths` (e.g "
-        "`--new-viewer-paths /something /else`);"
-        "note that this replaces the existing one.",
+        "`--new-viewer-paths /something /else`); "
+        "note that this replaces the existing one."
     ),
     required=False,
     type=str,
