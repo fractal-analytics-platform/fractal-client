@@ -220,7 +220,8 @@ def user_whoami(
 
     if viewer_paths:
         res = client.get(
-            f"{settings.FRACTAL_SERVER}/auth/current-user/viewer-paths/"
+            f"{settings.FRACTAL_SERVER}/auth/current-user/"
+            "allowed-viewer-paths/"
         )
         returned_viewer_paths = check_response(res, expected_status_code=200)
         return Interface(
