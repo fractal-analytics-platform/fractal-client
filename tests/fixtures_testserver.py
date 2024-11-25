@@ -63,6 +63,7 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_RUNNER_WORKING_BASE_DIR="
             f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
             "FRACTAL_LOGGING_LEVEL=0\n"
+            "FRACTAL_VIEWER_AUTHORIZATION_SCHEME=viewer-paths\n"
         )
     _run_command(
         f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"

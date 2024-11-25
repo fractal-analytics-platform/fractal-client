@@ -167,3 +167,9 @@ def test_group_commands(
     viewer_paths_post_pach = res_post_patch.data.pop("viewer_paths")
     assert viewer_paths_post_pach == ["/a/b", "/c/d"]
     assert res_post_patch.data == res_pre_patch.data
+
+    # Test `whoami --viewer-paths`
+    invoke_as_superuser(f"group add-user {group1_id} {superuser_id}")
+    assert "viewer_paths" not in superuser
+    res = invoke_as_superuser("user whoami --viewer-paths")
+    assert set(res.data.get("viewer_paths")) == {"/a/b", "/c/d"}
