@@ -968,26 +968,38 @@ group_update_parser.add_argument(
     "group_id", help="ID of the group to update.", type=int
 )
 group_update_parser.add_argument(
-    "--new-user-ids",
-    help=(
-        "New list of users in the group "
-        "(e.g. `--new-user-ids 4 8 15 16 23 42`); "
-        "note that this replaces the existing one.",
-    ),
-    required=False,
-    type=int,
-    nargs="+",
-    default=None,
-)
-group_update_parser.add_argument(
     "--new-viewer-paths",
     help=(
         "New list of group `viewer_paths` (e.g "
-        "`--new-viewer-paths /something /else`);"
-        "note that this replaces the existing one.",
+        "`--new-viewer-paths /something /else`); "
+        "note that this replaces the existing one."
     ),
-    required=False,
+    required=True,
     type=str,
     nargs="+",
     default=None,
+)
+
+# group add-user
+group_add_user_parser = group_subparsers.add_parser(
+    "add-user", description="Add a single user to group.", allow_abbrev=False
+)
+group_add_user_parser.add_argument(
+    "group_id", help="ID of the group to which to add the user.", type=int
+)
+group_add_user_parser.add_argument(
+    "user_id", help="ID of the user to add.", type=int
+)
+
+# group remove-user
+group_remove_user_parser = group_subparsers.add_parser(
+    "remove-user",
+    description="Remove a single user from group.",
+    allow_abbrev=False,
+)
+group_remove_user_parser.add_argument(
+    "group_id", help="ID of the group to which to remove the user.", type=int
+)
+group_remove_user_parser.add_argument(
+    "user_id", help="ID of the user to remove.", type=int
 )

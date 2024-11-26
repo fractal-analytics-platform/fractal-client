@@ -50,19 +50,41 @@ def group_update(
     client: AuthClient,
     *,
     group_id: int,
-    new_user_ids: list[int] | None = None,
-    new_viewer_paths: list[str] | None = None,
+    new_viewer_paths: list[str],
 ):
-
-    request_body = dict()
-    if new_viewer_paths is not None:
-        request_body["viewer_paths"] = new_viewer_paths
-    if new_user_ids is not None:
-        request_body["new_user_ids"] = new_user_ids
 
     res = client.patch(
         f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/",
-        json=request_body,
+        json=dict(viewer_paths=new_viewer_paths),
+    )
+    data = check_response(res, expected_status_code=200)
+    return Interface(retcode=0, data=data)
+
+
+def group_add_user(
+    client: AuthClient,
+    *,
+    group_id: int,
+    user_id: int,
+):
+
+    res = client.post(
+        f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/add-user/{user_id}/"
+    )
+    data = check_response(res, expected_status_code=200)
+    return Interface(retcode=0, data=data)
+
+
+def group_remove_user(
+    client: AuthClient,
+    *,
+    group_id: int,
+    user_id: int,
+):
+
+    res = client.post(
+        f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/remove-user/"
+        f"{user_id}/"
     )
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)

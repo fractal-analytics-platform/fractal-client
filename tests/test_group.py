@@ -16,7 +16,7 @@ def test_group_commands_auth(invoke, caplog):
     _assert_403(cmd="group list")
     _assert_403(cmd="group get 1")
     _assert_403(cmd="group new foo")
-    _assert_403(cmd="group update 1 --new-user-ids 1")
+    _assert_403(cmd="group update 1 --new-viewer-paths foo")
 
 
 def test_group_commands(
@@ -72,50 +72,40 @@ def test_group_commands(
     group2_viewer_paths = res.data["viewer_paths"]
     assert group2_viewer_paths == []
 
-    # Add users to groups (`group update`)
-
-    # empty update
-    res = invoke_as_superuser(f"group update {default_group_id}")
-    assert res.retcode == 0
-    assert res.data["id"] == default_group_id
+    # Add users to groups (`group add-user/remove-user`)
 
     with pytest.raises(SystemExit):
-        # missing 'group_id' and 'new_user_ids'
-        invoke_as_superuser("group update")
+        # missing both arguments
+        invoke_as_superuser("group add-user")
     with pytest.raises(SystemExit):
-        # missing 'group_id'
-        invoke_as_superuser(f"group update --new-user-ids {superuser_id}")
+        # missing one argument
+        invoke_as_superuser("group add-user 1")
+
     with pytest.raises(SystemExit):
         # user already in group
         invoke_as_superuser(
-            f"group update {default_group_id} --new-user-ids {superuser_id}"
+            f"group add-user {default_group_id} {superuser_id}"
         )
     with pytest.raises(SystemExit):
         # non existing user
-        invoke_as_superuser(
-            f"group update {default_group_id} --new-user-ids 9999"
-        )
+        invoke_as_superuser(f"group add-user {default_group_id} 9999")
 
     # add `user1` and `user2` to `group1`
-    res = invoke_as_superuser(
-        f"group update {group1_id} --new-user-ids {user1_id} {user2_id}"
-    )
+    invoke_as_superuser(f"group add-user {group1_id} {user1_id}")
+    res = invoke_as_superuser(f"group add-user {group1_id} {user2_id}")
     assert res.retcode == 0
     assert res.data["id"] == group1_id
     assert res.data["user_ids"] == [user1_id, user2_id]
     assert res.data["viewer_paths"] == group1_viewer_paths
 
     # add `user3` and `user2` to `group2`
-    res = invoke_as_superuser(
-        f"group update {group2_id} --new-user-ids {user3_id} {user2_id}"
-    )
+    invoke_as_superuser(f"group add-user {group2_id} {user3_id}")
+    res = invoke_as_superuser(f"group add-user {group2_id} {user2_id}")
     assert res.retcode == 0
     assert res.data["id"] == group2_id
     assert set(res.data["user_ids"]) == set([user3_id, user2_id])
     # add also `superuser` to `group2`
-    res = invoke_as_superuser(
-        f"group update {group2_id} --new-user-ids {superuser_id}"
-    )
+    res = invoke_as_superuser(f"group add-user {group2_id} {superuser_id}")
     assert set(res.data["user_ids"]) == set([user3_id, user2_id, superuser_id])
     assert res.data["viewer_paths"] == group2_viewer_paths
 
@@ -131,6 +121,14 @@ def test_group_commands(
     assert set(res.data[2]["user_ids"]) == set(
         [user3_id, user2_id, superuser_id]
     )
+
+    # Remove users from group
+    res = invoke_as_superuser(f"group remove-user {group2_id} {user3_id}")
+    assert set(res.data["user_ids"]) == set([user2_id, superuser_id])
+    res = invoke_as_superuser(f"group remove-user {group2_id} {user2_id}")
+    assert set(res.data["user_ids"]) == set([superuser_id])
+    res = invoke_as_superuser(f"group remove-user {group2_id} {superuser_id}")
+    assert set(res.data["user_ids"]) == set()
 
     # Test `group get` command
 
@@ -171,10 +169,7 @@ def test_group_commands(
     assert res_post_patch.data == res_pre_patch.data
 
     # Test `whoami --viewer-paths`
-
-    invoke_as_superuser(
-        f"group update {group1_id} --new-user-ids {superuser_id}"
-    )
+    invoke_as_superuser(f"group add-user {group1_id} {superuser_id}")
     assert "viewer_paths" not in superuser
     res = invoke_as_superuser("user whoami --viewer-paths")
     assert set(res.data.get("viewer_paths")) == {"/a/b", "/c/d"}

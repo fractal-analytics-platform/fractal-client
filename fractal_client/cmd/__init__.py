@@ -8,9 +8,11 @@ from ._dataset import delete_dataset
 from ._dataset import get_dataset
 from ._dataset import patch_dataset
 from ._dataset import post_dataset
+from ._group import group_add_user
 from ._group import group_get
 from ._group import group_list
 from ._group import group_new
+from ._group import group_remove_user
 from ._group import group_update
 from ._job import get_job
 from ._job import get_job_list
@@ -385,9 +387,17 @@ def group(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_new(client, batch=batch, **function_kwargs)
     elif subcmd == "update":
-        parameters = ["group_id", "new_user_ids", "new_viewer_paths"]
+        parameters = ["group_id", "new_viewer_paths"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_update(client, **function_kwargs)
+    elif subcmd == "add-user":
+        parameters = ["group_id", "user_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = group_add_user(client, **function_kwargs)
+    elif subcmd == "remove-user":
+        parameters = ["group_id", "user_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = group_remove_user(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'group {subcmd}' not found")
 
