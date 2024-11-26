@@ -6,6 +6,7 @@
 * Remove (internal) obsolete `do_not_separate_logs` argument (\#738).
 * Add `group {add|remove}-user` commands, and deprecate `--new-user-ids` argument from `group update` (\#748).
 * Update `user whoami --viewer-paths` to call the new dedicated [server endpoint](https://github.com/fractal-analytics-platform/fractal-server/pull/2096) (\#748).
+* Add `user set-groups` commands (\#753).
 * Testing:
     * Align with fractal-server 2.9.0 removal of `DB_ENGINE` variable (\#743).
 
