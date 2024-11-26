@@ -2,6 +2,7 @@ import json
 
 import pytest
 from devtools import debug
+from fractal_server.app.security import FRACTAL_DEFAULT_GROUP_NAME
 
 PWD_USER = "1234"
 
@@ -383,3 +384,76 @@ def test_whoami_as_superuser(invoke_as_superuser, superuser):
     debug(res.data)
     assert res.data["email"] == superuser["email"]
     assert res.data["is_superuser"]
+
+
+def test_user_set_groups(invoke_as_superuser, user_factory, new_name):
+    # get default group
+    res = invoke_as_superuser("group list --user-ids")
+    default_group = next(
+        group
+        for group in res.data
+        if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
+    )
+    default_group_id = default_group["id"]
+    # create 2 new users
+    user1 = user_factory(email=f"{new_name()}@example.org", password="psw1")
+    assert len(user1["group_ids_names"]) == 1
+    user1_id = user1["id"]
+    user2 = user_factory(email=f"{new_name()}@example.org", password="psw2")
+    assert len(user2["group_ids_names"]) == 1
+    user2_id = user2["id"]
+    # create 2 new groups
+    group1 = invoke_as_superuser(f"group new {new_name()}")
+    assert len(group1.data["user_ids"]) == 0
+    group1_id = group1.data["id"]
+    group2 = invoke_as_superuser(f"group new {new_name()}")
+    assert len(group2.data["user_ids"]) == 0
+    group2_id = group2.data["id"]
+
+    with pytest.raises(SystemExit):
+        # no arguments
+        invoke_as_superuser("user set-groups")
+    with pytest.raises(SystemExit):
+        # no group_ids list
+        invoke_as_superuser(f"user set-groups {user1_id}")
+    with pytest.raises(SystemExit):
+        # group_ids must be a list of integers
+        invoke_as_superuser(f"user set-groups {user1_id} {group1_id} foo")
+    with pytest.raises(SystemExit):
+        # there must always be the default group id in group_ids
+        invoke_as_superuser(f"user set-groups {user1_id} {group1_id}")
+    with pytest.raises(SystemExit):
+        # repeated elements in group_ids are forbidden
+        invoke_as_superuser(
+            "user set-groups "
+            f"{user1_id} {default_group_id} {group1_id} {group1_id}"
+        )
+
+    # Add user1 to group1
+    res = invoke_as_superuser(
+        f"user set-groups {user1_id} {group1_id} {default_group_id}"
+    )
+    assert len(res.data["group_ids_names"]) == 2
+    group1 = invoke_as_superuser(f"group get {group1_id}")
+    assert len(group1.data["user_ids"]) == 1
+
+    # Add user2 to group1 and group2
+    res = invoke_as_superuser(
+        "user set-groups "
+        f"{user2_id} {group2_id} {group1_id} {default_group_id}"
+    )
+    assert len(res.data["group_ids_names"]) == 3
+    group1 = invoke_as_superuser(f"group get {group1_id}")
+    assert len(group1.data["user_ids"]) == 2
+    group2 = invoke_as_superuser(f"group get {group2_id}")
+    assert len(group2.data["user_ids"]) == 1
+
+    # Add user1 to group2 and remove them from group1
+    res = invoke_as_superuser(
+        f"user set-groups {user1_id} {group2_id} {default_group_id}"
+    )
+    assert len(res.data["group_ids_names"]) == 2
+    group1 = invoke_as_superuser(f"group get {group1_id}")
+    assert len(group1.data["user_ids"]) == 1
+    group2 = invoke_as_superuser(f"group get {group2_id}")
+    assert len(group2.data["user_ids"]) == 2
