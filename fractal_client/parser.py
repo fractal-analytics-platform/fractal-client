@@ -912,6 +912,26 @@ user_edit_parser_verified.add_argument(
     required=False,
 )
 
+# user set-groups
+user_set_groups_parser = user_subparsers.add_parser(
+    "set-groups",
+    description=(
+        "Associates an existing user with the indicated groups, "
+        "and removes them from any groups not indicated."
+    ),
+    allow_abbrev=False,
+)
+user_set_groups_parser.add_argument(
+    "user_id", help="ID of the user.", type=int
+)
+user_set_groups_parser.add_argument(
+    "group_ids",
+    help="List of the IDs of groups we want the user to be member.",
+    required=True,
+    type=int,
+    nargs="+",
+)
+
 
 # (USER)GROUP GROUP
 
