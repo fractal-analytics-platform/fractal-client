@@ -116,9 +116,9 @@ def test_group_commands(
     assert res.data[0]["id"] == default_group_id
     assert len(res.data[0]["user_ids"]) == initial_number_of_users + 3
     assert res.data[-2]["id"] == group1_id
-    assert set(res.data[1]["user_ids"]) == set([user1_id, user2_id])
+    assert set(res.data[-2]["user_ids"]) == set([user1_id, user2_id])
     assert res.data[-1]["id"] == group2_id
-    assert set(res.data[2]["user_ids"]) == set(
+    assert set(res.data[-1]["user_ids"]) == set(
         [user3_id, user2_id, superuser_id]
     )
 
