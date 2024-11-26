@@ -55,8 +55,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">197 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">197<span class="text"> run</span></button>
+            <span class="text">202 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">202<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">0<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">0<span class="text"> partial</span></button>
@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_92138a6f38c0b542_response_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2024-11-22 11:17 +0000
+            created at 2024-11-26 08:54 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -1052,29 +1052,41 @@
     <p class="pln"><span class="n"><a id="t968" href="#t968">968</a></span><span class="t">    <span class="str">"group_id"</span><span class="op">,</span> <span class="nam">help</span><span class="op">=</span><span class="str">"ID of the group to update."</span><span class="op">,</span> <span class="nam">type</span><span class="op">=</span><span class="nam">int</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t969" href="#t969">969</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t970" href="#t970">970</a></span><span class="t"><span class="nam">group_update_parser</span><span class="op">.</span><span class="nam">add_argument</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t971" href="#t971">971</a></span><span class="t">    <span class="str">"--new-user-ids"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t971" href="#t971">971</a></span><span class="t">    <span class="str">"--new-viewer-paths"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t972" href="#t972">972</a></span><span class="t">    <span class="nam">help</span><span class="op">=</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t973" href="#t973">973</a></span><span class="t">        <span class="str">"New list of users in the group "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t974" href="#t974">974</a></span><span class="t">        <span class="str">"(e.g. `--new-user-ids 4 8 15 16 23 42`); "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t975" href="#t975">975</a></span><span class="t">        <span class="str">"note that this replaces the existing one."</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t973" href="#t973">973</a></span><span class="t">        <span class="str">"New list of group `viewer_paths` (e.g "</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t974" href="#t974">974</a></span><span class="t">        <span class="str">"`--new-viewer-paths /something /else`); "</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t975" href="#t975">975</a></span><span class="t">        <span class="str">"note that this replaces the existing one."</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t976" href="#t976">976</a></span><span class="t">    <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t977" href="#t977">977</a></span><span class="t">    <span class="nam">required</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t978" href="#t978">978</a></span><span class="t">    <span class="nam">type</span><span class="op">=</span><span class="nam">int</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t977" href="#t977">977</a></span><span class="t">    <span class="nam">required</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t978" href="#t978">978</a></span><span class="t">    <span class="nam">type</span><span class="op">=</span><span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t979" href="#t979">979</a></span><span class="t">    <span class="nam">nargs</span><span class="op">=</span><span class="str">"+"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t980" href="#t980">980</a></span><span class="t">    <span class="nam">default</span><span class="op">=</span><span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t981" href="#t981">981</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t982" href="#t982">982</a></span><span class="t"><span class="nam">group_update_parser</span><span class="op">.</span><span class="nam">add_argument</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t983" href="#t983">983</a></span><span class="t">    <span class="str">"--new-viewer-paths"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t984" href="#t984">984</a></span><span class="t">    <span class="nam">help</span><span class="op">=</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t985" href="#t985">985</a></span><span class="t">        <span class="str">"New list of group `viewer_paths` (e.g "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t986" href="#t986">986</a></span><span class="t">        <span class="str">"`--new-viewer-paths /something /else`);"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t987" href="#t987">987</a></span><span class="t">        <span class="str">"note that this replaces the existing one."</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t988" href="#t988">988</a></span><span class="t">    <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t989" href="#t989">989</a></span><span class="t">    <span class="nam">required</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t990" href="#t990">990</a></span><span class="t">    <span class="nam">type</span><span class="op">=</span><span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t991" href="#t991">991</a></span><span class="t">    <span class="nam">nargs</span><span class="op">=</span><span class="str">"+"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t992" href="#t992">992</a></span><span class="t">    <span class="nam">default</span><span class="op">=</span><span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t993" href="#t993">993</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t982" href="#t982">982</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t983" href="#t983">983</a></span><span class="t"><span class="com"># group add-user</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t984" href="#t984">984</a></span><span class="t"><span class="nam">group_add_user_parser</span> <span class="op">=</span> <span class="nam">group_subparsers</span><span class="op">.</span><span class="nam">add_parser</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t985" href="#t985">985</a></span><span class="t">    <span class="str">"add-user"</span><span class="op">,</span> <span class="nam">description</span><span class="op">=</span><span class="str">"Add a single user to group."</span><span class="op">,</span> <span class="nam">allow_abbrev</span><span class="op">=</span><span class="key">False</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t986" href="#t986">986</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t987" href="#t987">987</a></span><span class="t"><span class="nam">group_add_user_parser</span><span class="op">.</span><span class="nam">add_argument</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t988" href="#t988">988</a></span><span class="t">    <span class="str">"group_id"</span><span class="op">,</span> <span class="nam">help</span><span class="op">=</span><span class="str">"ID of the group to which to add the user."</span><span class="op">,</span> <span class="nam">type</span><span class="op">=</span><span class="nam">int</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t989" href="#t989">989</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t990" href="#t990">990</a></span><span class="t"><span class="nam">group_add_user_parser</span><span class="op">.</span><span class="nam">add_argument</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t991" href="#t991">991</a></span><span class="t">    <span class="str">"user_id"</span><span class="op">,</span> <span class="nam">help</span><span class="op">=</span><span class="str">"ID of the user to add."</span><span class="op">,</span> <span class="nam">type</span><span class="op">=</span><span class="nam">int</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t992" href="#t992">992</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t993" href="#t993">993</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t994" href="#t994">994</a></span><span class="t"><span class="com"># group remove-user</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t995" href="#t995">995</a></span><span class="t"><span class="nam">group_remove_user_parser</span> <span class="op">=</span> <span class="nam">group_subparsers</span><span class="op">.</span><span class="nam">add_parser</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t996" href="#t996">996</a></span><span class="t">    <span class="str">"remove-user"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t997" href="#t997">997</a></span><span class="t">    <span class="nam">description</span><span class="op">=</span><span class="str">"Remove a single user from group."</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t998" href="#t998">998</a></span><span class="t">    <span class="nam">allow_abbrev</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t999" href="#t999">999</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1000" href="#t1000">1000</a></span><span class="t"><span class="nam">group_remove_user_parser</span><span class="op">.</span><span class="nam">add_argument</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1001" href="#t1001">1001</a></span><span class="t">    <span class="str">"group_id"</span><span class="op">,</span> <span class="nam">help</span><span class="op">=</span><span class="str">"ID of the group to which to remove the user."</span><span class="op">,</span> <span class="nam">type</span><span class="op">=</span><span class="nam">int</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1002" href="#t1002">1002</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1003" href="#t1003">1003</a></span><span class="t"><span class="nam">group_remove_user_parser</span><span class="op">.</span><span class="nam">add_argument</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1004" href="#t1004">1004</a></span><span class="t">    <span class="str">"user_id"</span><span class="op">,</span> <span class="nam">help</span><span class="op">=</span><span class="str">"ID of the user to remove."</span><span class="op">,</span> <span class="nam">type</span><span class="op">=</span><span class="nam">int</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1005" href="#t1005">1005</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -1084,7 +1096,7 @@
             <a class="nav" href="z_92138a6f38c0b542_response_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2024-11-22 11:17 +0000
+            created at 2024-11-26 08:54 +0000
         </p>
     </div>
 </footer>
