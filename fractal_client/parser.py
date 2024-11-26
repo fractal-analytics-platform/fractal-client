@@ -927,7 +927,6 @@ user_set_groups_parser.add_argument(
 user_set_groups_parser.add_argument(
     "group_ids",
     help="List of the IDs of groups we want the user to be member.",
-    required=True,
     type=int,
     nargs="+",
 )
