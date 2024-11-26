@@ -974,7 +974,7 @@ group_update_parser.add_argument(
         "`--new-viewer-paths /something /else`); "
         "note that this replaces the existing one."
     ),
-    required=False,
+    required=True,
     type=str,
     nargs="+",
     default=None,
