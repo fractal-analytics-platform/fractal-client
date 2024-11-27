@@ -916,8 +916,7 @@ user_edit_parser_verified.add_argument(
 user_set_groups_parser = user_subparsers.add_parser(
     "set-groups",
     description=(
-        "Associates an existing user with the indicated groups, "
-        "and removes them from any groups not indicated."
+        "Reset user-group membership for an existing user."
     ),
     allow_abbrev=False,
 )
@@ -926,7 +925,10 @@ user_set_groups_parser.add_argument(
 )
 user_set_groups_parser.add_argument(
     "group_ids",
-    help="List of the IDs of groups we want the user to be member.",
+    help=(
+        "List of the IDs of groups we want the user to be member. "
+        "WARNING: this list replaces the current group memberships."
+    ),
     type=int,
     nargs="+",
 )
