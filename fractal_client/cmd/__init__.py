@@ -33,6 +33,7 @@ from ._task_collection import task_collect_pip
 from ._user import user_edit
 from ._user import user_list
 from ._user import user_register
+from ._user import user_set_groups
 from ._user import user_show
 from ._user import user_whoami
 from ._workflow import delete_workflow
@@ -361,6 +362,13 @@ def user(
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = user_edit(client, **function_kwargs)
+    elif subcmd == "set-groups":
+        parameters = [
+            "user_id",
+            "group_ids",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = user_set_groups(client, **function_kwargs)
     elif subcmd == "whoami":
         parameters = ["viewer_paths"]
         function_kwargs = get_kwargs(parameters, kwargs)

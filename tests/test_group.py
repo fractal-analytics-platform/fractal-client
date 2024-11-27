@@ -113,14 +113,18 @@ def test_group_commands(
 
     res = invoke_as_superuser("group list --user-ids")
     assert len(res.data) == initial_number_of_groups + 2
-    assert res.data[0]["id"] == default_group_id
-    assert len(res.data[0]["user_ids"]) == initial_number_of_users + 3
-    assert res.data[-2]["id"] == group1_id
-    assert set(res.data[1]["user_ids"]) == set([user1_id, user2_id])
-    assert res.data[-1]["id"] == group2_id
-    assert set(res.data[2]["user_ids"]) == set(
-        [user3_id, user2_id, superuser_id]
+    users_default_group = next(
+        g["user_ids"] for g in res.data if g["id"] == default_group_id
     )
+    assert len(users_default_group) == initial_number_of_users + 3
+    users_group_1 = next(
+        g["user_ids"] for g in res.data if g["id"] == group1_id
+    )
+    assert set(users_group_1) == set([user1_id, user2_id])
+    users_group_2 = next(
+        g["user_ids"] for g in res.data if g["id"] == group2_id
+    )
+    assert set(users_group_2) == set([user3_id, user2_id, superuser_id])
 
     # Remove users from group
     res = invoke_as_superuser(f"group remove-user {group2_id} {user3_id}")

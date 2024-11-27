@@ -205,6 +205,17 @@ def user_edit(
     return Interface(retcode=0, data=new_user_with_settings)
 
 
+def user_set_groups(
+    client: AuthClient, *, user_id: int, group_ids: list[int]
+) -> Interface:
+    res = client.post(
+        f"{settings.FRACTAL_SERVER}/auth/users/{user_id}/set-groups/",
+        json=dict(group_ids=group_ids),
+    )
+    user = check_response(res, expected_status_code=200)
+    return Interface(retcode=0, data=user)
+
+
 def user_whoami(
     client: AuthClient, *, batch: bool, viewer_paths: bool = False
 ) -> Interface:
