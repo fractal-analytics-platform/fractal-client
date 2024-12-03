@@ -330,7 +330,6 @@ def user(
         parameters = [
             "new_email",
             "new_password",
-            "cache_dir",
             "slurm_user",
             "project_dir",
             "username",
@@ -352,7 +351,6 @@ def user(
             "new_password",
             "new_username",
             "new_slurm_user",
-            "new_cache_dir",
             "new_project_dir",
             "new_ssh_settings_json",
             "make_superuser",

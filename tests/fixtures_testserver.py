@@ -214,14 +214,14 @@ def user_factory(invoke_as_superuser):
     def __user_factory(
         email: str,
         password: str,
-        cache_dir: str | None = None,
+        project_dir: str | None = None,
         slurm_user: str | None = None,
         username: str | None = None,
         superuser: bool = False,
     ):
         cmd = "user register"
-        if cache_dir is not None:
-            cmd += f" --cache-dir {cache_dir}"
+        if project_dir is not None:
+            cmd += f" --project-dir {project_dir}"
         if slurm_user is not None:
             cmd += f" --slurm-user {slurm_user}"
         if username is not None:

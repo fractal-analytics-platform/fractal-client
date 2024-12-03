@@ -44,7 +44,6 @@ def user_register(
     new_email: str,
     new_password: str,
     slurm_user: str | None = None,
-    cache_dir: str | None = None,
     project_dir: str | None = None,
     username: str | None = None,
     ssh_settings_json: str | None = None,
@@ -62,8 +61,6 @@ def user_register(
     new_settings = dict()
     if slurm_user:
         new_settings["slurm_user"] = slurm_user
-    if cache_dir:
-        new_settings["cache_dir"] = cache_dir
     if project_dir:
         new_settings["project_dir"] = project_dir
     if ssh_settings_json is not None:
@@ -130,7 +127,6 @@ def user_edit(
     new_password: str | None = None,
     new_username: str | None = None,
     new_slurm_user: str | None = None,
-    new_cache_dir: str | None = None,
     new_project_dir: str | None = None,
     new_ssh_settings_json: str | None = None,
     make_superuser: bool = False,
@@ -165,8 +161,6 @@ def user_edit(
         user_update["is_verified"] = False
     if new_username is not None:
         user_update["username"] = new_username
-    if new_cache_dir is not None:
-        settings_update["cache_dir"] = new_cache_dir
     if new_slurm_user is not None:
         settings_update["slurm_user"] = new_slurm_user
     if new_project_dir is not None:
