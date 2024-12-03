@@ -29,7 +29,7 @@ def test_register_as_superuser(
     else:
         res = invoke_as_superuser(
             f"user register {EMAIL_USER} {PWD_USER} "
-            "--slurm-user SOMETHING --cache-dir /absolute --username X"
+            "--slurm-user SOMETHING --username X"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -178,7 +178,6 @@ def test_edit_as_superuser(
     user_id = res.data["id"]
     # Call fractal user edit
     NEW_EMAIL = f"{new_name()}@example.org"
-    NEW_CACHE_DIR = "/tmp/xxx"
     NEW_SLURM_USER = "new_slurm"
     NEW_USERNAME = "new_username"
     cmd = (
@@ -187,7 +186,6 @@ def test_edit_as_superuser(
         f"--new-password SOMETHING "
         f"--new-slurm-user {NEW_SLURM_USER} "
         f"--new-username {NEW_USERNAME} "
-        f"--new-cache-dir {NEW_CACHE_DIR}"
     )
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
@@ -210,7 +208,6 @@ def test_edit_as_superuser(
             if new_is_verified
             else not res.data["is_verified"]
         )
-        assert res.data["settings"]["cache_dir"] == NEW_CACHE_DIR
         assert res.data["settings"]["slurm_user"] == NEW_SLURM_USER
     else:
         res = invoke_as_superuser(cmd)
@@ -219,11 +216,6 @@ def test_edit_as_superuser(
             "Cannot use `--new-email` without `--make-verified` or "
             "`--remove-verified`"
         )
-
-    BAD_CACHE_DIR = "not_absolute"
-    with pytest.raises(SystemExit):
-        cmd = f"user edit {user_id} --new-cache-dir {BAD_CACHE_DIR}"
-        invoke_as_superuser(cmd)
 
     # If the user was made a superuser, check that we can go back to normal
     # user
@@ -257,7 +249,6 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
         "ssh_jobs_dir": None,
         "slurm_user": None,
         "slurm_accounts": [],
-        "cache_dir": None,
         "project_dir": None,
     }
     SSH_HOST = "something.somewhere"
@@ -271,7 +262,6 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
         "ssh_jobs_dir": None,
         "slurm_user": None,
         "slurm_accounts": [],
-        "cache_dir": None,
         "project_dir": NEW_PROJECT_DIR,
     }
 
