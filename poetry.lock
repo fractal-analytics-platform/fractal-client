@@ -759,36 +759,32 @@ typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
 name = "fractal-server"
-version = "2.9.2"
+version = "2.9.1"
 description = "Server component of the Fractal analytics platform"
 optional = false
-python-versions = "^3.10"
-files = []
-develop = false
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "fractal_server-2.9.1-py3-none-any.whl", hash = "sha256:aa603b560ded02ff18b3a327135bdb8eec6a4bfd926693c55972e48b278f9162"},
+    {file = "fractal_server-2.9.1.tar.gz", hash = "sha256:3dff77e0eac7f7bbf7ff74b0c27ecf78e0e7f129ad2092f1d46e7202cc28267f"},
+]
 
 [package.dependencies]
-alembic = "^1.13.1"
+alembic = ">=1.13.1,<2.0.0"
 cloudpickle = ">=3.0.0,<3.1.0"
-clusterfutures = "^0.5"
-fabric = "^3.2.2"
-fastapi = "^0.115.0"
+clusterfutures = ">=0.5,<0.6"
+fabric = ">=3.2.2,<4.0.0"
+fastapi = ">=0.115.0,<0.116.0"
 fastapi-users = {version = ">=14,<15", extras = ["oauth"]}
 gunicorn = ">=21.2,<23.0"
-packaging = "^23.2"
-psutil = "^5.9.8"
-psycopg = {version = "^3.1.0", extras = ["binary"]}
+packaging = ">=23.2,<24.0"
+psutil = ">=5.9.8,<6.0.0"
+psycopg = {version = ">=3.1.0,<4.0.0", extras = ["binary"]}
 pydantic = ">=1.10.8,<2"
-python-dotenv = "^1.0.0"
+python-dotenv = ">=1.0.0,<2.0.0"
 sqlalchemy = {version = ">=2.0.23,<2.1", extras = ["asyncio"]}
-sqlmodel = "^0.0.21"
-uvicorn = "^0.29.0"
-uvicorn-worker = "^0.2.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "main"
-resolved_reference = "1694ca9781614d82484225b8dd0deb69993b80a6"
+sqlmodel = ">=0.0.21,<0.0.22"
+uvicorn = ">=0.29.0,<0.30.0"
+uvicorn-worker = ">=0.2.0,<0.3.0"
 
 [[package]]
 name = "ghp-import"
@@ -2495,4 +2491,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ac831acea31495cc5a83f07abbbe0acc85d01a168802a7a59c5957c2229cadf2"
+content-hash = "0b50a2c575ad0fbf592962b46ff8fa22793f02b0c87655a268c11c755597f96a"
