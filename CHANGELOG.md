@@ -5,6 +5,10 @@
 * Update versions of pre-commit hooks and add precommit GitHub Action (\#757).
 
 
+# 2.5.1
+
+* Deprecate user `cache_dir` , to align with [fractal-server 2.9.2](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#292) (\#758).
+
 # 2.5.0
 
 * Update task-collection commands, to align with [fractal-server 2.9.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#290) (\#738).
