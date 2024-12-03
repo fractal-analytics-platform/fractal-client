@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Update versions of pre-commit hooks (\#757).
+
 # 2.5.0
 
 * Update task-collection commands, to align with [fractal-server 2.9.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#290) (\#738).
