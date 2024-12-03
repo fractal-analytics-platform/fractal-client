@@ -915,9 +915,7 @@ user_edit_parser_verified.add_argument(
 # user set-groups
 user_set_groups_parser = user_subparsers.add_parser(
     "set-groups",
-    description=(
-        "Reset user-group membership for an existing user."
-    ),
+    description=("Reset user-group membership for an existing user."),
     allow_abbrev=False,
 )
 user_set_groups_parser.add_argument(
