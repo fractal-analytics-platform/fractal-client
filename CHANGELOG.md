@@ -2,7 +2,8 @@
 
 # Unreleased
 
-* Update versions of pre-commit hooks (\#757).
+* Update versions of pre-commit hooks and add precommit GitHub Action (\#757).
+
 
 # 2.5.0
 
