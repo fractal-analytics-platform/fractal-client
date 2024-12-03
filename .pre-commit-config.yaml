@@ -27,7 +27,7 @@ repos:
 -   repo: local
     hooks:
     - id: grep-for-devtools
-      name: Check for devtools in fractal_server files
+      name: Check for devtools in fractal_client files
       entry: bash -c 'for file in "$@"; do if grep -n "devtools" "$file"; then echo "$file" && exit 1; fi; done' --
       language: system
-      files: fractal_server/
+      files: fractal_client/
