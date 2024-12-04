@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 
+from pathlib import Path
 from fractal_client.authclient import AuthClient
 from fractal_client.config import settings
 from fractal_client.interface import Interface
@@ -15,11 +16,11 @@ def task_collect_pip(
     package_version: str | None = None,
     python_version: str | None = None,
     package_extras: str | None = None,
+    wheel_path: str | None = None,
     pinned_dependency: list[str] | None = None,
     private: bool = False,
     batch: bool = False,
 ) -> Interface:
-
     # Construct TaskCollectPip object
     task_collect = dict(package=package)
     if package_version:
@@ -43,10 +44,21 @@ def task_collect_pip(
 
     is_private = "?private=true" if private else ""
 
-    res = client.post(
-        f"{settings.BASE_URL}/task/collect/pip/{is_private}",
-        json=task_collect,
-    )
+    if wheel_path is None:
+        with open(wheel_path, "rb") as wheel_buffer:
+            file = {
+                "file": (Path(wheel_path).name, wheel_buffer.read(), "application/zip")
+            }
+        res = client.post(
+            f"{settings.BASE_URL}/task/collect/pip/{is_private}",
+            data=task_collect,
+            files=file,
+        )
+    else:
+        res = client.post(
+            f"{settings.BASE_URL}/task/collect/pip/{is_private}",
+            data=task_collect,
+        )
 
     task_group_activity = check_response(res, expected_status_code=202)
     if batch:
@@ -67,7 +79,6 @@ def task_collect_custom(
     private: bool = False,
     batch: bool = False,
 ) -> Interface:
-
     try:
         with open(manifest, "r") as f:
             manifest_dict = json.load(f)
@@ -93,12 +104,10 @@ def task_collect_custom(
 
     res = client.post(
         f"{settings.BASE_URL}/task/collect/custom/{is_private}",
-        json=task_collect,
+        data=task_collect,
     )
 
-    task_list = check_response(
-        res, expected_status_code=201, redact_long_payload=True
-    )
+    task_list = check_response(res, expected_status_code=201, redact_long_payload=True)
 
     if batch:
         task_ids = [str(task["id"]) for task in task_list]

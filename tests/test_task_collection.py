@@ -3,9 +3,11 @@ import sys
 import time
 from urllib.request import urlopen
 from urllib.request import urlretrieve
-
+import logging
 import pytest
 from devtools import debug
+
+logging.getLogger("httpx").setLevel(logging.DEBUG)
 
 
 def test_task_collection_command(invoke, caplog):
@@ -50,13 +52,7 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     """
     PACKAGE = "devtools"
     with pytest.raises(SystemExit):
-        invoke(
-            (
-                "task collect "
-                f"{PACKAGE} "
-                "--pinned-dependency invalid-string"
-            )
-        )
+        invoke(("task collect " f"{PACKAGE} " "--pinned-dependency invalid-string"))
     # Check that payload was prepared correctly
     log_lines = [record.message for record in caplog.records]
     debug(log_lines)
@@ -88,7 +84,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     initial_task_list = len(res.data)
 
     res0 = invoke_as_custom_user(
-        f"task collect --private {PACKAGE_PATH}", **new_user
+        f"task collect --private {PACKAGE_PATH} --wheel-path {PACKAGE_PATH}", **new_user
     )
     debug(res0.data)
     activity_id = res0.data["id"]
@@ -96,9 +92,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
-        res1 = invoke_as_custom_user(
-            f"task check-collection {activity_id}", **new_user
-        )
+        res1 = invoke_as_custom_user(f"task check-collection {activity_id}", **new_user)
         assert res1.retcode == 0
         time.sleep(0.1)
         if res1.data["status"] == "OK":
@@ -107,9 +101,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Check successful status and no logs
-    res2 = invoke_as_custom_user(
-        f"task check-collection {activity_id}", **new_user
-    )
+    res2 = invoke_as_custom_user(f"task check-collection {activity_id}", **new_user)
     assert res2.retcode == 0
     assert res2.data["status"] == "OK"
     assert res2.data["log"] is None
@@ -157,6 +149,7 @@ def test_task_collection_custom(
         f"label {python_interpreter} {manifest}"
     )
     res = invoke_as_custom_user(cmd, **new_user)
+    debug(res.data)
     assert res.retcode == 0
     assert isinstance(res.data, list)
 

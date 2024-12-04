@@ -63,7 +63,6 @@ def project(
     batch: bool = False,
     **kwargs,
 ) -> Interface:
-
     if subcmd == "new":
         parameters = ["name"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -129,7 +128,6 @@ def task(
     batch: bool = False,
     **kwargs,
 ) -> Interface:
-
     if subcmd == "list":
         iface = get_task_list(client)
     elif subcmd == "collect":
@@ -138,6 +136,7 @@ def task(
             "package_version",
             "python_version",
             "package_extras",
+            "wheel_path",
             "pinned_dependency",
             "private",
         ]
@@ -308,9 +307,7 @@ def version(client: Client, **kwargs) -> Interface:
     try:
         res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
         data = res.json()
-        server_str = (
-            f"\turl: {settings.FRACTAL_SERVER}\tversion: {data['version']}"
-        )
+        server_str = f"\turl: {settings.FRACTAL_SERVER}\tversion: {data['version']}"
     except ConnectError:
         server_str = f"\tConnection to '{settings.FRACTAL_SERVER}' refused"
 
@@ -323,9 +320,7 @@ def version(client: Client, **kwargs) -> Interface:
     )
 
 
-def user(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
-) -> Interface:
+def user(client: AuthClient, subcmd: str, batch: bool = False, **kwargs) -> Interface:
     if subcmd == "register":
         parameters = [
             "new_email",
@@ -377,9 +372,7 @@ def user(
     return iface
 
 
-def group(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
-) -> Interface:
+def group(client: AuthClient, subcmd: str, batch: bool = False, **kwargs) -> Interface:
     if subcmd == "list":
         parameters = ["user_ids"]
         function_kwargs = get_kwargs(parameters, kwargs)
