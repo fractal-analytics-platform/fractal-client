@@ -13,7 +13,6 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import argparse as ap
 
 
@@ -80,7 +79,9 @@ project_show_parser = project_subparsers.add_parser(
     description="Show details of single project.",
     allow_abbrev=False,
 )
-project_show_parser.add_argument("project_id", type=int, help="ID of project to show.")
+project_show_parser.add_argument(
+    "project_id", type=int, help="ID of project to show."
+)
 
 # project delete
 project_delete_parser = project_subparsers.add_parser(
@@ -127,7 +128,9 @@ project_edit_parser = project_subparsers.add_parser(
 project_edit_parser.add_argument(
     "project_id", type=int, help="ID of the project to edit."
 )
-project_edit_parser.add_argument("--new-name", help="New project name.", required=False)
+project_edit_parser.add_argument(
+    "--new-name", help="New project name.", required=False
+)
 
 
 # DATASET GROUP
@@ -197,7 +200,9 @@ task_list_parser = task_subparsers.add_parser(
 # task collect
 task_collect_parser = task_subparsers.add_parser(
     "collect",
-    description=("Install and collect all tasks from a pip-installable package."),
+    description=(
+        "Install and collect all tasks from a pip-installable package."
+    ),
     allow_abbrev=False,
 )
 task_collect_parser.add_argument(
@@ -254,7 +259,9 @@ task_collect_custom_parser.add_argument(
 )
 task_collect_custom_parser.add_argument(
     "python_interpreter",
-    help=("Absolute path to the Python interpreter to be used for running tasks."),
+    help=(
+        "Absolute path to the Python interpreter to be used for running tasks."
+    ),
 )
 task_collect_custom_parser.add_argument(
     "manifest", help="Local path of the Manifest of the Fractal task package."
@@ -313,7 +320,9 @@ task_new_parser = task_subparsers.add_parser(
     argument_default=ap.SUPPRESS,
     allow_abbrev=False,
 )
-task_new_parser.add_argument("name", help="A human readable name for the task.")
+task_new_parser.add_argument(
+    "name", help="A human readable name for the task."
+)
 task_new_parser.add_argument(
     "--command-non-parallel",
     help="The non parallel command that executes the task.",
@@ -369,12 +378,15 @@ task_edit_id_or_name_group = task_edit_parser.add_mutually_exclusive_group(
 task_edit_id_or_name_group.add_argument(
     "--id", help="ID of the task to edit.", type=int
 )
-task_edit_id_or_name_group.add_argument("--name", help="Name of the task to edit.")
+task_edit_id_or_name_group.add_argument(
+    "--name", help="Name of the task to edit."
+)
 
 task_edit_parser.add_argument(
     "--version",
     help=(
-        "Version of the task to edit " "(only accepted in combination with `--name`)."
+        "Version of the task to edit "
+        "(only accepted in combination with `--name`)."
     ),
 )
 task_edit_parser.add_argument("--new-version", help="New task version.")
@@ -456,7 +468,9 @@ workflow_delete_parser = workflow_subparsers.add_parser(
     allow_abbrev=False,
 )
 workflow_delete_parser.add_argument("project_id", type=int, help="Project ID.")
-workflow_delete_parser.add_argument("workflow_id", type=int, help="Workflow ID.")
+workflow_delete_parser.add_argument(
+    "workflow_id", type=int, help="Workflow ID."
+)
 
 
 # workflow add task
@@ -465,7 +479,9 @@ workflow_add_task_parser = workflow_subparsers.add_parser(
     description="Add new task to specific workflow.",
     allow_abbrev=False,
 )
-workflow_add_task_parser.add_argument("project_id", type=int, help="Project ID.")
+workflow_add_task_parser.add_argument(
+    "project_id", type=int, help="Project ID."
+)
 workflow_add_task_parser.add_argument(
     "workflow_id",
     type=int,
@@ -483,7 +499,10 @@ workflow_add_task_id_or_name_group.add_argument(
 )
 workflow_add_task_parser.add_argument(
     "--task-version",
-    help=("Version of task to add " "(only accepted in combination with --task-name)."),
+    help=(
+        "Version of task to add "
+        "(only accepted in combination with --task-name)."
+    ),
 )
 workflow_add_task_parser.add_argument(
     "--order", help="Order of this task within the workflow's task list."
@@ -493,7 +512,9 @@ workflow_add_task_parser.add_argument(
     "--args-non-parallel", help="Args for non parallel tasks"
 )
 
-workflow_add_task_parser.add_argument("--args-parallel", help="Args for parallel tasks")
+workflow_add_task_parser.add_argument(
+    "--args-parallel", help="Args for parallel tasks"
+)
 
 workflow_add_task_parser.add_argument(
     "--meta-non-parallel", help="Metadata file fornon parallel tasks"
@@ -515,7 +536,9 @@ workflow_edit_task_parser = workflow_subparsers.add_parser(
     description="Edit task within specific workflow.",
     allow_abbrev=False,
 )
-workflow_edit_task_parser.add_argument("project_id", type=int, help="Project ID.")
+workflow_edit_task_parser.add_argument(
+    "project_id", type=int, help="Project ID."
+)
 workflow_edit_task_parser.add_argument(
     "workflow_id",
     type=int,
@@ -556,7 +579,9 @@ workflow_remove_task_parser = workflow_subparsers.add_parser(
     description="Remove task from a specific workflow.",
     allow_abbrev=False,
 )
-workflow_remove_task_parser.add_argument("project_id", type=int, help="Project ID.")
+workflow_remove_task_parser.add_argument(
+    "project_id", type=int, help="Project ID."
+)
 workflow_remove_task_parser.add_argument(
     "workflow_id",
     type=int,
@@ -655,7 +680,9 @@ job_download_logs_parser = job_subparsers.add_parser(
     description="Download full folder of workflow-execution job.",
     allow_abbrev=False,
 )
-job_download_logs_parser.add_argument("project_id", type=int, help="Project ID.")
+job_download_logs_parser.add_argument(
+    "project_id", type=int, help="Project ID."
+)
 job_download_logs_parser.add_argument("job_id", type=int, help="Job ID.")
 job_download_logs_parser.add_argument(
     "--output",
@@ -689,14 +716,20 @@ job_submit_parser.add_argument(
     "--start",
     dest="first_task_index",
     type=int,
-    help=("Positional index of the first task to be executed" " (starting from 0)."),
+    help=(
+        "Positional index of the first task to be executed"
+        " (starting from 0)."
+    ),
     required=False,
 )
 job_submit_parser.add_argument(
     "--end",
     dest="last_task_index",
     type=int,
-    help=("Positional index of the last task to be executed" " (starting from 0)."),
+    help=(
+        "Positional index of the last task to be executed"
+        " (starting from 0)."
+    ),
     required=False,
 )
 job_submit_parser.add_argument(
@@ -747,8 +780,12 @@ user_register_parser = user_subparsers.add_parser(
     ),
     allow_abbrev=False,
 )
-user_register_parser.add_argument("new_email", help="Email to be used as username.")
-user_register_parser.add_argument("new_password", help="Password for the new user.")
+user_register_parser.add_argument(
+    "new_email", help="Email to be used as username."
+)
+user_register_parser.add_argument(
+    "new_password", help="Password for the new user."
+)
 user_register_parser.add_argument(
     "--project-dir",
     help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
@@ -806,8 +843,12 @@ user_edit_parser = user_subparsers.add_parser(
     allow_abbrev=False,
 )
 user_edit_parser.add_argument("user_id", help="ID of the user.", type=int)
-user_edit_parser.add_argument("--new-email", help="New email address.", required=False)
-user_edit_parser.add_argument("--new-password", help="New password.", required=False)
+user_edit_parser.add_argument(
+    "--new-email", help="New email address.", required=False
+)
+user_edit_parser.add_argument(
+    "--new-password", help="New password.", required=False
+)
 user_edit_parser.add_argument(
     "--new-username", help="New user username.", required=False
 )
@@ -864,7 +905,9 @@ user_set_groups_parser = user_subparsers.add_parser(
     description=("Reset user-group membership for an existing user."),
     allow_abbrev=False,
 )
-user_set_groups_parser.add_argument("user_id", help="ID of the user.", type=int)
+user_set_groups_parser.add_argument(
+    "user_id", help="ID of the user.", type=int
+)
 user_set_groups_parser.add_argument(
     "group_ids",
     help=(
@@ -903,7 +946,9 @@ group_list_parser.add_argument(
 group_get_parser = group_subparsers.add_parser(
     "get", description="Get single group.", allow_abbrev=False
 )
-group_get_parser.add_argument("group_id", help="ID of the group to get.", type=int)
+group_get_parser.add_argument(
+    "group_id", help="ID of the group to get.", type=int
+)
 
 # group new
 group_new_parser = group_subparsers.add_parser(
@@ -912,7 +957,10 @@ group_new_parser = group_subparsers.add_parser(
 group_new_parser.add_argument("name", help="Name of the new group.", type=str)
 group_new_parser.add_argument(
     "--viewer-paths",
-    help=("List of group's `viewer_paths` (e.g " "`--viewer-paths /something /else`)",),
+    help=(
+        "List of group's `viewer_paths` (e.g "
+        "`--viewer-paths /something /else`)",
+    ),
     required=False,
     type=str,
     nargs="+",
@@ -945,7 +993,9 @@ group_add_user_parser = group_subparsers.add_parser(
 group_add_user_parser.add_argument(
     "group_id", help="ID of the group to which to add the user.", type=int
 )
-group_add_user_parser.add_argument("user_id", help="ID of the user to add.", type=int)
+group_add_user_parser.add_argument(
+    "user_id", help="ID of the user to add.", type=int
+)
 
 # group remove-user
 group_remove_user_parser = group_subparsers.add_parser(

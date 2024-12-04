@@ -1,8 +1,8 @@
 import json
 import logging
 import sys
-
 from pathlib import Path
+
 from fractal_client.authclient import AuthClient
 from fractal_client.config import settings
 from fractal_client.interface import Interface
@@ -47,7 +47,11 @@ def task_collect_pip(
     if wheel_path is None:
         with open(wheel_path, "rb") as wheel_buffer:
             file = {
-                "file": (Path(wheel_path).name, wheel_buffer.read(), "application/zip")
+                "file": (
+                    Path(wheel_path).name,
+                    wheel_buffer.read(),
+                    "application/zip",
+                )
             }
         res = client.post(
             f"{settings.BASE_URL}/task/collect/pip/{is_private}",
@@ -107,7 +111,9 @@ def task_collect_custom(
         data=task_collect,
     )
 
-    task_list = check_response(res, expected_status_code=201, redact_long_payload=True)
+    task_list = check_response(
+        res, expected_status_code=201, redact_long_payload=True
+    )
 
     if batch:
         task_ids = [str(task["id"]) for task in task_list]

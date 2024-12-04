@@ -307,7 +307,9 @@ def version(client: Client, **kwargs) -> Interface:
     try:
         res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
         data = res.json()
-        server_str = f"\turl: {settings.FRACTAL_SERVER}\tversion: {data['version']}"
+        server_str = (
+            f"\turl: {settings.FRACTAL_SERVER}\tversion: {data['version']}"
+        )
     except ConnectError:
         server_str = f"\tConnection to '{settings.FRACTAL_SERVER}' refused"
 
@@ -320,7 +322,9 @@ def version(client: Client, **kwargs) -> Interface:
     )
 
 
-def user(client: AuthClient, subcmd: str, batch: bool = False, **kwargs) -> Interface:
+def user(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
     if subcmd == "register":
         parameters = [
             "new_email",
@@ -372,7 +376,9 @@ def user(client: AuthClient, subcmd: str, batch: bool = False, **kwargs) -> Inte
     return iface
 
 
-def group(client: AuthClient, subcmd: str, batch: bool = False, **kwargs) -> Interface:
+def group(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
     if subcmd == "list":
         parameters = ["user_ids"]
         function_kwargs = get_kwargs(parameters, kwargs)
