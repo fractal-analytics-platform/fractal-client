@@ -21,7 +21,7 @@ def task_collect_pip(
     batch: bool = False,
 ) -> Interface:
     # Construct TaskCollectPip object
-    task_collect = dict(package=package)
+    task_collect = dict()
     if package_version:
         task_collect["package_version"] = package_version
     if python_version:
@@ -59,6 +59,7 @@ def task_collect_pip(
             files=file,
         )
     else:
+        task_collect["package"] = package
         res = client.post(
             f"{settings.BASE_URL}/task/collect/pip/{is_private}",
             data=json.dumps(task_collect),
