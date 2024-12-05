@@ -40,7 +40,10 @@ jobs:
         run: pg_isready
 
       - name: Start PostgreSQL 3
-        run: sudo -u postgres createdb pytest-fractal-client
+        run: sudo -u postgres createuser -s -d -r -w fractal
+
+      - name: Start PostgreSQL 4
+        run: createdb --username=fractal pytest-fractal-client
 
       - name: Test with pytest
         env:
