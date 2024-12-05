@@ -46,7 +46,7 @@ def task_collect_pip(
         )
 
     is_private = "?private=true" if private else ""
-
+    endpoint_url = f"{settings.BASE_URL}/task/collect/pip/{is_private}"
     if package.endswith(".whl"):
         with open(package, "rb") as wheel_buffer:
             file = {
@@ -58,14 +58,14 @@ def task_collect_pip(
             }
 
         res = client.post(
-            f"{settings.BASE_URL}/task/collect/pip/{is_private}",
+            endpoint_url,
             data=task_collect,
             files=file,
         )
     else:
         task_collect["package"] = package
         res = client.post(
-            f"{settings.BASE_URL}/task/collect/pip/{is_private}",
+            endpoint_url,
             data=task_collect,
         )
     task_group_activity = check_response(res, expected_status_code=202)
