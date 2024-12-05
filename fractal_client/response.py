@@ -65,7 +65,7 @@ def check_response(
                 payload = json.dumps(payload_dict)
             logging.error(f"Original payload: {payload}")
         except Exception:
-            logging.info("Could not display original payload.")
+            logging.info("Could not display original-request information.")
 
         error_msg = data
 
