@@ -33,6 +33,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
 
+      - name: Create DB
+        run: createdb pytest-fractal-client
+
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
