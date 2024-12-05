@@ -1,9 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Unreleased
+# 2.6.0
 
+* Align with new task-collection endpoint in `fractal-server` 2.10.0 (\#760).
 * Update versions of pre-commit hooks and add precommit GitHub Action (\#757).
-
 
 # 2.5.1
 
