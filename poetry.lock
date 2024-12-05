@@ -788,7 +788,7 @@ uvicorn-worker = "^0.2.0"
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
 reference = "2045-support-uploading-a-wheel-file-directly-for-task-collection"
-resolved_reference = "2ccad721d16eca4ecb9c5147324d746620a0d7de"
+resolved_reference = "8d84c9bf2e0dc4b4b0c9d7d28ee7d569d0cc8fc5"
 
 [[package]]
 name = "ghp-import"
