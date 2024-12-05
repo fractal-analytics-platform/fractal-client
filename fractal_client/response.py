@@ -50,35 +50,41 @@ def check_response(
         logging.error(
             f"Original request: {res._request.method} {res._request.url}"
         )
-        content_type = res._request.headers["content-type"].split(";")[0]
-        logging.error(f"Original request content-type: {content_type}")
-        if "application/json" in content_type:
-            payload = res._request._content.decode("utf-8")
-            if redact_long_payload and len(payload) > 0:
-                payload_dict = json.loads(payload)
-                for key, value in payload_dict.items():
-                    if len(str(value)) > LONG_PAYLOAD_VALUE_LIMIT:
-                        payload_dict[key] = "[value too long - redacted]"
-                payload = json.dumps(payload_dict)
-            logging.error(f"Original payload: {payload}")
+        try:
+            content_type = res._request.headers["content-type"].split(";")[0]
+            logging.error(f"Original request content-type: {content_type}")
+            if "application/json" in content_type:
+                payload = res._request._content.decode("utf-8")
+                if redact_long_payload and len(payload) > 0:
+                    payload_dict = json.loads(payload)
+                    for key, value in payload_dict.items():
+                        if len(str(value)) > LONG_PAYLOAD_VALUE_LIMIT:
+                            payload_dict[key] = "[value too long - redacted]"
+                    payload = json.dumps(payload_dict)
+                logging.error(f"Original payload: {payload}")
+        except Exception:  # nosec
+            pass
 
         error_msg = data
 
         # Detect whether the error is due to failed request-body validation,
         # and make the error message more readable
-        if (
-            res.status_code == 422
-            and isinstance(data, dict)
-            and list(data.keys()) == ["detail"]
-            and isinstance(data["detail"], list)
-            and len(data["detail"]) == 1
-            and isinstance(data["detail"][0], dict)
-            and set(data["detail"][0].keys()) == {"msg", "type", "loc"}
-        ):
-            msg = data["detail"][0]["msg"]
-            _type = data["detail"][0]["type"]
-            loc = data["detail"][0]["loc"]
-            error_msg = f"\n\tmsg: {msg}\n\ttype: {_type}\n\tloc: {loc}"
+        try:
+            if (
+                res.status_code == 422
+                and isinstance(data, dict)
+                and list(data.keys()) == ["detail"]
+                and isinstance(data["detail"], list)
+                and len(data["detail"]) == 1
+                and isinstance(data["detail"][0], dict)
+                and set(data["detail"][0].keys()) == {"msg", "type", "loc"}
+            ):
+                msg = data["detail"][0]["msg"]
+                _type = data["detail"][0]["type"]
+                loc = data["detail"][0]["loc"]
+                error_msg = f"\n\tmsg: {msg}\n\ttype: {_type}\n\tloc: {loc}"
+        except Exception:  # nosec
+            pass
 
         logging.error(f"Server error message: {error_msg}\n")
         logging.error("Terminating.\n")
