@@ -24,7 +24,7 @@ def test_task_collection_command(invoke, caplog):
         invoke(
             (
                 "task collect "
-                f"{PACKAGE} "
+                f"--package {PACKAGE} "
                 f"--package-version {PACKAGE_VERSION} "
                 f"--python-version {PYTHON_VERSION} "
                 f"--package-extras {PACKAGE_EXTRAS} "
