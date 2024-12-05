@@ -39,15 +39,11 @@ jobs:
       - name: Start PostgreSQL 2
         run: pg_isready
 
-      - name: Start PostgreSQL 3
-        run: sudo -u postgres createuser -s -d -r -w fractal
-
       - name: Start PostgreSQL 4
-        run: createdb --username=fractal pytest-fractal-client
+        run: createdb pytest-fractal-client
 
       - name: Test with pytest
         env:
-          PGPASSWORD: postgres
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           GHA_FRACTAL_SERVER_LOG: /tmp
         run: poetry run coverage run -m pytest
