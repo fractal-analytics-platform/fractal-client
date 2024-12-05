@@ -37,7 +37,7 @@ jobs:
         run: sudo systemctl start postgresql.service
 
       - name: Create DB
-        run: createdb pytest-fractal-client -U postgres
+        run: sudo -u postgres createdb pytest-fractal-client
 
       - name: Test with pytest
         env:
