@@ -136,7 +136,6 @@ def task(
             "package_version",
             "python_version",
             "package_extras",
-            "wheel_path",
             "pinned_dependency",
             "private",
         ]

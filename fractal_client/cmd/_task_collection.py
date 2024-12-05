@@ -12,19 +12,16 @@ from fractal_client.response import check_response
 def task_collect_pip(
     client: AuthClient,
     *,
-    package: str | None = None,
+    package: str,
     package_version: str | None = None,
     python_version: str | None = None,
     package_extras: str | None = None,
-    wheel_path: str | None = None,
     pinned_dependency: list[str] | None = None,
     private: bool = False,
     batch: bool = False,
 ) -> Interface:
     # Construct TaskCollectPip object
-    task_collect = dict()
-    if package:
-        task_collect["package"] = package
+    task_collect = dict(package=package)
     if package_version:
         task_collect["package_version"] = package_version
     if python_version:
@@ -46,11 +43,11 @@ def task_collect_pip(
 
     is_private = "?private=true" if private else ""
 
-    if wheel_path is None:
-        with open(wheel_path, "rb") as wheel_buffer:
+    if package.endswith(".whl"):
+        with open(package, "rb") as wheel_buffer:
             file = {
                 "file": (
-                    Path(wheel_path).name,
+                    Path(package).name,
                     wheel_buffer.read(),
                     "application/zip",
                 )

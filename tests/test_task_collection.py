@@ -24,7 +24,7 @@ def test_task_collection_command(invoke, caplog):
         invoke(
             (
                 "task collect "
-                f"--package {PACKAGE} "
+                f"{PACKAGE} "
                 f"--package-version {PACKAGE_VERSION} "
                 f"--python-version {PYTHON_VERSION} "
                 f"--package-extras {PACKAGE_EXTRAS} "
@@ -56,7 +56,7 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
         invoke(
             (
                 "task collect "
-                f"--package {PACKAGE} "
+                f"{PACKAGE} "
                 "--pinned-dependency invalid-string"
             )
         )
@@ -91,7 +91,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     initial_task_list = len(res.data)
 
     res0 = invoke_as_custom_user(
-        f"task collect --private --wheel-path {PACKAGE_PATH}",
+        f"task collect --private {PACKAGE_PATH}",
         **new_user,
     )
     debug(res0.data)

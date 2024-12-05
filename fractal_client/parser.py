@@ -206,7 +206,7 @@ task_collect_parser = task_subparsers.add_parser(
     allow_abbrev=False,
 )
 task_collect_parser.add_argument(
-    "--package",
+    "package",
     help="Package name or absolute path to local package.",
 )
 task_collect_parser.add_argument(
@@ -225,9 +225,6 @@ task_collect_parser.add_argument(
         "--package-extras=torch,tensorflow` will trigger the installation of "
         "`fractal-tasks-core[torch,tensorflow]`."
     ),
-)
-task_collect_parser.add_argument(
-    "--wheel-path", help=("Path to python package wheel file")
 )
 task_collect_parser.add_argument(
     "--pinned-dependency",
@@ -995,17 +992,4 @@ group_add_user_parser.add_argument(
 )
 group_add_user_parser.add_argument(
     "user_id", help="ID of the user to add.", type=int
-)
-
-# group remove-user
-group_remove_user_parser = group_subparsers.add_parser(
-    "remove-user",
-    description="Remove a single user from group.",
-    allow_abbrev=False,
-)
-group_remove_user_parser.add_argument(
-    "group_id", help="ID of the group to which to remove the user.", type=int
-)
-group_remove_user_parser.add_argument(
-    "user_id", help="ID of the user to remove.", type=int
 )
