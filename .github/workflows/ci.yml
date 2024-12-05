@@ -38,6 +38,8 @@ jobs:
 
       - name: Create DB
         run: sudo createdb -U postgres pytest-fractal-client
+        env:
+          PGPASSWORD: postgres
 
       - name: Test with pytest
         env:
