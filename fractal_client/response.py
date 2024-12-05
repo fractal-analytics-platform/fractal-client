@@ -62,8 +62,8 @@ def check_response(
                             payload_dict[key] = "[value too long - redacted]"
                     payload = json.dumps(payload_dict)
                 logging.error(f"Original payload: {payload}")
-        except Exception:  # nosec
-            pass
+        except Exception:
+            logging.info("Could not display original payload.")
 
         error_msg = data
 
@@ -83,8 +83,8 @@ def check_response(
                 _type = data["detail"][0]["type"]
                 loc = data["detail"][0]["loc"]
                 error_msg = f"\n\tmsg: {msg}\n\ttype: {_type}\n\tloc: {loc}"
-        except Exception:  # nosec
-            pass
+        except Exception:
+            logging.info("Could not prepare validation error.")
 
         logging.error(f"Server error message: {error_msg}\n")
         logging.error("Terminating.\n")
