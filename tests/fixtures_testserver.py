@@ -46,7 +46,6 @@ def _run_command(cmd: str) -> str:
 
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory, request):
-
     FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("TASKS"))
     FRACTAL_RUNNER_WORKING_BASE_DIR = str(tmpdir_factory.mktemp("JOBS"))
 

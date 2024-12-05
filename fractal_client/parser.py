@@ -206,7 +206,7 @@ task_collect_parser = task_subparsers.add_parser(
     allow_abbrev=False,
 )
 task_collect_parser.add_argument(
-    "package",
+    "--package",
     help="Package name or absolute path to local package.",
 )
 task_collect_parser.add_argument(

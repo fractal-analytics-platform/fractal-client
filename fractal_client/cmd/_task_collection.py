@@ -12,7 +12,7 @@ from fractal_client.response import check_response
 def task_collect_pip(
     client: AuthClient,
     *,
-    package: str,
+    package: str | None = None,
     package_version: str | None = None,
     python_version: str | None = None,
     package_extras: str | None = None,
@@ -22,7 +22,9 @@ def task_collect_pip(
     batch: bool = False,
 ) -> Interface:
     # Construct TaskCollectPip object
-    task_collect = dict(package=package)
+    task_collect = dict()
+    if package:
+        task_collect["package"] = package
     if package_version:
         task_collect["package_version"] = package_version
     if python_version:
