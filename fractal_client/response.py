@@ -69,22 +69,19 @@ def check_response(
 
         # Detect whether the error is due to failed request-body validation,
         # and make the error message more readable
-        try:
-            if (
-                res.status_code == 422
-                and isinstance(data, dict)
-                and list(data.keys()) == ["detail"]
-                and isinstance(data["detail"], list)
-                and len(data["detail"]) == 1
-                and isinstance(data["detail"][0], dict)
-                and set(data["detail"][0].keys()) == {"msg", "type", "loc"}
-            ):
-                msg = data["detail"][0]["msg"]
-                _type = data["detail"][0]["type"]
-                loc = data["detail"][0]["loc"]
-                error_msg = f"\n\tmsg: {msg}\n\ttype: {_type}\n\tloc: {loc}"
-        except Exception:
-            logging.info("Could not prepare validation error.")
+        if (
+            res.status_code == 422
+            and isinstance(data, dict)
+            and list(data.keys()) == ["detail"]
+            and isinstance(data["detail"], list)
+            and len(data["detail"]) == 1
+            and isinstance(data["detail"][0], dict)
+            and set(data["detail"][0].keys()) == {"msg", "type", "loc"}
+        ):
+            msg = data["detail"][0]["msg"]
+            _type = data["detail"][0]["type"]
+            loc = data["detail"][0]["loc"]
+            error_msg = f"\n\tmsg: {msg}\n\ttype: {_type}\n\tloc: {loc}"
 
         logging.error(f"Server error message: {error_msg}\n")
         logging.error("Terminating.\n")
