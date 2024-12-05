@@ -993,3 +993,16 @@ group_add_user_parser.add_argument(
 group_add_user_parser.add_argument(
     "user_id", help="ID of the user to add.", type=int
 )
+
+# group remove-user
+group_remove_user_parser = group_subparsers.add_parser(
+    "remove-user",
+    description="Remove a single user from group.",
+    allow_abbrev=False,
+)
+group_remove_user_parser.add_argument(
+    "group_id", help="ID of the group to which to remove the user.", type=int
+)
+group_remove_user_parser.add_argument(
+    "user_id", help="ID of the user to remove.", type=int
+)
