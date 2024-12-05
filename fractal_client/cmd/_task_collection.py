@@ -48,15 +48,14 @@ def task_collect_pip(
     is_private = "?private=true" if private else ""
     endpoint_url = f"{settings.BASE_URL}/task/collect/pip/{is_private}"
     if package.endswith(".whl"):
-        with open(package, "rb") as wheel_buffer:
+        with open(package, "rb") as f:
             file = {
                 "file": (
                     Path(package).name,
-                    wheel_buffer.read(),
+                    f.read(),
                     "application/zip",
                 )
             }
-
         res = client.post(
             endpoint_url,
             data=task_collect,
