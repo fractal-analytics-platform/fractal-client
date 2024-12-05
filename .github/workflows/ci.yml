@@ -17,20 +17,6 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: pytest-fractal-client
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
 
       - uses: actions/checkout@v4
@@ -46,6 +32,17 @@ jobs:
 
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
+
+      - name: Start PostgreSQL 1
+        run: sudo systemctl start postgresql.service
+
+      - name: Start PostgreSQL 2
+        run: pg_isready
+
+      - name: Start PostgreSQL 4
+        env:
+          PGPASSWORD: postgres
+        run: createdb --username=postgres pytest-fractal-client
 
       - name: Test with pytest
         env:
