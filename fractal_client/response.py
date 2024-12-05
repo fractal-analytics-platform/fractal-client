@@ -45,23 +45,25 @@ def check_response(
 
     logging.debug(f"\nResponse status code:\n    {res.status_code}")
     if res.status_code not in expected_status_codes:
-
         logging.error(f"Server returned {res.status_code}")
-        logging.error(
-            f"Original request: {res._request.method} {res._request.url}"
-        )
+
+        # The following block relies on private methods, and it may fail for
+        # unexpected reasons (e.g. it is now aware of the difference between
+        # 'application/json' and 'multipart/form-data' requests, and it will
+        # fail for non-jons requests). For this reason it is within a
+        # broad-scope try/except block.
         try:
-            content_type = res._request.headers["content-type"].split(";")[0]
-            logging.error(f"Original request content-type: {content_type}")
-            if "application/json" in content_type:
-                payload = res._request._content.decode("utf-8")
-                if redact_long_payload and len(payload) > 0:
-                    payload_dict = json.loads(payload)
-                    for key, value in payload_dict.items():
-                        if len(str(value)) > LONG_PAYLOAD_VALUE_LIMIT:
-                            payload_dict[key] = "[value too long - redacted]"
-                    payload = json.dumps(payload_dict)
-                logging.error(f"Original payload: {payload}")
+            logging.error(
+                f"Original request: {res._request.method} {res._request.url}"
+            )
+            payload = res._request._content.decode("utf-8")
+            if redact_long_payload and len(payload) > 0:
+                payload_dict = json.loads(payload)
+                for key, value in payload_dict.items():
+                    if len(str(value)) > LONG_PAYLOAD_VALUE_LIMIT:
+                        payload_dict[key] = "[value too long - redacted]"
+                payload = json.dumps(payload_dict)
+            logging.error(f"Original payload: {payload}")
         except Exception:
             logging.info("Could not display original payload.")
 
