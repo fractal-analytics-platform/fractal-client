@@ -33,13 +33,16 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
 
-      - name: Start Postgres
-        run: sudo systemctl start postgresql.service
+      - name: Start PostgreSQL
+        run: |
+          sudo systemctl start postgresql.service
+          pg_isready
+          sudo -u postgres createuser -s -d -r -w runner
 
       - name: Create DB
-        run: sudo -i -u postgres && createdb -U postgres pytest-fractal-client
         env:
           PGPASSWORD: postgres
+        run: sudo createdb -U postgres pytest-fractal-client
 
       - name: Test with pytest
         env:
