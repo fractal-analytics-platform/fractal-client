@@ -36,10 +36,14 @@ def task_collect_pip(
                     "'--pinned-dependency PACKAGE_NAME=PACKAGE_VERSION'"
                 )
                 sys.exit(1)
-        task_collect["pinned_package_versions"] = {
-            _name: _version
-            for _name, _version in (p.split("=") for p in pinned_dependency)
-        }
+        task_collect["pinned_package_versions"] = json.dumps(
+            {
+                _name: _version
+                for _name, _version in (
+                    p.split("=") for p in pinned_dependency
+                )
+            }
+        )
 
     is_private = "?private=true" if private else ""
 
@@ -55,14 +59,14 @@ def task_collect_pip(
 
         res = client.post(
             f"{settings.BASE_URL}/task/collect/pip/{is_private}",
-            data=json.dumps(task_collect),
+            data=task_collect,
             files=file,
         )
     else:
         task_collect["package"] = package
         res = client.post(
             f"{settings.BASE_URL}/task/collect/pip/{is_private}",
-            data=json.dumps(task_collect),
+            data=task_collect,
         )
     task_group_activity = check_response(res, expected_status_code=202)
     if batch:
