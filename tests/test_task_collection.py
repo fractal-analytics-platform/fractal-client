@@ -16,9 +16,10 @@ def test_task_collection_command(invoke, caplog):
     Test that all `task collect` options are correctly parsed and included in
     the the payload for the API request.
     """
+    INVALID_PYTHON_VERSION = "xxx"
     PACKAGE = "devtools"
     PACKAGE_VERSION = "0.11.0"
-    PYTHON_VERSION = "1.2"
+    PYTHON_VERSION = INVALID_PYTHON_VERSION
     PACKAGE_EXTRAS = "a,b,c"
     with pytest.raises(SystemExit):
         invoke(
@@ -31,6 +32,8 @@ def test_task_collection_command(invoke, caplog):
                 "--pinned-dependency pydantic=1.10.0"
             )
         )
+    assert "Server returned 422" in caplog.text
+    assert f"given={INVALID_PYTHON_VERSION}" in caplog.text
 
 
 def test_task_collection_invalid_pinned_dependency(invoke, caplog):
