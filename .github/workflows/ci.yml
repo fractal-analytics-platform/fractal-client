@@ -40,10 +40,7 @@ jobs:
         run: pg_isready
 
       - name: Start PostgreSQL 3
-        run: sudo -u postgres createuser -s -d -r -w postgres
-
-      - name: Create DB
-        run: sudo createdb -U postgres pytest-fractal-client
+        run: sudo -u postgres createdb pytest-fractal-client
 
       - name: Test with pytest
         env:
