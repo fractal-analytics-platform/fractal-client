@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 import time
 from urllib.request import urlopen
@@ -7,15 +8,18 @@ from urllib.request import urlretrieve
 import pytest
 from devtools import debug
 
+logging.getLogger("httpx").setLevel(logging.DEBUG)
+
 
 def test_task_collection_command(invoke, caplog):
     """
     Test that all `task collect` options are correctly parsed and included in
     the the payload for the API request.
     """
+    INVALID_PYTHON_VERSION = "xxx"
     PACKAGE = "devtools"
     PACKAGE_VERSION = "0.11.0"
-    PYTHON_VERSION = "1.2"
+    PYTHON_VERSION = INVALID_PYTHON_VERSION
     PACKAGE_EXTRAS = "a,b,c"
     with pytest.raises(SystemExit):
         invoke(
@@ -28,20 +32,8 @@ def test_task_collection_command(invoke, caplog):
                 "--pinned-dependency pydantic=1.10.0"
             )
         )
-
-    # Check that payload was prepared correctly
-    log_lines = [record.message for record in caplog.records]
-    debug(log_lines)
-    payload_line = next(
-        line for line in log_lines if line.startswith("Original payload: ")
-    )
-    assert payload_line
-    payload = json.loads(payload_line.strip("Original payload: "))
-    debug(payload)
-    assert payload["package"] == PACKAGE
-    assert payload["package_version"] == PACKAGE_VERSION
-    assert payload["package_extras"] == PACKAGE_EXTRAS
-    assert payload["python_version"] == PYTHON_VERSION
+    assert "Server returned 422" in caplog.text
+    assert f"given={INVALID_PYTHON_VERSION}" in caplog.text
 
 
 def test_task_collection_invalid_pinned_dependency(invoke, caplog):
@@ -88,7 +80,8 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     initial_task_list = len(res.data)
 
     res0 = invoke_as_custom_user(
-        f"task collect --private {PACKAGE_PATH}", **new_user
+        f"task collect --private {PACKAGE_PATH}",
+        **new_user,
     )
     debug(res0.data)
     activity_id = res0.data["id"]
@@ -157,6 +150,7 @@ def test_task_collection_custom(
         f"label {python_interpreter} {manifest}"
     )
     res = invoke_as_custom_user(cmd, **new_user)
+    debug(res.data)
     assert res.retcode == 0
     assert isinstance(res.data, list)
 

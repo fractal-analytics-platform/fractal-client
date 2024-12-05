@@ -63,7 +63,6 @@ def project(
     batch: bool = False,
     **kwargs,
 ) -> Interface:
-
     if subcmd == "new":
         parameters = ["name"]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -129,7 +128,6 @@ def task(
     batch: bool = False,
     **kwargs,
 ) -> Interface:
-
     if subcmd == "list":
         iface = get_task_list(client)
     elif subcmd == "collect":
