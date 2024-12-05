@@ -40,7 +40,9 @@ jobs:
         run: pg_isready
 
       - name: Start PostgreSQL 4
-        run: createdb pytest-fractal-client
+        env:
+          PGPASSWORD: postgres
+        run: createdb --username=postgres pytest-fractal-client
 
       - name: Test with pytest
         env:
