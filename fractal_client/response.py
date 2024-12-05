@@ -50,16 +50,17 @@ def check_response(
         logging.error(
             f"Original request: {res._request.method} {res._request.url}"
         )
-
-        payload = res._request._content.decode("utf-8")
-        if redact_long_payload and len(payload) > 0:
-            payload_dict = json.loads(payload)
-            for key, value in payload_dict.items():
-                if len(str(value)) > LONG_PAYLOAD_VALUE_LIMIT:
-                    payload_dict[key] = "[value too long - redacted]"
-            payload = json.dumps(payload_dict)
-
-        logging.error(f"Original payload: {payload}")
+        content_type = res._request.headers["content-type"].split(";")[0]
+        logging.error(f"Original request content-type: {content_type}")
+        if "application/json" in content_type:
+            payload = res._request._content.decode("utf-8")
+            if redact_long_payload and len(payload) > 0:
+                payload_dict = json.loads(payload)
+                for key, value in payload_dict.items():
+                    if len(str(value)) > LONG_PAYLOAD_VALUE_LIMIT:
+                        payload_dict[key] = "[value too long - redacted]"
+                payload = json.dumps(payload_dict)
+            logging.error(f"Original payload: {payload}")
 
         error_msg = data
 
