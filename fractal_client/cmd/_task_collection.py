@@ -52,17 +52,17 @@ def task_collect_pip(
                     "application/zip",
                 )
             }
+
         res = client.post(
             f"{settings.BASE_URL}/task/collect/pip/{is_private}",
-            data=task_collect,
+            data=json.dumps(task_collect),
             files=file,
         )
     else:
         res = client.post(
             f"{settings.BASE_URL}/task/collect/pip/{is_private}",
-            data=task_collect,
+            data=json.dumps(task_collect),
         )
-
     task_group_activity = check_response(res, expected_status_code=202)
     if batch:
         return Interface(retcode=0, data=task_group_activity["id"])
@@ -107,7 +107,7 @@ def task_collect_custom(
 
     res = client.post(
         f"{settings.BASE_URL}/task/collect/custom/{is_private}",
-        data=task_collect,
+        json=task_collect,
     )
 
     task_list = check_response(
