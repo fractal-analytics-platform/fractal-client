@@ -11,6 +11,28 @@ from devtools import debug
 logging.getLogger("httpx").setLevel(logging.DEBUG)
 
 
+def test_task_collection_command(invoke, caplog):
+    """
+    Test that all `task collect` options are correctly parsed and included in
+    the the payload for the API request.
+    """
+    PACKAGE = "devtools"
+    PACKAGE_VERSION = "0.11.0"
+    PYTHON_VERSION = "1.2"
+    PACKAGE_EXTRAS = "a,b,c"
+    with pytest.raises(SystemExit):
+        invoke(
+            (
+                "task collect "
+                f"{PACKAGE} "
+                f"--package-version {PACKAGE_VERSION} "
+                f"--python-version {PYTHON_VERSION} "
+                f"--package-extras {PACKAGE_EXTRAS} "
+                "--pinned-dependency pydantic=1.10.0"
+            )
+        )
+
+
 def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     """
     Test the case where `pinned_package_versions` has the wrong format.
