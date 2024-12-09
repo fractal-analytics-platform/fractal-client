@@ -22,10 +22,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Start Postgres
-        run: sudo systemctl start postgresql.service
-
-      - name: Set up Postgres user and database
         run: |
+          sudo systemctl start postgresql.service
           sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
           sudo -u postgres createdb pytest-fractal-client
 
