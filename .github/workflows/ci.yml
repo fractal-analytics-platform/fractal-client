@@ -21,6 +21,12 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - name: Start Postgres
+        run: sudo systemctl start postgresql.service
+
+      - name: Create fractal user
+        run: sudo -u postgres psql -c "CREATE USER fractal WITH PASSWORD 'postgres';"
+
       - name: Install poetry
         run: pipx install poetry==1.8.2
 
@@ -32,22 +38,6 @@ jobs:
 
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
-
-      # - name:
-      #   run: sudo systemctl start postgresql.service
-
-      - uses: ikalnytskyi/action-setup-postgres@v7
-        id: postgres
-        with:
-          database: pytest-fractal-client
-
-      - name: Create fractal user
-        run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -c "CREATE USER fractal WITH PASSWORD 'postgres';"
-          psql ${{ steps.postgres.outputs.connection-uri }} -c "GRANT ALL PRIVILEGES ON DATABASE \"pytest-fractal-client\" TO fractal;"
-          psql ${{ steps.postgres.outputs.connection-uri }} -c "ALTER USER fractal CREATEDB;"
-          psql ${{ steps.postgres.outputs.connection-uri }} -c "ALTER SCHEMA public OWNER TO fractal;"
-          psql ${{ steps.postgres.outputs.connection-uri }} -c "GRANT ALL PRIVILEGES ON SCHEMA public TO fractal;"
 
       - name: Test with pytest
         env:
