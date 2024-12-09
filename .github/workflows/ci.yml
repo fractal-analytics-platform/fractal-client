@@ -33,14 +33,18 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev --without docs --no-interaction
 
-      - name: Start PostgreSQL 1
-        run: sudo systemctl start postgresql.service
+      # - name:
+      #   run: sudo systemctl start postgresql.service
 
-      - name: Start PostgreSQL 2
-        run: pg_isready
-
-      - name: Start PostgreSQL 4
-        run: sudo -i -u postgres psql -c 'CREATE DATABASE "pytest-fractal-client";'
+      - uses: ikalnytskyi/action-setup-postgres@v7
+        with:
+          username: postgres
+          password: postgres
+          database: pytest-fractal-client
+          port: 5432
+          postgres-version: "14"
+          ssl: true
+        id: postgres
 
       - name: Test with pytest
         env:
