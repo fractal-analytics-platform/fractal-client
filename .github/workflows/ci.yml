@@ -40,9 +40,7 @@ jobs:
         run: pg_isready
 
       - name: Start PostgreSQL 4
-        env:
-          PGPASSWORD: postgres
-        run: createdb --username=postgres pytest-fractal-client
+        run: sudo -i -u postgres psql -c "CREATE DATABASE pytest-fractal-client;"
 
       - name: Test with pytest
         env:
