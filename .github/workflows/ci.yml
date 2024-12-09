@@ -23,7 +23,6 @@ jobs:
         run: |
           sudo systemctl start postgresql.service
           sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
-          sudo -u postgres createdb pytest-fractal-client
 
       - uses: actions/checkout@v4
 
