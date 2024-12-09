@@ -46,6 +46,8 @@ jobs:
           psql ${{ steps.postgres.outputs.connection-uri }} -c "CREATE USER fractal WITH PASSWORD 'postgres';"
           psql ${{ steps.postgres.outputs.connection-uri }} -c "GRANT ALL PRIVILEGES ON DATABASE \"pytest-fractal-client\" TO fractal;"
           psql ${{ steps.postgres.outputs.connection-uri }} -c "ALTER USER fractal CREATEDB;"
+          psql ${{ steps.postgres.outputs.connection-uri }} -c \"ALTER SCHEMA public OWNER TO fractal;\"
+          psql ${{ steps.postgres.outputs.connection-uri }} -c \"GRANT ALL PRIVILEGES ON SCHEMA public TO fractal;\"
 
       - name: Test with pytest
         env:
