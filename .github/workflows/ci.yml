@@ -22,7 +22,7 @@ jobs:
       - name: Start Postgres
         run: |
           sudo systemctl start postgresql.service
-          sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+          sudo --login -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
       - uses: actions/checkout@v4
 
