@@ -38,7 +38,7 @@ jobs:
 
       - uses: ikalnytskyi/action-setup-postgres@v7
         with:
-          username: postgres
+          username: fractal
           password: postgres
           database: pytest-fractal-client
           port: 5432
