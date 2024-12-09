@@ -17,21 +17,12 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: pytest-fractal-client
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
+
+      - name: Start Postgres
+        run: |
+          sudo systemctl start postgresql.service
+          sudo --login -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
       - uses: actions/checkout@v4
 

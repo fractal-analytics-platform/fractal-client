@@ -4,6 +4,7 @@
 
 * Align with new task-collection endpoint in `fractal-server` 2.10.0 (\#760).
 * Update versions of pre-commit hooks and add precommit GitHub Action (\#757).
+* Use default Postgres service in GitHub CI (\#761).
 
 # 2.5.1
 
