@@ -55,7 +55,7 @@ def testserver(tester, tmpdir_factory, request):
         f.write(
             "POSTGRES_HOST=localhost\n"
             f"POSTGRES_DB={DB_NAME}\n"
-            "POSTGRES_USER=fractal\n"
+            "POSTGRES_USER=postgres\n"
             "POSTGRES_PASSWORD=postgres\n"
             "FRACTAL_RUNNER_BACKEND=local\n"
             "JWT_SECRET_KEY=secret_key\n"

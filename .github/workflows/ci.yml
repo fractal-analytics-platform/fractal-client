@@ -24,7 +24,7 @@ jobs:
       - name: Start Postgres
         run: sudo systemctl start postgresql.service
 
-      - name: Create fractal user
+      - name: Create Fractal user
         run: sudo -u postgres psql -c "CREATE USER fractal WITH PASSWORD 'postgres';"
 
       - name: Install poetry
