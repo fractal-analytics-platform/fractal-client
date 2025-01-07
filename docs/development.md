@@ -3,8 +3,7 @@
 The development of Fractal Client takes place on the [fractal-client Github
 repository](https://github.com/fractal-analytics-platform/fractal-client).  To
 ask questions or to inform us of a bug or unexpected behavior, please feel free
-to [open an
-issue](https://github.com/fractal-analytics-platform/fractal-client/issues/new).
+to [open an issue](https://github.com/fractal-analytics-platform/fractal-client/issues/new).
 
 
 ## Set up the development environment
@@ -14,18 +13,15 @@ issue](https://github.com/fractal-analytics-platform/fractal-client/issues/new).
 First, you should clone the repository
 ```
 git clone https://github.com/fractal-analytics-platform/fractal-client.git
-cd fractal
+cd fractal-client
 ```
 
 ### Install package
 
 We use [poetry](https://python-poetry.org/docs) to manage the development environment and the dependencies. A simple way to install it is `pipx install poetry==2.0.0`, or you can look at the installation section [here](https://python-poetry.org/docs#installation).
 Running
-
 ```console
-poetry install
-poetry install --with dev
-poetry install --with dev --with docs
+poetry install [--with dev] [--with docs]
 ```
 will take care of installing all the dependencies in a separate environment, optionally installing also the dependencies for developement and to build the documentation.
 
