@@ -19,11 +19,13 @@ cd fractal
 
 ### Install package
 
-We use [poetry](https://python-poetry.org/docs) to manage the development environment and the dependencies. A simple way to install it is `pipx install poetry==1.8.2`, or you can look at the installation section [here](https://python-poetry.org/docs#installation).
+We use [poetry](https://python-poetry.org/docs) to manage the development environment and the dependencies. A simple way to install it is `pipx install poetry==2.0.0`, or you can look at the installation section [here](https://python-poetry.org/docs#installation).
 Running
 
 ```console
-poetry install [--with dev] [--with docs]
+poetry install
+poetry install --extras dev
+poetry install --extras dev --extras docs
 ```
 will take care of installing all the dependencies in a separate environment, optionally installing also the dependencies for developement and to build the documentation.
 
@@ -84,7 +86,7 @@ The documentations is built with mkdocs, and we bundle a module from
 [sphinx-argparse plugin](https://sphinx-argparse.readthedocs.io), customized to
 our needs.
 
-To build the documentation locally, setup a development python environment (e.g. with `poetry install --with docs`) and then run one of these commands:
+To build the documentation locally, setup a development python environment (e.g. with `poetry install --extras docs`) and then run one of these commands:
 ```
 poetry run mkdocs serve --config-file mkdocs.yml  # serves the docs at http://127.0.0.1:8000
 poetry run mkdocs build --config-file mkdocs.yml  # creates a build in the `site` folder
