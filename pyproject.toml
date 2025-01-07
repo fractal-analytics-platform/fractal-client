@@ -9,7 +9,7 @@ authors = [
     { name="Jacopo Nespolo", email="jacopo.nespolo@exact-lab.it" },
 ]
 readme = "README.md"
-license = "BSD-3-Clause"
+license = { text = "BSD-3-Clause" }
 
 packages = [
     {include="fractal_client"}
