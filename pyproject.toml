@@ -27,6 +27,22 @@ dependencies = [
 
 ]
 
+[project.scripts]
+fractal = "fractal_client.client:main"
+
+[project.urls]
+homepage = "https://github.com/fractal-analytics-platform/fractal-client"
+repository = "https://github.com/fractal-analytics-platform/fractal-client"
+documentation = "https://fractal-analytics-platform.github.io/fractal-client"
+changelog = "https://github.com/fractal-analytics-platform/fractal-client/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
+
 [tool.poetry.group.dev]
 optional = true
 
@@ -51,25 +67,6 @@ mkdocs-section-index = "0.3.5"
 mkdocstrings = { extras = ["python"], version = "0.25.2" }
 mkdocs-include-markdown-plugin = { version = "4.0.4", python = "^3.8,<3.12" }
 
-
-
-[project.scripts]
-fractal = "fractal_client.client:main"
-
-[project.urls]
-homepage = "https://github.com/fractal-analytics-platform/fractal-client"
-repository = "https://github.com/fractal-analytics-platform/fractal-client"
-documentation = "https://fractal-analytics-platform.github.io/fractal-client"
-changelog = "https://github.com/fractal-analytics-platform/fractal-client/blob/main/CHANGELOG.md"
-
-
-[tool.poetry]
-requires-poetry = ">=2.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.bumpver]
 current_version = "2.6.0"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
@@ -86,14 +83,12 @@ push = true
     '__VERSION__ = "{version}"$'
 ]
 
-
 [tool.coverage.run]
 branch = true
 parallel = true
 relative_files = true
 omit = ["tests/*"]
 
-
-[[tool.mypy.overrides]]
+[tool.mypy.overrides]
 module = ["devtools", "uvicorn", "pytest", "httpx", "fractal_server"]
 ignore_missing_imports = true
