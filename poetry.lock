@@ -2689,5 +2689,5 @@ docs = ["mkdocs", "mkdocs-gen-files", "mkdocs-include-markdown-plugin", "mkdocs-
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10,<=3.12"
-content-hash = "36598c673ef041ee28f591d30352cead25ba7859464fc6348d77c2edd2d3d427"
+python-versions = ">=3.10,<3.13"
+content-hash = "b68ce529a1930bcf1e7232fae3bff249729181b428e355eb0f6ec94e20f85f71"
