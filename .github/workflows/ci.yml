@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install poetry
-        run: pipx install poetry==1.8.2
+        run: pipx install poetry==2.0.0
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -36,7 +36,7 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --with dev --without docs --no-interaction
+        run: poetry install --with dev --no-interaction
 
       - name: Test with pytest
         env:
