@@ -1,6 +1,6 @@
 [project]
 name = "fractal-client"
-version = "2.6.0"
+version = "2.6.1"
 description = "Command-line client of the Fractal analytics platform"
 authors = [
     { name="Tommaso Comparin", email="tommaso.comparin@exact-lab.it" },
@@ -68,7 +68,7 @@ mkdocstrings = { extras = ["python"], version = "0.25.2" }
 mkdocs-include-markdown-plugin = { version = "4.0.4", python = "^3.8,<3.12" }
 
 [tool.bumpver]
-current_version = "2.6.0"
+current_version = "2.6.1"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
