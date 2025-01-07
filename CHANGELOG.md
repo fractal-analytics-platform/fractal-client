@@ -1,7 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Unreleased
+# 2.6.1
 
+* Move to `poetry` v2 (\#770).
+* Require `Python<3.13` (\#770).
 * Use default Postgres service in GitHub CI (\#761).
 
 # 2.6.0
