@@ -1,55 +1,65 @@
-[tool.poetry]
+[project]
 name = "fractal-client"
 version = "2.6.0"
-description = "Client component of the Fractal analytics platform"
+description = "Command-line client of the Fractal analytics platform"
 authors = [
-    "Tommaso Comparin <tommaso.comparin@exact-lab.it>",
-    "Marco Franzon <marco.franzon@exact-lab.it>",
-    "Jacopo Nespolo <jacopo.nespolo@exact-lab.it>",
+    { name="Tommaso Comparin", email="tommaso.comparin@exact-lab.it" },
+    { name="Marco Franzon", email="marco.franzon@exact-lab.it" },
+    { name="Yuri Chiucconi", email="yuri.chiucconi@exact-lab.it" },
+    { name="Jacopo Nespolo", email="jacopo.nespolo@exact-lab.it" },
 ]
 readme = "README.md"
+license = "BSD-3-Clause"
+
 packages = [
     {include="fractal_client"}
 ]
+exclude = [
+    "fractal_client/.gitignore",
+]
+
+requires-python = ">=3.10,<=3.12"
+dependencies = [
+    "python-dotenv >=1.0.0,<1.1.0",
+    "httpx >= 0.27.0, <0.28.0",
+    "PyJWT >= 2.8.0,<3.0.0",
+    "packaging >= 23.1.0, <24.0.0",
+
+]
+
+[project.optional-dependencies]
+dev = [
+    "devtools >=0.12.0,<0.13.0",
+    "pre-commit >=3.0.0,<4.0.0",
+    "pytest-randomly >= 3.15.0,<4.0.0",
+    "pytest >= 7.1.2, < 8.0.0",
+    "bumpver >= 2022.1120.0, <2022.1121.0",
+    "coverage[toml] >= 6.5.0, <7.0.0",
+    "fractal-server @ git+https://github.com/fractal-analytics-platform/fractal-server.git@poetry-v2",
+]
+docs = [
+    "mkdocs==1.5.2",
+    "mkdocstrings[python]==0.25.2",
+    "mkdocs-material==9.1.21",
+    "mkdocs-gen-files==0.4.0",
+    "mkdocs-literate-nav==0.5.0",
+    "mkdocs-section-index==0.3.5",
+    "mkdocs-include-markdown-plugin >= 5.0.0, <6.0.0",
+]
+
+
+[project.scripts]
+fractal = "fractal_client.client:main"
+
+[project.urls]
 homepage = "https://github.com/fractal-analytics-platform/fractal-client"
 repository = "https://github.com/fractal-analytics-platform/fractal-client"
 documentation = "https://fractal-analytics-platform.github.io/fractal-client"
-license = "BSD-3-Clause"
-exclude = [
-"fractal_client/.gitignore",
-]
+changelog = "https://github.com/fractal-analytics-platform/fractal-client/blob/main/CHANGELOG.md"
 
-[tool.poetry.urls]
-"Changelog" = "https://github.com/fractal-analytics-platform/fractal-client/blob/main/CHANGELOG.md"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-python-dotenv = "^1.0.0"
-httpx = "^0.27.0"
-PyJWT = "^2.8.0"
-packaging = "^23.1"
-pytest-randomly = "^3.15.0"
-
-[tool.poetry.group.dev.dependencies]
-devtools = "^0.12.0"
-pre-commit = ">=3.0.0,<4.0.0"
-pytest = "^7.1.2"
-bumpver = "^2022.1118"
-coverage = {extras = ["toml"], version = "^6.5.0"}
-fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "poetry-v2" }
-
-[tool.poetry.group.docs]
-optional = true
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "1.5.2"
-mkdocs-material = "9.1.21"
-mkdocs-literate-nav = "0.5.0"
-mkdocs-gen-files = "0.4.0"
-mkdocs-section-index = "0.3.5"
-mkdocstrings = { extras = ["python"], version = "0.25.2" }
-mkdocs-include-markdown-plugin = { version = "4.0.4", python = "^3.8,<3.12" }
-
+[tool.poetry]
+requires-poetry = ">=2.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -71,8 +81,6 @@ push = true
     '__VERSION__ = "{version}"$'
 ]
 
-[tool.poetry.scripts]
-fractal = "fractal_client.client:main"
 
 [tool.coverage.run]
 branch = true
