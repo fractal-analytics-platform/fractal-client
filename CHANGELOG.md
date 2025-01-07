@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Remove `exclude` field, and move `packages` field to `tool.poetry` section, in pyproject.toml (\#771).
+
+
 # 2.6.1
 
 * Move to `poetry` v2 (\#770).
