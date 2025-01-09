@@ -66,8 +66,6 @@ jobs:
     needs: tests
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
       - run: pipx install poetry==2.0.0
 
