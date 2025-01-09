@@ -6,6 +6,7 @@
     * Remove `exclude` field, and move `packages` field to `tool.poetry` section, in pyproject.toml (\#771).
 * Testing:
     * Improve configuration for coverage GitHub Action step (\#772).
+    * Add `persist-credentials: false` to all `actions/checkout@v4` GitHub Action steps (\#773).
 
 # 2.6.1
 
