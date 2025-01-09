@@ -82,7 +82,10 @@ push = true
 branch = true
 parallel = true
 relative_files = true
-omit = ["tests/*"]
+omit = ["tests/*", "*/.venv/*"]
+
+[tool.coverage.report]
+omit = ["tests/*", "*/.venv/*"]
 
 [tool.mypy.overrides]
 module = ["devtools", "uvicorn", "pytest", "httpx", "fractal_server"]

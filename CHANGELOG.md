@@ -2,14 +2,18 @@
 
 # Unreleased
 
-* Remove `exclude` field, and move `packages` field to `tool.poetry` section, in pyproject.toml (\#771).
-
+* Package:
+    * Remove `exclude` field, and move `packages` field to `tool.poetry` section, in pyproject.toml (\#771).
+* Testing:
+    * Improve configuration for coverage GitHub Action step (\#772).
 
 # 2.6.1
 
-* Move to `poetry` v2 (\#770).
-* Require `Python<3.13` (\#770).
-* Use default Postgres service in GitHub CI (\#761).
+* Package:
+    * Move to `poetry` v2 (\#770).
+    * Require `Python<3.13` (\#770).
+* Testing:
+    * Use default Postgres service in GitHub CI (\#761).
 
 # 2.6.0
 
