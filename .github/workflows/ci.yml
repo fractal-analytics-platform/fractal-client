@@ -25,6 +25,8 @@ jobs:
           sudo --login -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install poetry
         run: pipx install poetry==2.0.0
@@ -64,6 +66,8 @@ jobs:
     needs: tests
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - run: pipx install poetry==2.0.0
 
