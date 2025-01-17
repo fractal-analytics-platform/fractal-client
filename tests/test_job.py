@@ -1,3 +1,4 @@
+import json
 import time
 from pathlib import Path
 from urllib.request import urlretrieve
@@ -33,8 +34,23 @@ def test_job_submit(
     project = project_factory(name=new_name())
     project_id = project["id"]
     zarr_dir = (tmp_path / "zarr_dir").as_posix()
+
+    type_filters = {"a": True, "b": False}
+    type_filters_file = tmp_path / "type_filters.json"
+    with type_filters_file.open("w") as f:
+        json.dump(type_filters, f)
+
+    attribute_filters_dataset = {"x": [1, 2], "y": ["foo", "bar"]}
+    attribute_filters_file = tmp_path / "attribute_filters.json"
+    with attribute_filters_file.open("w") as f:
+        json.dump(attribute_filters_dataset, f)
+
     dataset = dataset_factory(
-        name=new_name(), project_id=project_id, zarr_dir=zarr_dir
+        name=new_name(),
+        project_id=project_id,
+        zarr_dir=zarr_dir,
+        attribute_filters=attribute_filters_file,
+        type_filters=type_filters_file,
     )
     dataset_id = dataset["id"]
 
@@ -59,6 +75,7 @@ def test_job_submit(
     FIRST_TASK_INDEX = 0
     LAST_TASK_INDEX = 0
     WORKER_INIT = "export MYVARIABLE=MYVALUE"
+
     res = invoke(
         f"job submit {project_id} {workflow_id} {dataset_id} "
         f"--start {FIRST_TASK_INDEX} --end {LAST_TASK_INDEX} "
@@ -102,7 +119,7 @@ def test_job_submit(
     job2_id = res.data
 
     # Verify that status is failed, and that there is a log
-    cmd = f"--batch  job show {project_id} {job2_id}"
+    cmd = f"--batch job show {project_id} {job2_id}"
     starting_time = time.perf_counter()
     while True:
         res = invoke(cmd)
@@ -146,3 +163,37 @@ def test_job_submit(
     cmd = f"job download-logs {project_id} 9999 --output /tmp/invalid/"
     with pytest.raises(SystemExit):
         invoke(cmd)
+
+    # --attribute-filters-json-file
+    attribute_filters = {"x": [1, 2], "y": ["foo", "bar"]}
+    attribute_filters_2_file = tmp_path / "attribute_filters_2.json"
+    with attribute_filters_2_file.open("w") as f:
+        json.dump(attribute_filters, f)
+    res = invoke(
+        f"job submit {project_id} {workflow_id} {dataset_id} "
+        f"--attribute-filters-json-file {attribute_filters_2_file}"
+    )
+    assert res.retcode == 0
+    assert res.data["attribute_filters"] == attribute_filters
+    job_id = res.data["id"]
+    while True:
+        res = invoke(f"--batch job show {project_id} {job_id}")
+        status = res.data
+        assert res.retcode == 0
+        if status != "submitted":
+            break
+        time.sleep(0.1)
+    # --use-dataset-attribute-filters
+    res = invoke(
+        f"job submit {project_id} {workflow_id} {dataset_id} "
+        "--use-dataset-attribute-filters"
+    )
+    assert res.retcode == 0
+    assert res.data["attribute_filters"] == attribute_filters_dataset
+    # cannot use both
+    with pytest.raises(SystemExit):
+        invoke(
+            f"job submit {project_id} {workflow_id} {dataset_id} "
+            f"--attribute-filters-json-file {attribute_filters_2_file} "
+            "--use-dataset-attribute-filters"
+        )
