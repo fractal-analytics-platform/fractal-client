@@ -156,7 +156,7 @@ def job_submit(
         with Path(attribute_filters_json_file).open("r") as f:
             job_submit["attribute_filters"] = json.load(f)
     else:
-        job_submit["attribute_filters"] = {}
+        pass
 
     # Prepare query parameters
     query_parameters = f"workflow_id={workflow_id}" f"&dataset_id={dataset_id}"
