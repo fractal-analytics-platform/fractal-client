@@ -734,6 +734,18 @@ job_submit_parser.add_argument(
     "--worker-init",
     help="Command to be run before starting a worker.",
 )
+job_submit_parser_filters = job_submit_parser.add_mutually_exclusive_group()
+job_submit_parser_filters.add_argument(
+    "--attribute-filters-json-file",
+    help="TBD",
+    required=False,
+)
+job_submit_parser_filters.add_argument(
+    "--use-dataset-attribute-filters",
+    help="TBD",
+    action="store_true",
+    required=False,
+)
 
 
 # VERSION GROUP

@@ -294,6 +294,8 @@ def job(
             "worker_init",
             "first_task_index",
             "last_task_index",
+            "attribute_filters_json_file",
+            "use_dataset_attribute_filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = job_submit(client, batch=batch, **function_kwargs)
