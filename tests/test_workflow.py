@@ -161,15 +161,15 @@ def test_workflow_add_task(
     wf = workflow_factory(name=new_name(), project_id=project_id)
     t = task_factory(name=new_name(), command_parallel="pwd")
 
-    INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
+    TYPE_FILTERS = {"b": True}
     ARGS_PARALLEL = {"image_dir": "/asdasd"}
     ARGS_NON_PARALLEL = {"image_dir": "/dsadsa"}
     META_PARALLEL = {"a": "b"}
     META_NON_PARALLEL = {"c": "d"}
 
-    input_filters_file = tmp_path / "input_filters.json"
-    with input_filters_file.open("w") as f:
-        json.dump(INPUT_FILTERS, f)
+    type_filters_file = tmp_path / "type_filters.json"
+    with type_filters_file.open("w") as f:
+        json.dump(TYPE_FILTERS, f)
 
     args_parallel_file = tmp_path / "args_parallel_file.json"
     with args_parallel_file.open("w") as f:
@@ -212,7 +212,7 @@ def test_workflow_add_task(
     )
 
     cmd_args = (
-        f"{cmd} --task-id {t['id']} --input-filters {input_filters_file} "
+        f"{cmd} --task-id {t['id']} --type-filters {type_filters_file} "
         f"--args-parallel {args_parallel_file} "
     )
     debug(cmd_args)
@@ -224,7 +224,7 @@ def test_workflow_add_task(
     workflow_task = res.data
     workflow_task_id_1 = workflow_task["id"]
     debug(workflow_task)
-    assert workflow_task["input_filters"] == INPUT_FILTERS
+    assert workflow_task["type_filters"] == TYPE_FILTERS
     assert workflow_task["args_parallel"] == ARGS_PARALLEL
 
     # Add a WorkflowTask by Task.name with the --batch option
@@ -240,7 +240,7 @@ def test_workflow_add_task(
 
     # Add a WorkflowTask with meta-parallel args
     cmd_meta = (
-        f"{cmd} --task-id {t['id']} --input-filters {input_filters_file} "
+        f"{cmd} --task-id {t['id']} --type-filters {type_filters_file} "
         f"--args-parallel {args_parallel_file} "
         f"--meta-parallel {meta_parallel_file} "
     )
@@ -263,7 +263,7 @@ def test_workflow_add_task(
 
     cmd_meta = (
         f"{cmd} --task-id {t_non_parallel['id']} "
-        f"--input-filters {input_filters_file} "
+        f"--type-filters {type_filters_file} "
         f"--args-non-parallel {args_non_parallel_file} "
         f"--meta-non-parallel {meta_non_parallel_file}"
     )
@@ -440,15 +440,15 @@ def test_workflow_edit_task(
     wf = workflow_factory(name=new_name(), project_id=project_id)
     t = task_factory(name=new_name(), command_parallel="parallel")
 
-    INPUT_FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
+    TYPE_FILTERS = {"b": True}
     ARGS_PARALLEL = {"image_dir": "/asdasd"}
     ARGS_NON_PARALLEL = {"image_dir": "/dsadsa"}
     META_PARALLEL = {"a": "b"}
     META_NON_PARALLEL = {"c": "d"}
 
-    input_filters_file = tmp_path / "input_filters.json"
-    with input_filters_file.open("w") as f:
-        json.dump(INPUT_FILTERS, f)
+    type_filters_file = tmp_path / "type_filters.json"
+    with type_filters_file.open("w") as f:
+        json.dump(TYPE_FILTERS, f)
 
     args_parallel_file = tmp_path / "args_parallel_file.json"
     with args_parallel_file.open("w") as f:
@@ -479,12 +479,12 @@ def test_workflow_edit_task(
     workflow_task_id = res.data["id"]
     cmd = (
         f"workflow edit-task {project_id} {wf['id']} {workflow_task_id} "
-        f"--input-filters {input_filters_file}"
+        f"--type-filters {type_filters_file}"
     )
     debug(cmd)
     res = invoke(cmd)
     assert res.retcode == 0
-    assert res.data["input_filters"] == INPUT_FILTERS
+    assert res.data["type_filters"] == TYPE_FILTERS
 
     # Edit workflow task
     debug(res.data)
@@ -516,7 +516,7 @@ def test_workflow_edit_task(
 
     cmd = (
         f"workflow edit-task {project_id} {wf['id']} {workflow_task_id} "
-        f"--input-filters {input_filters_file} "
+        f"--type-filters {type_filters_file} "
         f"--args-non-parallel {args_non_parallel_file} "
         f"--meta-non-parallel {meta_non_parallel_file}"
     )

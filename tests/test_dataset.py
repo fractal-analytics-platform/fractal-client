@@ -16,23 +16,30 @@ def test_create_dataset(
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
+    attribute_filters = {"a": [1]}
+    type_filters = {"b": True}
 
-    file_filters = str(tmp_path / "filters.json")
-    with open(file_filters, "w") as f:
-        json.dump(FILTERS, f)
+    file_attribute_filters = str(tmp_path / "attribute_filters.json")
+    with open(file_attribute_filters, "w") as f:
+        json.dump(attribute_filters, f)
+
+    file_type_filters = str(tmp_path / "type_filters.json")
+    with open(file_type_filters, "w") as f:
+        json.dump(type_filters, f)
 
     res = invoke(
         (
-            f"project add-dataset {project_id} {new_name()} "
-            "--zarr-dir /tmp "
-            f"--filters {file_filters}"
+            f"project add-dataset {project_id} {new_name()}"
+            " --zarr-dir /tmp"
+            f" --type-filters {file_type_filters}"
+            f" --attribute-filters {file_attribute_filters}"
         )
     )
-    debug(file_filters)
+
     debug(res.data)
     assert res.retcode == 0
-    assert res.data["filters"] == FILTERS
+    assert res.data["attribute_filters"] == attribute_filters
+    assert res.data["type_filters"] == type_filters
 
     # Add a project_dir to user-settings
     res = invoke("--batch user whoami")
@@ -57,10 +64,16 @@ def test_edit_dataset(invoke, tmp_path, new_name):
     dataset_id = res.data["id"]
 
     NAME = new_name()
-    FILTERS = {"attributes": {"a": 1}, "types": {"b": True}}
-    FILTERS_FILE = str(tmp_path / "meta.json")
-    with open(FILTERS_FILE, "w") as f:
-        json.dump(FILTERS, f)
+
+    attribute_filters = {"a": [1]}
+    attribute_filters_file = str(tmp_path / "attribute_filters.json")
+    with open(attribute_filters_file, "w") as f:
+        json.dump(attribute_filters, f)
+
+    type_filters = {"b": True}
+    type_filters_file = str(tmp_path / "type_filters.json")
+    with open(type_filters_file, "w") as f:
+        json.dump(type_filters, f)
 
     res = invoke(f"dataset edit {project_id} {dataset_id} --new-name {NAME}")
     res.show()
@@ -68,11 +81,14 @@ def test_edit_dataset(invoke, tmp_path, new_name):
     assert res.retcode == 0
 
     res = invoke(
-        f"dataset edit {project_id} {dataset_id} --filters {FILTERS_FILE}"
+        f"dataset edit {project_id} {dataset_id}"
+        f" --attribute-filters {attribute_filters_file}"
+        f" --type-filters {type_filters_file}"
     )
     res.show()
     assert res.data["name"] == NAME
-    assert res.data["filters"]["types"] == FILTERS["types"]
+    assert res.data["type_filters"] == type_filters
+    assert res.data["attribute_filters"] == attribute_filters
     assert res.retcode == 0
 
 
