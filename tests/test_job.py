@@ -53,6 +53,14 @@ def test_job_submit(
         type_filters=type_filters_file,
     )
     dataset_id = dataset["id"]
+    dataset2 = dataset_factory(
+        name=new_name(),
+        project_id=project_id,
+        zarr_dir=zarr_dir,
+        attribute_filters=attribute_filters_file,
+        type_filters=type_filters_file,
+    )
+    dataset2_id = dataset2["id"]
 
     # Wait for task collection to end
     starting_time = time.perf_counter()
@@ -175,21 +183,15 @@ def test_job_submit(
     )
     assert res.retcode == 0
     assert res.data["attribute_filters"] == attribute_filters
-    job_id = res.data["id"]
-    while True:
-        res = invoke(f"--batch job show {project_id} {job_id}")
-        status = res.data
-        assert res.retcode == 0
-        if status != "submitted":
-            break
-        time.sleep(0.1)
+
     # --use-dataset-attribute-filters
     res = invoke(
-        f"job submit {project_id} {workflow_id} {dataset_id} "
+        f"job submit {project_id} {workflow_id} {dataset2_id} "
         "--use-dataset-attribute-filters"
     )
     assert res.retcode == 0
     assert res.data["attribute_filters"] == attribute_filters_dataset
+
     # cannot use both
     with pytest.raises(SystemExit):
         invoke(
