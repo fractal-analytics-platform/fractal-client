@@ -750,12 +750,14 @@ job_submit_parser.add_argument(
 job_submit_parser_filters = job_submit_parser.add_mutually_exclusive_group()
 job_submit_parser_filters.add_argument(
     "--attribute-filters-json-file",
-    help="TBD",
+    help=(
+        "Path to JSON file with the attribute filters for this job submission."
+    ),
     required=False,
 )
 job_submit_parser_filters.add_argument(
     "--use-dataset-attribute-filters",
-    help="TBD",
+    help=("Use current dataset attribute filters for this job submission."),
     action="store_true",
     required=False,
 )
