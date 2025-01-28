@@ -527,7 +527,7 @@ workflow_add_task_parser.add_argument(
 )
 
 workflow_add_task_parser.add_argument(
-    "--meta-non-parallel", help="Metadata file fornon parallel tasks"
+    "--meta-non-parallel", help="Metadata file for non-parallel tasks"
 )
 
 workflow_add_task_parser.add_argument(
@@ -536,7 +536,7 @@ workflow_add_task_parser.add_argument(
 
 workflow_add_task_parser.add_argument(
     "--type-filters",
-    help="Path to json file with type filters.",
+    help="Path to JSON file with type filters.",
 )
 
 
@@ -562,8 +562,8 @@ workflow_edit_task_parser.add_argument(
 workflow_edit_task_parser.add_argument(
     "--type-filters",
     help=(
-        "Path to json serialised file containing the arguments "
-        "overrides of the task."
+        "Path to JSON file containing the type filters of this "
+        "workflow task."
     ),
 )
 workflow_edit_task_parser.add_argument(
