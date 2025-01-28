@@ -114,8 +114,12 @@ project_add_dataset_parser.add_argument(
     required=False,
 )
 project_add_dataset_parser.add_argument(
-    "--filters",
-    help="Path to JSON file with filters.",
+    "--type-filters",
+    help="Path to JSON file with type filters.",
+)
+project_add_dataset_parser.add_argument(
+    "--attribute-filters",
+    help="Path to JSON file with attribute filters.",
 )
 
 
@@ -155,8 +159,17 @@ dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 dataset_edit_parser.add_argument("--new-name", help="New name of dataset.")
 dataset_edit_parser.add_argument(
-    "--filters",
-    help="Path to JSON file with new metadata to replace the current ones.",
+    "--type-filters",
+    help=(
+        "Path to JSON file with new type filters to replace the current ones."
+    ),
+)
+dataset_edit_parser.add_argument(
+    "--attribute-filters",
+    help=(
+        "Path to JSON file with new attribute filters to replace the current "
+        "ones."
+    ),
 )
 
 
@@ -514,7 +527,7 @@ workflow_add_task_parser.add_argument(
 )
 
 workflow_add_task_parser.add_argument(
-    "--meta-non-parallel", help="Metadata file fornon parallel tasks"
+    "--meta-non-parallel", help="Metadata file for non-parallel tasks"
 )
 
 workflow_add_task_parser.add_argument(
@@ -522,8 +535,8 @@ workflow_add_task_parser.add_argument(
 )
 
 workflow_add_task_parser.add_argument(
-    "--input-filters",
-    help="Path to json file with filters.",
+    "--type-filters",
+    help="Path to JSON file with type filters.",
 )
 
 
@@ -547,10 +560,10 @@ workflow_edit_task_parser.add_argument(
     help="Workflow task ID, the ID of a task inside the list of tasks.",
 )
 workflow_edit_task_parser.add_argument(
-    "--input-filters",
+    "--type-filters",
     help=(
-        "Path to json serialised file containing the arguments "
-        "overrides of the task."
+        "Path to JSON file containing the type filters of this "
+        "workflow task."
     ),
 )
 workflow_edit_task_parser.add_argument(
@@ -733,6 +746,20 @@ job_submit_parser.add_argument(
     "-w",
     "--worker-init",
     help="Command to be run before starting a worker.",
+)
+job_submit_parser_filters = job_submit_parser.add_mutually_exclusive_group()
+job_submit_parser_filters.add_argument(
+    "--attribute-filters-json",
+    help=(
+        "Path to JSON file with the attribute filters for this job submission."
+    ),
+    required=False,
+)
+job_submit_parser_filters.add_argument(
+    "--use-dataset-attribute-filters",
+    help=("Use current dataset attribute filters for this job submission."),
+    action="store_true",
+    required=False,
 )
 
 

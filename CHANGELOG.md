@@ -1,7 +1,11 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Unreleased
+# 2.7.0
 
+This version is aligned with [fractal-server 2.11.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2110).
+
+* Commands:
+    * Align with fractal-server 2.11 changes of data structure and API for filters (\#776).
 * Package:
     * Remove `exclude` field, and move `packages` field to `tool.poetry` section, in pyproject.toml (\#771).
 * Testing:

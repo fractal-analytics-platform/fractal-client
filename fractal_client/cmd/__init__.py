@@ -81,7 +81,13 @@ def project(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_project(client, **function_kwargs)
     elif subcmd == "add-dataset":
-        parameters = ["project_id", "dataset_name", "zarr_dir", "filters"]
+        parameters = [
+            "project_id",
+            "dataset_name",
+            "zarr_dir",
+            "type_filters",
+            "attribute_filters",
+        ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_dataset(client, batch=batch, **function_kwargs)
     elif subcmd == "delete":
@@ -109,7 +115,8 @@ def dataset(
             "project_id",
             "dataset_id",
             "new_name",
-            "filters",
+            "type_filters",
+            "attribute_filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_dataset(client, **function_kwargs)
@@ -228,7 +235,7 @@ def workflow(
             "order",
             "args_non_parallel",
             "args_parallel",
-            "input_filters",
+            "type_filters",
             "meta_parallel",
             "meta_non_parallel",
         ]
@@ -239,7 +246,7 @@ def workflow(
             "project_id",
             "workflow_id",
             "workflow_task_id",
-            "input_filters",
+            "type_filters",
             "args_non_parallel",
             "args_parallel",
             "meta_parallel",
@@ -294,6 +301,8 @@ def job(
             "worker_init",
             "first_task_index",
             "last_task_index",
+            "attribute_filters_json",
+            "use_dataset_attribute_filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = job_submit(client, batch=batch, **function_kwargs)

@@ -62,7 +62,7 @@ def post_workflowtask(
     *,
     project_id: int,
     workflow_id: int,
-    input_filters: str | None = None,
+    type_filters: str | None = None,
     args_non_parallel: str | None = None,
     args_parallel: str | None = None,
     meta_non_parallel: str | None = None,
@@ -95,27 +95,27 @@ def post_workflowtask(
     else:
         workflow_task = dict(order=order)
 
-    if input_filters:
-        with Path(input_filters).open("r") as f:
-            i_filters = json.load(f)
-            workflow_task["input_filters"] = i_filters
+    if type_filters is not None:
+        with Path(type_filters).open("r") as f:
+            type_filters = json.load(f)
+            workflow_task["type_filters"] = type_filters
 
-    if args_non_parallel:
+    if args_non_parallel is not None:
         with Path(args_non_parallel).open("r") as f:
             a_n_p = json.load(f)
             workflow_task["args_non_parallel"] = a_n_p
 
-    if args_parallel:
+    if args_parallel is not None:
         with Path(args_parallel).open("r") as f:
             a_p = json.load(f)
             workflow_task["args_parallel"] = a_p
 
-    if meta_non_parallel:
+    if meta_non_parallel is not None:
         with Path(meta_non_parallel).open("r") as f:
             m_n_p = json.load(f)
             workflow_task["meta_non_parallel"] = m_n_p
 
-    if meta_parallel:
+    if meta_parallel is not None:
         with Path(meta_parallel).open("r") as f:
             m_p = json.load(f)
             workflow_task["meta_parallel"] = m_p
@@ -142,7 +142,7 @@ def patch_workflowtask(
     project_id: int,
     workflow_id: int,
     workflow_task_id: int,
-    input_filters: str | None = None,
+    type_filters: str | None = None,
     args_non_parallel: str | None = None,
     args_parallel: str | None = None,
     meta_non_parallel: str | None = None,
@@ -150,27 +150,27 @@ def patch_workflowtask(
 ) -> Interface:
 
     payload = {}
-    if input_filters:
-        with Path(input_filters).open("r") as f:
-            input_filters = json.load(f)
-            payload["input_filters"] = input_filters
+    if type_filters is not None:
+        with Path(type_filters).open("r") as f:
+            filters = json.load(f)
+            payload["type_filters"] = filters
 
-    if args_non_parallel:
+    if args_non_parallel is not None:
         with Path(args_non_parallel).open("r") as f:
             a_n_p = json.load(f)
             payload["args_non_parallel"] = a_n_p
 
-    if args_parallel:
+    if args_parallel is not None:
         with Path(args_parallel).open("r") as f:
             a_p = json.load(f)
             payload["args_parallel"] = a_p
 
-    if meta_non_parallel:
+    if meta_non_parallel is not None:
         with Path(meta_non_parallel).open("r") as f:
             m_n_p = json.load(f)
             payload["meta_non_parallel"] = m_n_p
 
-    if meta_parallel:
+    if meta_parallel is not None:
         with Path(meta_parallel).open("r") as f:
             m_p = json.load(f)
             payload["meta_parallel"] = m_p
