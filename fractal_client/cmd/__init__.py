@@ -301,7 +301,7 @@ def job(
             "worker_init",
             "first_task_index",
             "last_task_index",
-            "attribute_filters_json_file",
+            "attribute_filters_json",
             "use_dataset_attribute_filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)

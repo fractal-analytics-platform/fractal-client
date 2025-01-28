@@ -132,7 +132,7 @@ def job_submit(
     first_task_index: int | None = None,
     last_task_index: int | None = None,
     worker_init: str | None = None,
-    attribute_filters_json_file: str | None = None,
+    attribute_filters_json: str | None = None,
     use_dataset_attribute_filters: bool = False,
     batch: bool = False,
 ) -> Interface:
@@ -152,8 +152,8 @@ def job_submit(
         )
         dataset = check_response(res, expected_status_code=200)
         job_submit["attribute_filters"] = dataset["attribute_filters"]
-    elif attribute_filters_json_file is not None:
-        with Path(attribute_filters_json_file).open("r") as f:
+    elif attribute_filters_json is not None:
+        with Path(attribute_filters_json).open("r") as f:
             job_submit["attribute_filters"] = json.load(f)
     else:
         pass

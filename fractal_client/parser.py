@@ -749,7 +749,7 @@ job_submit_parser.add_argument(
 )
 job_submit_parser_filters = job_submit_parser.add_mutually_exclusive_group()
 job_submit_parser_filters.add_argument(
-    "--attribute-filters-json-file",
+    "--attribute-filters-json",
     help=(
         "Path to JSON file with the attribute filters for this job submission."
     ),
