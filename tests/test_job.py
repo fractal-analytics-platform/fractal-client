@@ -172,14 +172,14 @@ def test_job_submit(
     with pytest.raises(SystemExit):
         invoke(cmd)
 
-    # --attribute-filters-json-file
+    # --attribute-filters-json
     attribute_filters = {"x": [1, 2], "y": ["foo", "bar"]}
     attribute_filters_2_file = tmp_path / "attribute_filters_2.json"
     with attribute_filters_2_file.open("w") as f:
         json.dump(attribute_filters, f)
     res = invoke(
         f"job submit {project_id} {workflow_id} {dataset_id} "
-        f"--attribute-filters-json-file {attribute_filters_2_file}"
+        f"--attribute-filters-json {attribute_filters_2_file}"
     )
     assert res.retcode == 0
     assert res.data["attribute_filters"] == attribute_filters
@@ -196,6 +196,6 @@ def test_job_submit(
     with pytest.raises(SystemExit):
         invoke(
             f"job submit {project_id} {workflow_id} {dataset_id} "
-            f"--attribute-filters-json-file {attribute_filters_2_file} "
+            f"--attribute-filters-json {attribute_filters_2_file} "
             "--use-dataset-attribute-filters"
         )
