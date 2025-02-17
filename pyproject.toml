@@ -15,7 +15,7 @@ dependencies = [
     "python-dotenv >=1.0.0,<1.1.0",
     "httpx >= 0.27.0, <0.28.0",
     "PyJWT >= 2.8.0,<3.0.0",
-    "packaging >= 23.1.0, <24.0.0",
+    "packaging >= 24.0.0, <25.0.0",
 
 ]
 
