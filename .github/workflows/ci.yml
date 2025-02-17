@@ -44,7 +44,7 @@ jobs:
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           GHA_FRACTAL_SERVER_LOG: /tmp
-        run: poetry run coverage run -m pytest -s
+        run: poetry run coverage run -m pytest
 
       - name: Log server STDOUT if pytest failed
         if: failure()
