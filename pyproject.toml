@@ -48,7 +48,7 @@ pytest = "^7.1.2"
 pytest-randomly = "^3.15.0"
 bumpver = "^2022.1118"
 coverage = {extras = ["toml"], version = "^6.5.0"}
-fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "main" }
+fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "pydantic-v2" }
 
 [tool.poetry.group.docs]
 optional = true
