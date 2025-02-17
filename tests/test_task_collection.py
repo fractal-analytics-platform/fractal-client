@@ -32,8 +32,10 @@ def test_task_collection_command(invoke, caplog):
                 "--pinned-dependency pydantic=1.10.0"
             )
         )
+    debug(caplog.text)
     assert "Server returned 422" in caplog.text
     assert f"given={INVALID_PYTHON_VERSION}" in caplog.text
+    assert f"input_value='{INVALID_PYTHON_VERSION}'"
 
 
 def test_task_collection_invalid_pinned_dependency(invoke, caplog):
