@@ -801,8 +801,8 @@ uvicorn-worker = "0.3.0"
 [package.source]
 type = "git"
 url = "https://github.com/fractal-analytics-platform/fractal-server.git"
-reference = "pydantic-v2"
-resolved_reference = "7dd028bf981f94a18e11feafc9f1fc9ea692c8f8"
+reference = "main"
+resolved_reference = "358fb88b5debb4cf048bf1c7a3078f8776c40bac"
 
 [[package]]
 name = "ghp-import"
@@ -2670,4 +2670,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "792bab4b6eec62194774ea823cfaae292c5e7f1e1f2e412794c4f619ff89102d"
+content-hash = "88eb313b3ca07804bc55ea0f9a6959fb61c5efd75e2e58aaf58a212625a85725"
