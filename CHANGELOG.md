@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.7.1
+
+* Testing:
+    * Adapt to fractal-server switch to Pydantic V2 (\#781).
+
 # 2.7.0
 
 This version is aligned with [fractal-server 2.11.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2110).
