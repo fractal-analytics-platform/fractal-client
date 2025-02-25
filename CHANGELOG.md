@@ -1,5 +1,11 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+
+# Unreleased
+
+* Dependencies:
+    * Bump `httpx` to `0.28.*` (\#783).
+
 # 2.7.1
 
 * Testing:
