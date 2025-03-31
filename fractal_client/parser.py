@@ -113,14 +113,6 @@ project_add_dataset_parser.add_argument(
     help="Path to zarr dir.",
     required=False,
 )
-project_add_dataset_parser.add_argument(
-    "--type-filters",
-    help="Path to JSON file with type filters.",
-)
-project_add_dataset_parser.add_argument(
-    "--attribute-filters",
-    help="Path to JSON file with attribute filters.",
-)
 
 
 # project edit
@@ -158,19 +150,6 @@ dataset_edit_parser = dataset_subparsers.add_parser(
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 dataset_edit_parser.add_argument("--new-name", help="New name of dataset.")
-dataset_edit_parser.add_argument(
-    "--type-filters",
-    help=(
-        "Path to JSON file with new type filters to replace the current ones."
-    ),
-)
-dataset_edit_parser.add_argument(
-    "--attribute-filters",
-    help=(
-        "Path to JSON file with new attribute filters to replace the current "
-        "ones."
-    ),
-)
 
 
 # dataset show

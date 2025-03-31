@@ -85,8 +85,6 @@ def project(
             "project_id",
             "dataset_name",
             "zarr_dir",
-            "type_filters",
-            "attribute_filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_dataset(client, batch=batch, **function_kwargs)
@@ -115,8 +113,6 @@ def dataset(
             "project_id",
             "dataset_id",
             "new_name",
-            "type_filters",
-            "attribute_filters",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = patch_dataset(client, **function_kwargs)

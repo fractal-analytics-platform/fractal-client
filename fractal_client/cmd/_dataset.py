@@ -1,5 +1,3 @@
-import json
-
 from ..authclient import AuthClient
 from ..config import settings
 from ..interface import Interface
@@ -12,28 +10,17 @@ def post_dataset(
     project_id: int,
     dataset_name: str,
     zarr_dir: str | None = None,
-    type_filters: str | None = None,
-    attribute_filters: str | None = None,
     batch: bool = False,
 ) -> Interface:
     """
     Arguments:
         project_id: ID of project to add the new dataset to
         dataset_name: Name of new dataset
-        filters: Path to file containing dataset filters in JSON format.
-        batch: Dataset filters.
+        batch: .
     """
     dataset = dict(name=dataset_name)
     if zarr_dir is not None:
         dataset["zarr_dir"] = zarr_dir
-    if type_filters is not None:
-        with open(type_filters, "r") as f:
-            type_filters_dict = json.load(f)
-        dataset["type_filters"] = type_filters_dict
-    if attribute_filters is not None:
-        with open(attribute_filters, "r") as f:
-            attribute_filters_dict = json.load(f)
-        dataset["attribute_filters"] = attribute_filters_dict
 
     res = client.post(
         f"{settings.BASE_URL}/project/{project_id}/dataset/",
@@ -52,21 +39,11 @@ def patch_dataset(
     project_id: int,
     dataset_id: int,
     new_name: str | None = None,
-    type_filters: str | None = None,
-    attribute_filters: str | None = None,
 ) -> Interface:
     # Prepare payload
     dataset_update = {}
     if new_name is not None:
         dataset_update["name"] = new_name
-    if type_filters is not None:
-        with open(type_filters, "r") as f:
-            type_filters_from_file = json.load(f)
-        dataset_update["type_filters"] = type_filters_from_file
-    if attribute_filters is not None:
-        with open(attribute_filters, "r") as f:
-            attribute_filters_from_file = json.load(f)
-        dataset_update["attribute_filters"] = attribute_filters_from_file
 
     res = client.patch(
         (
