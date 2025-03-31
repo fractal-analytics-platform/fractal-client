@@ -16,7 +16,7 @@ def post_dataset(
     Arguments:
         project_id: ID of project to add the new dataset to
         dataset_name: Name of new dataset
-        batch: .
+        zarr_dir:
     """
     dataset = dict(name=dataset_name)
     if zarr_dir is not None:
