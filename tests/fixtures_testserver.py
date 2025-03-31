@@ -195,14 +195,8 @@ def dataset_factory(invoke):
         project_id: int,
         name: str,
         zarr_dir: str,
-        type_filters: str | None = None,
-        attribute_filters: str | None = None,
     ):
         cmd = "project add-dataset"
-        if type_filters is not None:
-            cmd += f" --type-filters {type_filters}"
-        if attribute_filters is not None:
-            cmd += f" --attribute-filters {attribute_filters}"
         cmd += f" {project_id} {name} --zarr-dir {zarr_dir}"
 
         res = invoke(cmd)

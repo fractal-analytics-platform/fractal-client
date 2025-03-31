@@ -734,12 +734,6 @@ job_submit_parser_filters.add_argument(
     ),
     required=False,
 )
-job_submit_parser_filters.add_argument(
-    "--use-dataset-attribute-filters",
-    help=("Use current dataset attribute filters for this job submission."),
-    action="store_true",
-    required=False,
-)
 
 
 # VERSION GROUP
