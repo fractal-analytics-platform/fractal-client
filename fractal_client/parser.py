@@ -726,12 +726,16 @@ job_submit_parser.add_argument(
     "--worker-init",
     help="Command to be run before starting a worker.",
 )
-job_submit_parser_filters = job_submit_parser.add_mutually_exclusive_group()
-job_submit_parser_filters.add_argument(
+job_submit_parser.add_argument(
     "--attribute-filters-json",
     help=(
         "Path to JSON file with the attribute filters for this job submission."
     ),
+    required=False,
+)
+job_submit_parser.add_argument(
+    "--type-filters-json",
+    help=("Path to JSON file with the type filters for this job submission."),
     required=False,
 )
 

@@ -40,11 +40,6 @@ def test_job_submit(
     with type_filters_file.open("w") as f:
         json.dump(type_filters, f)
 
-    attribute_filters_dataset = {"x": [1, 2], "y": ["foo", "bar"]}
-    attribute_filters_file = tmp_path / "attribute_filters.json"
-    with attribute_filters_file.open("w") as f:
-        json.dump(attribute_filters_dataset, f)
-
     dataset = dataset_factory(
         name=new_name(),
         project_id=project_id,
@@ -162,14 +157,22 @@ def test_job_submit(
     with pytest.raises(SystemExit):
         invoke(cmd)
 
-    # --attribute-filters-json
+    # --attribute-filters-json and --type-filters-json
     attribute_filters = {"x": [1, 2], "y": ["foo", "bar"]}
-    attribute_filters_2_file = tmp_path / "attribute_filters_2.json"
-    with attribute_filters_2_file.open("w") as f:
+    attribute_filters_file = tmp_path / "attribute_filters.json"
+    with attribute_filters_file.open("w") as f:
         json.dump(attribute_filters, f)
+
+    type_filters = {"x": True, "y": False}
+    type_filters_file = tmp_path / "type_filters.json"
+    with type_filters_file.open("w") as f:
+        json.dump(type_filters, f)
+
     res = invoke(
         f"job submit {project_id} {workflow_id} {dataset_id} "
-        f"--attribute-filters-json {attribute_filters_2_file}"
+        f"--attribute-filters-json {attribute_filters_file} "
+        f"--type-filters-json {type_filters_file}"
     )
     assert res.retcode == 0
     assert res.data["attribute_filters"] == attribute_filters
+    assert res.data["type_filters"] == type_filters
