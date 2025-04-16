@@ -113,14 +113,6 @@ project_add_dataset_parser.add_argument(
     help="Path to zarr dir.",
     required=False,
 )
-project_add_dataset_parser.add_argument(
-    "--type-filters",
-    help="Path to JSON file with type filters.",
-)
-project_add_dataset_parser.add_argument(
-    "--attribute-filters",
-    help="Path to JSON file with attribute filters.",
-)
 
 
 # project edit
@@ -158,19 +150,6 @@ dataset_edit_parser = dataset_subparsers.add_parser(
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 dataset_edit_parser.add_argument("--new-name", help="New name of dataset.")
-dataset_edit_parser.add_argument(
-    "--type-filters",
-    help=(
-        "Path to JSON file with new type filters to replace the current ones."
-    ),
-)
-dataset_edit_parser.add_argument(
-    "--attribute-filters",
-    help=(
-        "Path to JSON file with new attribute filters to replace the current "
-        "ones."
-    ),
-)
 
 
 # dataset show
@@ -747,18 +726,16 @@ job_submit_parser.add_argument(
     "--worker-init",
     help="Command to be run before starting a worker.",
 )
-job_submit_parser_filters = job_submit_parser.add_mutually_exclusive_group()
-job_submit_parser_filters.add_argument(
+job_submit_parser.add_argument(
     "--attribute-filters-json",
     help=(
         "Path to JSON file with the attribute filters for this job submission."
     ),
     required=False,
 )
-job_submit_parser_filters.add_argument(
-    "--use-dataset-attribute-filters",
-    help=("Use current dataset attribute filters for this job submission."),
-    action="store_true",
+job_submit_parser.add_argument(
+    "--type-filters-json",
+    help=("Path to JSON file with the type filters for this job submission."),
     required=False,
 )
 

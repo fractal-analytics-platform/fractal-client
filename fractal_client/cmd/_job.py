@@ -133,7 +133,7 @@ def job_submit(
     last_task_index: int | None = None,
     worker_init: str | None = None,
     attribute_filters_json: str | None = None,
-    use_dataset_attribute_filters: bool = False,
+    type_filters_json: str | None = None,
     batch: bool = False,
 ) -> Interface:
 
@@ -146,17 +146,12 @@ def job_submit(
     if last_task_index is not None:
         job_submit["last_task_index"] = last_task_index
 
-    if use_dataset_attribute_filters is True:
-        res = client.get(
-            f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
-        )
-        dataset = check_response(res, expected_status_code=200)
-        job_submit["attribute_filters"] = dataset["attribute_filters"]
-    elif attribute_filters_json is not None:
+    if attribute_filters_json is not None:
         with Path(attribute_filters_json).open("r") as f:
             job_submit["attribute_filters"] = json.load(f)
-    else:
-        pass
+    if type_filters_json is not None:
+        with Path(type_filters_json).open("r") as f:
+            job_submit["type_filters"] = json.load(f)
 
     # Prepare query parameters
     query_parameters = f"workflow_id={workflow_id}" f"&dataset_id={dataset_id}"
