@@ -18,7 +18,7 @@ cd fractal-client
 
 ### Install package
 
-We use [poetry](https://python-poetry.org/docs) to manage the development environment and the dependencies. A simple way to install it is `pipx install poetry==2.0.0`, or you can look at the installation section [here](https://python-poetry.org/docs#installation).
+We use [poetry](https://python-poetry.org/docs) to manage the development environment and the dependencies. A simple way to install it is `pipx install poetry==2.1.3`, or you can look at the installation section [here](https://python-poetry.org/docs#installation).
 Running
 ```console
 poetry install [--with dev] [--with docs]
