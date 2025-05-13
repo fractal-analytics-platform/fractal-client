@@ -34,7 +34,7 @@ class AuthToken:
         self.password = password
 
         try:
-            with open(f"{settings.FRACTAL_CACHE_PATH}/session", "r") as f:
+            with open(f"{settings.FRACTAL_CACHE_PATH}/session") as f:
                 self.token = f.read()
         except FileNotFoundError:
             pass

@@ -194,18 +194,14 @@ def test_workflow_add_task(
     # Test fail with both task_id and task_name
     with pytest.raises(SystemExit):
         invoke(
-            (
-                f"{cmd} --task-id {t['id']} --task-name {t['name']} "
-                f"--args-parallel {args_parallel_file}"
-            )
+            f"{cmd} --task-id {t['id']} --task-name {t['name']} "
+            f"--args-parallel {args_parallel_file}"
         )
     # Test fail with both task_id and version
     with pytest.raises(SystemExit):
         invoke(
-            (
-                f"{cmd} --task-id {t['id']} --task-version 1.2.3.4.5.6 "
-                f"--args-parallel {args_parallel_file}"
-            )
+            f"{cmd} --task-id {t['id']} --task-version 1.2.3.4.5.6 "
+            f"--args-parallel {args_parallel_file}"
         )
     assert caplog.records[-1].msg == (
         "Too many arguments: cannot provide both `task_id` and `task_version`."
@@ -622,7 +618,7 @@ def test_workflow_export(
     assert res.retcode == 0
 
     debug(res.data)
-    with open(filename, "r") as f:
+    with open(filename) as f:
         exported_wf = json.load(f)
         assert exported_wf["name"] == NAME
         assert "id" not in exported_wf

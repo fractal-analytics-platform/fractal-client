@@ -14,8 +14,6 @@ Zurich.
 """
 import logging
 from sys import argv
-from typing import List
-from typing import Tuple
 
 from httpx import Client
 from httpx import ConnectError
@@ -34,7 +32,7 @@ class MissingCredentialsError(RuntimeError):
 
 def _check_credentials(
     *, username: str | None, password: str | None
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """
     Check that username and password are defined
 
@@ -66,7 +64,7 @@ def _check_credentials(
     return (username, password)
 
 
-def handle(cli_args: List[str] = argv):
+def handle(cli_args: list[str] = argv):
     args = parser_main.parse_args(cli_args[1:])
 
     # Set logging level

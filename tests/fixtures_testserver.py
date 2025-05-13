@@ -108,10 +108,8 @@ def testserver(tester, tmpdir_factory, request):
 
     handle(
         shlex.split(
-            (
-                "fractal --user admin@fractal.xy --password 1234 "
-                f"user register {tester['email']} {tester['password']}"
-            )
+            "fractal --user admin@fractal.xy --password 1234 "
+            f"user register {tester['email']} {tester['password']}"
         )
     )
 

@@ -130,7 +130,7 @@ def test_job_submit(
     assert res.data == f"{job1_id} {job2_id}"
     res = invoke(f"job list {project_id}")
     assert res.retcode == 0
-    assert set(job["id"] for job in res.data) == set([job1_id, job2_id])
+    assert {job["id"] for job in res.data} == {job1_id, job2_id}
 
     # Download logs / success
     log1_dir = tmp_path / "log1"

@@ -76,10 +76,8 @@ def test_task_new(
 
     # create a new task passing not existing file
     res = invoke(
-        (
-            f"task new {new_name()} --command-parallel _command "
-            "--meta-parallel ./foo.pdf"
-        )
+        f"task new {new_name()} --command-parallel _command "
+        "--meta-parallel ./foo.pdf"
     )
     assert res.retcode == 1
 
@@ -88,11 +86,9 @@ def test_task_new(
     with open(metanp_path, "w") as f:
         json.dump(metanp, f)
     res = invoke(
-        (
-            f"task new {new_name()} --command-non-parallel _command_np "
-            f"--meta-non-parallel {metanp_path} "
-            f"--args-schema-non-parallel {args_path} "
-        )
+        f"task new {new_name()} --command-non-parallel _command_np "
+        f"--meta-non-parallel {metanp_path} "
+        f"--args-schema-non-parallel {args_path} "
     )
     assert res.data["args_schema_non_parallel"] == args
 
@@ -129,10 +125,8 @@ def test_task_edit(
     # Test successful edit of string attributes
     NEW_COMMAND_PARALLEL = "run_parallel"
     res = invoke(
-        (
-            f"task edit --id {task_id} "
-            f"--command-parallel {NEW_COMMAND_PARALLEL}"
-        )
+        f"task edit --id {task_id} "
+        f"--command-parallel {NEW_COMMAND_PARALLEL}"
     )
     assert res.data["command_parallel"] == NEW_COMMAND_PARALLEL
     assert res.retcode == 0
@@ -145,18 +139,14 @@ def test_task_edit(
         json.dump(meta, f)
 
     task_np = invoke(
-        (
-            f"task new {new_name()} --command-non-parallel _command_np "
-            f"--version 1.0.1 --meta-non-parallel {meta_path}"
-        )
+        f"task new {new_name()} --command-non-parallel _command_np "
+        f"--version 1.0.1 --meta-non-parallel {meta_path}"
     )
 
     NEW_COMMAND_NON_PARALLEL = "run_non_parallel"
     res = invoke(
-        (
-            f"task edit --id {task_np.data['id']} "
-            f"--command-non-parallel {NEW_COMMAND_NON_PARALLEL}"
-        )
+        f"task edit --id {task_np.data['id']} "
+        f"--command-non-parallel {NEW_COMMAND_NON_PARALLEL}"
     )
     assert res.data["command_non_parallel"] == NEW_COMMAND_NON_PARALLEL
     assert res.retcode == 0
