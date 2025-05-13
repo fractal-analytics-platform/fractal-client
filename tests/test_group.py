@@ -103,10 +103,10 @@ def test_group_commands(
     res = invoke_as_superuser(f"group add-user {group2_id} {user2_id}")
     assert res.retcode == 0
     assert res.data["id"] == group2_id
-    assert set(res.data["user_ids"]) == set([user3_id, user2_id])
+    assert set(res.data["user_ids"]) == {user3_id, user2_id}
     # add also `superuser` to `group2`
     res = invoke_as_superuser(f"group add-user {group2_id} {superuser_id}")
-    assert set(res.data["user_ids"]) == set([user3_id, user2_id, superuser_id])
+    assert set(res.data["user_ids"]) == {user3_id, user2_id, superuser_id}
     assert res.data["viewer_paths"] == group2_viewer_paths
 
     # Check groups are updated
@@ -120,17 +120,17 @@ def test_group_commands(
     users_group_1 = next(
         g["user_ids"] for g in res.data if g["id"] == group1_id
     )
-    assert set(users_group_1) == set([user1_id, user2_id])
+    assert set(users_group_1) == {user1_id, user2_id}
     users_group_2 = next(
         g["user_ids"] for g in res.data if g["id"] == group2_id
     )
-    assert set(users_group_2) == set([user3_id, user2_id, superuser_id])
+    assert set(users_group_2) == {user3_id, user2_id, superuser_id}
 
     # Remove users from group
     res = invoke_as_superuser(f"group remove-user {group2_id} {user3_id}")
-    assert set(res.data["user_ids"]) == set([user2_id, superuser_id])
+    assert set(res.data["user_ids"]) == {user2_id, superuser_id}
     res = invoke_as_superuser(f"group remove-user {group2_id} {user2_id}")
-    assert set(res.data["user_ids"]) == set([superuser_id])
+    assert set(res.data["user_ids"]) == {superuser_id}
     res = invoke_as_superuser(f"group remove-user {group2_id} {superuser_id}")
     assert set(res.data["user_ids"]) == set()
 

@@ -23,14 +23,12 @@ def test_task_collection_command(invoke, caplog):
     PACKAGE_EXTRAS = "a,b,c"
     with pytest.raises(SystemExit):
         invoke(
-            (
-                "task collect "
-                f"{PACKAGE} "
-                f"--package-version {PACKAGE_VERSION} "
-                f"--python-version {PYTHON_VERSION} "
-                f"--package-extras {PACKAGE_EXTRAS} "
-                "--pinned-dependency pydantic=1.10.0"
-            )
+            "task collect "
+            f"{PACKAGE} "
+            f"--package-version {PACKAGE_VERSION} "
+            f"--python-version {PYTHON_VERSION} "
+            f"--package-extras {PACKAGE_EXTRAS} "
+            "--pinned-dependency pydantic=1.10.0"
         )
     debug(caplog.text)
     assert "Server returned 422" in caplog.text
@@ -44,11 +42,7 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     PACKAGE = "devtools"
     with pytest.raises(SystemExit):
         invoke(
-            (
-                "task collect "
-                f"{PACKAGE} "
-                "--pinned-dependency invalid-string"
-            )
+            "task collect " f"{PACKAGE} " "--pinned-dependency invalid-string"
         )
     # Check that payload was prepared correctly
     log_lines = [record.message for record in caplog.records]

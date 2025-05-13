@@ -126,7 +126,7 @@ def override_settings(monkeypatch, tmp_path):
 
 @pytest.fixture(scope="session")
 def new_name():
-    class Counter(object):
+    class Counter:
         ind: int = 0
 
         def __next__(self):
