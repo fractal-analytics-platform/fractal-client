@@ -87,7 +87,7 @@ def task_collect_custom(
     batch: bool = False,
 ) -> Interface:
     try:
-        with open(manifest, "r") as f:
+        with open(manifest) as f:
             manifest_dict = json.load(f)
     except FileNotFoundError as e:
         raise FileNotFoundError(

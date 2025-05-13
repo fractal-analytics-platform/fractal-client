@@ -39,16 +39,16 @@ def post_task(
     if version:
         task["version"] = version
     if meta_non_parallel:
-        with open(meta_non_parallel, "r") as f:
+        with open(meta_non_parallel) as f:
             task["meta_non_parallel"] = json.load(f)
     if meta_parallel:
-        with open(meta_parallel, "r") as f:
+        with open(meta_parallel) as f:
             task["meta_parallel"] = json.load(f)
     if args_schema_parallel:
-        with open(args_schema_parallel, "r") as f:
+        with open(args_schema_parallel) as f:
             task["args_schema_parallel"] = json.load(f)
     if args_schema_non_parallel:
-        with open(args_schema_non_parallel, "r") as f:
+        with open(args_schema_non_parallel) as f:
             task["args_schema_non_parallel"] = json.load(f)
     if args_schema_version:
         task["args_schema_version"] = args_schema_version
@@ -96,10 +96,10 @@ def patch_task(
     if command_parallel:
         task_update["command_parallel"] = command_parallel
     if input_types:
-        with open(input_types, "r") as f:
+        with open(input_types) as f:
             task_update["input_types"] = json.load(f)
     if output_types:
-        with open(output_types, "r") as f:
+        with open(output_types) as f:
             task_update["output_types"] = json.load(f)
 
     res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
