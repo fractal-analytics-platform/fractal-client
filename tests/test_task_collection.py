@@ -41,9 +41,7 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     """
     PACKAGE = "devtools"
     with pytest.raises(SystemExit):
-        invoke(
-            "task collect " f"{PACKAGE} " "--pinned-dependency invalid-string"
-        )
+        invoke(f"task collect {PACKAGE} --pinned-dependency invalid-string")
     # Check that payload was prepared correctly
     log_lines = [record.message for record in caplog.records]
     debug(log_lines)
