@@ -43,9 +43,13 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     with pytest.raises(SystemExit):
         invoke(f"task collect {PACKAGE} --pinned-dependency invalid-string")
     # Check that payload was prepared correctly
-    log_lines = [record.message for record in caplog.records]
-    debug(log_lines)
-    assert "Invalid pin:" in log_lines[0]
+    error_line = next(
+        record.message
+        for record in caplog.records
+        if "Invalid pin:" in record.message
+    )
+    debug(error_line)
+    assert error_line is not None
 
 
 def test_task_collection(invoke_as_custom_user, user_factory, new_name):
