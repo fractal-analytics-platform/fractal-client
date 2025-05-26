@@ -2,7 +2,6 @@ from httpx import Client
 from httpx import ConnectError
 
 from ..authclient import AuthClient
-from ..config import settings
 from ..interface import Interface
 from ._dataset import delete_dataset
 from ._dataset import get_dataset
@@ -166,6 +165,7 @@ def task(
     elif subcmd == "new":
         parameters = [
             "name",
+            "task_type",
             "version",
             "command_non_parallel",
             "command_parallel",
@@ -307,23 +307,22 @@ def job(
     return iface
 
 
-def version(client: Client, **kwargs) -> Interface:
-    try:
-        res = client.get(f"{settings.FRACTAL_SERVER}/api/alive/")
-        data = res.json()
-        server_str = (
-            f"\turl: {settings.FRACTAL_SERVER}\tversion: {data['version']}"
-        )
-    except ConnectError:
-        server_str = f"\tConnection to '{settings.FRACTAL_SERVER}' refused"
+def version(fractal_server: str, **kwargs) -> Interface:
+    with Client() as client:
+        try:
+            res = client.get(f"{fractal_server}/api/alive/")
+            server_version = res.json()["version"]
+            server_str = f"  url: {fractal_server}  version: {server_version}"
+        except ConnectError:
+            server_str = f"  Connection to '{fractal_server}' refused"
 
-    return Interface(
-        retcode=0,
-        data=(
-            f"Fractal client\n\tversion: {__VERSION__}\n"
-            f"Fractal server:\n{server_str}"
-        ),
-    )
+        return Interface(
+            retcode=0,
+            data=(
+                f"Fractal client\n  version: {__VERSION__}\n"
+                f"Fractal server:\n{server_str}"
+            ),
+        )
 
 
 def user(
