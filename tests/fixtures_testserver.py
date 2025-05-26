@@ -161,6 +161,13 @@ def task_factory(invoke):
             cmd += f" --args-schema-parallel {args_schema_parallel}"
         if args_schema_version is not None:
             cmd += f" --args-schema-version {args_schema_version}"
+        if command_non_parallel is not None and command_parallel is not None:
+            cmd += " --task-type compound"
+        elif command_non_parallel is not None:
+            cmd += " --task-type non_parallel"
+        else:
+            cmd += " --task-type parallel"
+
         cmd += f" {name}"
 
         res = invoke(cmd)
