@@ -6,7 +6,7 @@ from devtools import debug
 
 from fractal_client import __VERSION__
 from fractal_client.client import handle
-from fractal_client.config import Settings
+from fractal_client.cmd import version
 
 
 def test_debug(invoke):
@@ -22,20 +22,15 @@ def test_version(invoke):
     assert iface.retcode == 0
 
 
-def test_version_connect_error(invoke, monkeypatch):
-
-    mock_settings = Settings()
-    mock_settings.FRACTAL_SERVER = "http://localhost:9999"
-    monkeypatch.setattr("fractal_client.cmd.settings", mock_settings)
-
-    iface = invoke("version")
+def test_version_connect_error():
+    iface = version("http://localhost:9999")
     debug(iface.data)
     assert f"version: {__VERSION__}" in iface.data
     assert "refused" in iface.data
     assert iface.retcode == 0
 
 
-def test_server():
+def test_server_is_up():
     """
     GIVEN a testserver
     WHEN it gets called
