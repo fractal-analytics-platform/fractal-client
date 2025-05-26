@@ -24,11 +24,29 @@ parser_main = ap.ArgumentParser(
 parser_main.add_argument(
     "-u",
     "--user",
-    help="User email address for login (overrides configuration file).",
+    help=(
+        "User email address for login (overrides `FRACTAL_USER` "
+        "environment variable)."
+    ),
 )
 parser_main.add_argument(
-    "-p", "--password", help="User password (overrides configuration file)."
+    "-p",
+    "--password",
+    help="User password (overrides `FRACTAL_PASSWORD` environment variable).",
 )
+
+parser_main.add_argument(
+    "--token-path",
+    help="User token (overrides `FRACTAL_TOKEN_PATH` environment variable).",
+)
+parser_main.add_argument(
+    "--fractal-server",
+    help=(
+        "URL of Fractal server (overrides `FRACTAL_SERVER` "
+        "environment variable).",
+    ),
+)
+
 parser_main.add_argument(
     "--debug",
     action="store_true",
@@ -311,6 +329,10 @@ task_new_parser = task_subparsers.add_parser(
 )
 task_new_parser.add_argument(
     "name", help="A human readable name for the task."
+)
+task_new_parser.add_argument(
+    "--task-type",
+    help=("The task type (e.g. 'parallel', 'non_parallel', 'compound')."),
 )
 task_new_parser.add_argument(
     "--command-non-parallel",

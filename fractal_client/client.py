@@ -15,7 +15,6 @@ Zurich.
 import logging
 from sys import argv
 
-from httpx import Client
 from httpx import ConnectError
 
 from . import cmd
@@ -30,9 +29,12 @@ class MissingCredentialsError(RuntimeError):
     pass
 
 
-def _check_credentials(
-    *, username: str | None, password: str | None
-) -> tuple[str, str]:
+def _validate_credentials(
+    *,
+    username: str | None,
+    password: str | None,
+    token_path: str | None,
+) -> None:
     """
     Check that username and password are defined
 
@@ -43,7 +45,13 @@ def _check_credentials(
     Raises:
         MissingCredentialsError: If either `username` of `password` is `None`.
     """
-    if not username:
+
+    if token_path is not None and (
+        username is not None or password is not None
+    ):
+        raise ValueError("Cannot set both token and username/password.")
+
+    if not token_path and not username:
         message = (
             "FRACTAL_USER variable not defined."
             "\nPossible options: \n"
@@ -52,7 +60,7 @@ def _check_credentials(
             + "    3. Define FRACTAL_USER as an environment variable."
         )
         raise MissingCredentialsError(message)
-    if not password:
+    if not token_path and not password:
         message = (
             "FRACTAL_PASSWORD variable not defined."
             "\nPossible options: \n"
@@ -95,18 +103,36 @@ def handle(cli_args: list[str] = argv):
         # argument for functions called with **kwargs)
         kwargs = vars(args).copy()
         kwargs.pop("cmd")
+        fractal_server = (
+            kwargs.pop("fractal_server") or settings.FRACTAL_SERVER
+        )
 
         if args.cmd == "version":
-            with Client() as client:
-                interface = handler(client, **kwargs)
+            interface = handler(fractal_server, **kwargs)
         else:
             # Extract (and remove) username/password for AuthClient from kwargs
             username = kwargs.pop("user") or settings.FRACTAL_USER
             password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
-            username, password = _check_credentials(
-                username=username, password=password
+            token_path = (
+                kwargs.pop("token_path") or settings.FRACTAL_TOKEN_PATH
             )
-            with AuthClient(username=username, password=password) as client:
+            _validate_credentials(
+                username=username,
+                password=password,
+                token_path=token_path,
+            )
+            if token_path is not None:
+                with open(token_path) as f:
+                    token = f.read().strip("\n")
+            else:
+                token = None
+
+            with AuthClient(
+                fractal_server=fractal_server,
+                username=username,
+                password=password,
+                token=token,
+            ) as client:
                 interface = handler(client, **kwargs)
     except AuthenticationError as e:
         return Interface(retcode=1, data=e.args[0])
