@@ -1,14 +1,16 @@
 from ..authclient import AuthClient
-from ..config import settings
 from ..interface import Interface
 from ..response import check_response
 
 
 def group_list(
-    client: AuthClient, *, user_ids: bool = False, batch: bool = False
+    client: AuthClient,
+    *,
+    user_ids: bool = False,
+    batch: bool = False,
 ):
     query_params = "?user_ids=true" if user_ids else ""
-    res = client.get(f"{settings.FRACTAL_SERVER}/auth/group/{query_params}")
+    res = client.get(f"auth/group/{query_params}")
     data = check_response(res, expected_status_code=200)
     if batch:
         return Interface(
@@ -19,7 +21,7 @@ def group_list(
 
 
 def group_get(client: AuthClient, *, group_id: int):
-    res = client.get(f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/")
+    res = client.get(f"auth/group/{group_id}/")
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)
 
@@ -36,7 +38,7 @@ def group_new(
         request_body["viewer_paths"] = viewer_paths
 
     res = client.post(
-        f"{settings.FRACTAL_SERVER}/auth/group/",
+        "auth/group/",
         json=request_body,
     )
     data = check_response(res, expected_status_code=201)
@@ -52,9 +54,8 @@ def group_update(
     group_id: int,
     new_viewer_paths: list[str],
 ):
-
     res = client.patch(
-        f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/",
+        f"auth/group/{group_id}/",
         json=dict(viewer_paths=new_viewer_paths),
     )
     data = check_response(res, expected_status_code=200)
@@ -67,10 +68,7 @@ def group_add_user(
     group_id: int,
     user_id: int,
 ):
-
-    res = client.post(
-        f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/add-user/{user_id}/"
-    )
+    res = client.post(f"auth/group/{group_id}/add-user/{user_id}/")
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)
 
@@ -81,10 +79,6 @@ def group_remove_user(
     group_id: int,
     user_id: int,
 ):
-
-    res = client.post(
-        f"{settings.FRACTAL_SERVER}/auth/group/{group_id}/remove-user/"
-        f"{user_id}/"
-    )
+    res = client.post(f"auth/group/{group_id}/remove-user/{user_id}/")
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)

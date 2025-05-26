@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 from fractal_client.authclient import AuthClient
-from fractal_client.config import settings
 from fractal_client.interface import Interface
 from fractal_client.response import check_response
 
@@ -46,7 +45,7 @@ def task_collect_pip(
         )
 
     is_private = "?private=true" if private else ""
-    endpoint_url = f"{settings.BASE_URL}/task/collect/pip/{is_private}"
+    endpoint_url = f"api/v2/task/collect/pip/{is_private}"
     if package.endswith(".whl"):
         with open(package, "rb") as f:
             file = {
@@ -110,7 +109,7 @@ def task_collect_custom(
     is_private = "?private=true" if private else ""
 
     res = client.post(
-        f"{settings.BASE_URL}/task/collect/custom/{is_private}",
+        f"api/v2/task/collect/custom/{is_private}",
         json=task_collect,
     )
 
@@ -131,9 +130,7 @@ def show_task_group_activity(
     task_group_activity_id: int,
     include_logs: bool,
 ) -> Interface:
-    res = client.get(
-        f"{settings.BASE_URL}/task-group/activity/{task_group_activity_id}/"
-    )
+    res = client.get(f"api/v2/task-group/activity/{task_group_activity_id}/")
     task_group_activity = check_response(res, expected_status_code=200)
 
     # Remove key-value pairs with None value

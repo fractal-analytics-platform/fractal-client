@@ -5,7 +5,6 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from ..authclient import AuthClient
-from ..config import settings
 from ..interface import Interface
 from ..response import check_response
 
@@ -21,7 +20,7 @@ def get_job(
     Query the status of a workflow-execution job
     """
 
-    res = client.get(f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/")
+    res = client.get(f"api/v2/project/{project_id}/job/{job_id}/")
     job = check_response(res, expected_status_code=200)
     if batch:
         return Interface(retcode=0, data=job["status"])
@@ -33,7 +32,7 @@ def get_job_list(
     client: AuthClient, *, project_id: int, batch: bool = False
 ) -> Interface:
 
-    res = client.get(f"{settings.BASE_URL}/project/{project_id}/job/")
+    res = client.get(f"api/v2/project/{project_id}/job/")
     jobs = check_response(res, expected_status_code=200)
 
     if batch:
@@ -58,9 +57,7 @@ def get_job_logs(
         )
 
     # Send request to server
-    res = client.get(
-        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/download/"
-    )
+    res = client.get(f"api/v2/project/{project_id}/job/{job_id}/download/")
 
     # NOTE: We cannot use our default check_response here, because res._content
     # is binary. Therefore we check the status code by hand
@@ -114,9 +111,7 @@ def stop_job(client: AuthClient, *, project_id: int, job_id: int) -> Interface:
     Stop a workflow-execution job
     """
 
-    res = client.get(
-        f"{settings.BASE_URL}/project/{project_id}/job/{job_id}/stop/"
-    )
+    res = client.get(f"api/v2/project/{project_id}/job/{job_id}/stop/")
     check_response(res, expected_status_code=202)
     return Interface(
         retcode=0, data="Correctly called the job-stopping endpoint"
@@ -157,10 +152,7 @@ def job_submit(
     query_parameters = f"workflow_id={workflow_id}" f"&dataset_id={dataset_id}"
 
     res = client.post(
-        (
-            f"{settings.BASE_URL}/project/{project_id}/job/"
-            f"submit/?{query_parameters}"
-        ),
+        (f"api/v2/project/{project_id}/job/" f"submit/?{query_parameters}"),
         json=job_submit,
     )
     job_read = check_response(res, expected_status_code=202)
