@@ -188,3 +188,16 @@ def test_valid_token_path(
     interface = handle(shlex.split(cmd))
     assert interface.data["email"] == tester["email"]
     assert interface.retcode == 0
+
+
+def test_missing_fractal_server(monkeypatch):
+    import fractal_client.client
+
+    monkeypatch.setattr(
+        fractal_client.client.settings,
+        "FRACTAL_SERVER",
+        None,
+    )
+    interface = handle(shlex.split("fractal user whoami"))
+    assert "You should set the fractal-server URL" in interface.data
+    assert interface.retcode == 1
