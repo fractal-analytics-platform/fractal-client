@@ -48,7 +48,7 @@ def _fetch_task_list(client: AuthClient) -> _TaskList:
     """
     Fetch task list through an API request.
     """
-    res = client.get(f"{settings.BASE_URL}/task/")
+    res = client.get("api/v2/task/")
     task_list = check_response(res, expected_status_code=200)
     return task_list
 

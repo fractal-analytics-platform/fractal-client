@@ -1,5 +1,4 @@
 from ..authclient import AuthClient
-from ..config import settings
 from ..interface import Interface
 from ..response import check_response
 
@@ -23,7 +22,7 @@ def post_dataset(
         dataset["zarr_dir"] = zarr_dir
 
     res = client.post(
-        f"{settings.BASE_URL}/project/{project_id}/dataset/",
+        f"api/v2/project/{project_id}/dataset/",
         json=dataset,
     )
     new_dataset = check_response(res, expected_status_code=201)
@@ -46,10 +45,7 @@ def patch_dataset(
         dataset_update["name"] = new_name
 
     res = client.patch(
-        (
-            f"{settings.BASE_URL}/project/{project_id}/"
-            f"dataset/{dataset_id}/"
-        ),
+        (f"api/v2/project/{project_id}/" f"dataset/{dataset_id}/"),
         json=dataset_update,
     )
     data = check_response(res, expected_status_code=200)
@@ -59,9 +55,7 @@ def patch_dataset(
 def get_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int
 ) -> Interface:
-    res = client.get(
-        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
-    )
+    res = client.get(f"api/v2/project/{project_id}/dataset/{dataset_id}/")
     return Interface(retcode=0, data=res.json())
 
 
@@ -69,8 +63,6 @@ def delete_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int
 ) -> Interface:
 
-    res = client.delete(
-        f"{settings.BASE_URL}/project/{project_id}/dataset/{dataset_id}/"
-    )
+    res = client.delete(f"api/v2/project/{project_id}/dataset/{dataset_id}/")
     check_response(res, expected_status_code=204)
     return Interface(retcode=0, data="")

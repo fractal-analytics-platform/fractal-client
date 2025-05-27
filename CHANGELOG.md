@@ -1,5 +1,14 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.9.0
+
+* Add `--fractal-server` CLI option (\#801).
+* Add `--token-path` CLI option and `FRACTAL_TOKEN_PATH` env variable (\#801).
+* Stop caching token, in favor of making a call to the login API for each CLI command if needed (\#801).
+* Drop `AuthToken` class (\#801).
+* Expose `--task-type` in task-creation command (\#801).
+* Remove default `FRACTAL_SERVER="http://localhost:8000"` configuration (\#801).
+
 # 2.8.1
 
 This version deprecates Python 3.10.
