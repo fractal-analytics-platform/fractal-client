@@ -5,23 +5,23 @@
 | Name                                        |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |-------------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | fractal\_client/\_\_init\_\_.py             |        1 |        0 |        0 |        0 |    100% |           |
-| fractal\_client/authclient.py               |       78 |        3 |        6 |        0 |     96% | 38, 82-83 |
-| fractal\_client/client.py                   |       55 |        4 |       12 |        1 |     93% |129-131, 135 |
-| fractal\_client/cmd/\_\_init\_\_.py         |      243 |        3 |       84 |        1 |     99% |   289-291 |
+| fractal\_client/authclient.py               |       55 |        0 |        6 |        0 |    100% |           |
+| fractal\_client/client.py                   |       65 |        1 |       14 |        1 |     97% |       171 |
+| fractal\_client/cmd/\_\_init\_\_.py         |      243 |        0 |       84 |        0 |    100% |           |
 | fractal\_client/cmd/\_aux\_task\_caching.py |       83 |        1 |       20 |        1 |     98% |       231 |
-| fractal\_client/cmd/\_dataset.py            |       27 |        0 |        6 |        1 |     97% |    45->48 |
-| fractal\_client/cmd/\_group.py              |       36 |        0 |        6 |        0 |    100% |           |
-| fractal\_client/cmd/\_job.py                |       73 |        8 |       22 |        1 |     91% |82-93, 117-121 |
-| fractal\_client/cmd/\_project.py            |       30 |        0 |        4 |        0 |    100% |           |
-| fractal\_client/cmd/\_task.py               |       65 |        0 |       30 |        0 |    100% |           |
-| fractal\_client/cmd/\_task\_collection.py   |       60 |        0 |       26 |        0 |    100% |           |
-| fractal\_client/cmd/\_user.py               |      120 |        0 |       50 |        1 |     99% |    75->84 |
-| fractal\_client/cmd/\_workflow.py           |      120 |        1 |       36 |        1 |     99% |        96 |
-| fractal\_client/config.py                   |       14 |        0 |        0 |        0 |    100% |           |
+| fractal\_client/cmd/\_dataset.py            |       26 |        0 |        6 |        1 |     97% |    44->47 |
+| fractal\_client/cmd/\_group.py              |       35 |        0 |        6 |        0 |    100% |           |
+| fractal\_client/cmd/\_job.py                |       72 |        6 |       22 |        1 |     93% |79-90, 116 |
+| fractal\_client/cmd/\_project.py            |       29 |        0 |        4 |        0 |    100% |           |
+| fractal\_client/cmd/\_task.py               |       66 |        0 |       32 |        0 |    100% |           |
+| fractal\_client/cmd/\_task\_collection.py   |       59 |        0 |       26 |        0 |    100% |           |
+| fractal\_client/cmd/\_user.py               |      119 |        0 |       50 |        1 |     99% |    73->82 |
+| fractal\_client/cmd/\_workflow.py           |      119 |        1 |       36 |        1 |     99% |        91 |
+| fractal\_client/config.py                   |       12 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/interface.py                |       10 |        0 |        2 |        0 |    100% |           |
-| fractal\_client/parser.py                   |      203 |        0 |        0 |        0 |    100% |           |
+| fractal\_client/parser.py                   |      206 |        0 |        0 |        0 |    100% |           |
 | fractal\_client/response.py                 |       40 |        1 |       12 |        1 |     96% |        42 |
-|                                   **TOTAL** | **1258** |   **21** |  **316** |    **8** | **98%** |           |
+|                                   **TOTAL** | **1240** |   **10** |  **320** |    **7** | **99%** |           |
 
 
 ## Setup coverage badge
