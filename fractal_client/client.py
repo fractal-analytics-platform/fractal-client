@@ -13,7 +13,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import logging
-from sys import argv
+import sys
 
 from httpx import ConnectError
 
@@ -25,54 +25,43 @@ from .interface import Interface
 from .parser import parser_main
 
 
-class MissingCredentialsError(RuntimeError):
-    pass
-
-
-def _validate_credentials(
+def _verify_authentication_branch(
     *,
     username: str | None,
     password: str | None,
     token_path: str | None,
 ) -> None:
     """
-    Check that username and password are defined
+    Fail if credentials are not either username&password or token
 
     Arguments:
         username: Username
         password: Password
-
-    Raises:
-        MissingCredentialsError: If either `username` of `password` is `None`.
+        token_path: Path of token
     """
-
-    if token_path is not None and (
-        username is not None or password is not None
-    ):
-        raise ValueError("Cannot set both token and username/password.")
-
-    if not token_path and not username:
-        message = (
-            "FRACTAL_USER variable not defined."
-            "\nPossible options: \n"
-            + "    1. Set --user argument;\n"
-            + "    2. Define FRACTAL_USER in a .fractal.env file;\n"
-            + "    3. Define FRACTAL_USER as an environment variable."
+    which_parameters_are_set = (
+        bool(username),
+        bool(password),
+        bool(token_path),
+    )
+    valid_cases = (
+        (True, True, False),
+        (False, False, True),
+    )
+    if which_parameters_are_set not in valid_cases:
+        msg = (
+            "Invalid authentication credentials. "
+            "You should either set username&password or the token path.\n\n"
+            "You can set these variables in multiple ways "
+            "(see `fractal --help`):\n"
+            "  1. Through command-line arguments.\n"
+            "  2. Through environment variables.\n"
+            "  3. Through environment variables in a `.fractal.env` file.\n"
         )
-        raise MissingCredentialsError(message)
-    if not token_path and not password:
-        message = (
-            "FRACTAL_PASSWORD variable not defined."
-            "\nPossible options: \n"
-            + "    1. Set --password argument;\n"
-            + "    2. Define FRACTAL_PASSWORD in a .fractal.env file;\n"
-            + "    3. Define FRACTAL_PASSWORD as an environment variable."
-        )
-        raise MissingCredentialsError(message)
-    return (username, password)
+        sys.exit(msg)
 
 
-def handle(cli_args: list[str] = argv):
+def handle(cli_args: list[str] = sys.argv):
     args = parser_main.parse_args(cli_args[1:])
 
     # Set logging level
@@ -103,20 +92,16 @@ def handle(cli_args: list[str] = argv):
         # argument for functions called with **kwargs)
         kwargs = vars(args).copy()
         kwargs.pop("cmd")
-        fractal_server = (
-            kwargs.pop("fractal_server") or settings.FRACTAL_SERVER
-        )
+        fractal_server = kwargs.pop("fractal_server", settings.FRACTAL_SERVER)
 
         if args.cmd == "version":
             interface = handler(fractal_server, **kwargs)
         else:
             # Extract (and remove) username/password for AuthClient from kwargs
-            username = kwargs.pop("user") or settings.FRACTAL_USER
-            password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
-            token_path = (
-                kwargs.pop("token_path") or settings.FRACTAL_TOKEN_PATH
-            )
-            _validate_credentials(
+            username = kwargs.pop("user", settings.FRACTAL_USER)
+            password = kwargs.pop("password", settings.FRACTAL_PASSWORD)
+            token_path = kwargs.pop("token_path", settings.FRACTAL_TOKEN_PATH)
+            _verify_authentication_branch(
                 username=username,
                 password=password,
                 token_path=token_path,

@@ -5,6 +5,7 @@ import pytest
 from devtools import debug
 
 from fractal_client import __VERSION__
+from fractal_client.client import _verify_authentication_branch
 from fractal_client.client import handle
 from fractal_client.cmd import version
 
@@ -132,3 +133,36 @@ def test_argparse_abbreviation(invoke_as_superuser):
     # Failed (abbreviation-based) invoke
     with pytest.raises(SystemExit):
         invoke_as_superuser("user register test2@mail.com secret2 --super")
+
+
+def test_unit_verify_authentication_branch():
+    # Valid cases
+    _verify_authentication_branch(
+        username="xxx",
+        password="xxx",
+        token_path=None,
+    )
+    _verify_authentication_branch(
+        username=None,
+        password=None,
+        token_path="xxx",
+    )
+
+    # Invalid cases
+    for username, password, token_path in [
+        (None, None, None),
+        ("xx", None, None),
+        (None, "xx", None),
+        ("xx", "xx", "xx"),
+        ("xx", None, "xx"),
+        (None, "xx", "xx"),
+    ]:
+        with pytest.raises(
+            SystemExit,
+            match="Invalid authentication credentials",
+        ):
+            _verify_authentication_branch(
+                username=username,
+                password=password,
+                token_path=token_path,
+            )
