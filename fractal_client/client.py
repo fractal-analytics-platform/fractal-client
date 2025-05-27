@@ -96,6 +96,14 @@ def handle(cli_args: list[str] = sys.argv) -> Interface:
             kwargs.pop("fractal_server") or settings.FRACTAL_SERVER
         )
         logging.debug(f"Fractal server URL: {fractal_server}")
+        if fractal_server is None:
+            return Interface(
+                data=(
+                    "Missing argument: You should set the "
+                    "fractal-server URL (see `fractal --help`)."
+                ),
+                retcode=1,
+            )
 
         if args.cmd == "version":
             interface = handler(fractal_server, **kwargs)
