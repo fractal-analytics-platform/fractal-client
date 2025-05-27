@@ -7,6 +7,7 @@
 * Stop caching token, in favor of making a call to the login API for each CLI command if needed (\#801).
 * Drop `AuthToken` class (\#801).
 * Expose `--task-type` in task-creation command (\#801).
+* Remove default `FRACTAL_SERVER="http://localhost:8000"` configuration (\#801).
 
 # 2.8.1
 
