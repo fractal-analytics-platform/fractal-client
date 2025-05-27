@@ -1,10 +1,12 @@
 import shlex
+from pathlib import Path
 
 import httpx
 import pytest
 from devtools import debug
 
 from fractal_client import __VERSION__
+from fractal_client.authclient import AuthClient
 from fractal_client.client import _verify_authentication_branch
 from fractal_client.client import handle
 from fractal_client.cmd import version
@@ -158,7 +160,7 @@ def test_unit_verify_authentication_branch():
         (None, "xx", "xx"),
     ]:
         with pytest.raises(
-            SystemExit,
+            ValueError,
             match="Invalid authentication credentials",
         ):
             _verify_authentication_branch(
@@ -166,3 +168,51 @@ def test_unit_verify_authentication_branch():
                 password=password,
                 token_path=token_path,
             )
+
+
+def test_invalid_token_path():
+    cmd = "fractal --token-path missingfile user whoami"
+    interface = handle(shlex.split(cmd))
+    interface.show()
+    assert interface.retcode == 1
+
+
+def test_valid_token_path(
+    tmp_path: Path,
+    monkeypatch,
+    tester,
+):
+    # Get valid token
+    with AuthClient(
+        fractal_server="http://localhost:8765",
+        username=tester["email"],
+        password=tester["password"],
+        token=None,
+    ) as client:
+        token_data = client.token
+        debug(token_data)
+    token_path = (tmp_path / "token").as_posix()
+
+    import fractal_client.client
+
+    monkeypatch.setattr(
+        fractal_client.client.settings,
+        "FRACTAL_SERVER",
+        "http://localhost:8765",
+    )
+
+    # Use valid token
+    with open(token_path, "w") as f:
+        f.write(token_data)
+    cmd = f"fractal --token-path {token_path} user whoami"
+    interface = handle(shlex.split(cmd))
+    assert interface.data["email"] == tester["email"]
+    assert interface.retcode == 0
+
+    # Use valid token, with newlines
+    with open(token_path, "w") as f:
+        f.write(f"\n\n{token_data}\n\n\n")
+    cmd = f"fractal --token-path {token_path} user whoami"
+    interface = handle(shlex.split(cmd))
+    assert interface.data["email"] == tester["email"]
+    assert interface.retcode == 0
