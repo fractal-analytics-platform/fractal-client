@@ -120,7 +120,7 @@ def handle(cli_args: list[str] = sys.argv) -> Interface:
                     password=password,
                     token_path=token_path,
                 )
-            except Exception as e:
+            except ValueError as e:
                 return Interface(data=str(e), retcode=1)
             # Read token from file
             if token_path is not None:
