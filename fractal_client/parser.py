@@ -43,7 +43,7 @@ parser_main.add_argument(
     "--fractal-server",
     help=(
         "URL of Fractal server (overrides `FRACTAL_SERVER` "
-        "environment variable).",
+        "environment variable)."
     ),
 )
 
@@ -332,7 +332,7 @@ task_new_parser.add_argument(
 )
 task_new_parser.add_argument(
     "--task-type",
-    help=("The task type (e.g. 'parallel', 'non_parallel', 'compound')."),
+    help="The task type (e.g. 'parallel', 'non_parallel', 'compound').",
 )
 task_new_parser.add_argument(
     "--command-non-parallel",
