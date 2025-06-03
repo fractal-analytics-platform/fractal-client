@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.9.1 (unreleased)
+
+* Bump versions of `python-dotenv` and `packaging` (\#803).
+
 # 2.9.0
 
 * Add `--fractal-server` CLI option (\#801).
