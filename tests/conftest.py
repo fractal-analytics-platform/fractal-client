@@ -39,14 +39,6 @@ def _clisplit(args: str):
     return shlex.split(f"fractal {args}")
 
 
-def _remove_session():
-    from fractal_client.config import settings
-
-    cache_dir = Path(settings.FRACTAL_CACHE_PATH)
-    cache_file = cache_dir / "session"
-    cache_file.unlink(missing_ok=True)
-
-
 @pytest.fixture(scope="session")
 def tester():
     return dict(email="client_tester@example.org", password="pytest")
@@ -55,7 +47,7 @@ def tester():
 @pytest.fixture
 def invoke(tester):
     def __invoke(args: str):
-        _remove_session()
+
         new_args = (
             f"--user {tester['email']} --password {tester['password']} {args}"
         )
@@ -67,7 +59,6 @@ def invoke(tester):
 @pytest.fixture
 def invoke_as_superuser():
     def __invoke(args: str):
-        _remove_session()
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
         return handle(_clisplit(new_args))
 
@@ -77,7 +68,7 @@ def invoke_as_superuser():
 @pytest.fixture
 def invoke_as_custom_user():
     def __invoke(args: str, email: str, password: str):
-        _remove_session()
+
         new_args = f"--user {email} --password {password} {args}"
         return handle(_clisplit(new_args))
 

@@ -176,3 +176,13 @@ def test_job_submit(
     assert res.retcode == 0
     assert res.data["attribute_filters"] == attribute_filters
     assert res.data["type_filters"] == type_filters
+
+
+def test_job_stop(invoke, caplog):
+    with pytest.raises(SystemExit):
+        invoke("job stop 123456 1234546")
+    EXPECTED_MSG = (
+        "Stopping a job execution is not implemented "
+        "for FRACTAL_RUNNER_BACKEND=local"
+    )
+    assert EXPECTED_MSG in caplog.text

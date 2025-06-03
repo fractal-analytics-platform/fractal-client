@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 from ..authclient import AuthClient
-from ..config import settings
 from ..interface import Interface
 from ..response import check_response
 from ._aux_task_caching import FractalCacheError
@@ -18,7 +17,7 @@ def post_workflow(
         name=name,
     )
     res = client.post(
-        f"{settings.BASE_URL}/project/{project_id}/workflow/",
+        f"api/v2/project/{project_id}/workflow/",
         json=workflow,
     )
     workflow = check_response(res, expected_status_code=201)
@@ -32,7 +31,7 @@ def get_workflow_list(
     client: AuthClient, *, project_id: int, batch: bool = False
 ) -> Interface:
 
-    res = client.get(f"{settings.BASE_URL}/project/{project_id}/workflow/")
+    res = client.get(f"api/v2/project/{project_id}/workflow/")
     workflow_list = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=workflow_list)
 
@@ -40,9 +39,7 @@ def get_workflow_list(
 def delete_workflow(
     client: AuthClient, *, project_id: int, workflow_id: int
 ) -> Interface:
-    res = client.delete(
-        f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
-    )
+    res = client.delete(f"api/v2/project/{project_id}/workflow/{workflow_id}/")
     check_response(res, expected_status_code=204)
     return Interface(retcode=0, data="")
 
@@ -50,9 +47,7 @@ def delete_workflow(
 def get_workflow(
     client: AuthClient, *, project_id: int, workflow_id: int
 ) -> Interface:
-    res = client.get(
-        f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/"
-    )
+    res = client.get(f"api/v2/project/{project_id}/workflow/{workflow_id}/")
     workflow = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=workflow)
 
@@ -122,7 +117,7 @@ def post_workflowtask(
 
     res = client.post(
         (
-            f"{settings.BASE_URL}/project/{project_id}/"
+            f"api/v2/project/{project_id}/"
             f"workflow/{workflow_id}/wftask/"
             f"?{task_id=}"
         ),
@@ -177,7 +172,7 @@ def patch_workflowtask(
 
     res = client.patch(
         (
-            f"{settings.BASE_URL}/project/{project_id}/"
+            f"api/v2/project/{project_id}/"
             f"workflow/{workflow_id}/wftask/{workflow_task_id}/"
         ),
         json=payload,
@@ -196,7 +191,7 @@ def delete_workflowtask(
 ) -> Interface:
 
     res = client.delete(
-        f"{settings.BASE_URL}/project/{project_id}/"
+        f"api/v2/project/{project_id}/"
         f"workflow/{workflow_id}/wftask/{workflow_task_id}/"
     )
     check_response(res, expected_status_code=204)
@@ -214,7 +209,7 @@ def patch_workflow(
     workflow_update = dict(name=new_name)
 
     res = client.patch(
-        f"{settings.BASE_URL}/project/{project_id}/workflow/{workflow_id}/",
+        f"api/v2/project/{project_id}/workflow/{workflow_id}/",
         json=workflow_update,
     )
     new_workflow = check_response(res, expected_status_code=200)
@@ -236,7 +231,7 @@ def workflow_import(
         workflow["name"] = workflow_name
 
     res = client.post(
-        f"{settings.BASE_URL}/project/{project_id}/workflow/import/",
+        f"api/v2/project/{project_id}/workflow/import/",
         json=workflow,
     )
     wf_read = check_response(res, expected_status_code=201)
@@ -258,10 +253,7 @@ def workflow_export(
     json_file: str,
 ) -> Interface:
     res = client.get(
-        (
-            f"{settings.BASE_URL}/project/{project_id}/"
-            f"workflow/{workflow_id}/export/"
-        ),
+        (f"api/v2/project/{project_id}/" f"workflow/{workflow_id}/export/"),
     )
     workflow = check_response(res, expected_status_code=200)
 

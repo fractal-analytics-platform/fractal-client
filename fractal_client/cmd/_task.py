@@ -3,7 +3,6 @@ import logging
 import sys
 
 from ..authclient import AuthClient
-from ..config import settings
 from ..interface import Interface
 from ..response import check_response
 from ._aux_task_caching import FractalCacheError
@@ -20,6 +19,7 @@ def post_task(
     client: AuthClient,
     *,
     name: str,
+    task_type: str | None = None,
     batch: bool = False,
     command_non_parallel: str | None = None,
     command_parallel: str | None = None,
@@ -32,6 +32,8 @@ def post_task(
     private: bool = False,
 ) -> Interface:
     task = dict(name=name)
+    if task_type:
+        task["type"] = task_type
     if command_non_parallel:
         task["command_non_parallel"] = command_non_parallel
     if command_parallel:
@@ -54,7 +56,7 @@ def post_task(
         task["args_schema_version"] = args_schema_version
     is_private = "?private=true" if private else ""
 
-    res = client.post(f"{settings.BASE_URL}/task/{is_private}", json=task)
+    res = client.post(f"api/v2/task/{is_private}", json=task)
     new_task = check_response(res, expected_status_code=201)
 
     if batch:
@@ -102,6 +104,6 @@ def patch_task(
         with open(output_types) as f:
             task_update["output_types"] = json.load(f)
 
-    res = client.patch(f"{settings.BASE_URL}/task/{id}/", json=task_update)
+    res = client.patch(f"api/v2/task/{id}/", json=task_update)
     new_task = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=new_task)

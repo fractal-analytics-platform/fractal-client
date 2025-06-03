@@ -13,9 +13,8 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 import logging
-from sys import argv
+import sys
 
-from httpx import Client
 from httpx import ConnectError
 
 from . import cmd
@@ -26,45 +25,44 @@ from .interface import Interface
 from .parser import parser_main
 
 
-class MissingCredentialsError(RuntimeError):
-    pass
-
-
-def _check_credentials(
-    *, username: str | None, password: str | None
-) -> tuple[str, str]:
+def _verify_authentication_branch(
+    *,
+    username: str | None,
+    password: str | None,
+    token_path: str | None,
+) -> None:
     """
-    Check that username and password are defined
+    Fail if credentials are not either username&password or token
 
     Arguments:
         username: Username
         password: Password
-
-    Raises:
-        MissingCredentialsError: If either `username` of `password` is `None`.
+        token_path: Path of token
     """
-    if not username:
-        message = (
-            "FRACTAL_USER variable not defined."
-            "\nPossible options: \n"
-            + "    1. Set --user argument;\n"
-            + "    2. Define FRACTAL_USER in a .fractal.env file;\n"
-            + "    3. Define FRACTAL_USER as an environment variable."
+    which_parameters_are_set = (
+        bool(username),
+        bool(password),
+        bool(token_path),
+    )
+    valid_cases = (
+        (True, True, False),
+        (False, False, True),
+    )
+    if which_parameters_are_set not in valid_cases:
+        msg = (
+            "Invalid authentication credentials. "
+            "You should either set username&password or the token path.\n\n"
+            "You can set these variables in multiple ways "
+            "(see `fractal --help`):\n"
+            "  1. Through command-line arguments.\n"
+            "  2. Through environment variables.\n"
+            "  3. Through environment variables in a `.fractal.env` file.\n"
         )
-        raise MissingCredentialsError(message)
-    if not password:
-        message = (
-            "FRACTAL_PASSWORD variable not defined."
-            "\nPossible options: \n"
-            + "    1. Set --password argument;\n"
-            + "    2. Define FRACTAL_PASSWORD in a .fractal.env file;\n"
-            + "    3. Define FRACTAL_PASSWORD as an environment variable."
-        )
-        raise MissingCredentialsError(message)
-    return (username, password)
+        raise ValueError(msg)
 
 
-def handle(cli_args: list[str] = argv):
+def handle(cli_args: list[str] = sys.argv) -> Interface:
+
     args = parser_main.parse_args(cli_args[1:])
 
     # Set logging level
@@ -86,27 +84,65 @@ def handle(cli_args: list[str] = argv):
     if args.cmd is not None:
         handler = getattr(cmd, args.cmd)
     else:
-        # no command provided. Print help and exit 1
         parser_main.print_help()
-        exit(1)
+        sys.exit(1)
 
     try:
         # Make a copy of vars(args), and remove cmd (which is not a relevant
         # argument for functions called with **kwargs)
         kwargs = vars(args).copy()
         kwargs.pop("cmd")
+        fractal_server = (
+            kwargs.pop("fractal_server") or settings.FRACTAL_SERVER
+        )
+        logging.debug(f"Fractal server URL: {fractal_server}")
+        if fractal_server is None:
+            return Interface(
+                data=(
+                    "Missing argument: You should set the "
+                    "fractal-server URL (see `fractal --help`)."
+                ),
+                retcode=1,
+            )
 
         if args.cmd == "version":
-            with Client() as client:
-                interface = handler(client, **kwargs)
+            interface = handler(fractal_server, **kwargs)
         else:
-            # Extract (and remove) username/password for AuthClient from kwargs
+            # Extract (and remove) credentials-related variables from kwargs
             username = kwargs.pop("user") or settings.FRACTAL_USER
             password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
-            username, password = _check_credentials(
-                username=username, password=password
+            token_path = (
+                kwargs.pop("token_path") or settings.FRACTAL_TOKEN_PATH
             )
-            with AuthClient(username=username, password=password) as client:
+            try:
+                _verify_authentication_branch(
+                    username=username,
+                    password=password,
+                    token_path=token_path,
+                )
+            except ValueError as e:
+                return Interface(data=str(e), retcode=1)
+            # Read token from file
+            if token_path is not None:
+                try:
+                    with open(token_path) as f:
+                        token = f.read().strip("\n")
+                except Exception as e:
+                    msg = (
+                        f"Could not read token from {token_path=}.\n"
+                        f"Original error:\n{str(e)}"
+                    )
+                    return Interface(data=msg, retcode=1)
+
+            else:
+                token = None
+
+            with AuthClient(
+                fractal_server=fractal_server,
+                username=username,
+                password=password,
+                token=token,
+            ) as client:
                 interface = handler(client, **kwargs)
     except AuthenticationError as e:
         return Interface(retcode=1, data=e.args[0])
@@ -128,7 +164,7 @@ def handle(cli_args: list[str] = argv):
 def main():
     interface = handle()
     interface.show()
-    exit(interface.retcode)
+    sys.exit(interface.retcode)
 
 
 if __name__ == "__main__":

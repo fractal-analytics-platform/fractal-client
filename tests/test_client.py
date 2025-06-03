@@ -1,12 +1,15 @@
 import shlex
+from pathlib import Path
 
 import httpx
 import pytest
 from devtools import debug
 
 from fractal_client import __VERSION__
+from fractal_client.authclient import AuthClient
+from fractal_client.client import _verify_authentication_branch
 from fractal_client.client import handle
-from fractal_client.config import Settings
+from fractal_client.cmd import version
 
 
 def test_debug(invoke):
@@ -22,20 +25,15 @@ def test_version(invoke):
     assert iface.retcode == 0
 
 
-def test_version_connect_error(invoke, monkeypatch):
-
-    mock_settings = Settings()
-    mock_settings.FRACTAL_SERVER = "http://localhost:9999"
-    monkeypatch.setattr("fractal_client.cmd.settings", mock_settings)
-
-    iface = invoke("version")
+def test_version_connect_error():
+    iface = version("http://localhost:9999")
     debug(iface.data)
     assert f"version: {__VERSION__}" in iface.data
     assert "refused" in iface.data
     assert iface.retcode == 0
 
 
-def test_server():
+def test_server_is_up():
     """
     GIVEN a testserver
     WHEN it gets called
@@ -80,34 +78,6 @@ def test_bad_credentials(invoke):
     assert "BAD_CREDENTIALS" in res.data
 
 
-def test_missing_credentials(override_settings):
-    """
-    GIVEN an invocation with missing credentials
-    THEN the client raises a MissingCredentialsError
-    """
-
-    # Remove credentials from settings
-    override_settings(FRACTAL_USER=None, FRACTAL_PASSWORD=None)
-
-    res = handle(shlex.split("fractal user whoami"))
-    debug(res.data)
-    assert res.retcode == 1
-
-
-def test_missing_password(override_settings):
-    """
-    GIVEN an invocation with missing password
-    THEN the client raises a MissingCredentialsError
-    """
-    # Remove password from settings
-    override_settings(FRACTAL_USER="some_user", FRACTAL_PASSWORD=None)
-
-    res = handle(shlex.split("fractal user whoami"))
-    debug(res.data)
-    assert res.retcode == 1
-    assert "FRACTAL_PASSWORD variable not defined" in res.data
-
-
 def test_connecterror(override_settings):
     override_settings(
         FRACTAL_USER="admin@fractal.xy",
@@ -137,3 +107,111 @@ def test_argparse_abbreviation(invoke_as_superuser):
     # Failed (abbreviation-based) invoke
     with pytest.raises(SystemExit):
         invoke_as_superuser("user register test2@mail.com secret2 --super")
+
+
+def test_unit_verify_authentication_branch():
+    # Valid cases
+    _verify_authentication_branch(
+        username="xxx",
+        password="xxx",
+        token_path=None,
+    )
+    _verify_authentication_branch(
+        username=None,
+        password=None,
+        token_path="xxx",
+    )
+
+    # Invalid cases
+    for username, password, token_path in [
+        (None, None, None),
+        ("xx", None, None),
+        (None, "xx", None),
+        ("xx", "xx", "xx"),
+        ("xx", None, "xx"),
+        (None, "xx", "xx"),
+    ]:
+        with pytest.raises(
+            ValueError,
+            match="Invalid authentication credentials",
+        ):
+            _verify_authentication_branch(
+                username=username,
+                password=password,
+                token_path=token_path,
+            )
+
+
+def test_invalid_credentials(monkeypatch):
+    import fractal_client.client
+
+    monkeypatch.setattr(
+        fractal_client.client.settings, "FRACTAL_USER", "some-user"
+    )
+    monkeypatch.setattr(
+        fractal_client.client.settings, "FRACTAL_PASSWORD", None
+    )
+    interface = handle(shlex.split("fractal user whoami"))
+    assert "Invalid authentication credentials" in interface.data
+    assert interface.retcode == 1
+
+
+def test_invalid_token_path():
+    cmd = "fractal --token-path missingfile user whoami"
+    interface = handle(shlex.split(cmd))
+    interface.show()
+    assert interface.retcode == 1
+
+
+def test_valid_token_path(
+    tmp_path: Path,
+    monkeypatch,
+    tester,
+):
+    # Get valid token
+    with AuthClient(
+        fractal_server="http://localhost:8765",
+        username=tester["email"],
+        password=tester["password"],
+        token=None,
+    ) as client:
+        token_data = client.token
+        debug(token_data)
+    token_path = (tmp_path / "token").as_posix()
+
+    import fractal_client.client
+
+    monkeypatch.setattr(
+        fractal_client.client.settings,
+        "FRACTAL_SERVER",
+        "http://localhost:8765",
+    )
+
+    # Use valid token
+    with open(token_path, "w") as f:
+        f.write(token_data)
+    cmd = f"fractal --token-path {token_path} user whoami"
+    interface = handle(shlex.split(cmd))
+    assert interface.data["email"] == tester["email"]
+    assert interface.retcode == 0
+
+    # Use valid token, with newlines
+    with open(token_path, "w") as f:
+        f.write(f"\n\n{token_data}\n\n\n")
+    cmd = f"fractal --token-path {token_path} user whoami"
+    interface = handle(shlex.split(cmd))
+    assert interface.data["email"] == tester["email"]
+    assert interface.retcode == 0
+
+
+def test_missing_fractal_server(monkeypatch):
+    import fractal_client.client
+
+    monkeypatch.setattr(
+        fractal_client.client.settings,
+        "FRACTAL_SERVER",
+        None,
+    )
+    interface = handle(shlex.split("fractal user whoami"))
+    assert "You should set the fractal-server URL" in interface.data
+    assert interface.retcode == 1

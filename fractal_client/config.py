@@ -24,17 +24,12 @@ class Settings:
 
         self.FRACTAL_USER: str | None = getenv("FRACTAL_USER")
         self.FRACTAL_PASSWORD: str | None = getenv("FRACTAL_PASSWORD")
+        self.FRACTAL_TOKEN_PATH: str | None = getenv("FRACTAL_TOKEN")
 
-        self.FRACTAL_SERVER: str = getenv(
-            "FRACTAL_SERVER", "http://localhost:8000"
-        )
+        self.FRACTAL_SERVER: str = getenv("FRACTAL_SERVER")
         self.FRACTAL_CACHE_PATH: str = getenv(
             "FRACTAL_CACHE_PATH", str(Path.home() / ".cache/fractal")
         )
-
-    @property
-    def BASE_URL(self) -> str:
-        return f"{self.FRACTAL_SERVER}/api/v2"
 
 
 settings = Settings()
