@@ -42,7 +42,7 @@ packages = [
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-devtools = "^0.12.0"
+devtools = "0.12.2"
 pre-commit = ">=3.0.0,<4.0.0"
 pytest = ">=8.4.0,<8.5.0"
 pytest-randomly = "3.16.0"
