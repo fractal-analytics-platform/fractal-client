@@ -4,7 +4,7 @@
 
 * Dependencies:
     * Add support for Python 3.13 (\#814).
-    * Bump documentation dependencies (\#816).
+    * Bump `docs` and `dev` dependencies (\#816).
 
 # 2.9.1
 
