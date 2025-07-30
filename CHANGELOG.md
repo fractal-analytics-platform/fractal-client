@@ -5,6 +5,9 @@
 * Dependencies:
     * Add support for Python 3.13 (\#814).
     * Bump `docs` and `dev` dependencies (\#816).
+* Testing:
+    * Use ubuntu-24 for GitHub CI (\#816).
+
 
 # 2.9.1
 
