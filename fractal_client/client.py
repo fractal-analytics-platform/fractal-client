@@ -165,7 +165,3 @@ def main():
     interface = handle()
     interface.show()
     sys.exit(interface.retcode)
-
-
-if __name__ == "__main__":
-    main()

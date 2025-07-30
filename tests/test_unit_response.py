@@ -43,3 +43,15 @@ def test_check_response(caplog):
     assert "type: value_error" in caplog.records[-2].getMessage()
     assert "loc: ['body', 'cache_dir']" in caplog.records[-2].getMessage()
     assert "Terminating" in caplog.records[-1].getMessage()
+
+    # Test accepted status codes
+    RESPONSE_BODY = {"some": "response"}
+    response = Response(
+        status_code=123,
+        json=RESPONSE_BODY,
+        request=Request("GET", "http://example.org", json={"some": "request"}),
+    )
+    out = check_response(response, expected_status_code=123)
+    assert out == RESPONSE_BODY
+    out = check_response(response, expected_status_code=[123])
+    assert out == RESPONSE_BODY
