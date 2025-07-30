@@ -7,6 +7,7 @@
     * Bump `docs` and `dev` dependencies (\#816).
 * Testing:
     * Use ubuntu-24 for GitHub CI (\#816).
+    * Bump `poetry` and default Python versions in GitHub actions (\#816).
 
 
 # 2.9.1
