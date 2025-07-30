@@ -10,7 +10,7 @@ authors = [
 ]
 readme = "README.md"
 license = { text = "BSD-3-Clause" }
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "python-dotenv >=1.1.0,<1.2.0",
     "httpx >= 0.28.0, <0.29.0",
