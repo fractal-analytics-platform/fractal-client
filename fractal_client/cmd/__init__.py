@@ -138,7 +138,8 @@ def task(
             "package_version",
             "python_version",
             "package_extras",
-            "pinned_dependency",
+            "pre_pinned_dependency",
+            "post_pinned_dependency",
             "private",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)

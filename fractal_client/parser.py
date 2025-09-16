@@ -237,13 +237,23 @@ task_collect_parser.add_argument(
     ),
 )
 task_collect_parser.add_argument(
-    "--pinned-dependency",
+    "--pre-pinned-dependency",
     action="append",
     help=(
-        "Package/version pair representing a pinned-version dependency, in "
-        "the form `collect fractal-tasks-core --pinned-dependency "
-        "pydantic=1.10.0`. Include `--pinned-dependency` multiple times to "
-        "pin several packages to specific versions."
+        "Package/version pair representing a pre-pinned-version dependency, "
+        "in the form `collect fractal-tasks-core --pre-pinned-dependency "
+        "pydantic=1.10.0`. Include `--pre-pinned-dependency` multiple times "
+        "to pin several packages to specific versions."
+    ),
+)
+task_collect_parser.add_argument(
+    "--post-pinned-dependency",
+    action="append",
+    help=(
+        "Package/version pair representing a post-pinned-version dependency, "
+        "in the form `collect fractal-tasks-core --post-pinned-dependency "
+        "pydantic=1.10.0`. Include `--post-pinned-dependency` multiple times "
+        "to pin several packages to specific versions."
     ),
 )
 task_collect_parser.add_argument(

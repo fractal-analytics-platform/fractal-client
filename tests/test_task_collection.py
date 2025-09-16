@@ -28,7 +28,8 @@ def test_task_collection_command(invoke, caplog):
             f"--package-version {PACKAGE_VERSION} "
             f"--python-version {PYTHON_VERSION} "
             f"--package-extras {PACKAGE_EXTRAS} "
-            "--pinned-dependency pydantic=1.10.0"
+            "--pre-pinned-dependency pydantic=1.10.0"
+            "--post-pinned-dependency pydantic=1.10.0"
         )
     debug(caplog.text)
     assert "Server returned 422" in caplog.text
@@ -37,11 +38,13 @@ def test_task_collection_command(invoke, caplog):
 
 def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     """
-    Test the case where `pinned_package_versions` has the wrong format.
+    Test the case where `pre_pinned_package_versions` has the wrong format.
     """
     PACKAGE = "devtools"
     with pytest.raises(SystemExit):
-        invoke(f"task collect {PACKAGE} --pinned-dependency invalid-string")
+        invoke(
+            f"task collect {PACKAGE} --pre-pinned-dependency invalid-string"
+        )
     # Check that payload was prepared correctly
     error_line = next(
         record.message
