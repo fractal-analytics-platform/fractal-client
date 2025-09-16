@@ -532,7 +532,6 @@ def test_workflow_import(
     testdata_path,
     new_name,
 ):
-
     res = invoke(
         "task new --command-parallel pwd --command-non-parallel pwd dummy"
     )
@@ -598,7 +597,6 @@ def test_workflow_export(
     task_factory,
     new_name,
 ):
-
     res = invoke(f"project new {new_name()}")
     assert res.retcode == 0
     project_id = res.data["id"]

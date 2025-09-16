@@ -30,7 +30,6 @@ def post_workflow(
 def get_workflow_list(
     client: AuthClient, *, project_id: int, batch: bool = False
 ) -> Interface:
-
     res = client.get(f"api/v2/project/{project_id}/workflow/")
     workflow_list = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=workflow_list)
@@ -68,7 +67,6 @@ def post_workflowtask(
     batch: bool = False,
     order: int | None = None,
 ) -> Interface:
-
     if task_id:
         if task_version:
             logging.error(
@@ -143,7 +141,6 @@ def patch_workflowtask(
     meta_non_parallel: str | None = None,
     meta_parallel: str | None = None,
 ) -> Interface:
-
     payload = {}
     if type_filters is not None:
         with Path(type_filters).open("r") as f:
@@ -189,7 +186,6 @@ def delete_workflowtask(
     workflow_id: int,
     workflow_task_id: int,
 ) -> Interface:
-
     res = client.delete(
         f"api/v2/project/{project_id}/"
         f"workflow/{workflow_id}/wftask/{workflow_task_id}/"
@@ -205,7 +201,6 @@ def patch_workflow(
     workflow_id: int,
     new_name: str,
 ) -> Interface:
-
     workflow_update = dict(name=new_name)
 
     res = client.patch(

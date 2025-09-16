@@ -18,7 +18,6 @@ def test_task_new(
     new_name,
     user_factory,
 ):
-
     # create a new task with just positional required args
     args_path = str(tmp_path / "args.json")
     args = {"image_dir": "/asdasd"}
@@ -99,7 +98,6 @@ def test_task_edit(
     tmp_path,
     new_name,
 ):
-
     args_path = str(tmp_path / "args.json")
     args = {"image_dir": "/asdasd"}
     with open(args_path, "w") as f:

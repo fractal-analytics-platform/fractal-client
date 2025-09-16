@@ -21,7 +21,6 @@ def post_project(
 
 
 def get_project_list(client: AuthClient) -> Interface:
-
     res = client.get("api/v2/project/")
     projects = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=projects)
@@ -34,7 +33,6 @@ def get_project(client: AuthClient, *, project_id: int) -> Interface:
 
 
 def delete_project(client: AuthClient, *, project_id: int) -> Interface:
-
     res = client.delete(f"api/v2/project/{project_id}/")
     check_response(res, expected_status_code=204)
     return Interface(retcode=0, data="")

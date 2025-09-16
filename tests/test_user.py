@@ -42,7 +42,6 @@ def test_register_as_superuser(
 
 
 def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
-
     EMAIL_USER = f"{new_name()}@example.org"
 
     with pytest.raises(SystemExit, match="File does not exist"):

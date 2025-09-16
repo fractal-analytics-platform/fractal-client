@@ -62,7 +62,6 @@ def _verify_authentication_branch(
 
 
 def handle(cli_args: list[str] = sys.argv) -> Interface:
-
     args = parser_main.parse_args(cli_args[1:])
 
     # Set logging level

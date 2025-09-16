@@ -38,7 +38,7 @@ SORTED_VERSIONS = [
 
 
 def test_version_parsing():
-    for (v_string, major, minor, micro, is_prerelease) in VERSIONS:
+    for v_string, major, minor, micro, is_prerelease in VERSIONS:
         v = version.parse(v_string)
         debug(v_string, v.major, v.minor, v.micro, v.is_prerelease, v.pre)
         if major is not None:

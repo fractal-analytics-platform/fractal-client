@@ -31,7 +31,6 @@ def get_job(
 def get_job_list(
     client: AuthClient, *, project_id: int, batch: bool = False
 ) -> Interface:
-
     res = client.get(f"api/v2/project/{project_id}/job/")
     jobs = check_response(res, expected_status_code=200)
 
@@ -49,7 +48,6 @@ def get_job_logs(
     job_id: int,
     output_folder: str,
 ) -> Interface:
-
     # Check that output_folder does not already exist
     if Path(output_folder).exists():
         return Interface(
@@ -131,7 +129,6 @@ def job_submit(
     type_filters_json: str | None = None,
     batch: bool = False,
 ) -> Interface:
-
     job_submit = dict()
     # Prepare JobV2 object, without None attributes
     if worker_init is not None:

@@ -1,26 +1,26 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
     - id: check-yaml
     - id: end-of-file-fixer
     - id: trailing-whitespace
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.1.0
+    rev: v3.15.0
     hooks:
     - id: reorder-python-imports
 -   repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 23.12.1
     hooks:
     - id: black
       args: [--line-length=79]
 -   repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
+    rev: 7.3.0
     hooks:
     - id: flake8
       args: ["--exclude", "examples/*"]
 -   repo: https://github.com/PyCQA/bandit
-    rev: '1.7.4'
+    rev: '1.8.6'
     hooks:
     - id: bandit
       args: ["--exclude", "tests/*"]

@@ -76,7 +76,6 @@ def patch_task(
     input_types: str | None = None,
     output_types: str | None = None,
 ) -> Interface:
-
     if id:
         if version:
             logging.error(

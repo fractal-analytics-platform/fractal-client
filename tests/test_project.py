@@ -10,7 +10,6 @@ def test_project_create(invoke, new_name):
 
 
 def test_project_delete(invoke, new_name):
-
     # Create project
     res = invoke(f"project new {new_name()}")
     res.show()

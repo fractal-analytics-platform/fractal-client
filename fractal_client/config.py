@@ -21,7 +21,6 @@ load_dotenv(".fractal.env")
 
 class Settings:
     def __init__(self):
-
         self.FRACTAL_USER: str | None = getenv("FRACTAL_USER")
         self.FRACTAL_PASSWORD: str | None = getenv("FRACTAL_PASSWORD")
         self.FRACTAL_TOKEN_PATH: str | None = getenv("FRACTAL_TOKEN")

@@ -22,7 +22,6 @@ def test_group_commands_auth(invoke, caplog):
 def test_group_commands(
     user_factory, invoke_as_superuser, new_name, superuser
 ):
-
     # get default group id and superuser id
     res = invoke_as_superuser("group list --user-ids")
     assert res.retcode == 0

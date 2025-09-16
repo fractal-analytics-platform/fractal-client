@@ -47,7 +47,6 @@ def tester():
 @pytest.fixture
 def invoke(tester):
     def __invoke(args: str):
-
         new_args = (
             f"--user {tester['email']} --password {tester['password']} {args}"
         )
@@ -68,7 +67,6 @@ def invoke_as_superuser():
 @pytest.fixture
 def invoke_as_custom_user():
     def __invoke(args: str, email: str, password: str):
-
         new_args = f"--user {email} --password {password} {args}"
         return handle(_clisplit(new_args))
 

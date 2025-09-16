@@ -62,7 +62,6 @@ def get_dataset(
 def delete_dataset(
     client: AuthClient, *, project_id: int, dataset_id: int
 ) -> Interface:
-
     res = client.delete(f"api/v2/project/{project_id}/dataset/{dataset_id}/")
     check_response(res, expected_status_code=204)
     return Interface(retcode=0, data="")
