@@ -2,10 +2,34 @@ import json
 import logging
 import sys
 from pathlib import Path
+from typing import Literal
 
 from fractal_client.authclient import AuthClient
 from fractal_client.interface import Interface
 from fractal_client.response import check_response
+
+
+def _process_pinned_dependencies(
+    pinned_dependencies: list[str],
+    label: Literal["pre", "post"],
+) -> dict[str, str]:
+    """
+    Transform `["a=1", "b=2"]` into `{"a": "1", "b": "2"}`.
+    """
+    for pin in pinned_dependencies:
+        if len(pin.split("=")) != 2:
+            logging.error(
+                f"Invalid pin: {pin}.\nPins must be written as "
+                f"'--{label}-pinned-dependency PACKAGE_NAME=PACKAGE_VERSION'"
+            )
+            sys.exit(1)
+
+    return json.dumps(
+        {
+            _name: _version
+            for _name, _version in (p.split("=") for p in pinned_dependencies)
+        }
+    )
 
 
 def task_collect_pip(
@@ -15,7 +39,8 @@ def task_collect_pip(
     package_version: str | None = None,
     python_version: str | None = None,
     package_extras: str | None = None,
-    pinned_dependency: list[str] | None = None,
+    pre_pinned_dependency: list[str] | None = None,
+    post_pinned_dependency: list[str] | None = None,
     private: bool = False,
     batch: bool = False,
 ) -> Interface:
@@ -27,21 +52,19 @@ def task_collect_pip(
         task_collect["python_version"] = python_version
     if package_extras:
         task_collect["package_extras"] = package_extras
-    if pinned_dependency:
-        for pin in pinned_dependency:
-            if len(pin.split("=")) != 2:
-                logging.error(
-                    f"Invalid pin: {pin}.\nPins must be written as "
-                    "'--pinned-dependency PACKAGE_NAME=PACKAGE_VERSION'"
-                )
-                sys.exit(1)
-        task_collect["pinned_package_versions"] = json.dumps(
-            {
-                _name: _version
-                for _name, _version in (
-                    p.split("=") for p in pinned_dependency
-                )
-            }
+    if pre_pinned_dependency:
+        task_collect[
+            "pre_pinned_package_versions"
+        ] = _process_pinned_dependencies(
+            pre_pinned_dependency,
+            "pre",
+        )
+    if post_pinned_dependency:
+        task_collect[
+            "post_pinned_package_versions"
+        ] = _process_pinned_dependencies(
+            post_pinned_dependency,
+            "post",
         )
 
     is_private = "?private=true" if private else ""

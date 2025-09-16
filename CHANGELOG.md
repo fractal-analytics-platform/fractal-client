@@ -1,7 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.9.2 (Unreleased)
+# 2.10.0
 
+This version is aligned with [fractal-server 2.15.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2150).
+* CLI:
+    * Introduce pre/post pinned packages (\#826).
 * Dependencies:
     * Add support for Python 3.13 (\#814).
     * Bump `docs` and `dev` dependencies (\#816).
