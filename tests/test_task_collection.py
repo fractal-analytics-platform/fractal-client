@@ -28,7 +28,7 @@ def test_task_collection_command(invoke, caplog):
             f"--package-version {PACKAGE_VERSION} "
             f"--python-version {PYTHON_VERSION} "
             f"--package-extras {PACKAGE_EXTRAS} "
-            "--pre-pinned-dependency pydantic=1.10.0"
+            "--pre-pinned-dependency pydantic=1.10.0 "
             "--post-pinned-dependency pydantic=1.10.0"
         )
     debug(caplog.text)
