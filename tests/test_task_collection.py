@@ -117,7 +117,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
 
     # Check task list
     res = invoke_as_custom_user("task list", **new_user)
-    assert len(res.data) == initial_task_list + 15
+    assert len(res.data) == initial_task_list + 16
 
     # Second collection
     with pytest.raises(SystemExit):
