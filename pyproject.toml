@@ -60,7 +60,7 @@ mkdocs-material="9.6.15"
 mkdocs-gen-files="0.5.0"
 mkdocs-literate-nav="0.6.2"
 mkdocs-section-index="0.3.10"
-mkdocs-include-markdown-plugin = { version = "7.1.6", python = ">=3.11,<3.14" }
+mkdocs-include-markdown-plugin = { version = "7.1.8", python = ">=3.11,<3.14" }
 
 
 [tool.bumpver]
