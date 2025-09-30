@@ -38,30 +38,31 @@ packages = [
     {include="fractal_client"}
 ]
 
+[dependency-groups]
+dev = [
+    "devtools==0.12.2",
+    "pre-commit>=3.0.0,<4.0.0",
+    "pytest>=8.4.0,<8.5.0",
+    "pytest-randomly==3.16.0",
+    "bumpver>=2022.1118,<2023.0",
+    "coverage[toml]>=7.10.0,<7.11.0",
+    "fractal-server@git+https://github.com/fractal-analytics-platform/fractal-server.git@main",
+]
+docs = [
+    "mkdocs==1.6.1",
+    "mkdocstrings[python]==0.30.0",
+    "mkdocs-material==9.6.15",
+    "mkdocs-gen-files==0.5.0",
+    "mkdocs-literate-nav==0.6.2",
+    "mkdocs-section-index==0.3.10",
+    "mkdocs-include-markdown-plugin==7.1.8",
+]
+
 [tool.poetry.group.dev]
 optional = true
 
-[tool.poetry.group.dev.dependencies]
-devtools = "0.12.2"
-pre-commit = ">=3.0.0,<4.0.0"
-pytest = ">=8.4.0,<8.5.0"
-pytest-randomly = "3.16.0"
-bumpver = "^2022.1118"
-coverage = {extras = ["toml"], version = ">=7.10.0,<7.11.0"}
-fractal-server = { git = "https://github.com/fractal-analytics-platform/fractal-server.git", branch = "main" }
-
 [tool.poetry.group.docs]
 optional = true
-
-[tool.poetry.group.docs.dependencies]
-mkdocs="1.6.1"
-mkdocstrings = { extras = ["python"], version = "0.30.0" }
-mkdocs-material="9.6.15"
-mkdocs-gen-files="0.5.0"
-mkdocs-literate-nav="0.6.2"
-mkdocs-section-index="0.3.10"
-mkdocs-include-markdown-plugin = { version = "7.1.8", python = ">=3.11,<3.14" }
-
 
 [tool.bumpver]
 current_version = "2.10.0"
