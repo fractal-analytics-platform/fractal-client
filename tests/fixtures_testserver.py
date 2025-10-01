@@ -17,16 +17,6 @@ logger.setLevel(logging.DEBUG)
 PORT = 8765
 
 
-@pytest.fixture
-def superuser(invoke_as_superuser):
-    return invoke_as_superuser("user whoami").data
-
-
-@pytest.fixture(scope="session")
-def tester():
-    return dict(email="client_tester@example.org", password="pytest")
-
-
 def _run_command(cmd: str) -> str:
     logging.warning(f"Now running {cmd=}")
     res = subprocess.run(
