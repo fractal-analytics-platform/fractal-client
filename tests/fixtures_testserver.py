@@ -67,23 +67,20 @@ def testserver(tester, tmpdir_factory, request):
         )
     _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
-    _run_command(".venv/bin/fractalctl set-db")
+    _run_command("uv run fractalctl set-db")
 
-    LOG_DIR = Path(
-        os.environ.get(
-            "GHA_FRACTAL_SERVER_LOG",
-            tmpdir_factory.mktemp("LOGS"),
-        ),
+    LOG_DIR = os.environ.get(
+        "GHA_FRACTAL_SERVER_LOG",
+        tmpdir_factory.mktemp("LOGS"),
     )
-    path_out = LOG_DIR / "server_out"
-    path_err = LOG_DIR / "server_err"
+
+    path_out = Path(LOG_DIR, "server_out")
+    path_err = Path(LOG_DIR, "server_err")
     f_out = path_out.open("w")
     f_err = path_err.open("w")
 
     server_process = subprocess.Popen(
-        shlex.split(
-            f".venv/bin/fractalctl start --port {FRACTAL_SERVER_PORT}"
-        ),
+        shlex.split(f"uv run fractalctl start --port {FRACTAL_SERVER_PORT}"),
         stdout=f_out,
         stderr=f_err,
     )
@@ -97,6 +94,8 @@ def testserver(tester, tmpdir_factory, request):
             if "refused" not in res.data:
                 break
             else:
+                f_out.close()
+                f_err.close()
                 raise ConnectError("fractal-server not ready")
         except ConnectError:
             logger.debug("Fractal server not ready, wait one more second.")
