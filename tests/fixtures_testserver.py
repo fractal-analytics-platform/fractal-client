@@ -55,7 +55,10 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_VIEWER_AUTHORIZATION_SCHEME=viewer-paths\n"
         )
     _run_command(
-        f"dropdb --username=postgres --host localhost --if-exists {DB_NAME} --force"
+        (
+            "dropdb --username=postgres --host localhost "
+            f"--if-exists {DB_NAME} --force"
+        )
     )
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command(".venv/bin/fractalctl set-db")
