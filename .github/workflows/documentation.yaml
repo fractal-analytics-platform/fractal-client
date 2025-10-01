@@ -28,7 +28,7 @@ jobs:
           enable-cache: true
 
       - name: Compile docs requirements
-        run: uv pip compile --group docs --output-file docs-requirements.txt
+        run: uv pip compile pyproject.toml --group docs --output-file docs-requirements.txt
 
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
