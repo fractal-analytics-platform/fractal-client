@@ -6,16 +6,14 @@ import time
 from pathlib import Path
 
 import pytest
-from devtools import debug
 from fractal_client.client import handle
 from httpx import ConnectError
 
 DB_NAME = "pytest-fractal-client"
+FRACTAL_SERVER_PORT = 8765
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
-
-PORT = 8765
 
 
 def _run_command(cmd: str) -> str:
@@ -32,6 +30,15 @@ def _run_command(cmd: str) -> str:
         raise RuntimeError(res.stderr)
     else:
         return res.stdout
+
+
+def _drop_db():
+    _run_command(
+        (
+            "dropdb --username=postgres --host localhost "
+            f"--if-exists {DB_NAME} --force"
+        )
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -54,12 +61,7 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_LOGGING_LEVEL=0\n"
             "FRACTAL_VIEWER_AUTHORIZATION_SCHEME=viewer-paths\n"
         )
-    _run_command(
-        (
-            "dropdb --username=postgres --host localhost "
-            f"--if-exists {DB_NAME} --force"
-        )
-    )
+    _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command(".venv/bin/fractalctl set-db")
 
@@ -75,7 +77,9 @@ def testserver(tester, tmpdir_factory, request):
     f_err = path_err.open("w")
 
     server_process = subprocess.Popen(
-        shlex.split(f".venv/bin/fractalctl start --port {PORT}"),
+        shlex.split(
+            f".venv/bin/fractalctl start --port {FRACTAL_SERVER_PORT}"
+        ),
         stdout=f_out,
         stderr=f_err,
     )
@@ -116,20 +120,18 @@ def testserver(tester, tmpdir_factory, request):
         )
     )
 
-    debug(server_process)
-    server_process.poll()
-    debug(server_process)
+    # Start cleanup
 
+    server_process.poll()
     server_process.terminate()
     server_process.kill()
     server_process.poll()
-    debug(server_process)
 
     f_out.close()
     f_err.close()
     env_file.unlink()
 
-    _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
+    _drop_db()
 
 
 @pytest.fixture
