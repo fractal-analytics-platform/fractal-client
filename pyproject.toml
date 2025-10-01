@@ -43,7 +43,7 @@ dev = [
     "pre-commit>=3.0.0,<4.0.0",
     "pytest>=8.4.0,<8.5.0",
     "pytest-randomly==3.16.0",
-    "bumpver>=2022.1118,<2023.0",
+    "bumpver>=2022.1118,<2025.0",
     "coverage[toml]>=7.10.0,<7.11.0",
     "fractal-server@git+https://github.com/fractal-analytics-platform/fractal-server.git@main",
 ]
