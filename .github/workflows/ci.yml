@@ -88,12 +88,7 @@ jobs:
       - name: Install dev dependencies
         run: uv sync --frozen --only-group dev
 
-      - name: Combine coverage
-        # Combines all the downloaded coverage artifacts in a single `.coverage` file,
-        # which will then be used by `py-cov-action/python-coverage-comment-action`.
-        # We added this step to replace the variable `MERGE_COVERAGE_FILES: true`
-        # in the next step, which had started to raise errors
-        # (https://github.com/fractal-analytics-platform/fractal-server/pull/1725).
+      - name: Combine coverage artifacts into a single `.coverage` file
         run: uv run coverage combine coverage-data-*
 
       - name: Add coverage comment to Pull Requests
