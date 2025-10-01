@@ -125,7 +125,9 @@ def testserver(tester, tmpdir_factory, request):
 
     server_process.terminate()
     server_process.kill()
-    _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
+    _run_command(
+        f"dropdb --username=postgres --host localhost {DB_NAME} --force"
+    )
     env_file.unlink()
     f_out.close()
     f_err.close()
