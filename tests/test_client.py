@@ -4,7 +4,6 @@ from pathlib import Path
 import httpx
 import pytest
 from devtools import debug
-
 from fractal_client import __VERSION__
 from fractal_client.authclient import AuthClient
 from fractal_client.client import _verify_authentication_branch

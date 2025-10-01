@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from devtools import debug
-
 from fractal_client.config import settings
 
 

@@ -6,9 +6,8 @@ import time
 from pathlib import Path
 
 import pytest
-from httpx import ConnectError
-
 from fractal_client.client import handle
+from httpx import ConnectError
 
 DB_NAME = "pytest-fractal-client"
 
