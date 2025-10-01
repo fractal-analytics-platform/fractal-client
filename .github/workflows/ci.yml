@@ -86,7 +86,7 @@ jobs:
         run: uv venv
 
       - name: Install dev dependencies
-        run: uv pip install --only-group dev
+        run: uv sync --frozen --only-group dev
 
       - name: Combine coverage
         # Combines all the downloaded coverage artifacts in a single `.coverage` file,

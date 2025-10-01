@@ -20,8 +20,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: "Install poetry"
-        run: pipx install poetry==2.2.1
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.22"
+          enable-cache: true
 
       - name: Build package
-        run: poetry build
+        run: uv build
