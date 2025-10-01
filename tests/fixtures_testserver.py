@@ -33,6 +33,10 @@ def _run_command(cmd: str) -> str:
 
 
 def _drop_db():
+    """
+    Note: `--force` helps in case the `fractal-server` process did not
+    terminate properly, thus leaving some open database connections.
+    """
     _run_command(
         (
             "dropdb --username=postgres --host localhost "
