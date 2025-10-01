@@ -53,6 +53,6 @@ jobs:
           version: "0.8.22"
           enable-cache: true
 
-      - run: uv sync --group docs
+      - run: uv sync --frozen --group docs
 
       - run: uv run mkdocs build --config-file mkdocs.yml --strict
