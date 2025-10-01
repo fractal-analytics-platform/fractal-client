@@ -66,6 +66,8 @@ jobs:
     needs: tests
     steps:
 
+      - uses: actions/checkout@v4
+
       - name: Download data
         uses: actions/download-artifact@v4
         with:
@@ -78,10 +80,11 @@ jobs:
           version: "0.8.22"
           enable-cache: true
 
-      - uses: actions/checkout@v4
+      - name: Create uv venv
+        run: uv venv
 
       - name: Install dev dependencies
-        run: uv pip install --group dev --system
+        run: uv pip install --group dev
 
       - name: Combine coverage
         # Combines all the downloaded coverage artifacts in a single `.coverage` file,
