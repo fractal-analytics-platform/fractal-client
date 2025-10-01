@@ -29,7 +29,7 @@ jobs:
 
       - run: uv sync --frozen --group docs --no-group dev
 
-      - run: uv run mkdocs gh-deploy --config-file mkdocs.yml --force --verbose
+      - run: uv run --frozen mkdocs gh-deploy --config-file mkdocs.yml --force --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -54,4 +54,4 @@ jobs:
 
       - run: uv sync --frozen --group docs
 
-      - run: uv run mkdocs build --config-file mkdocs.yml --strict
+      - run: uv run --frozen mkdocs build --config-file mkdocs.yml --strict

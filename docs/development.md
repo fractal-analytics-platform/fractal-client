@@ -41,10 +41,10 @@ Actual **release instructions**:
 
 1. Use one of the following
 ```
-uv run bumpver update --tag-num --tag-commit --commit --dry
-uv run bumpver update --patch --tag-commit --commit --dry
-uv run bumpver update --minor --tag-commit --commit --dry
-poetry run bumpver update --set-version X.Y.Z --tag-commit --commit --dry
+uv run --frozen bumpver update --tag-num --tag-commit --commit --dry
+uv run --frozen bumpver update --patch --tag-commit --commit --dry
+uv run --frozen bumpver update --minor --tag-commit --commit --dry
+uv run --frozen bumpver update --set-version X.Y.Z --tag-commit --commit --dry
 ```
 to test updating the version bump.
 

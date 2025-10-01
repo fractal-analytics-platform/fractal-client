@@ -46,7 +46,7 @@ jobs:
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           GHA_FRACTAL_SERVER_LOG: /tmp
-        run: uv run coverage run -m pytest
+        run: uv run --frozen coverage run -m pytest
 
       - name: Log server STDOUT if pytest failed
         if: failure()
@@ -86,7 +86,7 @@ jobs:
         run: uv sync --frozen --only-group dev
 
       - name: Combine coverage artifacts into a single `.coverage` file
-        run: uv run coverage combine coverage-data-*
+        run: uv run --frozen coverage combine coverage-data-*
 
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
