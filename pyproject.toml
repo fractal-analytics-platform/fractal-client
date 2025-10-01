@@ -9,7 +9,7 @@ authors = [
     { name="Jacopo Nespolo", email="jacopo.nespolo@exact-lab.it" },
 ]
 readme = "README.md"
-license = { text = "BSD-3-Clause" }
+license = "BSD-3-Clause"
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "python-dotenv >=1.1.0,<1.2.0",
@@ -29,14 +29,9 @@ documentation = "https://fractal-analytics-platform.github.io/fractal-client"
 changelog = "https://github.com/fractal-analytics-platform/fractal-client/blob/main/CHANGELOG.md"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=80.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [
-    {include="fractal_client"}
-]
 
 [dependency-groups]
 dev = [
