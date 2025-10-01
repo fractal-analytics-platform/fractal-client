@@ -1,5 +1,16 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.10.1
+
+This version concerns development tools (\#831).
+
+* Move `dev` and `docs` from poetry groups to standard dependency groups.
+* Move from `poetry-core` to `setuptools` as a build backend.
+* Move from `poetry` to `uv`.
+* Adopt trusted publisher for PyPI.
+* Move main package to `src/fractal_client`.
+
+
 # 2.10.0
 
 This version is aligned with [fractal-server 2.15.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2150).
