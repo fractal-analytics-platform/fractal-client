@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          persist-credentials: false
+          persist-credentials: true
 
       - uses: actions/setup-python@v5
         with:
@@ -27,7 +27,7 @@ jobs:
           version: "0.8.22"
           enable-cache: true
 
-      - run: uv sync --frozen --group docs
+      - run: uv sync --frozen --group docs --no-group dev
 
       - run: uv run mkdocs gh-deploy --config-file mkdocs.yml --verbose
         env:
