@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dev dependencies
-        run: uv pip install --group dev
+        run: uv pip install --group dev --system
 
       - name: Combine coverage
         # Combines all the downloaded coverage artifacts in a single `.coverage` file,
