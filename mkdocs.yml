@@ -54,7 +54,7 @@ nav:
   - Changelog: changelog.md
 
 watch:
-  - fractal_client
+  - src/fractal_client
 
 plugins:
   - search
