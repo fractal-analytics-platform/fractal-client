@@ -16,6 +16,7 @@ Drop
 # 2.10.0
 
 This version is aligned with [fractal-server 2.15.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2150).
+
 * CLI:
     * Introduce pre/post pinned packages (\#826).
 * Dependencies:
