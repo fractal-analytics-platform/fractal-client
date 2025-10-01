@@ -1,3 +1,4 @@
+from fractal_client import __VERSION__
 from httpx import Client
 from httpx import ConnectError
 
@@ -45,7 +46,6 @@ from ._workflow import post_workflow
 from ._workflow import post_workflowtask
 from ._workflow import workflow_export
 from ._workflow import workflow_import
-from fractal_client import __VERSION__
 
 
 class NoCommandError(ValueError):

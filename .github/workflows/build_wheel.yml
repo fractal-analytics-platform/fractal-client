@@ -11,17 +11,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
 
-      - name: "Set up Python"
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: "Install poetry"
-        run: pipx install poetry==2.1.3
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.22"
+          enable-cache: true
 
-      - name: Build package
-        run: poetry build
+      - run: uv build

@@ -161,14 +161,14 @@ def _search_in_task_list(
         if version is not None:
             raise FractalCacheError(
                 f"Multiple tasks with version {version} in the following "
-                f"task list:\n{formatted_matching_task_list}"
+                f"task list:\n{formatted_matching_task_list}\n"
                 "Please make your request more specific.\n"
             )
         else:  # i.e. version is None
             if any(task["version"] is None for task in matching_task_list):
                 raise FractalCacheError(
                     "Cannot determine the latest version in the following "
-                    f"task list:\n{formatted_matching_task_list}"
+                    f"task list:\n{formatted_matching_task_list}\n"
                     "Please make your request more specific.\n"
                 )
             available_versions = [
@@ -187,7 +187,7 @@ def _search_in_task_list(
                 raise FractalCacheError(
                     "Multiple tasks with latest version "
                     f"({max_version}) in the following task "
-                    f"list:\n{formatted_matching_task_list}"
+                    f"list:\n{formatted_matching_task_list}\n"
                     "Please make your request more specific.\n"
                 )
 

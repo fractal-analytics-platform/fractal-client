@@ -18,24 +18,22 @@ cd fractal-client
 
 ### Install package
 
-We use [poetry](https://python-poetry.org/docs) to manage the development environment and the dependencies. A simple way to install it is `pipx install poetry==2.1.3`, or you can look at the installation section [here](https://python-poetry.org/docs#installation).
+We use [uv](https://docs.astral.sh/uv/) to manage the development environment and the dependencies - see https://docs.astral.sh/uv/getting-started/installation/ for methods to install it.
 Running
 ```console
-poetry install [--with dev] [--with docs]
+$ uv venv
+$ uv sync --frozen [--group dev] [--group docs]
 ```
-will take care of installing all the dependencies in a separate environment, optionally installing also the dependencies for developement and to build the documentation.
+will create a new virtual environment in `./.venv` and install the main dependencies (and optionally the dev/docs groups).
 
 
 ## Build and release
-
-We also use `poetry` to build the package and publish it to PyPI.
 
 Preliminary check-list:
 
 * The `main` branch is checked out.
 * You reviewed dependencies, and the lock file is up to date with `pyproject.toml`.
-* The current HEAD of the `main` branch passes all the tests (note: make sure
-  that you are using `poetry run pytest`, and not simply `pytest`).
+* The current HEAD of the `main` branch passes all the tests (`uv run pytest`).
 * You updated the `CHANGELOG.md` file.
 * You updated `docs/versions.md` with the constraints for the new version.
 
@@ -43,9 +41,9 @@ Actual **release instructions**:
 
 1. Use one of the following
 ```
-poetry run bumpver update --tag-num --tag-commit --commit --dry
-poetry run bumpver update --patch --tag-commit --commit --dry
-poetry run bumpver update --minor --tag-commit --commit --dry
+uv run bumpver update --tag-num --tag-commit --commit --dry
+uv run bumpver update --patch --tag-commit --commit --dry
+uv run bumpver update --minor --tag-commit --commit --dry
 poetry run bumpver update --set-version X.Y.Z --tag-commit --commit --dry
 ```
 to test updating the version bump.
@@ -63,12 +61,12 @@ Unit and integration testing of Fractal Server uses the
 If you installed the development dependencies, you may run
 the test suite by invoking
 ```
-poetry run pytest
+uv run pytest
 ```
 from the main directory of the `fractal-client` repository. It is sometimes
 useful to specify additional arguments, e.g.
 ```
-poetry run pytest -s -vvv --log-cli-level info --full-trace
+uv run pytest -s -vvv --log-cli-level info --full-trace
 ```
 
 Tests are also run as part of [GitHub Actions Continuous
@@ -84,6 +82,6 @@ our needs.
 
 To build the documentation locally, setup a development python environment (e.g. with `poetry install --with docs`) and then run one of these commands:
 ```
-poetry run mkdocs serve --config-file mkdocs.yml  # serves the docs at http://127.0.0.1:8000
-poetry run mkdocs build --config-file mkdocs.yml  # creates a build in the `site` folder
+uv run mkdocs serve --config-file mkdocs.yml  # serves the docs at http://127.0.0.1:8000
+uv run mkdocs build --config-file mkdocs.yml  # creates a build in the `site` folder
 ```

@@ -1,5 +1,4 @@
 import pytest
-
 from fractal_client.cmd import dataset
 from fractal_client.cmd import group
 from fractal_client.cmd import job

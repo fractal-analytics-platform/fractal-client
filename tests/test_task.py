@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 from devtools import debug
-
 from fractal_client.cmd._aux_task_caching import TASKS_CACHE_FILENAME
 from fractal_client.config import settings
 

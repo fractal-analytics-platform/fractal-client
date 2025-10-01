@@ -6,26 +6,15 @@ import time
 from pathlib import Path
 
 import pytest
+from fractal_client.client import handle
+from fractal_client.interface import Interface
 from httpx import ConnectError
 
-from fractal_client.client import handle
-
 DB_NAME = "pytest-fractal-client"
+FRACTAL_SERVER_PORT = 8765
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
-
-PORT = 8765
-
-
-@pytest.fixture
-def superuser(invoke_as_superuser):
-    return invoke_as_superuser("user whoami").data
-
-
-@pytest.fixture(scope="session")
-def tester():
-    return dict(email="client_tester@example.org", password="pytest")
 
 
 def _run_command(cmd: str) -> str:
@@ -42,6 +31,23 @@ def _run_command(cmd: str) -> str:
         raise RuntimeError(res.stderr)
     else:
         return res.stdout
+
+
+def _drop_db():
+    """
+    Note: `--force` helps in case the `fractal-server` process did not
+    terminate properly, thus leaving some open database connections.
+    """
+    _run_command(
+        (
+            "dropdb --username=postgres --host localhost "
+            f"--if-exists {DB_NAME} --force"
+        )
+    )
+
+
+def _split_and_handle(cli_string: str) -> Interface:
+    return handle(shlex.split(cli_string))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -64,25 +70,22 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_LOGGING_LEVEL=0\n"
             "FRACTAL_VIEWER_AUTHORIZATION_SCHEME=viewer-paths\n"
         )
-    _run_command(
-        f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"
-    )
+    _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
-    _run_command("poetry run fractalctl set-db")
+    _run_command("uv run fractalctl set-db")
 
-    LOG_DIR = Path(
-        os.environ.get(
-            "GHA_FRACTAL_SERVER_LOG",
-            tmpdir_factory.mktemp("LOGS"),
-        ),
+    LOG_DIR = os.environ.get(
+        "GHA_FRACTAL_SERVER_LOG",
+        tmpdir_factory.mktemp("LOGS"),
     )
-    path_out = LOG_DIR / "server_out"
-    path_err = LOG_DIR / "server_err"
+
+    path_out = Path(LOG_DIR, "server_out")
+    path_err = Path(LOG_DIR, "server_err")
     f_out = path_out.open("w")
     f_err = path_err.open("w")
 
     server_process = subprocess.Popen(
-        shlex.split(f"poetry run fractalctl start --port {PORT}"),
+        shlex.split(f"uv run fractalctl start --port {FRACTAL_SERVER_PORT}"),
         stdout=f_out,
         stderr=f_err,
     )
@@ -92,10 +95,12 @@ def testserver(tester, tmpdir_factory, request):
     t_start = time.perf_counter()
     while True:
         try:
-            res = handle(shlex.split("fractal version"))
+            res = _split_and_handle("fractal version")
             if "refused" not in res.data:
                 break
             else:
+                f_out.close()
+                f_err.close()
                 raise ConnectError("fractal-server not ready")
         except ConnectError:
             logger.debug("Fractal server not ready, wait one more second.")
@@ -106,11 +111,9 @@ def testserver(tester, tmpdir_factory, request):
                 )
             time.sleep(0.1)
 
-    handle(
-        shlex.split(
-            "fractal --user admin@fractal.xy --password 1234 "
-            f"user register {tester['email']} {tester['password']}"
-        )
+    _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 "
+        f"user register {tester['email']} {tester['password']}"
     )
 
     yield
@@ -123,12 +126,18 @@ def testserver(tester, tmpdir_factory, request):
         )
     )
 
+    # Start cleanup
+
+    server_process.poll()
     server_process.terminate()
     server_process.kill()
-    _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
-    env_file.unlink()
+    server_process.poll()
+
     f_out.close()
     f_err.close()
+    env_file.unlink()
+
+    _drop_db()
 
 
 @pytest.fixture
