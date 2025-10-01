@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from fractal_client.client import handle
+from fractal_client.response import Interface
 from httpx import ConnectError
 
 DB_NAME = "pytest-fractal-client"
@@ -43,6 +44,10 @@ def _drop_db():
             f"--if-exists {DB_NAME} --force"
         )
     )
+
+
+def _split_and_handle(cli_string: str) -> Interface:
+    return handle(shlex.split(cli_string))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -90,7 +95,7 @@ def testserver(tester, tmpdir_factory, request):
     t_start = time.perf_counter()
     while True:
         try:
-            res = handle(shlex.split("fractal version"))
+            res = _split_and_handle("fractal version")
             if "refused" not in res.data:
                 break
             else:
@@ -106,11 +111,9 @@ def testserver(tester, tmpdir_factory, request):
                 )
             time.sleep(0.1)
 
-    handle(
-        shlex.split(
-            "fractal --user admin@fractal.xy --password 1234 "
-            f"user register {tester['email']} {tester['password']}"
-        )
+    _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 "
+        f"user register {tester['email']} {tester['password']}"
     )
 
     yield
