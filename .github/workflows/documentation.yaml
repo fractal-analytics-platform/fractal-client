@@ -55,4 +55,4 @@ jobs:
 
       - run: uv sync --group docs
 
-      - run: uv mkdocs build --config-file mkdocs.yml --strict
+      - run: uv run mkdocs build --config-file mkdocs.yml --strict
