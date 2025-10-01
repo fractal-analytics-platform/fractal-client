@@ -30,6 +30,8 @@ jobs:
       - run: uv sync --frozen --group docs
 
       - run: uv run mkdocs gh-deploy --config-file mkdocs.yml --verbose
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docs-build:
     name: "Test docs build"
