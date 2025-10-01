@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from fractal_client.client import handle
-from fractal_client.response import Interface
+from fractal_client.interface import Interface
 from httpx import ConnectError
 
 DB_NAME = "pytest-fractal-client"
