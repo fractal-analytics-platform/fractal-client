@@ -1,5 +1,10 @@
 # Version Compatibility
 
+> WARNING: This page is currently out-of-date. Please
+> open an issue on https://github.com/fractal-analytics-platform/fractal-client/issues
+> if you need specific information.
+
+
 During the current development phase, the latest stable releases of
 `fractal-server` and `fractal-client` are always considered as compatible.
 
