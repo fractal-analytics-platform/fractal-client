@@ -24,27 +24,29 @@ jobs:
           sudo systemctl start postgresql.service
           sudo --login -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
-
-      - name: Install poetry
-        run: pipx install poetry==2.2.1
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.22"
+          enable-cache: true
 
       - name: Install dependencies
-        run: poetry install --with dev --no-interaction
+        run: uv sync --frozen --group dev
 
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           GHA_FRACTAL_SERVER_LOG: /tmp
-        run: poetry run coverage run -m pytest
+        run: uv run coverage run -m pytest
 
       - name: Log server STDOUT if pytest failed
         if: failure()
@@ -84,7 +86,7 @@ jobs:
         run: uv venv
 
       - name: Install dev dependencies
-        run: uv pip install --group dev
+        run: uv pip install --only-group dev
 
       - name: Combine coverage
         # Combines all the downloaded coverage artifacts in a single `.coverage` file,
