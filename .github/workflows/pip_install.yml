@@ -11,7 +11,7 @@ jobs:
   tests:
     name: "Python ${{ matrix.python-version }}"
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 8
 
     strategy:
       matrix:
@@ -23,14 +23,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
 
-      - name: Install package
-        run: pip install .
+      - run: pip install .
 
-      - name: Call fractal
-        run: fractal -h
+      - run: fractal -h
