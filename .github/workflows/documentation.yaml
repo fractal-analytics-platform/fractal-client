@@ -20,21 +20,16 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.8.22"
           enable-cache: true
 
-      - name: Compile docs requirements
-        run: uv pip compile pyproject.toml --group docs --output-file docs-requirements.txt
+      - run: uv sync --frozen --group docs
 
-      - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REQUIREMENTS: docs-requirements.txt
+      - run: uv mkdocs gh-deploy --config-file mkdocs.yml --verbose
 
   docs-build:
     name: "Test docs build"
