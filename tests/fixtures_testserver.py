@@ -68,7 +68,7 @@ def testserver(tester, tmpdir_factory, request):
         f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"
     )
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
-    _run_command("poetry run fractalctl set-db")
+    _run_command("uv run fractalctl set-db")
 
     LOG_DIR = Path(
         os.environ.get(
@@ -82,7 +82,7 @@ def testserver(tester, tmpdir_factory, request):
     f_err = path_err.open("w")
 
     server_process = subprocess.Popen(
-        shlex.split(f"poetry run fractalctl start --port {PORT}"),
+        shlex.split(f"uv run fractalctl start --port {PORT}"),
         stdout=f_out,
         stderr=f_err,
     )
