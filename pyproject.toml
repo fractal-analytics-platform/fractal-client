@@ -32,9 +32,9 @@ changelog = "https://github.com/fractal-analytics-platform/fractal-client/blob/m
 requires = ["setuptools>=80.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["src/fractal_client"]
-exclude = ["tests*", "docs*"]
+[tool.setuptools.packages.find]
+where = ["src"]  # list of folders that contain the packages (["."] by default)
+include = ["fractal_client*"]  # package names should match these glob patterns (["*"] by default)
 
 
 [dependency-groups]
