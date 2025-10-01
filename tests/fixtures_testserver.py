@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import pytest
+from devtools import debug
 from fractal_client.client import handle
 from httpx import ConnectError
 
@@ -54,10 +55,10 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_VIEWER_AUTHORIZATION_SCHEME=viewer-paths\n"
         )
     _run_command(
-        f"dropdb --username=postgres --host localhost --if-exists {DB_NAME}"
+        f"dropdb --username=postgres --host localhost --if-exists {DB_NAME} --force"
     )
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
-    _run_command("uv run fractalctl set-db")
+    _run_command(".venv/bin/fractalctl set-db")
 
     LOG_DIR = Path(
         os.environ.get(
@@ -71,7 +72,7 @@ def testserver(tester, tmpdir_factory, request):
     f_err = path_err.open("w")
 
     server_process = subprocess.Popen(
-        shlex.split(f"uv run fractalctl start --port {PORT}"),
+        shlex.split(f".venv/bin/fractalctl start --port {PORT}"),
         stdout=f_out,
         stderr=f_err,
     )
@@ -112,12 +113,20 @@ def testserver(tester, tmpdir_factory, request):
         )
     )
 
+    debug(server_process)
+    server_process.poll()
+    debug(server_process)
+
     server_process.terminate()
     server_process.kill()
-    _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
-    env_file.unlink()
+    server_process.poll()
+    debug(server_process)
+
     f_out.close()
     f_err.close()
+    env_file.unlink()
+
+    _run_command(f"dropdb --username=postgres --host localhost {DB_NAME}")
 
 
 @pytest.fixture
