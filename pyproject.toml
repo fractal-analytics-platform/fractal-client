@@ -32,6 +32,10 @@ changelog = "https://github.com/fractal-analytics-platform/fractal-client/blob/m
 requires = ["setuptools>=80.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["src/fractal_client"]
+exclude = ["tests*", "docs*"]
+
 
 [dependency-groups]
 dev = [
