@@ -68,7 +68,7 @@ push = true
 "pyproject.toml" = [
     'version = "{version}"$',
 ]
-"fractal_client/__init__.py" = [
+"src/fractal_client/__init__.py" = [
     '__VERSION__ = "{version}"$'
 ]
 
