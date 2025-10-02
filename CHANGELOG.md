@@ -7,7 +7,6 @@ This version concerns development tools (\#831 and direct commits on `main`).
 * Move `dev` and `docs` from poetry groups to standard dependency groups.
 * Move from `poetry-core` to `setuptools` as a build backend.
 * Move from `poetry` to `uv`.
-* Adopt trusted publisher for PyPI.
 * Move main package to `src/fractal_client`.
 * Move from `mhausenblas/mkdocs-deploy-gh-pages` external action to `mkdocs gh-deploy`.
 Drop
