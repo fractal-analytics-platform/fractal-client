@@ -1,6 +1,6 @@
 [project]
 name = "fractal-client"
-version = "2.10.1"
+version = "2.10.0"
 description = "Command-line client of the Fractal analytics platform"
 authors = [
     { name="Tommaso Comparin", email="tommaso.comparin@exact-lab.it" },
