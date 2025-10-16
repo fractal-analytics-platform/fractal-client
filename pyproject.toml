@@ -1,6 +1,6 @@
 [project]
 name = "fractal-client"
-version = "2.10.1"
+version = "2.10.2a0"
 description = "Command-line client of the Fractal analytics platform"
 authors = [
     { name="Tommaso Comparin", email="tommaso.comparin@exact-lab.it" },
@@ -53,7 +53,7 @@ docs = [
 ]
 
 [tool.bumpver]
-current_version = "2.10.1"
+current_version = "2.10.2a0"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
