@@ -1,6 +1,12 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.10.2
+
+* Fix wheel file (\#).
+
 # 2.10.1
+
+> WARNING: This release has invalid wheels on PyPI.
 
 This version concerns development tools (\#831 and direct commits on `main`).
 
