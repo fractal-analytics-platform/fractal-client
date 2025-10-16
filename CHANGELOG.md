@@ -4,9 +4,9 @@
 
 * Fix wheel file (\#).
 
-# 2.10.1
+# 2.10.1 [yanked]
 
-> WARNING: This release has invalid wheels on PyPI.
+> WARNING: This PyPI release was yanked due to invalid wheel file. Use 2.10.2 instead.
 
 This version concerns development tools (\#831 and direct commits on `main`).
 
