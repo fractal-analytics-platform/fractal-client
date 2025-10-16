@@ -26,5 +26,5 @@ jobs:
         with:
           version: "0.8.22"
           enable-cache: true
-      - run: uv build
+      - run: uv build --verbose
       - uses: pypa/gh-action-pypi-publish@release/v1
