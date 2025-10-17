@@ -2,7 +2,7 @@
 
 # 2.10.2
 
-* Fix wheel file (\#).
+* Fix wheel file (\#841).
 
 # 2.10.1 [yanked]
 
