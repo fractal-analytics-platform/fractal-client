@@ -1,5 +1,6 @@
 import pytest
-from fractal_server.app.security import FRACTAL_DEFAULT_GROUP_NAME
+
+FRACTAL_DEFAULT_GROUP_NAME = "All"
 
 
 def test_group_commands_auth(invoke, caplog):

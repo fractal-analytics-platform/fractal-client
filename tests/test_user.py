@@ -2,7 +2,8 @@ import json
 
 import pytest
 from devtools import debug
-from fractal_server.app.security import FRACTAL_DEFAULT_GROUP_NAME
+
+FRACTAL_DEFAULT_GROUP_NAME = "All"
 
 PWD_USER = "1234"
 
