@@ -19,10 +19,13 @@ logger.setLevel(logging.DEBUG)
 
 def _run_command(cmd: str) -> str:
     logging.warning(f"Now running {cmd=}")
+    env = os.environ
+    if "PGPASSWORD" not in os.environ:
+        env["PGPASSWORD"] = "postgres"
     res = subprocess.run(
         shlex.split(cmd),
         capture_output=True,
-        env=dict(PGPASSWORD="postgres", **os.environ),
+        env=env,
         encoding="utf-8",
     )
     if res.returncode != 0:
