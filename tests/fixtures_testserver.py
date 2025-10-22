@@ -73,6 +73,7 @@ def testserver(tester, tmpdir_factory, request):
     _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command("uv run fractalctl set-db")
+    _run_command("uv run fractalctl init-db-data")
 
     LOG_DIR = os.environ.get(
         "GHA_FRACTAL_SERVER_LOG",
