@@ -24,6 +24,7 @@ from ._project import get_project
 from ._project import get_project_list
 from ._project import patch_project
 from ._project import post_project
+from ._resource import post_resource
 from ._task import get_task_list
 from ._task import patch_task
 from ._task import post_task
@@ -46,7 +47,6 @@ from ._workflow import post_workflow
 from ._workflow import post_workflowtask
 from ._workflow import workflow_export
 from ._workflow import workflow_import
-from ._resource import post_resource
 
 
 class NoCommandError(ValueError):
