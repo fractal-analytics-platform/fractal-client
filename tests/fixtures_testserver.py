@@ -81,6 +81,8 @@ def testserver(tester, tmpdir_factory, request):
     _run_command("uv run fractalctl set-db")
     _run_command(
         "uv run fractalctl init-db-data "
+        "--resource default "
+        "--profile default "
         f"--admin-email {ADMIN_EMAIL} "
         f"--admin-pwd {ADMIN_PWD} "
         f"--admin-project-dir {ADMIN_PROJECT_DIR}"
