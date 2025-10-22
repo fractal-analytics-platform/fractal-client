@@ -57,6 +57,9 @@ def _split_and_handle(cli_string: str) -> Interface:
 def testserver(tester, tmpdir_factory, request):
     FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("TASKS"))
     FRACTAL_RUNNER_WORKING_BASE_DIR = str(tmpdir_factory.mktemp("JOBS"))
+    ADMIN_EMAIL = "admin@fractal.xy"
+    ADMIN_PWD = "1234"
+    ADMIN_PROJECT_DIR = str(tmpdir_factory.mktemp("ADMIN_PROJECT"))
 
     env_file = Path(".fractal_server.env")
     with env_file.open("w") as f:
@@ -76,7 +79,12 @@ def testserver(tester, tmpdir_factory, request):
     _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command("uv run fractalctl set-db")
-    _run_command("uv run fractalctl init-db-data")
+    _run_command(
+        "uv run fractalctl init-db-data "
+        f"--admin-email {ADMIN_EMAIL} "
+        f"--admin-pwd {ADMIN_PWD} "
+        f"--admin-project-dir {ADMIN_PROJECT_DIR}"
+    )
 
     LOG_DIR = os.environ.get(
         "GHA_FRACTAL_SERVER_LOG",

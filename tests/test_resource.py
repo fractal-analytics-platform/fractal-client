@@ -20,7 +20,7 @@ def get_resource(name: str) -> dict[str, Any]:
     }
 
 
-def test_register_as_superuser(tmp_path, invoke_as_superuser):
+def test_register_resource(tmp_path, invoke_as_superuser):
     resource = get_resource("res1")
     resource_path = tmp_path / "res1.json"
     with resource_path.open("w") as f:
