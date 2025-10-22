@@ -46,6 +46,7 @@ from ._workflow import post_workflow
 from ._workflow import post_workflowtask
 from ._workflow import workflow_export
 from ._workflow import workflow_import
+from ._resource import post_resource
 
 
 class NoCommandError(ValueError):
@@ -407,6 +408,19 @@ def group(
         parameters = ["group_id", "user_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_remove_user(client, **function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'group {subcmd}' not found")
+
+    return iface
+
+
+def resource(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
+    if subcmd == "new":
+        parameters = ["json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = post_resource(client, batch=batch, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'group {subcmd}' not found")
 
