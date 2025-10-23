@@ -43,9 +43,7 @@ def user_register(
     new_email: str,
     new_password: str,
     project_dir: str,
-    slurm_user: str | None = None,
     username: str | None = None,
-    ssh_settings_json: str | None = None,
     superuser: bool = False,
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
@@ -97,6 +95,7 @@ def user_edit(
     user_id: str,
     new_email: str | None = None,
     new_password: str | None = None,
+    new_project_dir: str | None = None,
     new_username: str | None = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
@@ -119,6 +118,8 @@ def user_edit(
         user_update["email"] = new_email
     if new_password is not None:
         user_update["password"] = new_password
+    if new_project_dir is not None:
+        user_update["project_dir"] = new_project_dir
     if make_superuser:
         user_update["is_superuser"] = True
     if remove_superuser:

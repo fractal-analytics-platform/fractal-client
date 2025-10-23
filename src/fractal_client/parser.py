@@ -834,16 +834,6 @@ user_register_parser.add_argument(
     required=False,
 )
 user_register_parser.add_argument(
-    "--ssh-settings-json",
-    help=(
-        "Path to JSON file with (a subset of) following settings: "
-        "ssh_host, ssh_username, ssh_private_key_path, "
-        "ssh_tasks_dir, ssh_jobs_dir."
-    ),
-    type=str,
-    required=False,
-)
-user_register_parser.add_argument(
     "--superuser",
     help="Give superuser privileges to the new user.",
     action="store_true",
@@ -887,20 +877,6 @@ user_edit_parser.add_argument(
 user_edit_parser.add_argument(
     "--new-project-dir",
     help="New value of `project_dir`.",
-    required=False,
-)
-user_edit_parser.add_argument(
-    "--new-slurm-user", help="New SLURM username.", required=False
-)
-
-user_edit_parser.add_argument(
-    "--new-ssh-settings-json",
-    help=(
-        "Path to JSON file with (a subset of) following settings: "
-        "ssh_host, ssh_username, ssh_private_key_path, "
-        "ssh_tasks_dir, ssh_jobs_dir."
-    ),
-    type=str,
     required=False,
 )
 

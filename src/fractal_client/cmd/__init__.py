@@ -334,10 +334,8 @@ def user(
         parameters = [
             "new_email",
             "new_password",
-            "slurm_user",
             "project_dir",
             "username",
-            "ssh_settings_json",
             "superuser",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -354,9 +352,7 @@ def user(
             "new_email",
             "new_password",
             "new_username",
-            "new_slurm_user",
             "new_project_dir",
-            "new_ssh_settings_json",
             "make_superuser",
             "remove_superuser",
             "make_verified",
