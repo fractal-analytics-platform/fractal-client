@@ -238,7 +238,7 @@ def user_factory(invoke_as_superuser):
     def __user_factory(
         email: str,
         password: str,
-        project_dir: str | None = None,
+        project_dir: str = "/fake",
         slurm_user: str | None = None,
         username: str | None = None,
         superuser: bool = False,
