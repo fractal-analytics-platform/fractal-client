@@ -19,6 +19,7 @@ from ._job import get_job_list
 from ._job import get_job_logs
 from ._job import job_submit
 from ._job import stop_job
+from ._profile import post_profile
 from ._project import delete_project
 from ._project import get_project
 from ._project import get_project_list
@@ -419,6 +420,19 @@ def resource(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_resource(client, batch=batch, **function_kwargs)
     else:
-        raise NoCommandError(f"Command 'group {subcmd}' not found")
+        raise NoCommandError(f"Command 'resource {subcmd}' not found")
+
+    return iface
+
+
+def profile(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
+    if subcmd == "new":
+        parameters = ["resource_id", "json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = post_profile(client, batch=batch, **function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'profile {subcmd}' not found")
 
     return iface
