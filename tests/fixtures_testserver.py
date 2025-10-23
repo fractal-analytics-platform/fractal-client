@@ -55,6 +55,56 @@ def _split_and_handle(cli_string: str) -> Interface:
     return handle(shlex.split(cli_string))
 
 
+def _resource_and_profile_ids(base_path: Path, resource_name: str):
+    base_path.mkdir(parents=True, exist_ok=True)
+    current_py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+    resource_json = base_path / "resource.json"
+    profile_json = base_path / "profile.json"
+
+    resource = dict(
+        name=resource_name,
+        type="local",
+        jobs_local_dir=(base_path / "jobs").as_posix(),
+        tasks_local_dir=(base_path / "tasks").as_posix(),
+        jobs_runner_config={"parallel_tasks_per_job": 1},
+        tasks_python_config={
+            "default_version": current_py_version,
+            "versions": {
+                current_py_version: sys.executable,
+            },
+        },
+        tasks_pixi_config={},
+        jobs_poll_interval=0,
+    )
+
+    with resource_json.open("w") as f:
+        json.dump(resource, f)
+
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch resource new "
+        f"{resource_json.as_posix()}"
+    )
+    resource_id = res.data
+
+    profile = dict(
+        name=f"local_resource_{resource_id}_profile_objects",
+        resource_id=resource_id,
+        resource_type="local",
+    )
+
+    with profile_json.open("w") as f:
+        json.dump(profile, f)
+
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch profile new "
+        f"{resource_id} {profile_json.as_posix()}"
+    )
+    profile_id = res.data
+
+    return resource_id, profile_id
+
+
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory, request):
     FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("TASKS"))
@@ -133,50 +183,10 @@ def testserver(tester, tmpdir_factory, request):
         f"{tester['email']} {tester['password']} {tester['project_dir']}"
     )
     user_id = res.data
-
-    current_py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-    RES_PROF_DIR = str(tmpdir_factory.mktemp("resource_and_profile"))
-
-    resource_json = Path(RES_PROF_DIR) / "resource.json"
-    profile_json = Path(RES_PROF_DIR) / "profile.json"
-
-    resource = dict(
-        name="local resource tester",
-        type="local",
-        jobs_local_dir=(Path(RES_PROF_DIR) / "jobs").as_posix(),
-        tasks_local_dir=(Path(RES_PROF_DIR) / "tasks").as_posix(),
-        jobs_runner_config={"parallel_tasks_per_job": 1},
-        tasks_python_config={
-            "default_version": current_py_version,
-            "versions": {
-                current_py_version: sys.executable,
-            },
-        },
-        tasks_pixi_config={},
-        jobs_poll_interval=0,
+    _, profile_id = _resource_and_profile_ids(
+        base_path=Path(tmpdir_factory.mktemp("resource-and-profile")),
+        resource_name=f"resource-{user_id}",
     )
-    with Path(resource_json).open("w") as f:
-        json.dump(resource, f)
-
-    res = _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 --batch resource new "
-        f"{resource_json}"
-    )
-    resource_id = res.data
-
-    profile = dict(
-        name="local_resource_profile_objects",
-        resource_id=resource_id,
-        resource_type="local",
-    )
-    with Path(profile_json).open("w") as f:
-        json.dump(profile, f)
-
-    res = _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 --batch profile new "
-        f"{resource_id} {profile_json}"
-    )
-    profile_id = res.data
 
     _split_and_handle(
         "fractal --user admin@fractal.xy --password 1234 user edit "
@@ -287,7 +297,7 @@ def dataset_factory(invoke):
 
 
 @pytest.fixture
-def user_factory(invoke_as_superuser):
+def user_factory(invoke_as_superuser, tmp_path):
     def __user_factory(
         email: str,
         password: str,
@@ -303,6 +313,18 @@ def user_factory(invoke_as_superuser):
         cmd += f" {email} {password} {project_dir}"
 
         res = invoke_as_superuser(cmd)
+        user_id = res.data["id"]
+
+        _, profile_id = _resource_and_profile_ids(
+            base_path=tmp_path / "resource-and-profile",
+            resource_name=f"resource-{user_id}",
+        )
+
+        invoke_as_superuser(
+            f"user edit --new-profile-id {profile_id} {user_id}"
+        )
+
+        res = invoke_as_superuser(f"user show {user_id}")
         return res.data
 
     return __user_factory
