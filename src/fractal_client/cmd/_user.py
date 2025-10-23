@@ -96,6 +96,7 @@ def user_edit(
     new_email: str | None = None,
     new_password: str | None = None,
     new_project_dir: str | None = None,
+    new_profile_id: str | None = None,
     new_username: str | None = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
@@ -120,6 +121,8 @@ def user_edit(
         user_update["password"] = new_password
     if new_project_dir is not None:
         user_update["project_dir"] = new_project_dir
+    if new_profile_id is not None:
+        user_update["profile_id"] = new_profile_id
     if make_superuser:
         user_update["is_superuser"] = True
     if remove_superuser:

@@ -874,6 +874,9 @@ user_edit_parser.add_argument(
     help="New value of `project_dir`.",
     required=False,
 )
+user_edit_parser.add_argument(
+    "--new-profile-id", help="New value of `profile_id`", required=False
+)
 
 user_edit_parser_superuser = user_edit_parser.add_mutually_exclusive_group()
 user_edit_parser_superuser.add_argument(

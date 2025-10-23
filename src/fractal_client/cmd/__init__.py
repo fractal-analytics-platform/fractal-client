@@ -353,6 +353,7 @@ def user(
             "new_password",
             "new_username",
             "new_project_dir",
+            "new_profile_id",
             "make_superuser",
             "remove_superuser",
             "make_verified",
