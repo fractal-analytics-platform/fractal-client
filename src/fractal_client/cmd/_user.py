@@ -59,13 +59,6 @@ def user_register(
     if username:
         new_user["username"] = username
 
-    new_settings = dict()
-    if slurm_user:
-        new_settings["slurm_user"] = slurm_user
-    if ssh_settings_json is not None:
-        ssh_settings = _read_ssh_settings_json(ssh_settings_json)
-        new_settings.update(ssh_settings)
-
     res = client.post("auth/register/", json=new_user)
     user_data = check_response(res, expected_status_code=201)
 
@@ -79,21 +72,11 @@ def user_register(
         user_data = check_response(res, expected_status_code=200)
 
     user_id = user_data["id"]
-    if new_settings == {}:
-        res = client.get(f"auth/users/{user_id}/settings/")
-        user_settings = check_response(res, expected_status_code=200)
-    else:
-        res = client.patch(
-            f"auth/users/{user_id}/settings/",
-            json=new_settings,
-        )
-        user_settings = check_response(res, expected_status_code=200)
 
     if batch:
         return Interface(retcode=0, data=user_data["id"])
     else:
-        user_data_with_settings = dict(settings=user_settings, **user_data)
-        return Interface(retcode=0, data=user_data_with_settings)
+        return Interface(retcode=0, data=user_data)
 
 
 def user_list(client: AuthClient) -> Interface:
@@ -105,11 +88,7 @@ def user_list(client: AuthClient) -> Interface:
 def user_show(client: AuthClient, *, user_id: str) -> Interface:
     res = client.get(f"auth/users/{user_id}/")
     user = check_response(res, expected_status_code=200)
-    user_id = user["id"]
-    res = client.get(f"auth/users/{user_id}/settings/")
-    user_settings = check_response(res, expected_status_code=200)
-    user_with_settings = dict(settings=user_settings, **user)
-    return Interface(retcode=0, data=user_with_settings)
+    return Interface(retcode=0, data=user)
 
 
 def user_edit(
@@ -119,16 +98,12 @@ def user_edit(
     new_email: str | None = None,
     new_password: str | None = None,
     new_username: str | None = None,
-    new_slurm_user: str | None = None,
-    new_project_dir: str | None = None,
-    new_ssh_settings_json: str | None = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
     make_verified: bool = False,
     remove_verified: bool = False,
 ) -> Interface:
     user_update = dict()
-    settings_update = dict()
     if new_email is not None:
         if (make_verified is False) and (remove_verified is False):
             # Since `fastapi-users` sets `is_verified` to `False` each time the
@@ -154,13 +129,6 @@ def user_edit(
         user_update["is_verified"] = False
     if new_username is not None:
         user_update["username"] = new_username
-    if new_slurm_user is not None:
-        settings_update["slurm_user"] = new_slurm_user
-    if new_project_dir is not None:
-        settings_update["project_dir"] = new_project_dir
-    if new_ssh_settings_json is not None:
-        ssh_settings = _read_ssh_settings_json(new_ssh_settings_json)
-        settings_update.update(ssh_settings)
 
     res = client.patch(f"auth/users/{user_id}/", json=user_update)
     new_user = check_response(res, expected_status_code=200)
@@ -174,18 +142,7 @@ def user_edit(
         )
         new_user = check_response(res, expected_status_code=200)
 
-    if settings_update == {}:
-        res = client.get(f"auth/users/{user_id}/settings/")
-        user_settings = check_response(res, expected_status_code=200)
-    else:
-        res = client.patch(
-            f"auth/users/{user_id}/settings/",
-            json=settings_update,
-        )
-        user_settings = check_response(res, expected_status_code=200)
-
-    new_user_with_settings = dict(settings=user_settings, **new_user)
-    return Interface(retcode=0, data=new_user_with_settings)
+    return Interface(retcode=0, data=new_user)
 
 
 def user_set_groups(
@@ -208,19 +165,15 @@ def user_whoami(
     if batch:
         return Interface(retcode=0, data=user["id"])
 
-    res = client.get("auth/current-user/settings/")
-    user_settings = check_response(res, expected_status_code=200)
-    user_with_settings = dict(**user, settings=user_settings)
-
     if viewer_paths:
         res = client.get("auth/current-user/allowed-viewer-paths/")
         returned_viewer_paths = check_response(res, expected_status_code=200)
         return Interface(
             retcode=0,
             data=dict(
-                **user_with_settings,
+                **user,
                 viewer_paths=returned_viewer_paths,
             ),
         )
     else:
-        return Interface(retcode=0, data=user_with_settings)
+        return Interface(retcode=0, data=user)
