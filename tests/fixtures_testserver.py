@@ -1,7 +1,9 @@
+import json
 import logging
 import os
 import shlex
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -125,9 +127,60 @@ def testserver(tester, tmpdir_factory, request):
                 )
             time.sleep(0.1)
 
-    _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 user register "
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch "
+        "user register "
         f"{tester['email']} {tester['password']} {tester['project_dir']}"
+    )
+    user_id = res.data
+
+    current_py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    RES_PROF_DIR = str(tmpdir_factory.mktemp("resource_and_profile"))
+
+    resource_json = Path(RES_PROF_DIR) / "resource.json"
+    profile_json = Path(RES_PROF_DIR) / "profile.json"
+
+    resource = dict(
+        name="local resource tester",
+        type="local",
+        jobs_local_dir=(Path(RES_PROF_DIR) / "jobs").as_posix(),
+        tasks_local_dir=(Path(RES_PROF_DIR) / "tasks").as_posix(),
+        jobs_runner_config={"parallel_tasks_per_job": 1},
+        tasks_python_config={
+            "default_version": current_py_version,
+            "versions": {
+                current_py_version: sys.executable,
+            },
+        },
+        tasks_pixi_config={},
+        jobs_poll_interval=0,
+    )
+    with Path(resource_json).open("w") as f:
+        json.dump(resource, f)
+
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch resource new "
+        f"{resource_json}"
+    )
+    resource_id = res.data
+
+    profile = dict(
+        name="local_resource_profile_objects",
+        resource_id=resource_id,
+        resource_type="local",
+    )
+    with Path(profile_json).open("w") as f:
+        json.dump(profile, f)
+
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch profile new "
+        f"{resource_id} {profile_json}"
+    )
+    profile_id = res.data
+
+    _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 user edit "
+        f"--new-profile-id {profile_id} {user_id}"
     )
 
     yield
