@@ -41,7 +41,11 @@ def _clisplit(args: str):
 
 @pytest.fixture(scope="session")
 def tester():
-    return dict(email="client_tester@example.org", password="pytest")
+    return dict(
+        email="client_tester@example.org",
+        password="pytest",
+        project_dir="/tester-project-dir",
+    )
 
 
 @pytest.fixture

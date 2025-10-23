@@ -126,8 +126,8 @@ def testserver(tester, tmpdir_factory, request):
             time.sleep(0.1)
 
     _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 "
-        f"user register {tester['email']} {tester['password']}"
+        "fractal --user admin@fractal.xy --password 1234 user register "
+        f"{tester['email']} {tester['password']} {tester['project_dir']}"
     )
 
     yield
@@ -244,15 +244,13 @@ def user_factory(invoke_as_superuser):
         superuser: bool = False,
     ):
         cmd = "user register"
-        if project_dir is not None:
-            cmd += f" --project-dir {project_dir}"
         if slurm_user is not None:
             cmd += f" --slurm-user {slurm_user}"
         if username is not None:
             cmd += f" --username {username}"
         if superuser is True:
             cmd += " --superuser"
-        cmd += f" {email} {password}"
+        cmd += f" {email} {password} {project_dir}"
 
         res = invoke_as_superuser(cmd)
         return res.data

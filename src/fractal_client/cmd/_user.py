@@ -42,8 +42,8 @@ def user_register(
     *,
     new_email: str,
     new_password: str,
+    project_dir: str,
     slurm_user: str | None = None,
-    project_dir: str | None = None,
     username: str | None = None,
     ssh_settings_json: str | None = None,
     superuser: bool = False,
@@ -53,6 +53,7 @@ def user_register(
     new_user = dict(
         email=new_email,
         password=new_password,
+        project_dir=project_dir,
     )
 
     if username:
@@ -61,8 +62,6 @@ def user_register(
     new_settings = dict()
     if slurm_user:
         new_settings["slurm_user"] = slurm_user
-    if project_dir:
-        new_settings["project_dir"] = project_dir
     if ssh_settings_json is not None:
         ssh_settings = _read_ssh_settings_json(ssh_settings_json)
         new_settings.update(ssh_settings)
