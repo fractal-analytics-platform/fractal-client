@@ -99,13 +99,17 @@ def test_argparse_abbreviation(invoke_as_superuser):
     """
 
     # Successful invoke
-    res = invoke_as_superuser("user register test@mail.com secret --superuser")
+    res = invoke_as_superuser(
+        "user register test@mail.com secret /project-dir --superuser"
+    )
     res.show()
     assert res.retcode == 0
 
     # Failed (abbreviation-based) invoke
     with pytest.raises(SystemExit):
-        invoke_as_superuser("user register test2@mail.com secret2 --super")
+        invoke_as_superuser(
+            "user register test2@mail.com secret2 /project-dir --super"
+        )
 
 
 def test_unit_verify_authentication_branch():

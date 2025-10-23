@@ -6,11 +6,12 @@ from devtools import debug
 FRACTAL_DEFAULT_GROUP_NAME = "All"
 
 PWD_USER = "1234"
+PROJECT_DIR_USER = "/user-project-dir"
 
 
 def test_register_as_user(invoke, caplog):
     with pytest.raises(SystemExit):
-        invoke("user register aaa bbb")
+        invoke("user register aaa bbb /ccc")
     debug(caplog.text)
     assert "403" in caplog.text
 
@@ -22,14 +23,15 @@ def test_register_as_superuser(
     EMAIL_USER = f"{new_name()}@example.org"
     if is_superuser:
         res = invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} --superuser"
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
+            "--superuser"
         )
         debug(res.data)
         assert res.retcode == 0
         assert res.data["is_superuser"]
     else:
         res = invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} "
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
             "--slurm-user SOMETHING --username X"
         )
         debug(res.data)
@@ -47,7 +49,8 @@ def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
 
     with pytest.raises(SystemExit, match="File does not exist"):
         invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} --ssh-settings-json xy.z"
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
+            "--ssh-settings-json xy.z"
         )
 
     invalid_json = tmp_path / "not-a-json.foo"
@@ -55,7 +58,7 @@ def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
         f.write("hello world")
     with pytest.raises(SystemExit, match="not a valid JSON"):
         invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} "
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
             f"--ssh-settings-json {invalid_json}"
         )
 
@@ -64,7 +67,7 @@ def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
         json.dump(dict(invalid="invalid"), f)
     with pytest.raises(SystemExit, match="Invalid key"):
         invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} "
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
             f"--ssh-settings-json {invalid_key_json}"
         )
 
@@ -79,7 +82,7 @@ def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
         )
     PROJECT_DIR = "/somewhere/"
     res = invoke_as_superuser(
-        f"user register {EMAIL_USER} {PWD_USER} "
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
         f"--project-dir {PROJECT_DIR} "
         f"--ssh-settings-json {valid_json}"
     )
@@ -94,7 +97,9 @@ def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
 def test_register_as_superuser_with_batch(invoke_as_superuser, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a user with the --batch flag
-    res = invoke_as_superuser(f"--batch user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"--batch user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data
     debug(user_id)
     assert res.retcode == 0
@@ -125,7 +130,9 @@ def test_list_as_superuser(invoke_as_superuser, superuser, tester):
 def test_show_as_user(invoke, invoke_as_superuser, caplog, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data["id"]
     # Call fractal user show
     with pytest.raises(SystemExit):
@@ -137,7 +144,9 @@ def test_show_as_user(invoke, invoke_as_superuser, caplog, new_name):
 def test_show_as_superuser(invoke_as_superuser, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data["id"]
     # Call fractal user show
     invoke_as_superuser(f"user show {user_id}")
@@ -149,7 +158,9 @@ def test_show_as_superuser(invoke_as_superuser, new_name):
 def test_edit_as_user(invoke, invoke_as_superuser, caplog, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data["id"]
     # Call fractal user edit
     with pytest.raises(SystemExit):
@@ -173,7 +184,9 @@ def test_edit_as_superuser(
 ):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     assert res.retcode == 0
     user_id = res.data["id"]
     # Call fractal user edit
@@ -266,7 +279,9 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
     }
 
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     assert res.retcode == 0
     user_id = res.data["id"]
 
