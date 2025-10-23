@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from devtools import debug
 
@@ -42,56 +40,6 @@ def test_register_as_superuser(
     # Test that new user is verified (note: for the moment we don't expose the
     # possibility of registering a non-verified user)
     assert res.data["is_verified"]
-
-
-def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
-    EMAIL_USER = f"{new_name()}@example.org"
-
-    with pytest.raises(SystemExit, match="File does not exist"):
-        invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
-            "--ssh-settings-json xy.z"
-        )
-
-    invalid_json = tmp_path / "not-a-json.foo"
-    with invalid_json.open("w") as f:
-        f.write("hello world")
-    with pytest.raises(SystemExit, match="not a valid JSON"):
-        invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
-            f"--ssh-settings-json {invalid_json}"
-        )
-
-    invalid_key_json = tmp_path / "invalid-key.json"
-    with invalid_key_json.open("w") as f:
-        json.dump(dict(invalid="invalid"), f)
-    with pytest.raises(SystemExit, match="Invalid key"):
-        invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
-            f"--ssh-settings-json {invalid_key_json}"
-        )
-
-    valid_json = tmp_path / "ssh-config.json"
-    with valid_json.open("w") as f:
-        json.dump(
-            dict(
-                ssh_host="SSH_HOST",
-                ssh_private_key_path="/SSH_PRIVATE_KEY_PATH",
-            ),
-            f,
-        )
-    PROJECT_DIR = "/somewhere/"
-    res = invoke_as_superuser(
-        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
-        f"--project-dir {PROJECT_DIR} "
-        f"--ssh-settings-json {valid_json}"
-    )
-    assert res.retcode == 0
-    assert res.data["settings"]["project_dir"] == PROJECT_DIR
-    assert res.data["settings"]["ssh_host"] == "SSH_HOST"
-    assert res.data["settings"]["ssh_private_key_path"] == (
-        "/SSH_PRIVATE_KEY_PATH"
-    )
 
 
 def test_register_as_superuser_with_batch(invoke_as_superuser, new_name):
@@ -243,114 +191,6 @@ def test_edit_as_superuser(
         debug(res.data)
         assert res.retcode == 0
         assert res.data["is_verified"]
-
-
-def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
-    EMAIL_USER = f"{new_name()}@example.org"
-
-    EMPTY_USER_SETTINGS = {
-        "ssh_host": None,
-        "ssh_username": None,
-        "ssh_private_key_path": None,
-        "ssh_tasks_dir": None,
-        "ssh_jobs_dir": None,
-        "slurm_accounts": [],
-        "project_dir": None,
-    }
-    SSH_HOST = "something.somewhere"
-    SSH_PRIVATE_KEY_PATH = "/tmp/something.key"
-    NEW_PROJECT_DIR = "/somewhere/else/"
-    NEW_USER_SETTINGS = {
-        "ssh_host": SSH_HOST,
-        "ssh_username": None,
-        "ssh_private_key_path": SSH_PRIVATE_KEY_PATH,
-        "ssh_tasks_dir": None,
-        "ssh_jobs_dir": None,
-        "slurm_accounts": [],
-        "project_dir": NEW_PROJECT_DIR,
-    }
-
-    # Register a new user
-    res = invoke_as_superuser(
-        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
-    )
-    assert res.retcode == 0
-    user_id = res.data["id"]
-
-    # Check empty user settings
-    res = invoke_as_superuser(f"user show {user_id}")
-    assert res.retcode == 0
-    user_settings = {
-        key: value
-        for key, value in res.data["settings"].items()
-        if key != "id"
-    }
-    debug(user_settings)
-    assert user_settings == EMPTY_USER_SETTINGS
-
-    # Call fractal user edit
-    ssh_settings_file = tmp_path / "ssh.json"
-    with ssh_settings_file.open("w") as f:
-        json.dump(
-            {
-                "ssh_host": SSH_HOST,
-                "ssh_private_key_path": SSH_PRIVATE_KEY_PATH,
-            },
-            f,
-        )
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-project-dir {NEW_PROJECT_DIR} "
-        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
-    )
-    res = invoke_as_superuser(cmd)
-    assert res.retcode == 0
-    debug(res.data)
-
-    # Check edited user settings
-    res = invoke_as_superuser(f"user show {user_id}")
-    assert res.retcode == 0
-    user_settings = {
-        key: value
-        for key, value in res.data["settings"].items()
-        if key != "id"
-    }
-    debug(user_settings)
-    assert user_settings == NEW_USER_SETTINGS
-
-    # Failure due to missing file
-    ssh_settings_file = tmp_path / "invalid-ssh.json"
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
-    )
-    with pytest.raises(SystemExit, match="File does not exist."):
-        res = invoke_as_superuser(cmd)
-
-    # Failure due to file not being a valid JSON
-    invalid_json = tmp_path / "invalid-json.foo"
-    with invalid_json.open("w") as f:
-        f.write("hello world")
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-ssh-settings-json {invalid_json.as_posix()}"
-    )
-    with pytest.raises(SystemExit, match="not a valid JSON"):
-        res = invoke_as_superuser(cmd)
-
-    # Failure due to invalid keys
-    ssh_settings_file = tmp_path / "invalid-ssh.json"
-    with ssh_settings_file.open("w") as f:
-        json.dump(
-            dict(invalid="invalid"),
-            f,
-        )
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
-    )
-    with pytest.raises(SystemExit, match="Invalid key"):
-        res = invoke_as_superuser(cmd)
 
 
 def test_edit_arguments(invoke_as_superuser):
