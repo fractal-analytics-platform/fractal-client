@@ -239,13 +239,10 @@ def user_factory(invoke_as_superuser):
         email: str,
         password: str,
         project_dir: str = "/fake",
-        slurm_user: str | None = None,
         username: str | None = None,
         superuser: bool = False,
     ):
         cmd = "user register"
-        if slurm_user is not None:
-            cmd += f" --slurm-user {slurm_user}"
         if username is not None:
             cmd += f" --username {username}"
         if superuser is True:

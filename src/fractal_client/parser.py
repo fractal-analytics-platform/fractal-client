@@ -824,11 +824,6 @@ user_register_parser.add_argument(
     help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
 )
 user_register_parser.add_argument(
-    "--slurm-user",
-    help="Username to login into SLURM cluster.",
-    required=False,
-)
-user_register_parser.add_argument(
     "--username",
     help="Username associated to the user.",
     required=False,

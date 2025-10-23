@@ -32,7 +32,7 @@ def test_register_as_superuser(
     else:
         res = invoke_as_superuser(
             f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
-            "--slurm-user SOMETHING --username X"
+            "--username X"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -191,14 +191,10 @@ def test_edit_as_superuser(
     user_id = res.data["id"]
     # Call fractal user edit
     NEW_EMAIL = f"{new_name()}@example.org"
-    NEW_SLURM_USER = "new_slurm"
-    NEW_USERNAME = "new_username"
     cmd = (
         f"user edit {user_id} "
         f"--new-email {NEW_EMAIL} "
         f"--new-password SOMETHING "
-        f"--new-slurm-user {NEW_SLURM_USER} "
-        f"--new-username {NEW_USERNAME} "
     )
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
@@ -214,14 +210,12 @@ def test_edit_as_superuser(
         res = invoke_as_superuser(cmd)
         assert res.retcode == 0
         assert res.data["email"] == NEW_EMAIL
-        assert res.data["username"] == NEW_USERNAME
         assert res.data["is_superuser"] == new_is_superuser
         assert (
             res.data["is_verified"]
             if new_is_verified
             else not res.data["is_verified"]
         )
-        assert res.data["settings"]["slurm_user"] == NEW_SLURM_USER
     else:
         res = invoke_as_superuser(cmd)
         assert res.retcode == 1
@@ -260,7 +254,6 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
         "ssh_private_key_path": None,
         "ssh_tasks_dir": None,
         "ssh_jobs_dir": None,
-        "slurm_user": None,
         "slurm_accounts": [],
         "project_dir": None,
     }
@@ -273,7 +266,6 @@ def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
         "ssh_private_key_path": SSH_PRIVATE_KEY_PATH,
         "ssh_tasks_dir": None,
         "ssh_jobs_dir": None,
-        "slurm_user": None,
         "slurm_accounts": [],
         "project_dir": NEW_PROJECT_DIR,
     }
