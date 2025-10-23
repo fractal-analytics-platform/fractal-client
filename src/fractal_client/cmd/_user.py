@@ -42,7 +42,7 @@ def user_register(
     *,
     new_email: str,
     new_password: str,
-    project_dir: str,
+    new_project_dir: str,
     username: str | None = None,
     superuser: bool = False,
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
@@ -51,7 +51,7 @@ def user_register(
     new_user = dict(
         email=new_email,
         password=new_password,
-        project_dir=project_dir,
+        project_dir=new_project_dir,
     )
 
     if username:

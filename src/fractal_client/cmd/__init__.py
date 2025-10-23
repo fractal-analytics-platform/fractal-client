@@ -334,7 +334,7 @@ def user(
         parameters = [
             "new_email",
             "new_password",
-            "project_dir",
+            "new_project_dir",
             "username",
             "superuser",
         ]

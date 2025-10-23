@@ -820,7 +820,7 @@ user_register_parser.add_argument(
     "new_password", help="Password for the new user."
 )
 user_register_parser.add_argument(
-    "project-dir",
+    "new_project_dir",
     help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
 )
 user_register_parser.add_argument(

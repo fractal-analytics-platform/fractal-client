@@ -43,7 +43,7 @@ def test_server_is_up():
     assert res.status_code == 200
 
 
-def test_register_user(tester, invoke):
+def test_user_whoami(tester, invoke):
     res = invoke("user whoami")
     user = res.data
     debug(user)
