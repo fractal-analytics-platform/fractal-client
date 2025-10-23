@@ -176,4 +176,8 @@ def test_group_commands(
     invoke_as_superuser(f"group add-user {group1_id} {superuser_id}")
     assert "viewer_paths" not in superuser
     res = invoke_as_superuser("user whoami --viewer-paths")
-    assert set(res.data.get("viewer_paths")) == {"/a/b", "/c/d"}
+    assert set(res.data.get("viewer_paths")) == {
+        "/a/b",
+        "/c/d",
+        res.data["project_dir"],
+    }
