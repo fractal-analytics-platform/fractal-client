@@ -17,6 +17,15 @@ wheels = [
 ]
 
 [[package]]
+name = "annotated-doc"
+version = "0.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/a6/dc46877b911e40c00d395771ea710d5e77b6de7bacd5fdcd78d70cc5a48f/annotated_doc-0.0.3.tar.gz", hash = "sha256:e18370014c70187422c33e945053ff4c286f453a984eba84d0dbfa0c935adeda", size = 5535, upload-time = "2025-10-24T14:57:10.718Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/b7/cf592cb5de5cb3bade3357f8d2cf42bf103bbe39f459824b4939fd212911/annotated_doc-0.0.3-py3-none-any.whl", hash = "sha256:348ec6664a76f1fd3be81f43dffbee4c7e8ce931ba71ec67cc7f4ade7fbbb580", size = 5488, upload-time = "2025-10-24T14:57:09.462Z" },
+]
+
+[[package]]
 name = "annotated-types"
 version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -518,21 +527,22 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.118.3"
+version = "0.120.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "annotated-doc" },
     { name = "pydantic" },
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/44/e0/b2c4c5fed29587f0c0c56cec9b59f2c3ca58fd40e6c96d9a788219662a35/fastapi-0.118.3.tar.gz", hash = "sha256:5bf36d9bb0cd999e1aefcad74985a6d6a1fc3a35423d497f9e1317734633411d", size = 312055, upload-time = "2025-10-10T10:40:18.15Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/cc/28aff6e246ee85bd571b26e4a793b84d42700e3bdc3008c3d747eda7b06d/fastapi-0.120.1.tar.gz", hash = "sha256:b5c6217e9ddca6dfcf54c97986180d4a1955e10c693d74943fc5327700178bff", size = 337616, upload-time = "2025-10-27T17:53:42.954Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/04/2f9e8a965f4214883258a6f716fea324d1b81e97bce6346cfbafffe6b86c/fastapi-0.118.3-py3-none-any.whl", hash = "sha256:8b9673dc083b4b9d3d295d49ba1c0a2abbfb293d34ba210fd9b0a90d5f39981e", size = 97957, upload-time = "2025-10-10T10:40:16.118Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/bb/1a74dbe87e9a595bf63052c886dfef965dc5b91d149456a8301eb3d41ce2/fastapi-0.120.1-py3-none-any.whl", hash = "sha256:0e8a2c328e96c117272d8c794d3a97d205f753cc2e69dd7ee387b7488a75601f", size = 108254, upload-time = "2025-10-27T17:53:40.076Z" },
 ]
 
 [[package]]
 name = "fastapi-users"
-version = "14.0.1"
+version = "15.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "email-validator" },
@@ -542,9 +552,9 @@ dependencies = [
     { name = "pyjwt", extra = ["crypto"] },
     { name = "python-multipart" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e4/26/7fe4e6a4f60d9cde2b95f58ba45ff03219b62bd03bea75d914b723ecfa2a/fastapi_users-14.0.1.tar.gz", hash = "sha256:8c032b3a75c6fb2b1f5eab8ffce5321176e9916efe1fe93e7c15ee55f0b02236", size = 120315, upload-time = "2025-01-04T13:20:05.95Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fa/ea/6c0ba809f29d22ad53ab25bbae4408f00b0a3375b71bd21c39dcc3a16044/fastapi_users-15.0.1.tar.gz", hash = "sha256:c822755c1288740a919636d3463797e54df91b53c1c6f4917693d499867d21a7", size = 120916, upload-time = "2025-10-25T06:52:45.735Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/52/2821d3e95a92567d38f98a33d1ef89302aa3448866bf45ff19a48a5f28f8/fastapi_users-14.0.1-py3-none-any.whl", hash = "sha256:074df59676dccf79412d2880bdcb661ab1fabc2ecec1f043b4e6a23be97ed9e1", size = 38717, upload-time = "2025-01-04T13:20:04.441Z" },
+    { url = "https://files.pythonhosted.org/packages/59/7f/1bff91a48e755e659d0505f597a8e010ec92059f2219a838fd15887a89b2/fastapi_users-15.0.1-py3-none-any.whl", hash = "sha256:6f637eb2fc80be6bba396b77dded30fe4c22fa943349d2e0a1647894f8b21c16", size = 38624, upload-time = "2025-10-25T06:52:44.119Z" },
 ]
 
 [package.optional-dependencies]
@@ -605,7 +615,7 @@ dev = [
     { name = "bumpver", specifier = "==2025.1131" },
     { name = "coverage", extras = ["toml"], specifier = ">=7.10.0,<7.11.0" },
     { name = "devtools", specifier = "==0.12.2" },
-    { name = "fractal-server", git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=2889-drop-self-registration-and-review-user-creation-procedure" },
+    { name = "fractal-server", git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main" },
     { name = "pre-commit", specifier = ">=3.0.0,<4.0.0" },
     { name = "pytest", specifier = ">=8.4.0,<8.5.0" },
     { name = "pytest-randomly", specifier = "==3.16.0" },
@@ -622,11 +632,10 @@ docs = [
 
 [[package]]
 name = "fractal-server"
-version = "2.17.0a3"
-source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=2889-drop-self-registration-and-review-user-creation-procedure#64014d5e1c62574a5482859c5d5eb30c59fd5131" }
+version = "2.17.0a5"
+source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main#15109dfce4fc90d7e6c91e4b02376abdc0eb6348" }
 dependencies = [
     { name = "alembic" },
-    { name = "cryptography" },
     { name = "fabric" },
     { name = "fastapi" },
     { name = "fastapi-users", extra = ["oauth"] },
@@ -635,7 +644,6 @@ dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
-    { name = "python-dotenv" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "sqlmodel" },
     { name = "tomli-w" },
@@ -1710,15 +1718,15 @@ wheels = [
 
 [[package]]
 name = "uvicorn"
-version = "0.37.0"
+version = "0.38.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "h11" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/71/57/1616c8274c3442d802621abf5deb230771c7a0fec9414cb6763900eb3868/uvicorn-0.37.0.tar.gz", hash = "sha256:4115c8add6d3fd536c8ee77f0e14a7fd2ebba939fed9b02583a97f80648f9e13", size = 80367, upload-time = "2025-09-23T13:33:47.486Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/ce/f06b84e2697fef4688ca63bdb2fdf113ca0a3be33f94488f2cadb690b0cf/uvicorn-0.38.0.tar.gz", hash = "sha256:fd97093bdd120a2609fc0d3afe931d4d4ad688b6e75f0f929fde1bc36fe0e91d", size = 80605, upload-time = "2025-10-18T13:46:44.63Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/cd/584a2ceb5532af99dd09e50919e3615ba99aa127e9850eafe5f31ddfdb9a/uvicorn-0.37.0-py3-none-any.whl", hash = "sha256:913b2b88672343739927ce381ff9e2ad62541f9f8289664fa1d1d3803fa2ce6c", size = 67976, upload-time = "2025-09-23T13:33:45.842Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/d9/d88e73ca598f4f6ff671fb5fde8a32925c2e08a637303a1d12883c7305fa/uvicorn-0.38.0-py3-none-any.whl", hash = "sha256:48c0afd214ceb59340075b4a052ea1ee91c16fbc2a9b1469cca0e54566977b02", size = 68109, upload-time = "2025-10-18T13:46:42.958Z" },
 ]
 
 [[package]]
