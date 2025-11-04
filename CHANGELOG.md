@@ -1,5 +1,17 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.17.0
+
+This version is aligned with [fractal-server 2.17.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2170).
+
+* CLI:
+    * Add `resource new` and `profile new` commands (\#844).
+    * Expose `profile_id` and `project_dir` as user's properties (\#844).
+    * Deprecate arguments related to obsolete `user_settings` database table (\#844).
+    * Deprecate arguments related to obsolete `user_oauth.username` database column (\#844).
+* Testing:
+    * Include `psutil` as a dev dependency, and use it to stop the `fractal-server` testing process (\#844).
+
 # 2.10.2
 
 * Fix wheel file (\#841).
