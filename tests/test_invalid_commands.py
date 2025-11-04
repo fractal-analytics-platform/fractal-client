@@ -4,6 +4,7 @@ from fractal_client.cmd import group
 from fractal_client.cmd import job
 from fractal_client.cmd import NoCommandError
 from fractal_client.cmd import project
+from fractal_client.cmd import resource
 from fractal_client.cmd import task
 from fractal_client.cmd import user
 from fractal_client.cmd import workflow
@@ -20,12 +21,22 @@ def test_invalid_commands(invoke):
             "task",
             "user",
             "group",
+            "resource",
         ]:
             with pytest.raises(SystemExit):
                 invoke(f"{command}{arg}")
 
 
 def test_unit_invalid_subcommand():
-    for _function in [project, dataset, task, workflow, job, user, group]:
+    for _function in [
+        project,
+        dataset,
+        task,
+        workflow,
+        job,
+        user,
+        group,
+        resource,
+    ]:
         with pytest.raises(NoCommandError):
             _function(client=None, subcmd="invalid")
