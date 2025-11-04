@@ -29,8 +29,7 @@ def test_register_as_superuser(
         assert res.data["is_superuser"]
     else:
         res = invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
-            "--username X"
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
         )
         debug(res.data)
         assert res.retcode == 0

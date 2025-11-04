@@ -336,7 +336,6 @@ def user(
             "new_email",
             "new_password",
             "new_project_dir",
-            "username",
             "superuser",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -352,7 +351,6 @@ def user(
             "user_id",
             "new_email",
             "new_password",
-            "new_username",
             "new_project_dir",
             "new_profile_id",
             "make_superuser",

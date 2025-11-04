@@ -823,11 +823,7 @@ user_register_parser.add_argument(
     "new_project_dir",
     help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
 )
-user_register_parser.add_argument(
-    "--username",
-    help="Username associated to the user.",
-    required=False,
-)
+
 user_register_parser.add_argument(
     "--superuser",
     help="Give superuser privileges to the new user.",
@@ -865,9 +861,6 @@ user_edit_parser.add_argument(
 )
 user_edit_parser.add_argument(
     "--new-password", help="New password.", required=False
-)
-user_edit_parser.add_argument(
-    "--new-username", help="New user username.", required=False
 )
 user_edit_parser.add_argument(
     "--new-project-dir",

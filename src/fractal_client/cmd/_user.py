@@ -9,7 +9,6 @@ def user_register(
     new_email: str,
     new_password: str,
     new_project_dir: str,
-    username: str | None = None,
     superuser: bool = False,
     verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
@@ -19,9 +18,6 @@ def user_register(
         password=new_password,
         project_dir=new_project_dir,
     )
-
-    if username:
-        new_user["username"] = username
 
     res = client.post("auth/register/", json=new_user)
     user_data = check_response(res, expected_status_code=201)
@@ -63,7 +59,6 @@ def user_edit(
     new_password: str | None = None,
     new_project_dir: str | None = None,
     new_profile_id: str | None = None,
-    new_username: str | None = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
     make_verified: bool = False,
@@ -97,8 +92,6 @@ def user_edit(
         user_update["is_verified"] = True
     if remove_verified:
         user_update["is_verified"] = False
-    if new_username is not None:
-        user_update["username"] = new_username
 
     res = client.patch(f"auth/users/{user_id}/", json=user_update)
     new_user = check_response(res, expected_status_code=200)

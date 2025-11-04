@@ -303,12 +303,9 @@ def user_factory(invoke_as_superuser, tmp_path):
         email: str,
         password: str,
         project_dir: str = "/fake",
-        username: str | None = None,
         superuser: bool = False,
     ):
         cmd = "user register"
-        if username is not None:
-            cmd += f" --username {username}"
         if superuser is True:
             cmd += " --superuser"
         cmd += f" {email} {password} {project_dir}"
