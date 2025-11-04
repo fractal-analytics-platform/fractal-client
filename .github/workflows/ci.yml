@@ -36,7 +36,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
         with:
-          version: "0.8.22"
+          version: "0.9.7"
           enable-cache: true
 
       - name: Install dependencies
@@ -79,7 +79,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          version: "0.8.22"
+          version: "0.9.7"
           enable-cache: true
 
       - name: Install dev dependencies
