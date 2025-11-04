@@ -7,6 +7,7 @@ import sys
 import time
 from pathlib import Path
 
+import psutil
 import pytest
 from fractal_client.client import handle
 from fractal_client.interface import Interface
@@ -128,6 +129,7 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_LOGGING_LEVEL=0\n"
             "FRACTAL_VIEWER_AUTHORIZATION_SCHEME=viewer-paths\n"
             "FRACTAL_DEFAULT_GROUP_NAME=All\n"
+            "FRACTAL_GRACEFUL_SHUTDOWN_TIME=0\n"
         )
     _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
@@ -155,6 +157,7 @@ def testserver(tester, tmpdir_factory, request):
         shlex.split(f"uv run fractalctl start --port {FRACTAL_SERVER_PORT}"),
         stdout=f_out,
         stderr=f_err,
+        shell=False,
     )
 
     # Wait until the server is up
@@ -204,17 +207,14 @@ def testserver(tester, tmpdir_factory, request):
         )
     )
 
-    # Start cleanup
-
-    server_process.poll()
-    server_process.terminate()
-    server_process.kill()
-    server_process.poll()
-
+    # Cleanup
+    process = psutil.Process(server_process.pid)
+    for proc in process.children(recursive=True):
+        proc.kill()
+    process.kill()
     f_out.close()
     f_err.close()
     env_file.unlink()
-
     _drop_db()
 
 
