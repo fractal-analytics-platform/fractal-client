@@ -1,40 +1,6 @@
-import json
-import sys
-from json.decoder import JSONDecodeError
-from pathlib import Path
-
 from ..authclient import AuthClient
 from ..interface import Interface
 from ..response import check_response
-
-
-def _read_ssh_settings_json(ssh_settings_json: str) -> dict:
-    """
-    Read, validate and return as a dict the user's ssh-settings json file
-    """
-    ssh_settings_json_path = Path(ssh_settings_json)
-    if not ssh_settings_json_path.exists():
-        sys.exit(f"Invalid {ssh_settings_json=}. File does not exist.")
-    with ssh_settings_json_path.open("r") as f:
-        try:
-            ssh_settings = json.load(f)
-        except JSONDecodeError:
-            sys.exit(f"{ssh_settings_json_path} is not a valid JSON.")
-    __ALLOWED_KEYS__ = (
-        "ssh_host",
-        "ssh_username",
-        "ssh_private_key_path",
-        "ssh_tasks_dir",
-        "ssh_jobs_dir",
-    )
-    settings = dict()
-    for key, value in ssh_settings.items():
-        if key in __ALLOWED_KEYS__:
-            settings[key] = value
-        else:
-            sys.exit(f"Invalid {key=} in {ssh_settings_json=}.")
-
-    return settings
 
 
 def user_register(
