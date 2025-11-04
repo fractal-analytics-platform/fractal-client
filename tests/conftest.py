@@ -4,7 +4,7 @@ from os import environ
 from pathlib import Path
 
 import pytest
-
+from fractal_client.interface import Interface
 
 # This variable must be defined before the first import of config.py
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:8765"
@@ -50,7 +50,7 @@ def tester():
 
 @pytest.fixture
 def invoke(tester):
-    def __invoke(args: str):
+    def __invoke(args: str) -> Interface:
         new_args = (
             f"--user {tester['email']} --password {tester['password']} {args}"
         )
@@ -61,7 +61,7 @@ def invoke(tester):
 
 @pytest.fixture
 def invoke_as_superuser():
-    def __invoke(args: str):
+    def __invoke(args: str) -> Interface:
         new_args = f"--user admin@fractal.xy --password 1234 {args}"
         return handle(_clisplit(new_args))
 
