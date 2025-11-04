@@ -19,11 +19,13 @@ from ._job import get_job_list
 from ._job import get_job_logs
 from ._job import job_submit
 from ._job import stop_job
+from ._profile import post_profile
 from ._project import delete_project
 from ._project import get_project
 from ._project import get_project_list
 from ._project import patch_project
 from ._project import post_project
+from ._resource import post_resource
 from ._task import get_task_list
 from ._task import patch_task
 from ._task import post_task
@@ -333,10 +335,7 @@ def user(
         parameters = [
             "new_email",
             "new_password",
-            "slurm_user",
-            "project_dir",
-            "username",
-            "ssh_settings_json",
+            "new_project_dir",
             "superuser",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
@@ -352,10 +351,8 @@ def user(
             "user_id",
             "new_email",
             "new_password",
-            "new_username",
-            "new_slurm_user",
             "new_project_dir",
-            "new_ssh_settings_json",
+            "new_profile_id",
             "make_superuser",
             "remove_superuser",
             "make_verified",
@@ -409,5 +406,31 @@ def group(
         iface = group_remove_user(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'group {subcmd}' not found")
+
+    return iface
+
+
+def resource(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
+    if subcmd == "new":
+        parameters = ["json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = post_resource(client, batch=batch, **function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'resource {subcmd}' not found")
+
+    return iface
+
+
+def profile(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
+    if subcmd == "new":
+        parameters = ["resource_id", "json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = post_profile(client, batch=batch, **function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'profile {subcmd}' not found")
 
     return iface

@@ -820,30 +820,10 @@ user_register_parser.add_argument(
     "new_password", help="Password for the new user."
 )
 user_register_parser.add_argument(
-    "--project-dir",
+    "new_project_dir",
     help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
-    required=False,
 )
-user_register_parser.add_argument(
-    "--slurm-user",
-    help="Username to login into SLURM cluster.",
-    required=False,
-)
-user_register_parser.add_argument(
-    "--username",
-    help="Username associated to the user.",
-    required=False,
-)
-user_register_parser.add_argument(
-    "--ssh-settings-json",
-    help=(
-        "Path to JSON file with (a subset of) following settings: "
-        "ssh_host, ssh_username, ssh_private_key_path, "
-        "ssh_tasks_dir, ssh_jobs_dir."
-    ),
-    type=str,
-    required=False,
-)
+
 user_register_parser.add_argument(
     "--superuser",
     help="Give superuser privileges to the new user.",
@@ -883,26 +863,12 @@ user_edit_parser.add_argument(
     "--new-password", help="New password.", required=False
 )
 user_edit_parser.add_argument(
-    "--new-username", help="New user username.", required=False
-)
-user_edit_parser.add_argument(
     "--new-project-dir",
     help="New value of `project_dir`.",
     required=False,
 )
 user_edit_parser.add_argument(
-    "--new-slurm-user", help="New SLURM username.", required=False
-)
-
-user_edit_parser.add_argument(
-    "--new-ssh-settings-json",
-    help=(
-        "Path to JSON file with (a subset of) following settings: "
-        "ssh_host, ssh_username, ssh_private_key_path, "
-        "ssh_tasks_dir, ssh_jobs_dir."
-    ),
-    type=str,
-    required=False,
+    "--new-profile-id", help="New value of `profile_id`", required=False
 )
 
 user_edit_parser_superuser = user_edit_parser.add_mutually_exclusive_group()
@@ -1042,3 +1008,42 @@ group_remove_user_parser.add_argument(
 group_remove_user_parser.add_argument(
     "user_id", help="ID of the user to remove.", type=int
 )
+
+
+# RESOURCE
+
+resource_parser = subparsers_main.add_parser(
+    "resource",
+    description="Resource commands.",
+    allow_abbrev=False,
+)
+resource_subparsers = resource_parser.add_subparsers(
+    title="Valid sub-commands", dest="subcmd", required=True
+)
+
+
+# resource create
+resource_new_parser = resource_subparsers.add_parser(
+    "new", description="Create new resource.", allow_abbrev=False
+)
+resource_new_parser.add_argument("json_file", help="TBD")
+
+
+# PROFILE
+
+profile_parser = subparsers_main.add_parser(
+    "profile",
+    description="Profile commands.",
+    allow_abbrev=False,
+)
+profile_subparsers = profile_parser.add_subparsers(
+    title="Valid sub-commands", dest="subcmd", required=True
+)
+
+
+# profile create
+profile_new_parser = profile_subparsers.add_parser(
+    "new", description="Create new profile.", allow_abbrev=False
+)
+profile_new_parser.add_argument("resource_id", help="TBD")
+profile_new_parser.add_argument("json_file", help="TBD")

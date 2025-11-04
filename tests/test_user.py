@@ -1,15 +1,15 @@
-import json
-
 import pytest
 from devtools import debug
-from fractal_server.app.security import FRACTAL_DEFAULT_GROUP_NAME
+
+FRACTAL_DEFAULT_GROUP_NAME = "All"
 
 PWD_USER = "1234"
+PROJECT_DIR_USER = "/user-project-dir"
 
 
 def test_register_as_user(invoke, caplog):
     with pytest.raises(SystemExit):
-        invoke("user register aaa bbb")
+        invoke("user register aaa bbb /ccc")
     debug(caplog.text)
     assert "403" in caplog.text
 
@@ -21,15 +21,15 @@ def test_register_as_superuser(
     EMAIL_USER = f"{new_name()}@example.org"
     if is_superuser:
         res = invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} --superuser"
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
+            "--superuser"
         )
         debug(res.data)
         assert res.retcode == 0
         assert res.data["is_superuser"]
     else:
         res = invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} "
-            "--slurm-user SOMETHING --username X"
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -41,59 +41,12 @@ def test_register_as_superuser(
     assert res.data["is_verified"]
 
 
-def test_register_with_ssh_settings(invoke_as_superuser, new_name, tmp_path):
-    EMAIL_USER = f"{new_name()}@example.org"
-
-    with pytest.raises(SystemExit, match="File does not exist"):
-        invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} --ssh-settings-json xy.z"
-        )
-
-    invalid_json = tmp_path / "not-a-json.foo"
-    with invalid_json.open("w") as f:
-        f.write("hello world")
-    with pytest.raises(SystemExit, match="not a valid JSON"):
-        invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} "
-            f"--ssh-settings-json {invalid_json}"
-        )
-
-    invalid_key_json = tmp_path / "invalid-key.json"
-    with invalid_key_json.open("w") as f:
-        json.dump(dict(invalid="invalid"), f)
-    with pytest.raises(SystemExit, match="Invalid key"):
-        invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} "
-            f"--ssh-settings-json {invalid_key_json}"
-        )
-
-    valid_json = tmp_path / "ssh-config.json"
-    with valid_json.open("w") as f:
-        json.dump(
-            dict(
-                ssh_host="SSH_HOST",
-                ssh_private_key_path="/SSH_PRIVATE_KEY_PATH",
-            ),
-            f,
-        )
-    PROJECT_DIR = "/somewhere/"
-    res = invoke_as_superuser(
-        f"user register {EMAIL_USER} {PWD_USER} "
-        f"--project-dir {PROJECT_DIR} "
-        f"--ssh-settings-json {valid_json}"
-    )
-    assert res.retcode == 0
-    assert res.data["settings"]["project_dir"] == PROJECT_DIR
-    assert res.data["settings"]["ssh_host"] == "SSH_HOST"
-    assert res.data["settings"]["ssh_private_key_path"] == (
-        "/SSH_PRIVATE_KEY_PATH"
-    )
-
-
 def test_register_as_superuser_with_batch(invoke_as_superuser, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a user with the --batch flag
-    res = invoke_as_superuser(f"--batch user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"--batch user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data
     debug(user_id)
     assert res.retcode == 0
@@ -124,7 +77,9 @@ def test_list_as_superuser(invoke_as_superuser, superuser, tester):
 def test_show_as_user(invoke, invoke_as_superuser, caplog, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data["id"]
     # Call fractal user show
     with pytest.raises(SystemExit):
@@ -136,7 +91,9 @@ def test_show_as_user(invoke, invoke_as_superuser, caplog, new_name):
 def test_show_as_superuser(invoke_as_superuser, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data["id"]
     # Call fractal user show
     invoke_as_superuser(f"user show {user_id}")
@@ -148,7 +105,9 @@ def test_show_as_superuser(invoke_as_superuser, new_name):
 def test_edit_as_user(invoke, invoke_as_superuser, caplog, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     user_id = res.data["id"]
     # Call fractal user edit
     with pytest.raises(SystemExit):
@@ -172,19 +131,17 @@ def test_edit_as_superuser(
 ):
     EMAIL_USER = f"{new_name()}@example.org"
     # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER}"
+    )
     assert res.retcode == 0
     user_id = res.data["id"]
     # Call fractal user edit
     NEW_EMAIL = f"{new_name()}@example.org"
-    NEW_SLURM_USER = "new_slurm"
-    NEW_USERNAME = "new_username"
     cmd = (
         f"user edit {user_id} "
         f"--new-email {NEW_EMAIL} "
         f"--new-password SOMETHING "
-        f"--new-slurm-user {NEW_SLURM_USER} "
-        f"--new-username {NEW_USERNAME} "
     )
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
@@ -200,14 +157,12 @@ def test_edit_as_superuser(
         res = invoke_as_superuser(cmd)
         assert res.retcode == 0
         assert res.data["email"] == NEW_EMAIL
-        assert res.data["username"] == NEW_USERNAME
         assert res.data["is_superuser"] == new_is_superuser
         assert (
             res.data["is_verified"]
             if new_is_verified
             else not res.data["is_verified"]
         )
-        assert res.data["settings"]["slurm_user"] == NEW_SLURM_USER
     else:
         res = invoke_as_superuser(cmd)
         assert res.retcode == 1
@@ -235,114 +190,6 @@ def test_edit_as_superuser(
         debug(res.data)
         assert res.retcode == 0
         assert res.data["is_verified"]
-
-
-def test_edit_user_settings(invoke_as_superuser, tmp_path, new_name):
-    EMAIL_USER = f"{new_name()}@example.org"
-
-    EMPTY_USER_SETTINGS = {
-        "ssh_host": None,
-        "ssh_username": None,
-        "ssh_private_key_path": None,
-        "ssh_tasks_dir": None,
-        "ssh_jobs_dir": None,
-        "slurm_user": None,
-        "slurm_accounts": [],
-        "project_dir": None,
-    }
-    SSH_HOST = "something.somewhere"
-    SSH_PRIVATE_KEY_PATH = "/tmp/something.key"
-    NEW_PROJECT_DIR = "/somewhere/else/"
-    NEW_USER_SETTINGS = {
-        "ssh_host": SSH_HOST,
-        "ssh_username": None,
-        "ssh_private_key_path": SSH_PRIVATE_KEY_PATH,
-        "ssh_tasks_dir": None,
-        "ssh_jobs_dir": None,
-        "slurm_user": None,
-        "slurm_accounts": [],
-        "project_dir": NEW_PROJECT_DIR,
-    }
-
-    # Register a new user
-    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER}")
-    assert res.retcode == 0
-    user_id = res.data["id"]
-
-    # Check empty user settings
-    res = invoke_as_superuser(f"user show {user_id}")
-    assert res.retcode == 0
-    user_settings = {
-        key: value
-        for key, value in res.data["settings"].items()
-        if key != "id"
-    }
-    debug(user_settings)
-    assert user_settings == EMPTY_USER_SETTINGS
-
-    # Call fractal user edit
-    ssh_settings_file = tmp_path / "ssh.json"
-    with ssh_settings_file.open("w") as f:
-        json.dump(
-            {
-                "ssh_host": SSH_HOST,
-                "ssh_private_key_path": SSH_PRIVATE_KEY_PATH,
-            },
-            f,
-        )
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-project-dir {NEW_PROJECT_DIR} "
-        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
-    )
-    res = invoke_as_superuser(cmd)
-    assert res.retcode == 0
-    debug(res.data)
-
-    # Check edited user settings
-    res = invoke_as_superuser(f"user show {user_id}")
-    assert res.retcode == 0
-    user_settings = {
-        key: value
-        for key, value in res.data["settings"].items()
-        if key != "id"
-    }
-    debug(user_settings)
-    assert user_settings == NEW_USER_SETTINGS
-
-    # Failure due to missing file
-    ssh_settings_file = tmp_path / "invalid-ssh.json"
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
-    )
-    with pytest.raises(SystemExit, match="File does not exist."):
-        res = invoke_as_superuser(cmd)
-
-    # Failure due to file not being a valid JSON
-    invalid_json = tmp_path / "invalid-json.foo"
-    with invalid_json.open("w") as f:
-        f.write("hello world")
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-ssh-settings-json {invalid_json.as_posix()}"
-    )
-    with pytest.raises(SystemExit, match="not a valid JSON"):
-        res = invoke_as_superuser(cmd)
-
-    # Failure due to invalid keys
-    ssh_settings_file = tmp_path / "invalid-ssh.json"
-    with ssh_settings_file.open("w") as f:
-        json.dump(
-            dict(invalid="invalid"),
-            f,
-        )
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-ssh-settings-json {ssh_settings_file.as_posix()}"
-    )
-    with pytest.raises(SystemExit, match="Invalid key"):
-        res = invoke_as_superuser(cmd)
 
 
 def test_edit_arguments(invoke_as_superuser):

@@ -1,5 +1,4 @@
 import json
-import logging
 
 import pytest  # noqa F401
 from devtools import debug
@@ -331,54 +330,6 @@ def test_workflow_add_task_by_name(
             f"--task-name INVALID_NAME --args-parallel {args_file}"
         )
         debug(cmd)
-        res = invoke(cmd)
-
-
-@pytest.mark.skip(reason="Definition of expected behavior is ongoing")
-def test_task_cache_with_non_unique_names(
-    invoke,
-    task_factory,
-    workflow_factory,
-    tmp_path,
-    new_name,
-    caplog: pytest.LogCaptureFixture,
-):
-    """
-    GIVEN two tasks with the same name
-    WHEN the client is invoked to list the tasks
-    THEN
-        * A warning is raised that the cache won't be written
-        * Addressing tasks by name raises a FileNotFoundError
-    """
-
-    res = invoke(f"project new {new_name()}")
-    project_id = res.data["id"]
-    ARGS = {"image_dir": "/asdasd"}
-
-    args_file = tmp_path / "args_file.json"
-    with args_file.open("w") as f:
-        json.dump(ARGS, f)
-    # Create two tasks with the same name
-    task1 = task_factory(name=new_name(), command_parallel="parallel")
-    task2 = task_factory(name=task1["name"], command_parallel="parallel")
-    assert task1["name"] == task2["name"]
-
-    # Verify that a warning is raised upon creating the cache file
-    caplog.set_level(logging.WARNING)
-    res = invoke("task list")
-    assert res.retcode == 0
-    debug(caplog.text)
-    assert "Cannot" in caplog.text
-
-    # Verify that adding tasks to a worfklow by name (as opposed to "by id")
-    # fails because of missing cache file
-    wf = workflow_factory(name=new_name(), project_id=project_id)
-    cmd = (
-        f"workflow add-task {project_id} {wf['id']} "
-        f"--task-name {task1['name']} --args-parallel {args_file}"
-    )
-    debug(cmd)
-    with pytest.raises(FileNotFoundError):
         res = invoke(cmd)
 
 

@@ -1,10 +1,13 @@
+import json
 import logging
 import os
 import shlex
 import subprocess
+import sys
 import time
 from pathlib import Path
 
+import psutil
 import pytest
 from fractal_client.client import handle
 from fractal_client.interface import Interface
@@ -19,10 +22,13 @@ logger.setLevel(logging.DEBUG)
 
 def _run_command(cmd: str) -> str:
     logging.warning(f"Now running {cmd=}")
+    env = os.environ
+    if "PGPASSWORD" not in os.environ:
+        env["PGPASSWORD"] = "postgres"
     res = subprocess.run(
         shlex.split(cmd),
         capture_output=True,
-        env=dict(PGPASSWORD="postgres", **os.environ),
+        env=env,
         encoding="utf-8",
     )
     if res.returncode != 0:
@@ -50,10 +56,63 @@ def _split_and_handle(cli_string: str) -> Interface:
     return handle(shlex.split(cli_string))
 
 
+def _resource_and_profile_ids(base_path: Path, resource_name: str):
+    base_path.mkdir(parents=True, exist_ok=True)
+    current_py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+    resource_json = base_path / "resource.json"
+    profile_json = base_path / "profile.json"
+
+    resource = dict(
+        name=resource_name,
+        type="local",
+        jobs_local_dir=(base_path / "jobs").as_posix(),
+        tasks_local_dir=(base_path / "tasks").as_posix(),
+        jobs_runner_config={"parallel_tasks_per_job": 1},
+        tasks_python_config={
+            "default_version": current_py_version,
+            "versions": {
+                current_py_version: sys.executable,
+            },
+        },
+        tasks_pixi_config={},
+        jobs_poll_interval=0,
+    )
+
+    with resource_json.open("w") as f:
+        json.dump(resource, f)
+
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch resource new "
+        f"{resource_json.as_posix()}"
+    )
+    resource_id = res.data
+
+    profile = dict(
+        name=f"local_resource_{resource_id}_profile_objects",
+        resource_id=resource_id,
+        resource_type="local",
+    )
+
+    with profile_json.open("w") as f:
+        json.dump(profile, f)
+
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch profile new "
+        f"{resource_id} {profile_json.as_posix()}"
+    )
+    profile_id = res.data
+
+    return resource_id, profile_id
+
+
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory, request):
     FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("TASKS"))
     FRACTAL_RUNNER_WORKING_BASE_DIR = str(tmpdir_factory.mktemp("JOBS"))
+    ADMIN_EMAIL = "admin@fractal.xy"
+    ADMIN_PWD = "1234"
+    ADMIN_PROJECT_DIR = str(tmpdir_factory.mktemp("ADMIN_PROJECT"))
 
     env_file = Path(".fractal_server.env")
     with env_file.open("w") as f:
@@ -68,11 +127,20 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_RUNNER_WORKING_BASE_DIR="
             f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
             "FRACTAL_LOGGING_LEVEL=0\n"
-            "FRACTAL_VIEWER_AUTHORIZATION_SCHEME=viewer-paths\n"
+            "FRACTAL_DATA_AUTH_SCHEME=viewer-paths\n"
+            "FRACTAL_DEFAULT_GROUP_NAME=All\n"
         )
     _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
     _run_command("uv run fractalctl set-db")
+    _run_command(
+        "uv run fractalctl init-db-data "
+        "--resource default "
+        "--profile default "
+        f"--admin-email {ADMIN_EMAIL} "
+        f"--admin-pwd {ADMIN_PWD} "
+        f"--admin-project-dir {ADMIN_PROJECT_DIR}"
+    )
 
     LOG_DIR = os.environ.get(
         "GHA_FRACTAL_SERVER_LOG",
@@ -88,6 +156,7 @@ def testserver(tester, tmpdir_factory, request):
         shlex.split(f"uv run fractalctl start --port {FRACTAL_SERVER_PORT}"),
         stdout=f_out,
         stderr=f_err,
+        shell=False,
     )
 
     # Wait until the server is up
@@ -111,9 +180,20 @@ def testserver(tester, tmpdir_factory, request):
                 )
             time.sleep(0.1)
 
+    res = _split_and_handle(
+        "fractal --user admin@fractal.xy --password 1234 --batch "
+        "user register "
+        f"{tester['email']} {tester['password']} {tester['project_dir']}"
+    )
+    user_id = res.data
+    _, profile_id = _resource_and_profile_ids(
+        base_path=Path(tmpdir_factory.mktemp("resource-and-profile")),
+        resource_name=f"resource-{user_id}",
+    )
+
     _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 "
-        f"user register {tester['email']} {tester['password']}"
+        "fractal --user admin@fractal.xy --password 1234 user edit "
+        f"--new-profile-id {profile_id} {user_id}"
     )
 
     yield
@@ -126,17 +206,14 @@ def testserver(tester, tmpdir_factory, request):
         )
     )
 
-    # Start cleanup
-
-    server_process.poll()
-    server_process.terminate()
-    server_process.kill()
-    server_process.poll()
-
+    # Cleanup
+    process = psutil.Process(server_process.pid)
+    for proc in process.children(recursive=True):
+        proc.kill()
+    process.kill()
     f_out.close()
     f_err.close()
     env_file.unlink()
-
     _drop_db()
 
 
@@ -220,27 +297,31 @@ def dataset_factory(invoke):
 
 
 @pytest.fixture
-def user_factory(invoke_as_superuser):
+def user_factory(invoke_as_superuser, tmp_path):
     def __user_factory(
         email: str,
         password: str,
-        project_dir: str | None = None,
-        slurm_user: str | None = None,
-        username: str | None = None,
+        project_dir: str = "/fake",
         superuser: bool = False,
     ):
         cmd = "user register"
-        if project_dir is not None:
-            cmd += f" --project-dir {project_dir}"
-        if slurm_user is not None:
-            cmd += f" --slurm-user {slurm_user}"
-        if username is not None:
-            cmd += f" --username {username}"
         if superuser is True:
             cmd += " --superuser"
-        cmd += f" {email} {password}"
+        cmd += f" {email} {password} {project_dir}"
 
         res = invoke_as_superuser(cmd)
+        user_id = res.data["id"]
+
+        _, profile_id = _resource_and_profile_ids(
+            base_path=tmp_path / "resource-and-profile",
+            resource_name=f"resource-{user_id}",
+        )
+
+        invoke_as_superuser(
+            f"user edit --new-profile-id {profile_id} {user_id}"
+        )
+
+        res = invoke_as_superuser(f"user show {user_id}")
         return res.data
 
     return __user_factory
