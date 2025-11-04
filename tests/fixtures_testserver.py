@@ -129,7 +129,6 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_LOGGING_LEVEL=0\n"
             "FRACTAL_DATA_AUTH_SCHEME=viewer-paths\n"
             "FRACTAL_DEFAULT_GROUP_NAME=All\n"
-            "FRACTAL_GRACEFUL_SHUTDOWN_TIME=0\n"
         )
     _drop_db()
     _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
