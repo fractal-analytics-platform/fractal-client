@@ -1,12 +1,11 @@
 # Version Compatibility
 
-> WARNING: This page is currently out-of-date. Please
+> WARNING: This page is likely out-of-date. Please
 > open an issue on https://github.com/fractal-analytics-platform/fractal-client/issues
 > if you need specific information.
 
-
-During the current development phase, the latest stable releases of
-`fractal-server` and `fractal-client` are always considered as compatible.
+During the development phase, the latest stable releases of `fractal-server`
+and `fractal-client` are always considered as compatible.
 
 The following table shows some additional compatibility constraints for each
 `fractal-client` version, which may be useful for working with a
@@ -18,6 +17,7 @@ The following table shows some additional compatibility constraints for each
 
 | fractal-client | fractal-server |
 |----------------|----------------|
+| 2.17.0         | >=2.17.0       |
 | 2.0.0          | >=2.0.0        |
 | 1.4.3          | >=1.4.2        |
 | 1.4.2          | >=1.4.2        |
