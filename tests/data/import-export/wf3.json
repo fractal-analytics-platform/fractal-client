@@ -3,7 +3,7 @@
     "task_list": [
         {
             "task": {
-                "name": "generic_task",
+                "name": "generic_task_converter",
                 "pkg_name": "fractal-tasks-mock"
             }
         },
@@ -12,7 +12,7 @@
                 "raise_error": true
             },
             "task": {
-                "name": "generic_task",
+                "name": "generic_task_converter",
                 "pkg_name": "fractal-tasks-mock"
             }
         }
