@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Next
+
+* Testing:
+    * Fix tests for `fractal-server=2.17.1` (\#XXX).
+
 # 2.17.0
 
 This version is aligned with [fractal-server 2.17.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2170).
