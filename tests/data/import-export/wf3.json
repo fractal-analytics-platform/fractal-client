@@ -3,16 +3,16 @@
     "task_list": [
         {
             "task": {
-                "name": "generic_task_converter",
+                "name": "dummy_insert_single_image",
                 "pkg_name": "fractal-tasks-mock"
             }
         },
         {
             "args_non_parallel": {
-                "raise_error": true
+                "fail": true
             },
             "task": {
-                "name": "generic_task_converter",
+                "name": "dummy_insert_single_image",
                 "pkg_name": "fractal-tasks-mock"
             }
         }
