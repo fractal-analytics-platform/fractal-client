@@ -78,6 +78,6 @@ omit = ["tests/*", "*/.venv/*"]
 [tool.coverage.report]
 omit = ["tests/*", "*/.venv/*"]
 
-[tool.mypy.overrides]
+[[tool.mypy.overrides]]
 module = ["devtools", "uvicorn", "pytest", "httpx", "fractal_server"]
 ignore_missing_imports = true

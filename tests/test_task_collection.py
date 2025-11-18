@@ -10,6 +10,8 @@ from devtools import debug
 
 logging.getLogger("httpx").setLevel(logging.DEBUG)
 
+NUM_MOCK_TASKS = 17
+
 
 def test_task_collection_command(invoke, caplog):
     """
@@ -117,7 +119,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
 
     # Check task list
     res = invoke_as_custom_user("task list", **new_user)
-    assert len(res.data) == initial_task_list + 16
+    assert len(res.data) == initial_task_list + NUM_MOCK_TASKS
 
     # Second collection
     with pytest.raises(SystemExit):

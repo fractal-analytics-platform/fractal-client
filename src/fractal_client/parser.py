@@ -958,7 +958,7 @@ group_new_parser.add_argument(
     "--viewer-paths",
     help=(
         "List of group's `viewer_paths` (e.g "
-        "`--viewer-paths /something /else`)",
+        "`--viewer-paths /something /else`)"
     ),
     required=False,
     type=str,
