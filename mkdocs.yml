@@ -22,6 +22,12 @@ theme:
   favicon: https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_favicon.png
   custom_dir: "docs/overrides"
   features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - toc.integrate
+    - navigation.top
+    - navigation.path
     - content.code.annotate
     - content.code.copy
   palette:
