@@ -37,16 +37,11 @@ def patch_dataset(
     *,
     project_id: int,
     dataset_id: int,
-    new_name: str | None = None,
+    new_name: str,
 ) -> Interface:
-    # Prepare payload
-    dataset_update = {}
-    if new_name is not None:
-        dataset_update["name"] = new_name
-
     res = client.patch(
         (f"api/v2/project/{project_id}/" f"dataset/{dataset_id}/"),
-        json=dataset_update,
+        json=dict(name=new_name),
     )
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)
