@@ -5,6 +5,8 @@ from urllib.request import urlretrieve
 
 import pytest
 from devtools import debug
+from httpx import Request
+from httpx import Response
 
 TIMEOUT = 25.0
 
@@ -186,3 +188,26 @@ def test_job_stop(invoke, caplog):
         "for FRACTAL_RUNNER_BACKEND=local"
     )
     assert EXPECTED_MSG in caplog.text
+
+
+def test_job_logs_wrong_content_type(monkeypatch, invoke, tmp_path, caplog):
+    def patched_get(*args, **kwargs):
+        request = Request(method="GET", url="fake-url")
+        response = Response(
+            status_code=200,
+            headers={"content-type": "text/html"},
+            request=request,
+        )
+        debug(response)
+        return response
+
+    import fractal_client.cmd._job
+
+    monkeypatch.setattr(fractal_client.cmd._job.AuthClient, "get", patched_get)
+
+    outdir = (tmp_path / "logs").as_posix()
+    caplog.clear()
+    with pytest.raises(SystemExit):
+        invoke(f"job download-logs 111111111 222222222 --output {outdir}")
+    debug(caplog.text)
+    assert "Unexpected content_type" in caplog.text
