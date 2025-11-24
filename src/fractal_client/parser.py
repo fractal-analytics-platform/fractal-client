@@ -167,7 +167,9 @@ dataset_edit_parser = dataset_subparsers.add_parser(
 )
 dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
 dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
-dataset_edit_parser.add_argument("--new-name", help="New name of dataset.")
+dataset_edit_parser.add_argument(
+    "--new-name", type=str, required=True, help="New name of dataset."
+)
 
 
 # dataset show

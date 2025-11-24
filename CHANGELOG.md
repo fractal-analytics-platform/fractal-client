@@ -2,8 +2,12 @@
 
 # Next
 
+* CLI:
+    * Make `dataset edit --new-name` argument required (\#849).
 * Testing:
-    * Fix tests for `fractal-server=2.17.1` (\#XXX).
+    * Fix tests for `fractal-server=2.17.1` (\#848).
+    * Add `test_job_logs_wrong_content_type` (\#849).
+    * Bump `coverage` version (\#849).
 
 # 2.17.0
 
