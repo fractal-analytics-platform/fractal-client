@@ -4,6 +4,8 @@
 
 * CLI:
     * Make `dataset edit --new-name` argument required (\#849).
+* Dependencies:
+    Support Python 3.14 (\#851).
 * Docs:
     * Bump docs dependencies and update mkdocs config (\#850).
 * Testing:
