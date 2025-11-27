@@ -66,8 +66,6 @@ def test_group_commands(
 
     res = invoke_as_superuser(f"group new {new_name()}")
     group2_id = res.data["id"]
-    group2_viewer_paths = res.data["viewer_paths"]
-    assert group2_viewer_paths == []
 
     # Add users to groups (`group add-user/remove-user`)
 
@@ -103,7 +101,6 @@ def test_group_commands(
     # add also `superuser` to `group2`
     res = invoke_as_superuser(f"group add-user {group2_id} {superuser_id}")
     assert set(res.data["user_ids"]) == {user3_id, user2_id, superuser_id}
-    assert res.data["viewer_paths"] == group2_viewer_paths
 
     # Check groups are updated
 

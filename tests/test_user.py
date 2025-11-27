@@ -293,3 +293,34 @@ def test_user_set_groups(invoke_as_superuser, user_factory, new_name):
     assert len(group1.data["user_ids"]) == 1
     group2 = invoke_as_superuser(f"group get {group2_id}")
     assert len(group2.data["user_ids"]) == 2
+
+
+def test_edit_project_dirs(
+    invoke_as_superuser,
+    new_name,
+):
+    # Register a new user
+    EMAIL_USER = f"{new_name()}@example.org"
+    PROJECT_DIR_1 = "/tmp/1"
+    res = invoke_as_superuser(
+        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_1}"
+    )
+    assert res.retcode == 0
+    user_id = res.data["id"]
+    assert res.data["project_dirs"] == [PROJECT_DIR_1]
+
+    # Add a second project dir
+    PROJECT_DIR_2 = "/tmp/2"
+    cmd = f"user edit {user_id} " f"--add-project-dir {PROJECT_DIR_2}"
+    res = invoke_as_superuser(cmd)
+    assert res.data["project_dirs"] == [PROJECT_DIR_1, PROJECT_DIR_2]
+
+    # Add a third project dir and remove the second one
+    PROJECT_DIR_3 = "/tmp/3"
+    cmd = (
+        f"user edit {user_id} "
+        f"--add-project-dir {PROJECT_DIR_3} "
+        f"--remove-project-dir {PROJECT_DIR_2}"
+    )
+    res = invoke_as_superuser(cmd)
+    assert res.data["project_dirs"] == [PROJECT_DIR_1, PROJECT_DIR_3]

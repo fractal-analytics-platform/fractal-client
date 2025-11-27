@@ -42,6 +42,9 @@ def test_job_submit(
     with type_filters_file.open("w") as f:
         json.dump(type_filters, f)
 
+    # Update user's project_dir, adding tmp_path.as_posix()
+    # FIXME
+
     dataset = dataset_factory(
         name=new_name(),
         project_id=project_id,

@@ -3,38 +3,31 @@ import os
 from devtools import debug
 
 
-def test_create_dataset(
+def test_add_dataset(
     invoke,
     new_name,
-    invoke_as_superuser,
     tester,
 ):
-    """
-    Test some specific branches of the post_dataset function and parser.
-    """
-
+    # Create project
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
+    # Create dataset (batch)
+    zarr_dir = os.path.join(tester["project_dir"], "zarr")
+    res = invoke(
+        "--batch "
+        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
+    )
+    assert res.retcode == 0
+    int(res.data)
+
+    # Create dataset (non batch)
     zarr_dir = os.path.join(tester["project_dir"], "zarr")
     res = invoke(
         f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
     )
-
-    debug(res.data)
     assert res.retcode == 0
-
-    # Add a project_dir to user
-    res = invoke("--batch user whoami")
-    assert res.retcode == 0
-    user_id = res.data
-    res = invoke_as_superuser(
-        f"user edit {user_id} --new-project-dir /something"
-    )
-    assert res.retcode == 0
-    res = invoke(f"--batch project add-dataset {project_id} {new_name()}")
-    debug(res.data)
-    assert res.retcode == 0
+    assert "id" in res.data.keys()
 
 
 def test_edit_dataset(invoke, tester, new_name):

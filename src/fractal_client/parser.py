@@ -865,8 +865,13 @@ user_edit_parser.add_argument(
     "--new-password", help="New password.", required=False
 )
 user_edit_parser.add_argument(
-    "--new-project-dir",
-    help="New value of `project_dir`.",
+    "--add-project-dir",
+    help="New folder to add to user `project_dirs`.",
+    required=False,
+)
+user_edit_parser.add_argument(
+    "--remove-project-dir",
+    help="Folder to remove from user `project_dirs`.",
     required=False,
 )
 user_edit_parser.add_argument(
