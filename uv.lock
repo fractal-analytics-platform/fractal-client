@@ -725,7 +725,7 @@ dev = [
     { name = "bumpver", specifier = "==2025.1131" },
     { name = "coverage", extras = ["toml"], specifier = ">=7.12.0,<7.13.0" },
     { name = "devtools", specifier = "==0.12.2" },
-    { name = "fractal-server", git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main" },
+    { name = "fractal-server", git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=3024-move-from-project_dir-to-project_dirs" },
     { name = "pre-commit", specifier = ">=3.0.0,<4.0.0" },
     { name = "psutil" },
     { name = "pytest", specifier = ">=8.4.0,<8.5.0" },
@@ -743,8 +743,8 @@ docs = [
 
 [[package]]
 name = "fractal-server"
-version = "2.18.0a2"
-source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main#2431c4e3cbf6df900aae1c8b8d1dcb296b5cfd4f" }
+version = "2.18.0a1"
+source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=3024-move-from-project_dir-to-project_dirs#1a24d062c35a4a9a125c331df7af3c7677314c76" }
 dependencies = [
     { name = "alembic" },
     { name = "fabric" },
