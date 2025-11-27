@@ -13,7 +13,6 @@ from ._group import group_get
 from ._group import group_list
 from ._group import group_new
 from ._group import group_remove_user
-from ._group import group_update
 from ._job import get_job
 from ._job import get_job_list
 from ._job import get_job_logs
@@ -389,13 +388,9 @@ def group(
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_get(client, **function_kwargs)
     elif subcmd == "new":
-        parameters = ["name", "viewer_paths"]
+        parameters = ["name"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = group_new(client, batch=batch, **function_kwargs)
-    elif subcmd == "update":
-        parameters = ["group_id", "new_viewer_paths"]
-        function_kwargs = get_kwargs(parameters, kwargs)
-        iface = group_update(client, **function_kwargs)
     elif subcmd == "add-user":
         parameters = ["group_id", "user_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
