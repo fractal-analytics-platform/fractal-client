@@ -1,6 +1,8 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Next
+# 2.18.0 (unreleased)
+
+This version is aligned with [fractal-server 2.18.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2180).
 
 * CLI:
     * Make `dataset edit --new-name` argument required (\#849).
