@@ -313,6 +313,7 @@ def test_edit_project_dirs(
     PROJECT_DIR_2 = "/tmp/2"
     cmd = f"user edit {user_id} " f"--add-project-dir {PROJECT_DIR_2}"
     res = invoke_as_superuser(cmd)
+    assert res.retcode == 0
     assert res.data["project_dirs"] == [PROJECT_DIR_1, PROJECT_DIR_2]
 
     # Add a third project dir and remove the second one
@@ -323,4 +324,5 @@ def test_edit_project_dirs(
         f"--remove-project-dir {PROJECT_DIR_2}"
     )
     res = invoke_as_superuser(cmd)
+    assert res.retcode == 0
     assert res.data["project_dirs"] == [PROJECT_DIR_1, PROJECT_DIR_3]

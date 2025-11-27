@@ -18,6 +18,7 @@ def test_job_submit(
     tmp_path: Path,
     testdata_path: Path,
     new_name,
+    invoke_as_superuser,
 ):
     # Collect tasks
     PACKAGE_URL = (
@@ -42,8 +43,13 @@ def test_job_submit(
     with type_filters_file.open("w") as f:
         json.dump(type_filters, f)
 
-    # Update user's project_dir, adding tmp_path.as_posix()
-    # FIXME
+    # Add a `tmp_path` to the user's `project_dirs`
+    res = invoke("--batch user whoami")
+    user_id = int(res.data)
+    res = invoke_as_superuser(
+        f"user edit {user_id} --add-project-dir {tmp_path.as_posix()}"
+    )
+    assert res.retcode == 0
 
     dataset = dataset_factory(
         name=new_name(),
