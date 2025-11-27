@@ -1,3 +1,5 @@
+import os
+
 from devtools import debug
 
 
@@ -5,6 +7,7 @@ def test_create_dataset(
     invoke,
     new_name,
     invoke_as_superuser,
+    tester,
 ):
     """
     Test some specific branches of the post_dataset function and parser.
@@ -13,14 +16,15 @@ def test_create_dataset(
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
+    zarr_dir = os.path.join(tester["project_dir"], "zarr")
     res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir /tmp"
+        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
     )
 
     debug(res.data)
     assert res.retcode == 0
 
-    # Add a project_dir to user-settings
+    # Add a project_dir to user
     res = invoke("--batch user whoami")
     assert res.retcode == 0
     user_id = res.data
@@ -33,12 +37,13 @@ def test_create_dataset(
     assert res.retcode == 0
 
 
-def test_edit_dataset(invoke, tmp_path, new_name):
+def test_edit_dataset(invoke, tester, new_name):
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
+    zarr_dir = os.path.join(tester["project_dir"], "zarr")
     res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir /tmp"
+        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
     )
     dataset_id = res.data["id"]
 
@@ -50,13 +55,15 @@ def test_edit_dataset(invoke, tmp_path, new_name):
     assert res.retcode == 0
 
 
-def test_delete_dataset(invoke, new_name):
+def test_delete_dataset(invoke, new_name, tester):
     # Create a project with its default dataset
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
+    zarr_dir = os.path.join(tester["project_dir"], "zarr")
+
     res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir /tmp"
+        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
     )
     dataset_id = res.data["id"]
 
@@ -68,12 +75,14 @@ def test_delete_dataset(invoke, new_name):
     assert res.data["detail"] == "Dataset not found"
 
 
-def test_show_dataset(invoke, new_name):
+def test_show_dataset(invoke, new_name, tester):
     # Create a project with its default dataset
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
+
+    zarr_dir = os.path.join(tester["project_dir"], "zarr")
     res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir /tmp"
+        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
     )
     dataset_id = res.data["id"]
 
