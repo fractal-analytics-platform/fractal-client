@@ -16,7 +16,7 @@ def user_register(
     new_user = dict(
         email=new_email,
         password=new_password,
-        project_dir=new_project_dir,
+        project_dirs=[new_project_dir],
     )
 
     res = client.post("auth/register/", json=new_user)
