@@ -5,6 +5,10 @@
 This version is aligned with [fractal-server 2.18.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2180).
 
 * CLI:
+    * Deprecate `group update` command (\#854).
+    * Deprecate `--viewer-paths` argument of `group new` (\#854).
+    * Introduce `--add-project-dir` and `--remove-project-dir` arguments of `user edit` (\#854).
+    * Deprecate `--new-project-dir` argument of `user edit` (\#854).
     * Make `dataset edit --new-name` argument required (\#849).
 * Dependencies:
     Support Python 3.14 (\#851).
