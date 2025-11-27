@@ -17,7 +17,6 @@ def test_group_commands_auth(invoke, caplog):
     _assert_403(cmd="group list")
     _assert_403(cmd="group get 1")
     _assert_403(cmd="group new foo")
-    _assert_403(cmd="group update 1 --new-viewer-paths foo")
 
 
 def test_group_commands(
@@ -59,18 +58,14 @@ def test_group_commands(
         invoke_as_superuser("group new")
 
     NEW_NAME = new_name()
-    res = invoke_as_superuser(f"group new {NEW_NAME} --viewer-paths /a /b")
+    res = invoke_as_superuser(f"group new {NEW_NAME}")
     assert res.retcode == 0
     assert res.data["name"] == NEW_NAME
     assert res.data["user_ids"] == []
-    group1_viewer_paths = res.data["viewer_paths"]
-    assert group1_viewer_paths == ["/a", "/b"]
     group1_id = res.data["id"]
 
     res = invoke_as_superuser(f"group new {new_name()}")
     group2_id = res.data["id"]
-    group2_viewer_paths = res.data["viewer_paths"]
-    assert group2_viewer_paths == []
 
     # Add users to groups (`group add-user/remove-user`)
 
@@ -96,7 +91,6 @@ def test_group_commands(
     assert res.retcode == 0
     assert res.data["id"] == group1_id
     assert res.data["user_ids"] == [user1_id, user2_id]
-    assert res.data["viewer_paths"] == group1_viewer_paths
 
     # add `user3` and `user2` to `group2`
     invoke_as_superuser(f"group add-user {group2_id} {user3_id}")
@@ -107,7 +101,6 @@ def test_group_commands(
     # add also `superuser` to `group2`
     res = invoke_as_superuser(f"group add-user {group2_id} {superuser_id}")
     assert set(res.data["user_ids"]) == {user3_id, user2_id, superuser_id}
-    assert res.data["viewer_paths"] == group2_viewer_paths
 
     # Check groups are updated
 
@@ -159,25 +152,8 @@ def test_group_commands(
     res = invoke_as_superuser(f"--batch group new {new_name()}")
     assert isinstance(res.data, int)
 
-    # Test update of viewer-paths
-
-    res_pre_patch = invoke_as_superuser(f"group get {group1_id}")
-    assert res_pre_patch.retcode == 0
-    res_pre_patch.data.pop("viewer_paths")
-    res_post_patch = invoke_as_superuser(
-        f"group update {group1_id} --new-viewer-paths /a/b /c/d"
-    )
-    assert res_post_patch.retcode == 0
-    viewer_paths_post_pach = res_post_patch.data.pop("viewer_paths")
-    assert viewer_paths_post_pach == ["/a/b", "/c/d"]
-    assert res_post_patch.data == res_pre_patch.data
-
     # Test `whoami --viewer-paths`
     invoke_as_superuser(f"group add-user {group1_id} {superuser_id}")
     assert "viewer_paths" not in superuser
     res = invoke_as_superuser("user whoami --viewer-paths")
-    assert set(res.data.get("viewer_paths")) == {
-        "/a/b",
-        "/c/d",
-        res.data["project_dir"],
-    }
+    assert set(res.data.get("viewer_paths")) == set(res.data["project_dirs"])

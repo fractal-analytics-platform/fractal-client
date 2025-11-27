@@ -865,8 +865,13 @@ user_edit_parser.add_argument(
     "--new-password", help="New password.", required=False
 )
 user_edit_parser.add_argument(
-    "--new-project-dir",
-    help="New value of `project_dir`.",
+    "--add-project-dir",
+    help="New folder to add to user `project_dirs`.",
+    required=False,
+)
+user_edit_parser.add_argument(
+    "--remove-project-dir",
+    help="Folder to remove from user `project_dirs`.",
     required=False,
 )
 user_edit_parser.add_argument(
@@ -956,36 +961,6 @@ group_new_parser = group_subparsers.add_parser(
     "new", description="Create new group.", allow_abbrev=False
 )
 group_new_parser.add_argument("name", help="Name of the new group.", type=str)
-group_new_parser.add_argument(
-    "--viewer-paths",
-    help=(
-        "List of group's `viewer_paths` (e.g "
-        "`--viewer-paths /something /else`)"
-    ),
-    required=False,
-    type=str,
-    nargs="+",
-)
-
-# group update
-group_update_parser = group_subparsers.add_parser(
-    "update", description="Update single group.", allow_abbrev=False
-)
-group_update_parser.add_argument(
-    "group_id", help="ID of the group to update.", type=int
-)
-group_update_parser.add_argument(
-    "--new-viewer-paths",
-    help=(
-        "New list of group `viewer_paths` (e.g "
-        "`--new-viewer-paths /something /else`); "
-        "note that this replaces the existing one."
-    ),
-    required=True,
-    type=str,
-    nargs="+",
-    default=None,
-)
 
 # group add-user
 group_add_user_parser = group_subparsers.add_parser(
