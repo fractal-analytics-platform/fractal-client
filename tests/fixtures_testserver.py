@@ -127,7 +127,6 @@ def testserver(tester, tmpdir_factory, request):
             "FRACTAL_RUNNER_WORKING_BASE_DIR="
             f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
             "FRACTAL_LOGGING_LEVEL=0\n"
-            "FRACTAL_DATA_AUTH_SCHEME=viewer-paths\n"
             "FRACTAL_DEFAULT_GROUP_NAME=All\n"
         )
     _drop_db()

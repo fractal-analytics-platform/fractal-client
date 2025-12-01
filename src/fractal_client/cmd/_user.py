@@ -16,7 +16,7 @@ def user_register(
     new_user = dict(
         email=new_email,
         password=new_password,
-        project_dir=new_project_dir,
+        project_dirs=[new_project_dir],
     )
 
     res = client.post("auth/register/", json=new_user)
@@ -57,7 +57,8 @@ def user_edit(
     user_id: str,
     new_email: str | None = None,
     new_password: str | None = None,
-    new_project_dir: str | None = None,
+    add_project_dir: str | None = None,
+    remove_project_dir: str | None = None,
     new_profile_id: str | None = None,
     make_superuser: bool = False,
     remove_superuser: bool = False,
@@ -80,8 +81,6 @@ def user_edit(
         user_update["email"] = new_email
     if new_password is not None:
         user_update["password"] = new_password
-    if new_project_dir is not None:
-        user_update["project_dir"] = new_project_dir
     if new_profile_id is not None:
         user_update["profile_id"] = new_profile_id
     if make_superuser:
@@ -92,6 +91,18 @@ def user_edit(
         user_update["is_verified"] = True
     if remove_verified:
         user_update["is_verified"] = False
+
+    if add_project_dir is not None or remove_project_dir is not None:
+        res = client.get(f"auth/users/{user_id}/")
+        user = check_response(res, expected_status_code=200)
+        old_project_dirs = user["project_dirs"]
+        if add_project_dir is not None:
+            new_project_dirs = old_project_dirs + [add_project_dir]
+        if remove_project_dir is not None:
+            new_project_dirs = [
+                _dir for _dir in new_project_dirs if _dir != remove_project_dir
+            ]
+        user_update["project_dirs"] = new_project_dirs
 
     res = client.patch(f"auth/users/{user_id}/", json=user_update)
     new_user = check_response(res, expected_status_code=200)

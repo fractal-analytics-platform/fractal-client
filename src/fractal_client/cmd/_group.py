@@ -48,20 +48,6 @@ def group_new(
         return Interface(retcode=0, data=data)
 
 
-def group_update(
-    client: AuthClient,
-    *,
-    group_id: int,
-    new_viewer_paths: list[str],
-):
-    res = client.patch(
-        f"auth/group/{group_id}/",
-        json=dict(viewer_paths=new_viewer_paths),
-    )
-    data = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=data)
-
-
 def group_add_user(
     client: AuthClient,
     *,
