@@ -13,19 +13,16 @@ def test_add_dataset(
     project_id = res.data["id"]
 
     # Create dataset (batch)
-    zarr_dir = os.path.join(tester["project_dir"], "zarr")
     res = invoke(
         "--batch "
-        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
+        f"project add-dataset {project_id} {new_name()} "
+        f"--project-dir {tester['project_dir']} --zarr-subfolder zarr"
     )
     assert res.retcode == 0
     int(res.data)
 
     # Create dataset (non batch)
-    zarr_dir = os.path.join(tester["project_dir"], "zarr")
-    res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
-    )
+    res = invoke(f"project add-dataset {project_id} {new_name()}")
     assert res.retcode == 0
     assert "id" in res.data.keys()
 
@@ -68,15 +65,12 @@ def test_delete_dataset(invoke, new_name, tester):
     assert res.data["detail"] == "Dataset not found"
 
 
-def test_show_dataset(invoke, new_name, tester):
+def test_show_dataset(invoke, new_name):
     # Create a project with its default dataset
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    zarr_dir = os.path.join(tester["project_dir"], "zarr")
-    res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
-    )
+    res = invoke(f"project add-dataset {project_id} {new_name()}")
     dataset_id = res.data["id"]
 
     res = invoke(f"dataset show {project_id} {dataset_id}")

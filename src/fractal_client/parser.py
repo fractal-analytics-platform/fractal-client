@@ -127,8 +127,24 @@ project_add_dataset_parser.add_argument(
     help="Name of new dataset.",
 )
 project_add_dataset_parser.add_argument(
-    "--zarr-dir",
-    help="Path to zarr dir.",
+    "--project-dir",
+    type=str,
+    help=(
+        "Choose which project directory your dataset zarr directory is placed "
+        "in. To add additional project directory choices, contact an admin."
+    ),
+    required=False,
+)
+project_add_dataset_parser.add_argument(
+    "--zarr-subfolder",
+    type=str,
+    help=(
+        "Specify where in your project directory the dataset zarr directory "
+        "should be. This is a path relative to the project directory and "
+        "needs to stay within the chosen project directory. By default, "
+        "Fractal will create a folder for the project with a subfolder for "
+        "the dataset."
+    ),
     required=False,
 )
 

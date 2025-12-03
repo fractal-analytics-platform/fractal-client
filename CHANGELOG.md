@@ -9,6 +9,8 @@ This version is aligned with [fractal-server 2.18.10](https://github.com/fractal
     * Deprecate `--viewer-paths` argument of `group new` (\#854).
     * Introduce `--add-project-dir` and `--remove-project-dir` arguments of `user edit` (\#854).
     * Deprecate `--new-project-dir` argument of `user edit` (\#854).
+    * Deprecate `--zarr-dir` argument of `project add-dataset` (\#xxx)
+    * Add `--project-dir` and `--zarr-subfolder` arguments of `project add-dataset` (\#xxx)
     * Make `dataset edit --new-name` argument required (\#849).
 * Dependencies:
     Support Python 3.14 (\#851).
