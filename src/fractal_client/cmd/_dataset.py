@@ -17,6 +17,8 @@ def post_dataset(
         project_id: ID of project to add the new dataset to
         dataset_name: Name of new dataset
         project_dir:
+        zarr_subfolder:
+        batch:
     """
     dataset = dict(name=dataset_name)
     if project_dir is not None:
