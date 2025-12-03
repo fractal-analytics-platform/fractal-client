@@ -1,5 +1,3 @@
-import os
-
 from devtools import debug
 
 
@@ -31,10 +29,7 @@ def test_edit_dataset(invoke, tester, new_name):
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    zarr_dir = os.path.join(tester["project_dir"], "zarr")
-    res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
-    )
+    res = invoke(f"project add-dataset {project_id} {new_name()}")
     dataset_id = res.data["id"]
 
     NAME = new_name()
@@ -50,11 +45,7 @@ def test_delete_dataset(invoke, new_name, tester):
     res = invoke(f"project new {new_name()}")
     project_id = res.data["id"]
 
-    zarr_dir = os.path.join(tester["project_dir"], "zarr")
-
-    res = invoke(
-        f"project add-dataset {project_id} {new_name()} --zarr-dir {zarr_dir}"
-    )
+    res = invoke(f"project add-dataset {project_id} {new_name()}")
     dataset_id = res.data["id"]
 
     # Delete dataset

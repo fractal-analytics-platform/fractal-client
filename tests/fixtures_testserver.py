@@ -284,10 +284,9 @@ def dataset_factory(invoke):
     def _dataset_factory(
         project_id: int,
         name: str,
-        zarr_dir: str,
     ):
         cmd = "project add-dataset"
-        cmd += f" {project_id} {name} --zarr-dir {zarr_dir}"
+        cmd += f" {project_id} {name}"
 
         res = invoke(cmd)
         return res.data
