@@ -14,7 +14,6 @@ TIMEOUT = 25.0
 def test_job_submit(
     invoke,
     project_factory,
-    dataset_factory,
     tmp_path: Path,
     testdata_path: Path,
     new_name,
@@ -36,7 +35,6 @@ def test_job_submit(
     # Create a project
     project = project_factory(name=new_name())
     project_id = project["id"]
-    zarr_dir = (tmp_path / "zarr_dir").as_posix()
 
     type_filters = {"a": True, "b": False}
     type_filters_file = tmp_path / "type_filters.json"
@@ -51,12 +49,14 @@ def test_job_submit(
     )
     assert res.retcode == 0
 
-    dataset = dataset_factory(
-        name=new_name(),
-        project_id=project_id,
-        zarr_dir=zarr_dir,
+    # Create dataset (batch)
+    res = invoke(
+        "--batch "
+        f"project add-dataset {project_id} {new_name()} "
+        f"--project-dir {tmp_path.as_posix()} --zarr-subfolder zarr"
     )
-    dataset_id = dataset["id"]
+    assert res.retcode == 0
+    dataset_id = int(res.data)
 
     # Wait for task collection to end
     starting_time = time.perf_counter()
