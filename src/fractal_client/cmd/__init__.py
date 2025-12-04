@@ -84,7 +84,8 @@ def project(
         parameters = [
             "project_id",
             "dataset_name",
-            "zarr_dir",
+            "project_dir",
+            "zarr_subfolder",
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = post_dataset(client, batch=batch, **function_kwargs)

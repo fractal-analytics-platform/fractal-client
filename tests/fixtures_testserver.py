@@ -280,22 +280,6 @@ def workflow_factory(invoke):
 
 
 @pytest.fixture
-def dataset_factory(invoke):
-    def _dataset_factory(
-        project_id: int,
-        name: str,
-        zarr_dir: str,
-    ):
-        cmd = "project add-dataset"
-        cmd += f" {project_id} {name} --zarr-dir {zarr_dir}"
-
-        res = invoke(cmd)
-        return res.data
-
-    return _dataset_factory
-
-
-@pytest.fixture
 def user_factory(invoke_as_superuser, tmp_path):
     def __user_factory(
         email: str,

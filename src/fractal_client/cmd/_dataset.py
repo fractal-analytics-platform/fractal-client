@@ -8,18 +8,23 @@ def post_dataset(
     *,
     project_id: int,
     dataset_name: str,
-    zarr_dir: str | None = None,
+    project_dir: str | None = None,
+    zarr_subfolder: str | None = None,
     batch: bool = False,
 ) -> Interface:
     """
     Arguments:
         project_id: ID of project to add the new dataset to
         dataset_name: Name of new dataset
-        zarr_dir:
+        project_dir:
+        zarr_subfolder:
+        batch:
     """
     dataset = dict(name=dataset_name)
-    if zarr_dir is not None:
-        dataset["zarr_dir"] = zarr_dir
+    if project_dir is not None:
+        dataset["project_dir"] = project_dir
+    if zarr_subfolder is not None:
+        dataset["zarr_subfolder"] = zarr_subfolder
 
     res = client.post(
         f"api/v2/project/{project_id}/dataset/",

@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from devtools import debug
 
@@ -44,18 +42,14 @@ def test_project_create_batch(invoke, new_name):
     assert any(project["id"] == project_id for project in res.data)
 
 
-def test_project_list(invoke, new_name, tester):
+def test_project_list(invoke, new_name):
     res = invoke("project list")
     initial_projects = len(res.data)
 
     res = invoke(f"--batch project new {new_name()}")
 
-    zarr_dir = os.path.join(tester["project_dir"], "zarr")
     project0_id = res.data
-    res = invoke(
-        "--batch "
-        f"project add-dataset {project0_id} {new_name()} --zarr-dir {zarr_dir}"
-    )
+    res = invoke("--batch " f"project add-dataset {project0_id} {new_name()}")
     res = invoke(f"--batch project new {new_name()}")
 
     res = invoke("project list")
