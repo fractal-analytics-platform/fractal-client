@@ -742,8 +742,8 @@ docs = [
 
 [[package]]
 name = "fractal-server"
-version = "2.18.0a8"
-source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main#d1d28d733435e87ffdffdb885c137588fd3c2d12" }
+version = "2.18.1"
+source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main#ab7b8daf1481e27f6b1950af441c5837a45f5329" }
 dependencies = [
     { name = "alembic" },
     { name = "fabric" },
