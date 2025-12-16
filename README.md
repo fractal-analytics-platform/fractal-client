@@ -23,7 +23,7 @@
 | src/fractal\_client/interface.py                |       10 |        0 |        2 |        0 |    100% |           |
 | src/fractal\_client/parser.py                   |      209 |        0 |        0 |        0 |    100% |           |
 | src/fractal\_client/response.py                 |       40 |        0 |       12 |        0 |    100% |           |
-|                                       **TOTAL** | **1230** |    **4** |  **308** |    **5** | **99%** |           |
+| **TOTAL**                                       | **1230** |    **4** |  **308** |    **5** | **99%** |           |
 
 
 ## Setup coverage badge
