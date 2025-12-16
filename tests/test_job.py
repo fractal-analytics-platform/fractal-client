@@ -138,7 +138,7 @@ def test_job_submit(
     # Run job list with/without --batch
     res = invoke(f"--batch job list {project_id}")
     assert res.retcode == 0
-    assert res.data == f"{job1_id} {job2_id}"
+    assert res.data == f"{job2_id} {job1_id}"
     res = invoke(f"job list {project_id}")
     assert res.retcode == 0
     assert {job["id"] for job in res.data} == {job1_id, job2_id}
