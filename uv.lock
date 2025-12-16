@@ -681,7 +681,7 @@ wheels = [
 
 [[package]]
 name = "fractal-client"
-version = "2.17.0"
+version = "2.18.0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -742,8 +742,8 @@ docs = [
 
 [[package]]
 name = "fractal-server"
-version = "2.18.1"
-source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main#ab7b8daf1481e27f6b1950af441c5837a45f5329" }
+version = "2.18.2"
+source = { git = "https://github.com/fractal-analytics-platform/fractal-server.git?rev=main#1148a80bb7e0e73355d3d70d2be0d98ed6abd500" }
 dependencies = [
     { name = "alembic" },
     { name = "fabric" },
