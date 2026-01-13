@@ -108,7 +108,7 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory, request):
     # Wait until the server is up
-    TIMEOUT = 8.0
+    TIMEOUT = 30.0
     t_start = time.perf_counter()
     while True:
         try:
