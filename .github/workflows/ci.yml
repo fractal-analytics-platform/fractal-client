@@ -31,7 +31,7 @@ jobs:
       - name: Run docker compose
         env:
           FRACTAL_SERVER_PYTHON: "3.12"
-          FRACTAL_SERVER_VERSION: "2.18.5"
+          FRACTAL_SERVER_BRANCH: "main"
           FRACTAL_SERVER_PORT: "8765"
         run: docker compose -f tests/fractal-server/docker-compose.yml up --detach --wait --wait-timeout 120
 
@@ -54,7 +54,7 @@ jobs:
         if: failure()
         env:
           FRACTAL_SERVER_PYTHON: "3.12"
-          FRACTAL_SERVER_VERSION: "2.18.5"
+          FRACTAL_SERVER_BRANCH: "main"
           FRACTAL_SERVER_PORT: "8765"
         run: docker compose -f tests/fractal-server/docker-compose.yml logs
 
