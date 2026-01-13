@@ -52,7 +52,7 @@ jobs:
             sleep 2
           done
           echo "Server failed to start within 60 seconds"
-          docker compose logs
+          docker compose -f tests/fractal-server/docker-compose.yml logs
           exit 1
 
       - name: Setup uv
