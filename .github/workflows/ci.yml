@@ -19,11 +19,6 @@ jobs:
 
     steps:
 
-      - name: Start Postgres
-        run: |
-          sudo systemctl start postgresql.service
-          sudo --login -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
-
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
@@ -38,17 +33,7 @@ jobs:
           FRACTAL_SERVER_PYTHON: "3.12"
           FRACTAL_SERVER_VERSION: "2.18.5"
           FRACTAL_SERVER_PORT: "8765"
-        run: docker compose -f tests/fractal-server/docker-compose.yml up -d
-
-      - name: Wait for server to be ready
-        run: |
-          echo "Waiting for server to be ready..."
-          for i in {1..30}; do
-            curl http://localhost:8765/api/alive/
-          done
-          echo "Server failed to start within 60 seconds"
-          docker compose -f tests/fractal-server/docker-compose.yml logs
-          exit 1
+        run: docker compose -f tests/fractal-server/docker-compose.yml up --detach --wait --wait-timeout 60
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
@@ -64,14 +49,6 @@ jobs:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
           GHA_FRACTAL_SERVER_LOG: /tmp
         run: uv run --frozen coverage run -m pytest
-
-      # - name: Log server STDOUT if pytest failed
-      #   if: failure()
-      #   run: cat /tmp/server_out
-
-      # - name: Log server STDERR if pytest failed
-      #   if: failure()
-      #   run: cat /tmp/server_err
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4

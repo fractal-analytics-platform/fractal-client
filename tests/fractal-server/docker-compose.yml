@@ -1,11 +1,35 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=fractal_client
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   fractal-server:
     image: python:${FRACTAL_SERVER_PYTHON:?FRACTAL_SERVER_PYTHON environment variable is required}-slim
-    network_mode: host
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${FRACTAL_SERVER_PORT:-8765}/api/alive/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    ports:
+      - "${FRACTAL_SERVER_PORT:-8765}:${FRACTAL_SERVER_PORT:-8765}"
     environment:
       - FRACTAL_SERVER_VERSION=${FRACTAL_SERVER_VERSION:?FRACTAL_SERVER_VERSION environment variable is required}
       - FRACTAL_SERVER_PORT=${FRACTAL_SERVER_PORT:-8765}
-      - POSTGRES_HOST=localhost
+      - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=fractal_client
       - POSTGRES_USER=postgres
@@ -24,5 +48,5 @@ services:
         pip install fractal-server==$${FRACTAL_SERVER_VERSION} &&
         fractalctl set-db &&
         fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&
-        fractalctl start --port \"$${FRACTAL_SERVER_PORT}\"
+        fractalctl start --host 0.0.0.0 --port \"$${FRACTAL_SERVER_PORT}\"
       "
