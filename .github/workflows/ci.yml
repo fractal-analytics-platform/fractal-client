@@ -37,7 +37,23 @@ jobs:
         env:
           FRACTAL_SERVER_PYTHON: "3.12"
           FRACTAL_SERVER_VERSION: "2.18.5"
+          FRACTAL_SERVER_PORT: "8765"
         run: docker compose -f tests/fractal-server/docker-compose.yml up -d
+
+      - name: Wait for server to be ready
+        run: |
+          echo "Waiting for server to be ready..."
+          for i in {1..30}; do
+            if curl -f -s http://localhost:8765/api/alive/ > /dev/null; then
+              echo "Server is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/30: Server not ready yet, waiting..."
+            sleep 2
+          done
+          echo "Server failed to start within 60 seconds"
+          docker compose logs
+          exit 1
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v6

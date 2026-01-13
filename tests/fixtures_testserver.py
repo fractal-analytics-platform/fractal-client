@@ -4,13 +4,11 @@ import os
 import shlex
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
 from fractal_client.client import handle
 from fractal_client.interface import Interface
-from httpx import ConnectError
 
 DB_NAME = "pytest-fractal-client"
 FRACTAL_SERVER_PORT = 8765
@@ -36,19 +34,6 @@ def _run_command(cmd: str) -> str:
         raise RuntimeError(res.stderr)
     else:
         return res.stdout
-
-
-def _drop_db():
-    """
-    Note: `--force` helps in case the `fractal-server` process did not
-    terminate properly, thus leaving some open database connections.
-    """
-    _run_command(
-        (
-            "dropdb --username=postgres --host localhost "
-            f"--if-exists {DB_NAME} --force"
-        )
-    )
 
 
 def _split_and_handle(cli_string: str) -> Interface:
@@ -106,26 +91,7 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def testserver(tester, tmpdir_factory, request):
-    # Wait until the server is up
-    TIMEOUT = 30.0
-    t_start = time.perf_counter()
-    while True:
-        try:
-            res = _split_and_handle("fractal version")
-            if "refused" not in res.data:
-                break
-            else:
-                raise ConnectError("fractal-server not ready")
-        except ConnectError:
-            logger.debug("Fractal server not ready, wait one more second.")
-            if time.perf_counter() - t_start > TIMEOUT:
-                raise RuntimeError(
-                    f"Could not start up server within {TIMEOUT} seconds,"
-                    " in `testserver` fixture."
-                )
-            time.sleep(0.1)
-
+def testserver(tester, tmpdir_factory):
     res = _split_and_handle(
         "fractal --user admin@fractal.xy --password 1234 --batch "
         "user register "
@@ -143,8 +109,6 @@ def testserver(tester, tmpdir_factory, request):
     )
 
     yield
-
-    _drop_db()
 
 
 @pytest.fixture
