@@ -50,6 +50,14 @@ jobs:
           GHA_FRACTAL_SERVER_LOG: /tmp
         run: uv run --frozen coverage run -m pytest
 
+      - name: Log server container if pytest failed
+        if: failure()
+        env:
+          FRACTAL_SERVER_PYTHON: "3.12"
+          FRACTAL_SERVER_VERSION: "2.18.5"
+          FRACTAL_SERVER_PORT: "8765"
+        run: docker compose -f tests/fractal-server/docker-compose.yml logs
+
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         with:
