@@ -27,7 +27,7 @@ services:
     ports:
       - "${FRACTAL_SERVER_PORT:-8765}:${FRACTAL_SERVER_PORT:-8765}"
     environment:
-      - FRACTAL_SERVER_VERSION=${FRACTAL_SERVER_VERSION:?FRACTAL_SERVER_VERSION environment variable is required}
+      - FRACTAL_SERVER_BRANCH=${FRACTAL_SERVER_BRANCH:-main}
       - FRACTAL_SERVER_PORT=${FRACTAL_SERVER_PORT:-8765}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
@@ -45,7 +45,7 @@ services:
       - FRACTAL_DEFAULT_GROUP_NAME=All
     command: >
       bash -c "
-        pip install fractal-server==$${FRACTAL_SERVER_VERSION} &&
+        pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@$${FRACTAL_SERVER_BRANCH} &&
         fractalctl set-db &&
         fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&
         fractalctl start --host 0.0.0.0 --port \"$${FRACTAL_SERVER_PORT}\"
