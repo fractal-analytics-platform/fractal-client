@@ -41,7 +41,6 @@ dev = [
     "bumpver==2025.1131",
     "coverage[toml]>=7.12.0,<7.13.0",
     "psutil",
-    "fractal-server@git+https://github.com/fractal-analytics-platform/fractal-server.git@main",
 ]
 docs = [
     "mkdocs==1.6.1",
@@ -79,5 +78,5 @@ omit = ["tests/*", "*/.venv/*"]
 omit = ["tests/*", "*/.venv/*"]
 
 [[tool.mypy.overrides]]
-module = ["devtools", "uvicorn", "pytest", "httpx", "fractal_server"]
+module = ["devtools", "uvicorn", "pytest", "httpx"]
 ignore_missing_imports = true
