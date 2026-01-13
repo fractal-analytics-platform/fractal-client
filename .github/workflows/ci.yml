@@ -44,12 +44,7 @@ jobs:
         run: |
           echo "Waiting for server to be ready..."
           for i in {1..30}; do
-            if curl -f -s http://localhost:8765/api/alive/ > /dev/null; then
-              echo "Server is ready!"
-              exit 0
-            fi
-            echo "Attempt $i/30: Server not ready yet, waiting..."
-            sleep 2
+            curl http://localhost:8765/api/alive/
           done
           echo "Server failed to start within 60 seconds"
           docker compose -f tests/fractal-server/docker-compose.yml logs
