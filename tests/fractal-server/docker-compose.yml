@@ -45,7 +45,8 @@ services:
       - FRACTAL_DEFAULT_GROUP_NAME=All
     command: >
       bash -c "
-        apt-get update && apt-get install -y git &&
+        apt-get update && apt-get install -y git wget &&
+        wget https://github.com/fractal-analytics-platform/fractal-server/raw/main/tests/v2/fractal_tasks_mock/dist/fractal_tasks_mock-0.0.1-py3-none-any.whl -o /tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl &&
         pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@$${FRACTAL_SERVER_BRANCH} &&
         fractalctl set-db &&
         fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&

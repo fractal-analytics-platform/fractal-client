@@ -2,7 +2,6 @@ import json
 import logging
 import time
 from urllib.request import urlopen
-from urllib.request import urlretrieve
 
 import pytest
 from devtools import debug
@@ -66,14 +65,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     """
     COLLECTION_TIMEOUT = 15.0
 
-    # FIXME: This wheel is not available for the server in the Docker container
-    PACKAGE_URL = (
-        "https://github.com/fractal-analytics-platform/fractal-server/"
-        "raw/main/tests/v2/fractal_tasks_mock/dist/"
-        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    )
     PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
     new_user = dict(email=f"{new_name()}@example.org", password="1234")
     user_factory(**new_user)
