@@ -79,7 +79,7 @@ def test_bad_credentials(invoke):
 
 def test_connecterror(override_settings):
     override_settings(
-        FRACTAL_USER="admin@fractal.xy",
+        FRACTAL_USER="admin@example.org",
         FRACTAL_PASSWORD="1234",
         FRACTAL_SERVER="http://localhost:12345",
     )

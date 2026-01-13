@@ -62,7 +62,7 @@ def invoke(tester):
 @pytest.fixture
 def invoke_as_superuser():
     def __invoke(args: str) -> Interface:
-        new_args = f"--user admin@fractal.xy --password 1234 {args}"
+        new_args = f"--user admin@example.org --password 1234 {args}"
         return handle(_clisplit(new_args))
 
     return __invoke

@@ -34,7 +34,7 @@ services:
       - POSTGRES_DB=fractal_client
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - ADMIN_EMAIL=admin@fractal.xy
+      - ADMIN_EMAIL=admin@example.org
       - ADMIN_PWD=1234
       - ADMIN_PROJECT_DIR=/tmp/projects
       - FRACTAL_RUNNER_BACKEND=local

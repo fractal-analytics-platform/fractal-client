@@ -67,8 +67,8 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
         json.dump(resource, f)
 
     res = _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 --batch resource new "
-        f"{resource_json.as_posix()}"
+        "fractal --user admin@example.org --password 1234 --batch resource new"
+        f" {resource_json.as_posix()}"
     )
     resource_id = res.data
 
@@ -82,7 +82,7 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
         json.dump(profile, f)
 
     res = _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 --batch profile new "
+        "fractal --user admin@example.org --password 1234 --batch profile new "
         f"{resource_id} {profile_json.as_posix()}"
     )
     profile_id = res.data
@@ -93,7 +93,7 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory):
     res = _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 --batch "
+        "fractal --user admin@example.org --password 1234 --batch "
         "user register "
         f"{tester['email']} {tester['password']} {tester['project_dir']}"
     )
@@ -104,7 +104,7 @@ def testserver(tester, tmpdir_factory):
     )
 
     _split_and_handle(
-        "fractal --user admin@fractal.xy --password 1234 user edit "
+        "fractal --user admin@example.org --password 1234 user edit "
         f"--new-profile-id {profile_id} {user_id}"
     )
 
