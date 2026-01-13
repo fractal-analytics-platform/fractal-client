@@ -45,6 +45,7 @@ services:
       - FRACTAL_DEFAULT_GROUP_NAME=All
     command: >
       bash -c "
+        apt-get update && apt-get install -y git &&
         pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@$${FRACTAL_SERVER_BRANCH} &&
         fractalctl set-db &&
         fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&
