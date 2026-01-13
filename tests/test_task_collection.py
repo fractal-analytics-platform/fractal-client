@@ -132,7 +132,7 @@ def test_task_collection_custom(
     user_factory(**new_user)
 
     python_interpreter = "/usr/local/bin/python"
-    package_name = "fractal-client"
+    package_name = "pip"
     manifest = str(tmp_path / "manifest.json")
 
     # Download and write a valid Manifest
