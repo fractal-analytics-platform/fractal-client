@@ -32,7 +32,6 @@ jobs:
         env:
           FRACTAL_SERVER_PYTHON: "3.12"
           FRACTAL_SERVER_BRANCH: "main"
-          FRACTAL_SERVER_PORT: "8765"
         run: docker compose -f tests/fractal-server/docker-compose.yml up --detach --wait --wait-timeout 120
 
       - name: Setup uv
@@ -55,7 +54,6 @@ jobs:
         env:
           FRACTAL_SERVER_PYTHON: "3.12"
           FRACTAL_SERVER_BRANCH: "main"
-          FRACTAL_SERVER_PORT: "8765"
         run: docker compose -f tests/fractal-server/docker-compose.yml logs
 
       - name: Upload coverage data
