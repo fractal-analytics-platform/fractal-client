@@ -1,6 +1,5 @@
 import json
 import logging
-import sys
 import time
 from urllib.request import urlopen
 from urllib.request import urlretrieve
@@ -132,7 +131,7 @@ def test_task_collection_custom(
     new_user = dict(email=f"{new_name()}@example.org", password="1234")
     user_factory(**new_user)
 
-    python_interpreter = sys.executable
+    python_interpreter = "/usr/local/bin/python"
     package_name = "fractal-client"
     manifest = str(tmp_path / "manifest.json")
 

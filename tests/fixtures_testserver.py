@@ -7,7 +7,6 @@ import sys
 import time
 from pathlib import Path
 
-import psutil
 import pytest
 from fractal_client.client import handle
 from fractal_client.interface import Interface
@@ -108,56 +107,6 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
 
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory, request):
-    FRACTAL_TASK_DIR = str(tmpdir_factory.mktemp("TASKS"))
-    FRACTAL_RUNNER_WORKING_BASE_DIR = str(tmpdir_factory.mktemp("JOBS"))
-    ADMIN_EMAIL = "admin@fractal.xy"
-    ADMIN_PWD = "1234"
-    ADMIN_PROJECT_DIR = str(tmpdir_factory.mktemp("ADMIN_PROJECT"))
-
-    env_file = Path(".fractal_server.env")
-    with env_file.open("w") as f:
-        f.write(
-            "POSTGRES_HOST=localhost\n"
-            f"POSTGRES_DB={DB_NAME}\n"
-            "POSTGRES_USER=postgres\n"
-            "POSTGRES_PASSWORD=postgres\n"
-            "FRACTAL_RUNNER_BACKEND=local\n"
-            "JWT_SECRET_KEY=secret_key\n"
-            f"FRACTAL_TASKS_DIR={FRACTAL_TASK_DIR}\n"
-            "FRACTAL_RUNNER_WORKING_BASE_DIR="
-            f"{FRACTAL_RUNNER_WORKING_BASE_DIR}\n"
-            "FRACTAL_LOGGING_LEVEL=0\n"
-            "FRACTAL_DEFAULT_GROUP_NAME=All\n"
-        )
-    _drop_db()
-    _run_command(f"createdb --username=postgres --host localhost {DB_NAME}")
-    _run_command("uv run fractalctl set-db")
-    _run_command(
-        "uv run fractalctl init-db-data "
-        "--resource default "
-        "--profile default "
-        f"--admin-email {ADMIN_EMAIL} "
-        f"--admin-pwd {ADMIN_PWD} "
-        f"--admin-project-dir {ADMIN_PROJECT_DIR}"
-    )
-
-    LOG_DIR = os.environ.get(
-        "GHA_FRACTAL_SERVER_LOG",
-        tmpdir_factory.mktemp("LOGS"),
-    )
-
-    path_out = Path(LOG_DIR, "server_out")
-    path_err = Path(LOG_DIR, "server_err")
-    f_out = path_out.open("w")
-    f_err = path_err.open("w")
-
-    server_process = subprocess.Popen(
-        shlex.split(f"uv run fractalctl start --port {FRACTAL_SERVER_PORT}"),
-        stdout=f_out,
-        stderr=f_err,
-        shell=False,
-    )
-
     # Wait until the server is up
     TIMEOUT = 8.0
     t_start = time.perf_counter()
@@ -167,8 +116,6 @@ def testserver(tester, tmpdir_factory, request):
             if "refused" not in res.data:
                 break
             else:
-                f_out.close()
-                f_err.close()
                 raise ConnectError("fractal-server not ready")
         except ConnectError:
             logger.debug("Fractal server not ready, wait one more second.")
@@ -197,22 +144,6 @@ def testserver(tester, tmpdir_factory, request):
 
     yield
 
-    request.session.warn(
-        Warning(
-            f"\n\nTerminating Fractal Server (PID: {server_process.pid}).\n"
-            f"stdout -> {path_out}\n"
-            f"stderr -> {path_err}\n"
-        )
-    )
-
-    # Cleanup
-    process = psutil.Process(server_process.pid)
-    for proc in process.children(recursive=True):
-        proc.kill()
-    process.kill()
-    f_out.close()
-    f_err.close()
-    env_file.unlink()
     _drop_db()
 
 

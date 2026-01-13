@@ -1,0 +1,28 @@
+services:
+  fractal-server:
+    image: python:${FRACTAL_SERVER_PYTHON:?FRACTAL_SERVER_PYTHON environment variable is required}-slim
+    network_mode: host
+    environment:
+      - FRACTAL_SERVER_VERSION=${FRACTAL_SERVER_VERSION:?FRACTAL_SERVER_VERSION environment variable is required}
+      - FRACTAL_SERVER_PORT=${FRACTAL_SERVER_PORT:-8765}
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=fractal_client
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - ADMIN_EMAIL=admin@fractal.xy
+      - ADMIN_PWD=1234
+      - ADMIN_PROJECT_DIR=/tmp/projects
+      - FRACTAL_RUNNER_BACKEND=local
+      - JWT_SECRET_KEY=secret_key
+      - FRACTAL_TASKS_DIR=/tmp/tasks
+      - FRACTAL_RUNNER_WORKING_BASE_DIR=/tmp/runner
+      - FRACTAL_LOGGING_LEVEL=0
+      - FRACTAL_DEFAULT_GROUP_NAME=All
+    command: >
+      bash -c "
+        pip install fractal-server==$${FRACTAL_SERVER_VERSION} &&
+        fractalctl set-db &&
+        fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&
+        fractalctl start --port \"$${FRACTAL_SERVER_PORT}\"
+      "

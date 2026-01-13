@@ -33,6 +33,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Run docker compose
+        env:
+          FRACTAL_SERVER_PYTHON: "3.12"
+          FRACTAL_SERVER_VERSION: "2.18.5"
+        run: docker compose -f tests/fractal-server/docker-compose.yml up -d
+
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -48,13 +54,13 @@ jobs:
           GHA_FRACTAL_SERVER_LOG: /tmp
         run: uv run --frozen coverage run -m pytest
 
-      - name: Log server STDOUT if pytest failed
-        if: failure()
-        run: cat /tmp/server_out
+      # - name: Log server STDOUT if pytest failed
+      #   if: failure()
+      #   run: cat /tmp/server_out
 
-      - name: Log server STDERR if pytest failed
-        if: failure()
-        run: cat /tmp/server_err
+      # - name: Log server STDERR if pytest failed
+      #   if: failure()
+      #   run: cat /tmp/server_err
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
