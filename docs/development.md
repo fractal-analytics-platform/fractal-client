@@ -58,14 +58,32 @@ and publish it to PyPI.
 Unit and integration testing of Fractal Server uses the
 [pytest](https://docs.pytest.org/en/7.1.x/) testing framework.
 
-If you installed the development dependencies, you may run
-the test suite by invoking
+Before running the test suite, a Fractal Server instance and a PostgreSQL
+database must be available. For convenience, both services can be started via
+Docker Compose using the configuration provided at `tests/fractal-server/docker-compose.yml`:
+```sh
+docker compose -f tests/fractal-server/docker-compose.yml up
 ```
+
+The Fractal Server service can be customized via environment variables:
+
+- `FRACTAL_SERVER_PYTHON`: Python version used to run Fractal Server (defaults to `3.12`);
+- `FRACTAL_SERVER_BRANCH`: Git branch of the Fractal Server repository to use (defaults to `main`).
+
+For example:
+```sh
+export FRACTAL_SERVER_PYTHON=3.14
+export FRACTAL_SERVER_BRANCH=123-bug-fix
+docker compose -f tests/fractal-server/docker-compose.yml up
+```
+
+Then, you may run the test suite by invoking
+```sh
 uv run pytest
 ```
 from the main directory of the `fractal-client` repository. It is sometimes
 useful to specify additional arguments, e.g.
-```
+```sh
 uv run pytest -s -vvv --log-cli-level info --full-trace
 ```
 
