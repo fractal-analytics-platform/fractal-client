@@ -56,7 +56,7 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
         tasks_python_config={
             "default_version": current_py_version,
             "versions": {
-                current_py_version: sys.executable,
+                current_py_version: "/usr/local/bin/python",
             },
         },
         tasks_pixi_config={},
