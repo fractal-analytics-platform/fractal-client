@@ -16,7 +16,6 @@ dependencies = [
     "httpx >= 0.28.0, <0.29.0",
     "PyJWT >= 2.8.0,<3.0.0",
     "packaging >= 25.0.0, <26.0.0",
-
 ]
 
 [project.scripts]
