@@ -1,6 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.19.0 (unreleased)
+# 2.18.1 (unreleased)
 
 * Dependencies:
     * Drop `fractal-server` and `psutil` dev dependencies (\#867).
