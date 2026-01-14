@@ -3,7 +3,7 @@
 # 2.19.0 (unreleased)
 
 * Dependencies:
-    * Drop `fractal-server` (\#867).
+    * Drop `fractal-server` and `psutil` dev dependencies (\#867).
 * Testing:
     * Run Fractal Server and Postgres using Docker (\#867).
 
