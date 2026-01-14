@@ -18,9 +18,9 @@ def get_resource_data(name: str) -> dict[str, Any]:
     }
 
 
-def test_new_resource_and_profile(tmp_path, invoke_as_superuser):
-    resource_data_1 = get_resource_data("res1")
-    resource_data_2 = get_resource_data("res2")
+def test_new_resource_and_profile(tmp_path, invoke_as_superuser, new_name):
+    resource_data_1 = get_resource_data(new_name())
+    resource_data_2 = get_resource_data(new_name())
     resource_path_1 = tmp_path / "res1.json"
     resource_path_2 = tmp_path / "res2.json"
     with resource_path_1.open("w") as f:
@@ -38,8 +38,8 @@ def test_new_resource_and_profile(tmp_path, invoke_as_superuser):
     assert res.retcode == 0
     resource_id_2 = int(res.data)
 
-    profile_data_1 = dict(resource_type="local", name="profile 1")
-    profile_data_2 = dict(resource_type="local", name="profile 2")
+    profile_data_1 = dict(resource_type="local", name=f"profile {new_name()}")
+    profile_data_2 = dict(resource_type="local", name=f"profile {new_name()}")
     profile_path_1 = tmp_path / "prof1.json"
     profile_path_2 = tmp_path / "prof2.json"
     with profile_path_1.open("w") as f:

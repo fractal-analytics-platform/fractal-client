@@ -1,5 +1,7 @@
 import multiprocessing
 import shlex
+import urllib.request
+from datetime import datetime
 from os import environ
 from pathlib import Path
 
@@ -14,6 +16,21 @@ from fractal_client.client import handle  # noqa: E402
 # https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228
 # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.get_start_method
 multiprocessing.set_start_method("fork")
+
+
+@pytest.fixture(scope="session")
+def fractal_tasks_mock(tmpdir_factory) -> str:
+    url = (
+        "https://github.com/fractal-analytics-platform/"
+        "fractal-server/raw/main/tests/v2/fractal_tasks_mock/dist/"
+        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    )
+    local_path = (
+        tmpdir_factory.mktemp("fractal_task_mock")
+        / "fractal_tasks_mock-0.0.1-py3-none-any.whl"
+    )
+    urllib.request.urlretrieve(url, local_path)
+    return str(local_path)
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -40,9 +57,9 @@ def _clisplit(args: str):
 
 
 @pytest.fixture(scope="session")
-def tester():
+def tester(new_name):
     return dict(
-        email="client_tester@example.org",
+        email=f"client_tester_{new_name()}@example.org",
         password="pytest",
         project_dir="/tester-project-dir",
     )
@@ -62,7 +79,7 @@ def invoke(tester):
 @pytest.fixture
 def invoke_as_superuser():
     def __invoke(args: str) -> Interface:
-        new_args = f"--user admin@fractal.xy --password 1234 {args}"
+        new_args = f"--user admin@example.org --password 1234 {args}"
         return handle(_clisplit(new_args))
 
     return __invoke
@@ -124,7 +141,7 @@ def new_name():
 
         def __next__(self):
             self.ind = self.ind + 1
-            return f"name{self.ind - 1}"
+            return f"name-{self.ind - 1}-{int(datetime.now().timestamp())}"
 
     names = Counter()
 

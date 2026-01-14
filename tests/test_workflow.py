@@ -482,15 +482,18 @@ def test_workflow_import(
     invoke,
     testdata_path,
     new_name,
+    tmp_path,
 ):
+    name1 = new_name()
     res = invoke(
-        "task new --command-parallel pwd --command-non-parallel pwd dummy"
+        f"task new --command-parallel pwd --command-non-parallel pwd {name1}"
     )
     debug(res.data)
     assert res.retcode == 0
 
+    name2 = new_name()
     res = invoke(
-        "task new --command-parallel pwd --command-non-parallel pwd dummy2"
+        f"task new --command-parallel pwd --command-non-parallel pwd {name2}"
     )
     debug(res.data)
     assert res.retcode == 0
@@ -505,7 +508,13 @@ def test_workflow_import(
     with pytest.raises(SystemExit):
         invoke(f"workflow import --project-id {project_id}")
     # import workflow into project
-    filename = str(testdata_path / "import-export/workflow.json")
+    with (testdata_path / "import-export/workflow.json").open("r") as f:
+        worfklow_to_import = json.load(f)
+    worfklow_to_import["task_list"][0]["task"]["name"] = name1
+    worfklow_to_import["task_list"][0]["task"]["pkg_name"] = name1
+    filename = tmp_path / "workflow1"
+    with filename.open("w") as f:
+        json.dump(worfklow_to_import, f)
     res = invoke(
         f"workflow import --project-id {project_id} --json-file {filename}"
     )
@@ -523,7 +532,13 @@ def test_workflow_import(
     assert res.data == imported_workflow
 
     # import workflow into project, with --batch
-    filename = str(testdata_path / "import-export/workflow_2.json")
+    with (testdata_path / "import-export/workflow_2.json").open("r") as f:
+        worfklow_to_import = json.load(f)
+    worfklow_to_import["task_list"][0]["task"]["name"] = name2
+    worfklow_to_import["task_list"][0]["task"]["pkg_name"] = name2
+    filename = tmp_path / "workflow2"
+    with filename.open("w") as f:
+        json.dump(worfklow_to_import, f)
     res = invoke(
         f"--batch workflow import --project-id {project_id} "
         f"--json-file {filename}"

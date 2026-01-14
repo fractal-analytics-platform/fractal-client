@@ -1,9 +1,7 @@
 import json
 import logging
-import sys
 import time
 from urllib.request import urlopen
-from urllib.request import urlretrieve
 
 import pytest
 from devtools import debug
@@ -57,7 +55,9 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     assert error_line is not None
 
 
-def test_task_collection(invoke_as_custom_user, user_factory, new_name):
+def test_task_collection(
+    invoke_as_custom_user, user_factory, new_name, fractal_tasks_mock
+):
     """
     GIVEN a pip installable package containing fractal-compatible tasks
     WHEN the collection subcommand is called
@@ -67,14 +67,6 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     """
     COLLECTION_TIMEOUT = 15.0
 
-    PACKAGE_URL = (
-        "https://github.com/fractal-analytics-platform/fractal-server/"
-        "raw/main/tests/v2/fractal_tasks_mock/dist/"
-        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    )
-    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
-
     new_user = dict(email=f"{new_name()}@example.org", password="1234")
     user_factory(**new_user)
 
@@ -82,7 +74,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
     initial_task_list = len(res.data)
 
     res0 = invoke_as_custom_user(
-        f"task collect --private {PACKAGE_PATH}",
+        f"task collect --private {fractal_tasks_mock}",
         **new_user,
     )
     debug(res0.data)
@@ -123,7 +115,7 @@ def test_task_collection(invoke_as_custom_user, user_factory, new_name):
 
     # Second collection
     with pytest.raises(SystemExit):
-        invoke_as_custom_user(f"task collect {PACKAGE_PATH}", **new_user)
+        invoke_as_custom_user(f"task collect {fractal_tasks_mock}", **new_user)
 
 
 def test_task_collection_custom(
@@ -132,8 +124,8 @@ def test_task_collection_custom(
     new_user = dict(email=f"{new_name()}@example.org", password="1234")
     user_factory(**new_user)
 
-    python_interpreter = sys.executable
-    package_name = "fractal-client"
+    python_interpreter = "/usr/local/bin/python"
+    package_name = "pip"
     manifest = str(tmp_path / "manifest.json")
 
     # Download and write a valid Manifest

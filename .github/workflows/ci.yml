@@ -17,12 +17,11 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
 
-    steps:
+    env:
+      FRACTAL_SERVER_PYTHON: "3.12"
+      FRACTAL_SERVER_BRANCH: "main"
 
-      - name: Start Postgres
-        run: |
-          sudo systemctl start postgresql.service
-          sudo --login -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+    steps:
 
       - uses: actions/checkout@v5
         with:
@@ -32,6 +31,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Run docker compose
+        run: docker compose -f tests/fractal-server/docker-compose.yml up -d
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
@@ -45,16 +47,11 @@ jobs:
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
-          GHA_FRACTAL_SERVER_LOG: /tmp
         run: uv run --frozen coverage run -m pytest
 
-      - name: Log server STDOUT if pytest failed
+      - name: Log server container if pytest failed
         if: failure()
-        run: cat /tmp/server_out
-
-      - name: Log server STDERR if pytest failed
-        if: failure()
-        run: cat /tmp/server_err
+        run: docker compose -f tests/fractal-server/docker-compose.yml logs
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4

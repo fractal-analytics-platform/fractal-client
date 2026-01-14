@@ -1,7 +1,6 @@
 import json
 import time
 from pathlib import Path
-from urllib.request import urlretrieve
 
 import pytest
 from devtools import debug
@@ -18,17 +17,11 @@ def test_job_submit(
     testdata_path: Path,
     new_name,
     invoke_as_superuser,
+    fractal_tasks_mock,
 ):
     # Collect tasks
-    PACKAGE_URL = (
-        "https://github.com/fractal-analytics-platform/fractal-server/"
-        "raw/main/tests/v2/fractal_tasks_mock/dist/"
-        "fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    )
-    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
-    urlretrieve(PACKAGE_URL, PACKAGE_PATH)
 
-    res = invoke(f"--batch task collect {PACKAGE_PATH} --private")
+    res = invoke(f"--batch task collect {fractal_tasks_mock} --private")
     assert res.retcode == 0
     activity_id = res.data
 
