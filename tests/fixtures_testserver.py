@@ -1,5 +1,4 @@
 import json
-import logging
 import shlex
 import sys
 import time
@@ -11,9 +10,6 @@ from fractal_client.interface import Interface
 
 DB_NAME = "pytest-fractal-client"
 FRACTAL_SERVER_PORT = 8765
-
-logger = logging.getLogger("fractal-client")
-logger.setLevel(logging.DEBUG)
 
 
 def _split_and_handle(cli_string: str) -> Interface:
@@ -81,6 +77,7 @@ def testserver(tester, tmpdir_factory):
             "fractal --user admin@example.org --password 1234 version"
         )
         if res.retcode != 0 or "refused" in res.data:
+            print("Waiting for Fractal Server to be available...")
             time.sleep(INTERVAL)
         else:
             fractal_server_ready = True
@@ -110,7 +107,7 @@ def testserver(tester, tmpdir_factory):
             f"--new-profile-id {profile_id} {user_id}"
         )
     except SystemExit:
-        # Tester user already exists
+        print("Skipping tester user registration because it already exists.")
         pass
 
 
