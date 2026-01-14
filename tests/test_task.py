@@ -64,7 +64,7 @@ def test_task_new(
     )
     res.show()
     assert res.retcode == 0
-    # assert res.data == str(first_task_id + 1)
+    assert res.data == str(first_task_id + 1)
 
     # create a new task with same name as before. Note that in check_response
     # we have sys.exit(1) when status code is not the expecte one

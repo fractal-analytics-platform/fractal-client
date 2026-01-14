@@ -36,7 +36,6 @@ dev = [
     "devtools==0.12.2",
     "pre-commit>=3.0.0,<4.0.0",
     "pytest>=8.4.0,<8.5.0",
-    "pytest-xdist",
     "pytest-randomly==3.16.0",
     "bumpver==2025.1131",
     "coverage[toml]>=7.12.0,<7.13.0",

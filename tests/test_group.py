@@ -25,13 +25,13 @@ def test_group_commands(
     # get default group id and superuser id
     res = invoke_as_superuser("group list --user-ids")
     assert res.retcode == 0
-    # initial_number_of_groups = len(res.data) # FIXME
+    initial_number_of_groups = len(res.data)
     default_group = next(
         group
         for group in res.data
         if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
     )
-    # initial_number_of_users = len(default_group["user_ids"])
+    initial_number_of_users = len(default_group["user_ids"])
 
     default_group_id = default_group["id"]
     superuser_id = superuser["id"]
@@ -48,8 +48,8 @@ def test_group_commands(
     assert user3["group_ids_names"] == [[default_group_id, "All"]]
 
     res = invoke_as_superuser("group list --user-ids")
-    # assert len(res.data) == initial_number_of_groups # FIXME
-    # assert len(res.data[0]["user_ids"]) == initial_number_of_users + 3 # FIXME
+    assert len(res.data) == initial_number_of_groups
+    assert len(res.data[0]["user_ids"]) == initial_number_of_users + 3
 
     # Create 2 new empty groups (`group new`)
 
@@ -105,11 +105,11 @@ def test_group_commands(
     # Check groups are updated
 
     res = invoke_as_superuser("group list --user-ids")
-    # assert len(res.data) == initial_number_of_groups + 2 # FIXME
+    assert len(res.data) == initial_number_of_groups + 2
     users_default_group = next(
         g["user_ids"] for g in res.data if g["id"] == default_group_id
     )
-    # assert len(users_default_group) == initial_number_of_users + 3  # FIXME
+    assert len(users_default_group) == initial_number_of_users + 3
     users_group_1 = next(
         g["user_ids"] for g in res.data if g["id"] == group1_id
     )
@@ -136,7 +136,7 @@ def test_group_commands(
     res = invoke_as_superuser(f"group get {default_group_id}")
     assert res.retcode == 0
     assert res.data["name"] == FRACTAL_DEFAULT_GROUP_NAME
-    # assert len(res.data["user_ids"]) == initial_number_of_users + 3
+    assert len(res.data["user_ids"]) == initial_number_of_users + 3
 
     # Test `list` without `--user-ids`
 
@@ -147,7 +147,7 @@ def test_group_commands(
     # Test `--batch`
 
     res = invoke_as_superuser("--batch group list")
-    # assert len(res.data.split(" ")) == initial_number_of_groups + 2  # FIXME
+    assert len(res.data.split(" ")) == initial_number_of_groups + 2
 
     res = invoke_as_superuser(f"--batch group new {new_name()}")
     assert isinstance(res.data, int)
