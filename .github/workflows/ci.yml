@@ -49,17 +49,22 @@ jobs:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: uv run --frozen coverage run -m pytest -v
 
-      - name: Test with pytest
+      - name: Test with pytest -n 1
+        env:
+          COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
+        run: uv run --frozen coverage run -m pytest -n 1 -v
+
+      - name: Test with pytest -n 2
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: uv run --frozen coverage run -m pytest -n 2 -v
 
-      - name: Test with pytest
+      - name: Test with pytest -n 3
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: uv run --frozen coverage run -m pytest -n 3 -v
 
-      - name: Test with pytest
+      - name: Test with pytest -n 4
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: uv run --frozen coverage run -m pytest -n 4 -v
