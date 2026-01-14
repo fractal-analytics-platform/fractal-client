@@ -17,11 +17,11 @@ def test_job_submit(
     testdata_path: Path,
     new_name,
     invoke_as_superuser,
+    fractal_tasks_mock,
 ):
     # Collect tasks
-    PACKAGE_PATH = "/tmp/fractal_tasks_mock-0.0.1-py3-none-any.whl"
 
-    res = invoke(f"--batch task collect {PACKAGE_PATH} --private")
+    res = invoke(f"--batch task collect {fractal_tasks_mock} --private")
     assert res.retcode == 0
     activity_id = res.data
 
