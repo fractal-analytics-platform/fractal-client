@@ -4,6 +4,7 @@ import os
 import shlex
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -92,6 +93,17 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
 
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory):
+    TIMEOUT = 60
+    INTERVAL = 4
+    for _ in range(TIMEOUT // INTERVAL):
+        res = _split_and_handle(
+            "fractal --user admin@example.org --password 1234 version"
+        )
+        if res.retcode != 0 or "refused" in res.data:
+            time.sleep(INTERVAL)
+        else:
+            break
+
     try:
         res = _split_and_handle(
             "fractal --user admin@example.org --password 1234 --batch "

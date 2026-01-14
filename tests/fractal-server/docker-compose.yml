@@ -18,12 +18,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; import sys; sys.exit(0 if urllib.request.urlopen('http://localhost:${FRACTAL_SERVER_PORT:-8765}/api/alive/').getcode() == 200 else 1)"]
-      interval: 4s
-      timeout: 5s
-      retries: 15
-      start_period: 90s
     ports:
       - "${FRACTAL_SERVER_PORT:-8765}:${FRACTAL_SERVER_PORT:-8765}"
     environment:
