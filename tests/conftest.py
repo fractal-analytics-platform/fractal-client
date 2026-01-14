@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 import shlex
 import urllib.request
 from datetime import datetime
@@ -139,9 +140,14 @@ def new_name():
     class Counter:
         ind: int = 0
 
-        def __next__(self):
+        def __next__(self) -> str:
             self.ind = self.ind + 1
-            return f"name-{self.ind - 1}-{int(datetime.now().timestamp())}"
+            return (
+                "name-"
+                f"{self.ind - 1}-"
+                f"{os.getpid()}"
+                f"{int(datetime.now().timestamp())}"
+            )
 
     names = Counter()
 
