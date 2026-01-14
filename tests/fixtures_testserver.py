@@ -86,7 +86,11 @@ def testserver(tester, tmpdir_factory):
             fractal_server_ready = True
             break
     if fractal_server_ready is False:
-        raise RuntimeError("Cannot connect to Fractal Server.")
+        raise RuntimeError(
+            "Cannot connect to Fractal Server service. "
+            "It should be started by running "
+            "`docker compose -f tests/fractal-server/docker-compose.yml up`."
+        )
 
     # Register Tester user
     try:
