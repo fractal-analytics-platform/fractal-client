@@ -48,8 +48,6 @@ jobs:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: uv run --frozen coverage run -m pytest
 
-      - run: uv run --frozen pytest -vv
-
       - name: Log server container if pytest failed
         if: failure()
         env:
