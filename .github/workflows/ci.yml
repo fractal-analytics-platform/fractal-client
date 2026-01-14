@@ -32,7 +32,7 @@ jobs:
         env:
           FRACTAL_SERVER_PYTHON: "3.12"
           FRACTAL_SERVER_BRANCH: "main"
-        run: docker compose -f tests/fractal-server/docker-compose.yml up --detach --wait --wait-timeout 120
+        run: docker compose -f tests/fractal-server/docker-compose.yml up --detach --wait --wait-timeout 60
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
