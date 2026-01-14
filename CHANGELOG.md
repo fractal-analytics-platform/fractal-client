@@ -1,6 +1,13 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.18.0 (unreleased)
+# 2.19.0 (unreleased)
+
+* Dependencies:
+    * Drop `fractal-server` (\#867).
+* Testing:
+    * Run Fractal Server and Postgres using Docker (\#867).
+
+# 2.18.0
 
 This version is aligned with [fractal-server 2.18.10](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2180).
 
@@ -13,7 +20,7 @@ This version is aligned with [fractal-server 2.18.10](https://github.com/fractal
     * Add `--project-dir` and `--zarr-subfolder` arguments of `project add-dataset` (\#xxx)
     * Make `dataset edit --new-name` argument required (\#849).
 * Dependencies:
-    Support Python 3.14 (\#851).
+    * Support Python 3.14 (\#851).
 * Docs:
     * Bump docs dependencies and update mkdocs config (\#850).
 * Testing:
