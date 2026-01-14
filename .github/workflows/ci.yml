@@ -49,6 +49,12 @@ jobs:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: uv run --frozen coverage run -m pytest
 
+      - name: Run tests second time
+        run: uv run python -m pytest
+
+      - name: Run tests third time
+        run: uv run python -m pytest
+
       - name: Log server container if pytest failed
         if: failure()
         run: docker compose -f tests/fractal-server/docker-compose.yml logs
