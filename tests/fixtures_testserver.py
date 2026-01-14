@@ -92,21 +92,24 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
 
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory):
-    res = _split_and_handle(
-        "fractal --user admin@example.org --password 1234 --batch "
-        "user register "
-        f"{tester['email']} {tester['password']} {tester['project_dir']}"
-    )
-    user_id = res.data
-    _, profile_id = _resource_and_profile_ids(
-        base_path=Path(tmpdir_factory.mktemp("resource-and-profile")),
-        resource_name=f"resource-{user_id}",
-    )
+    try:
+        res = _split_and_handle(
+            "fractal --user admin@example.org --password 1234 --batch "
+            "user register "
+            f"{tester['email']} {tester['password']} {tester['project_dir']}"
+        )
+        user_id = res.data
+        _, profile_id = _resource_and_profile_ids(
+            base_path=Path(tmpdir_factory.mktemp("resource-and-profile")),
+            resource_name=f"resource-{user_id}",
+        )
 
-    _split_and_handle(
-        "fractal --user admin@example.org --password 1234 user edit "
-        f"--new-profile-id {profile_id} {user_id}"
-    )
+        _split_and_handle(
+            "fractal --user admin@example.org --password 1234 user edit "
+            f"--new-profile-id {profile_id} {user_id}"
+        )
+    except SystemExit:
+        pass
 
     yield
 
