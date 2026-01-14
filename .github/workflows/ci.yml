@@ -47,7 +47,22 @@ jobs:
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
+        run: uv run --frozen coverage run -m pytest -v
+
+      - name: Test with pytest
+        env:
+          COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
+        run: uv run --frozen coverage run -m pytest -n 2 -v
+
+      - name: Test with pytest
+        env:
+          COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
         run: uv run --frozen coverage run -m pytest -n 3 -v
+
+      - name: Test with pytest
+        env:
+          COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
+        run: uv run --frozen coverage run -m pytest -n 4 -v
 
       - name: Log server container if pytest failed
         if: failure()
