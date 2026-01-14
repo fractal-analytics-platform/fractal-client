@@ -484,13 +484,15 @@ def test_workflow_import(
     new_name,
 ):
     res = invoke(
-        "task new --command-parallel pwd --command-non-parallel pwd dummy"
+        "task new --command-parallel pwd --command-non-parallel pwd "
+        f"{new_name()}"
     )
     debug(res.data)
     assert res.retcode == 0
 
     res = invoke(
-        "task new --command-parallel pwd --command-non-parallel pwd dummy2"
+        "task new --command-parallel pwd --command-non-parallel pwd "
+        f"{new_name()}"
     )
     debug(res.data)
     assert res.retcode == 0
