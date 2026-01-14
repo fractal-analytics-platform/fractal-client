@@ -19,10 +19,10 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "${FRACTAL_SERVER_PORT:-8765}:${FRACTAL_SERVER_PORT:-8765}"
+      - "8765:8765"
     environment:
       - FRACTAL_SERVER_BRANCH=${FRACTAL_SERVER_BRANCH:-main}
-      - FRACTAL_SERVER_PORT=${FRACTAL_SERVER_PORT:-8765}
+      - FRACTAL_SERVER_PORT=8765
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=fractal_client
