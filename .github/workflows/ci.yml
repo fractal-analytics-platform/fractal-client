@@ -46,8 +46,9 @@ jobs:
       - name: Test with pytest
         env:
           COVERAGE_FILE: coverage-data-${{ matrix.python-version }}
-          GHA_FRACTAL_SERVER_LOG: /tmp
         run: uv run --frozen coverage run -m pytest
+
+      - run: uv run --frozen pytest -vv
 
       - name: Log server container if pytest failed
         if: failure()
