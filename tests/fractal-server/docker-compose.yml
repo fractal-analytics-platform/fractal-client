@@ -39,9 +39,9 @@ services:
       - FRACTAL_DEFAULT_GROUP_NAME=All
     command: >
       bash -c "
-        apt-get update && apt-get install -y git &&
-        pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@$${FRACTAL_SERVER_BRANCH} &&
-        fractalctl set-db &&
-        fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&
-        fractalctl start --host 0.0.0.0 --port \"$${FRACTAL_SERVER_PORT}\"
+        apt-get update && apt-get install -y git && python3 -m venv venv &&
+        venv/bin/pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@$${FRACTAL_SERVER_BRANCH} &&
+        venv/bin/fractalctl set-db &&
+        venv/bin/fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&
+        venv/bin/fractalctl start --host 0.0.0.0 --port \"$${FRACTAL_SERVER_PORT}\"
       "
