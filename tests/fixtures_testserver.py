@@ -1,8 +1,6 @@
 import json
 import logging
-import os
 import shlex
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -16,25 +14,6 @@ FRACTAL_SERVER_PORT = 8765
 
 logger = logging.getLogger("fractal-client")
 logger.setLevel(logging.DEBUG)
-
-
-def _run_command(cmd: str) -> str:
-    logging.warning(f"Now running {cmd=}")
-    env = os.environ
-    if "PGPASSWORD" not in os.environ:
-        env["PGPASSWORD"] = "postgres"
-    res = subprocess.run(
-        shlex.split(cmd),
-        capture_output=True,
-        env=env,
-        encoding="utf-8",
-    )
-    if res.returncode != 0:
-        logging.error(f"{res.stdout=}")
-        logging.error(f"{res.stderr=}")
-        raise RuntimeError(res.stderr)
-    else:
-        return res.stdout
 
 
 def _split_and_handle(cli_string: str) -> Interface:
@@ -93,8 +72,10 @@ def _resource_and_profile_ids(base_path: Path, resource_name: str):
 
 @pytest.fixture(scope="session", autouse=True)
 def testserver(tester, tmpdir_factory):
+    # Fractal Server healthcheck
     TIMEOUT = 60
     INTERVAL = 4
+    fractal_server_ready = False
     for _ in range(TIMEOUT // INTERVAL):
         res = _split_and_handle(
             "fractal --user admin@example.org --password 1234 version"
@@ -102,8 +83,12 @@ def testserver(tester, tmpdir_factory):
         if res.retcode != 0 or "refused" in res.data:
             time.sleep(INTERVAL)
         else:
+            fractal_server_ready = True
             break
+    if fractal_server_ready is False:
+        raise RuntimeError("Cannot connect to Fractal Server.")
 
+    # Register Tester user
     try:
         res = _split_and_handle(
             "fractal --user admin@example.org --password 1234 --batch "
@@ -121,9 +106,8 @@ def testserver(tester, tmpdir_factory):
             f"--new-profile-id {profile_id} {user_id}"
         )
     except SystemExit:
+        # Tester user already exists
         pass
-
-    yield
 
 
 @pytest.fixture
