@@ -51,13 +51,13 @@ def test_user_whoami(tester, invoke):
     assert user["email"] == tester["email"]
 
 
-def test_user_override(user_factory, invoke):
+def test_user_override(user_factory, invoke, new_name):
     """
     GIVEN a user whose credentials differ from those of the environment
     WHEN the client is invoked with -u and -p
     THEN the credentials are overridden
     """
-    EMAIL = "other_user@exact-lab.it"
+    EMAIL = f"{new_name()}@example.org"
     PASSWORD = "other_password"
     user_factory(email=EMAIL, password=PASSWORD)
 
@@ -71,7 +71,7 @@ def test_bad_credentials(invoke):
     WHEN wrong credentials are passed
     THEN the client returns an error
     """
-    res = invoke("-u nouser@exact-lab.it -p nopassword project list")
+    res = invoke("-u nouser@example.org -p nopassword project list")
     res.show()
     assert res.retcode != 0
     assert "BAD_CREDENTIALS" in res.data
@@ -89,7 +89,7 @@ def test_connecterror(override_settings):
     assert "Hint: is http://localhost:12345 alive?" in res.data
 
 
-def test_argparse_abbreviation(invoke_as_superuser):
+def test_argparse_abbreviation(invoke_as_superuser, new_name):
     """
     Check that argparse abbreviations are disabled on at least one command.
 
@@ -100,7 +100,8 @@ def test_argparse_abbreviation(invoke_as_superuser):
 
     # Successful invoke
     res = invoke_as_superuser(
-        "user register test@mail.com secret /project-dir --superuser"
+        f"user register {new_name()}@example.org secret /project-dir "
+        "--superuser"
     )
     res.show()
     assert res.retcode == 0
@@ -108,7 +109,8 @@ def test_argparse_abbreviation(invoke_as_superuser):
     # Failed (abbreviation-based) invoke
     with pytest.raises(SystemExit):
         invoke_as_superuser(
-            "user register test2@mail.com secret2 /project-dir --super"
+            f"user register {new_name()}@example.org secret2 /project-dir "
+            "--super"
         )
 
 

@@ -113,7 +113,7 @@ def test_edit_as_user(invoke, invoke_as_superuser, caplog, new_name):
     with pytest.raises(SystemExit):
         res = invoke(
             f"user edit {user_id} "
-            "--new-email email@something.xy --make-verified"
+            "--new-email email@example.org --make-verified"
         )
     debug(caplog.text)
     assert "403" in caplog.text

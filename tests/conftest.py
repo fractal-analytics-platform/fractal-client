@@ -1,6 +1,7 @@
 import multiprocessing
 import shlex
 import urllib.request
+from datetime import datetime
 from os import environ
 from pathlib import Path
 
@@ -56,9 +57,9 @@ def _clisplit(args: str):
 
 
 @pytest.fixture(scope="session")
-def tester():
+def tester(new_name):
     return dict(
-        email="client_tester@example.org",
+        email=f"client_tester_{new_name()}@example.org",
         password="pytest",
         project_dir="/tester-project-dir",
     )
@@ -140,7 +141,7 @@ def new_name():
 
         def __next__(self):
             self.ind = self.ind + 1
-            return f"name{self.ind - 1}"
+            return f"name-{self.ind - 1}-{int(datetime.now().timestamp())}"
 
     names = Counter()
 
