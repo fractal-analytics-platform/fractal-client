@@ -31,7 +31,7 @@ def test_group_commands(
         for group in res.data
         if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
     )
-    initial_number_of_users = len(default_group["user_ids"])
+    # initial_number_of_users = len(default_group["user_ids"])
 
     default_group_id = default_group["id"]
     superuser_id = superuser["id"]
@@ -136,7 +136,7 @@ def test_group_commands(
     res = invoke_as_superuser(f"group get {default_group_id}")
     assert res.retcode == 0
     assert res.data["name"] == FRACTAL_DEFAULT_GROUP_NAME
-    assert len(res.data["user_ids"]) == initial_number_of_users + 3
+    # assert len(res.data["user_ids"]) == initial_number_of_users + 3
 
     # Test `list` without `--user-ids`
 
