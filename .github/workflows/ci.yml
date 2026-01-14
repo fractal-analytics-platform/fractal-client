@@ -17,6 +17,10 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
 
+    env:
+      FRACTAL_SERVER_PYTHON: "3.12"
+      FRACTAL_SERVER_BRANCH: "main"
+
     steps:
 
       - uses: actions/checkout@v5
@@ -29,9 +33,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Run docker compose
-        env:
-          FRACTAL_SERVER_PYTHON: "3.12"
-          FRACTAL_SERVER_BRANCH: "main"
         run: docker compose -f tests/fractal-server/docker-compose.yml up -d
 
       - name: Setup uv
@@ -50,9 +51,6 @@ jobs:
 
       - name: Log server container if pytest failed
         if: failure()
-        env:
-          FRACTAL_SERVER_PYTHON: "3.12"
-          FRACTAL_SERVER_BRANCH: "main"
         run: docker compose -f tests/fractal-server/docker-compose.yml logs
 
       - name: Upload coverage data
