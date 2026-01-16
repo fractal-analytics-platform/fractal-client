@@ -19,7 +19,7 @@ jobs:
 
     env:
       FRACTAL_SERVER_PYTHON: "3.12"
-      FRACTAL_SERVER_BRANCH: "main"
+      FRACTAL_SERVER_BRANCH: "3126-support-guest-api-user"
 
     steps:
 
