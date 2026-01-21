@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: ["main"]
   schedule:
+    # At 07:00 on Monday
     - cron: "0 7 * * 1"
 
 jobs:
