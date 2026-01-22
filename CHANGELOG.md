@@ -1,6 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Unreleased
+# 2.18.2
 
 * Commands:
     * Fix bug in pinned-dependencies request-body property names (\#874).
