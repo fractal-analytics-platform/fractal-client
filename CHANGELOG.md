@@ -2,6 +2,8 @@
 
 # Unreleased
 
+* Commands:
+    * Fix bug in pinned-dependencies request-body property names (\#874).
 * Testing:
     * Add scheduled CI runs (\#872).
 
