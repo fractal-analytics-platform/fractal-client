@@ -54,14 +54,14 @@ def task_collect_pip(
         task_collect["package_extras"] = package_extras
     if pre_pinned_dependency:
         task_collect[
-            "pre_pinned_package_versions"
+            "pinned_package_versions_pre"
         ] = _process_pinned_dependencies(
             pre_pinned_dependency,
             "pre",
         )
     if post_pinned_dependency:
         task_collect[
-            "post_pinned_package_versions"
+            "pinned_package_versions_post"
         ] = _process_pinned_dependencies(
             post_pinned_dependency,
             "post",
