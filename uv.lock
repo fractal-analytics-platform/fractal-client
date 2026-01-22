@@ -321,7 +321,7 @@ wheels = [
 
 [[package]]
 name = "fractal-client"
-version = "2.18.1a99"
+version = "2.18.1"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
