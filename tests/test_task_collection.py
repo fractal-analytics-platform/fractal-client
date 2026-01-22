@@ -38,7 +38,7 @@ def test_task_collection_command(invoke, caplog):
 
 def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     """
-    Test the case where `pre_pinned_package_versions` has the wrong format.
+    Test the case where `pinned_package_versions_pre` has the wrong format.
     """
     PACKAGE = "devtools"
     with pytest.raises(SystemExit):
