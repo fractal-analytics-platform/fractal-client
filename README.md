@@ -22,6 +22,6 @@ See https://fractal-analytics-platform.github.io/fractal-client.
 
 # Contributors and license
 
-The Fractal project is developed by the [BioVisionCenter](https://www.biovisioncenter.uzh.ch/en.html) at the University of Zurich, who contracts [eXact lab S.r.l](https://www.exact-lab.it/en/). for software engineering and development support.
+The Fractal project is developed by the [BioVisionCenter](https://www.biovisioncenter.uzh.ch/en.html) at the University of Zurich, who contracts [eXact lab s.r.l.](https://www.exact-lab.it/en/) for software engineering and development support.
 
 Unless otherwise specified, Fractal components are released under the BSD 3-Clause License, and copyright is with the BioVisionCenter at the University of Zurich.
