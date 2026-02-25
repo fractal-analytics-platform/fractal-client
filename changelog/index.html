@@ -1,0 +1,1285 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../development/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Changelog - Fractal Client</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Fractal Client" class="md-header__button md-logo" aria-label="Fractal Client" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Fractal Client
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/fractal-analytics-platform/fractal-client" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fractal-client
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Fractal Client" class="md-nav__button md-logo" aria-label="Fractal Client" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_logo.png" alt="logo">
+
+    </a>
+    Fractal Client
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/fractal-analytics-platform/fractal-client" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fractal-client
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home page
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../versions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Version compatibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../reference/fractal/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    CLI reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/dataset/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dataset
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/group/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Group
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/job/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/resource/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resource
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/task/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Version
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/fractal/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<p><strong>Note</strong>: Numbers like (#123) point to closed Pull Requests on the fractal repository.</p>
+<h1 id="2182">2.18.2<a class="headerlink" href="#2182" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Commands:<ul>
+<li>Fix bug in pinned-dependencies request-body property names (#874).</li>
+</ul>
+</li>
+<li>Testing:<ul>
+<li>Add scheduled CI runs (#872).</li>
+</ul>
+</li>
+</ul>
+<h1 id="2181">2.18.1<a class="headerlink" href="#2181" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Dependencies:<ul>
+<li>Drop <code>fractal-server</code> and <code>psutil</code> dev dependencies (#867).</li>
+</ul>
+</li>
+<li>Testing:<ul>
+<li>Run Fractal Server and Postgres using Docker (#867).</li>
+</ul>
+</li>
+</ul>
+<h1 id="2180">2.18.0<a class="headerlink" href="#2180" title="Permanent link">&para;</a></h1>
+<p>This version is aligned with <a href="https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2180">fractal-server 2.18.10</a>.</p>
+<ul>
+<li>CLI:<ul>
+<li>Deprecate <code>group update</code> command (#854).</li>
+<li>Deprecate <code>--viewer-paths</code> argument of <code>group new</code> (#854).</li>
+<li>Introduce <code>--add-project-dir</code> and <code>--remove-project-dir</code> arguments of <code>user edit</code> (#854).</li>
+<li>Deprecate <code>--new-project-dir</code> argument of <code>user edit</code> (#854).</li>
+<li>Deprecate <code>--zarr-dir</code> argument of <code>project add-dataset</code> (#xxx)</li>
+<li>Add <code>--project-dir</code> and <code>--zarr-subfolder</code> arguments of <code>project add-dataset</code> (#xxx)</li>
+<li>Make <code>dataset edit --new-name</code> argument required (#849).</li>
+</ul>
+</li>
+<li>Dependencies:<ul>
+<li>Support Python 3.14 (#851).</li>
+</ul>
+</li>
+<li>Docs:<ul>
+<li>Bump docs dependencies and update mkdocs config (#850).</li>
+</ul>
+</li>
+<li>Testing:<ul>
+<li>Fix tests for <code>fractal-server=2.17.1</code> (#848).</li>
+<li>Add <code>test_job_logs_wrong_content_type</code> (#849).</li>
+<li>Bump <code>coverage</code> version (#849).</li>
+</ul>
+</li>
+</ul>
+<h1 id="2170">2.17.0<a class="headerlink" href="#2170" title="Permanent link">&para;</a></h1>
+<p>This version is aligned with <a href="https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2170">fractal-server 2.17.10</a>.</p>
+<ul>
+<li>CLI:<ul>
+<li>Add <code>resource new</code> and <code>profile new</code> commands (#844).</li>
+<li>Expose <code>profile_id</code> and <code>project_dir</code> as user's properties (#844).</li>
+<li>Deprecate arguments related to obsolete <code>user_settings</code> database table (#844).</li>
+<li>Deprecate arguments related to obsolete <code>user_oauth.username</code> database column (#844).</li>
+</ul>
+</li>
+<li>Testing:<ul>
+<li>Include <code>psutil</code> as a dev dependency, and use it to stop the <code>fractal-server</code> testing process (#844).</li>
+</ul>
+</li>
+</ul>
+<h1 id="2102">2.10.2<a class="headerlink" href="#2102" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Fix wheel file (#841).</li>
+</ul>
+<h1 id="2101-yanked">2.10.1 [yanked]<a class="headerlink" href="#2101-yanked" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>WARNING: This PyPI release was yanked due to invalid wheel file. Use 2.10.2 instead.</p>
+</blockquote>
+<p>This version concerns development tools (#831 and direct commits on <code>main</code>).</p>
+<ul>
+<li>Move <code>dev</code> and <code>docs</code> from poetry groups to standard dependency groups.</li>
+<li>Move from <code>poetry-core</code> to <code>setuptools</code> as a build backend.</li>
+<li>Move from <code>poetry</code> to <code>uv</code>.</li>
+<li>Move main package to <code>src/fractal_client</code>.</li>
+<li>Move from <code>mhausenblas/mkdocs-deploy-gh-pages</code> external action to <code>mkdocs gh-deploy</code>.
+Drop</li>
+</ul>
+<h1 id="2100">2.10.0<a class="headerlink" href="#2100" title="Permanent link">&para;</a></h1>
+<p>This version is aligned with <a href="https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2150">fractal-server 2.15.10</a>.</p>
+<ul>
+<li>CLI:<ul>
+<li>Introduce pre/post pinned packages (#826).</li>
+</ul>
+</li>
+<li>Dependencies:<ul>
+<li>Add support for Python 3.13 (#814).</li>
+<li>Bump <code>docs</code> and <code>dev</code> dependencies (#816).</li>
+</ul>
+</li>
+<li>Testing:<ul>
+<li>Use ubuntu-24 for GitHub CI (#816).</li>
+<li>Bump <code>poetry</code> and default Python versions in GitHub actions (#816).</li>
+</ul>
+</li>
+</ul>
+<h1 id="291">2.9.1<a class="headerlink" href="#291" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Bump versions of <code>python-dotenv</code> and <code>packaging</code> (#803).</li>
+</ul>
+<h1 id="290">2.9.0<a class="headerlink" href="#290" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Add <code>--fractal-server</code> CLI option (#801).</li>
+<li>Add <code>--token-path</code> CLI option and <code>FRACTAL_TOKEN_PATH</code> env variable (#801).</li>
+<li>Stop caching token, in favor of making a call to the login API for each CLI command if needed (#801).</li>
+<li>Drop <code>AuthToken</code> class (#801).</li>
+<li>Expose <code>--task-type</code> in task-creation command (#801).</li>
+<li>Remove default <code>FRACTAL_SERVER="http://localhost:8000"</code> configuration (#801).</li>
+</ul>
+<h1 id="281">2.8.1<a class="headerlink" href="#281" title="Permanent link">&para;</a></h1>
+<p>This version deprecates Python 3.10.</p>
+<h1 id="280">2.8.0<a class="headerlink" href="#280" title="Permanent link">&para;</a></h1>
+<p>This version is aligned with <a href="https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2140">fractal-server 2.14.0</a>.</p>
+<ul>
+<li>Dependencies:<ul>
+<li>Bump <code>httpx</code> to <code>0.28.*</code> (#783).</li>
+</ul>
+</li>
+</ul>
+<h1 id="271">2.7.1<a class="headerlink" href="#271" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Testing:<ul>
+<li>Adapt to fractal-server switch to Pydantic V2 (#781).</li>
+</ul>
+</li>
+</ul>
+<h1 id="270">2.7.0<a class="headerlink" href="#270" title="Permanent link">&para;</a></h1>
+<p>This version is aligned with <a href="https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2110">fractal-server 2.11.0</a>.</p>
+<ul>
+<li>Commands:<ul>
+<li>Align with fractal-server 2.11 changes of data structure and API for filters (#776).</li>
+</ul>
+</li>
+<li>Package:<ul>
+<li>Remove <code>exclude</code> field, and move <code>packages</code> field to <code>tool.poetry</code> section, in pyproject.toml (#771).</li>
+</ul>
+</li>
+<li>Testing:<ul>
+<li>Improve configuration for coverage GitHub Action step (#772).</li>
+<li>Add <code>persist-credentials: false</code> to all <code>actions/checkout@v4</code> GitHub Action steps (#773).</li>
+</ul>
+</li>
+</ul>
+<h1 id="261">2.6.1<a class="headerlink" href="#261" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Package:<ul>
+<li>Move to <code>poetry</code> v2 (#770).</li>
+<li>Require <code>Python&lt;3.13</code> (#770).</li>
+</ul>
+</li>
+<li>Testing:<ul>
+<li>Use default Postgres service in GitHub CI (#761).</li>
+</ul>
+</li>
+</ul>
+<h1 id="260">2.6.0<a class="headerlink" href="#260" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Align with new task-collection endpoint in <code>fractal-server</code> 2.10.0 (#760).</li>
+<li>Update versions of pre-commit hooks and add precommit GitHub Action (#757).</li>
+</ul>
+<h1 id="251">2.5.1<a class="headerlink" href="#251" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Deprecate user <code>cache_dir</code> , to align with <a href="https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#292">fractal-server 2.9.2</a> (#758).</li>
+</ul>
+<h1 id="250">2.5.0<a class="headerlink" href="#250" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Update task-collection commands, to align with <a href="https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#290">fractal-server 2.9.0</a> (#738).</li>
+<li>Remove (internal) obsolete <code>do_not_separate_logs</code> argument (#738).</li>
+<li>Add <code>group {add|remove}-user</code> commands, and deprecate <code>--new-user-ids</code> argument from <code>group update</code> (#748).</li>
+<li>Update <code>user whoami --viewer-paths</code> to call the new dedicated <a href="https://github.com/fractal-analytics-platform/fractal-server/pull/2096">server endpoint</a> (#748).</li>
+<li>Add <code>user set-groups</code> commands (#753).</li>
+<li>Testing:<ul>
+<li>Align with fractal-server 2.9.0 removal of <code>DB_ENGINE</code> variable (#743).</li>
+</ul>
+</li>
+</ul>
+<h1 id="240">2.4.0<a class="headerlink" href="#240" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>WARNING: This release has a breaking change in the <code>project add-dataset</code> command.</p>
+</blockquote>
+<ul>
+<li>Move to from positional <code>zarr_dir</code> argument to optional <code>--zarr-dir</code> argument, for <code>project add-dataset</code> (#736).</li>
+<li>Add support for user-settings <code>project_dir</code>, introduced in fractal-server 2.8.0 (#736).</li>
+<li>Internal:<ul>
+<li>Update effect of <code>include_logs</code> for task-collection check command (#730).</li>
+</ul>
+</li>
+</ul>
+<h1 id="230">2.3.0<a class="headerlink" href="#230" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>WARNING: Starting from this release, Python3.9 is not supported any more.</p>
+</blockquote>
+<ul>
+<li>Align with <a href="https://fractal-analytics-platform.github.io/fractal-server/changelog/#270"><code>fractal-server</code> 2.7.0</a> (#712).</li>
+<li>Align with `fractal-server 2.7.1 and drop use of pip extras (#727).</li>
+<li>Remove <code>--new-name</code> and <code>--new-version</code> options from <code>task edit</code> command (#712).</li>
+<li>Rename <code>source</code> into <code>label</code>, for <code>task collect-custom</code> command (#712).</li>
+<li>Do not refer to obsolete task attributes <code>source</code> or <code>owner</code> (#712, #717).</li>
+<li>Add <code>--new-ssh-settings-json</code> option to <code>fractal user edit</code> (#715).</li>
+<li>Add <code>--ssh-settings-json</code> option to <code>fractal user register</code> (#722).</li>
+<li>Add <code>--private</code> option to task-creating commands (#717).</li>
+<li>Drop <code>task delete</code> command (#717).</li>
+<li>Handle missing server in <code>fractal version</code> (#724).</li>
+<li>Testing:<ul>
+<li>Run all tests against a single <code>fractal-server</code> instance (#717).</li>
+<li>Run tests in random module order, based on <code>pytest-randomly</code> (#717).</li>
+<li>Include Python3.12 in GitHub CI (#717).</li>
+</ul>
+</li>
+</ul>
+<h1 id="221">2.2.1<a class="headerlink" href="#221" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Support new <code>viewer-paths</code> commands in <code>fractal group</code> commands (#709).</li>
+<li>Make <code>--new-user-ids</code> optional <code>fractal group</code> command (#709).</li>
+<li>Add <code>--viewer-paths</code> argument in <code>fractal user whoami</code> (#709).</li>
+</ul>
+<h1 id="220">2.2.0<a class="headerlink" href="#220" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Align with <a href="https://fractal-analytics-platform.github.io/fractal-server/changelog/#260"><code>fractal-server</code> 2.6.0</a> (#705).</li>
+</ul>
+<h1 id="210">2.1.0<a class="headerlink" href="#210" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Align with <a href="https://fractal-analytics-platform.github.io/fractal-server/changelog/#240"><code>fractal-server</code> 2.4.0</a> (#695).</li>
+<li>Add <code>fractal group</code> command (#695).</li>
+<li>Testing<ul>
+<li>Update GitHub actions for upload/download/coverage (#690, #691).</li>
+<li>Switch from SQLite to Postgres in CI (#702).</li>
+</ul>
+</li>
+</ul>
+<h1 id="203">2.0.3<a class="headerlink" href="#203" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Improve <code>workflow import</code> command (#686).</li>
+</ul>
+<h1 id="202">2.0.2<a class="headerlink" href="#202" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Improve error handling in <code>task collect-custom</code> command (#680).</li>
+<li>Documentation<ul>
+<li>Bump <code>mkdocstrings[python]</code> to 0.25.2 (#682).</li>
+</ul>
+</li>
+</ul>
+<h1 id="201">2.0.1<a class="headerlink" href="#201" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Add new command <code>task collect-custom</code> (#667).</li>
+<li>Update <code>poetry</code> version for development to 1.8.2.</li>
+<li>Testing:<ul>
+<li>Update CI for fractal-server 2.1.0 compatibility (#655).</li>
+<li>Remove obsolete folders from <code>tests/data</code> (#656).</li>
+</ul>
+</li>
+</ul>
+<h1 id="200">2.0.0<a class="headerlink" href="#200" title="Permanent link">&para;</a></h1>
+<p>Major version to align with <code>fractal-server</code> API v2.</p>
+<h1 id="144">1.4.4<a class="headerlink" href="#144" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Require user's verification to be specified when editing user's email (#620).</li>
+</ul>
+<h1 id="143">1.4.3<a class="headerlink" href="#143" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Make <code>fractal-client</code> a fully synchronous client, by removing all <code>async</code>/<code>await</code> (#592).</li>
+<li>Improve handling of <code>AuthenticationError</code> and <code>ConnectionError</code>, and handle uncaught <code>Exception</code> (#587).</li>
+<li>Deprecate environment variable <code>FRACTAL_LOGGING_LEVEL</code>, remove flag <code>--verbose</code> and replace it with <code>--debug</code>, improve debugging of http requests (#597).</li>
+<li>Testing:<ul>
+<li>Adapt <code>job_factory</code> and tests to the presence of new <code>timestamp_created</code> attributes in <code>fractal-server</code> (#589).</li>
+<li>Align with <code>fractal-server</code> 1.4.3a2 (#598).</li>
+</ul>
+</li>
+<li>Documentation:<ul>
+<li>Add info about server/client version compatibility (#591).</li>
+</ul>
+</li>
+<li>Dependencies:<ul>
+<li>Update python-dotenv to <code>^0.21.0</code> (#589).</li>
+<li>Introduce automatic updates of <code>poetry.lock</code> (#609 and commits to <code>main</code>).</li>
+</ul>
+</li>
+</ul>
+<h1 id="142">1.4.2<a class="headerlink" href="#142" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Always make new users verified, within <code>user register</code> command (#580).</li>
+<li>Expose verification-related features in <code>user edit</code> command (#580).</li>
+<li>Update expected status code of stop-job to 202 (#585).</li>
+<li>Testing:<ul>
+<li>Adapt <code>job_factory</code> to new strict response-validation models in <code>fractal-server</code> (#580).</li>
+<li>Adapt <code>job_factory</code> by including the <code>timestamp_created</code> attribute (#582).</li>
+</ul>
+</li>
+</ul>
+<h1 id="141">1.4.1<a class="headerlink" href="#141" title="Permanent link">&para;</a></h1>
+<p>We are skipping this patch release, to remain aligned with <code>fractal-server</code> version.</p>
+<h1 id="140">1.4.0<a class="headerlink" href="#140" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Align with <a href="https://fractal-analytics-platform.github.io/fractal-server/changelog/#140"><code>fractal-server</code> 1.4.0</a> (#573).</li>
+<li>Testing:<ul>
+<li>Use ubuntu-22 for GitHub CI (commit e1c8bd3da670c24a0ac48b1163cd1c7833746aaf).</li>
+</ul>
+</li>
+<li>Development:<ul>
+<li>Do not include <code>sqlmodel</code> dependency explicitly (#577).</li>
+<li>Use poetry 1.7.1 (#577).</li>
+</ul>
+</li>
+</ul>
+<h1 id="137">1.3.7<a class="headerlink" href="#137" title="Permanent link">&para;</a></h1>
+<p>This release is up-to-date with <code>fractal-server</code> 1.3.12.</p>
+<ul>
+<li>Remove <code>project new --dataset</code> argument (#566).</li>
+<li>Add <code>project new --make-read-only</code> argument (#566).</li>
+<li>Do not use deprecated fractal-server <code>deployment_type</code> variable (#566).</li>
+<li>Align tests with <code>fractal-server</code> 1.3.12, which deprecates the legacy history version (#569).</li>
+<li>Automate procedure for publishing package to PyPI (#561).</li>
+</ul>
+<h1 id="136">1.3.6<a class="headerlink" href="#136" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Main features:<ul>
+<li>Remove client-side validation of API request/response bodies (#551).</li>
+<li>Make error messages more readable for request-body validation errors (#551).</li>
+<li>Include <code>--batch</code> option for workflow apply command (commit 06c7ff0e92602f08a98097d3597a8ce39c6ae1a8).</li>
+<li>Revamp <code>config.py</code>, making <code>Settings</code> a standard Python class (#559).</li>
+</ul>
+</li>
+<li>Package and repository:<ul>
+<li>Rename repository from <code>fractal</code> to <code>fractal-client</code>.</li>
+<li>Change package name from <code>fractal</code> to <code>fractal-client</code> (#555).</li>
+<li>Remove <code>fractal-common</code> submodule (#551).</li>
+<li>Remove <code>pydantic</code> dependency (#559).</li>
+</ul>
+</li>
+<li>Tests:<ul>
+<li>Review tests: make them stateless, improve handling of cache, remove obsolete fixtures (#559).</li>
+</ul>
+</li>
+</ul>
+<h1 id="135">1.3.5<a class="headerlink" href="#135" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Implement more robust sorting of versions (e.g. in the presence of pre-releases), via <code>packaging.version</code> (#550).</li>
+</ul>
+<h1 id="134">1.3.4<a class="headerlink" href="#134" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Add new commands <code>dataset status</code> and <code>dataset history</code> (#544).</li>
+<li>Align with fractal-server/fractal-common new <code>TaskUpdate</code> model, that accepts <code>version=None</code> (#540).</li>
+<li>Align with fractal-server/fractal-common new attributes in the Task model (#534).</li>
+<li>Align with fractal-common new <code>ApplyWorkflowRead</code> model, with optional <code>workflow_dump</code> (#547).</li>
+<li>Move documentation from sphinx to mkdocs (#532).</li>
+</ul>
+<h1 id="133">1.3.3<a class="headerlink" href="#133" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Support <code>workflow apply --start/--end</code> arguments for submitting a workflow subset (#527).</li>
+<li>Exclude <code>common/tests</code> and other files from build (#523).</li>
+<li>Remove obsolete folders from <code>tests/data</code> (#526).</li>
+</ul>
+<h1 id="132">1.3.2<a class="headerlink" href="#132" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Fix wrong build in 1.3.1 (include missing <code>fractal.common</code> submodule).</li>
+</ul>
+<h1 id="131">1.3.1<a class="headerlink" href="#131" title="Permanent link">&para;</a></h1>
+<p>WARNING: wrong build, do not use</p>
+<ul>
+<li>Pin Pydantic to V1 (#520).</li>
+</ul>
+<h1 id="130">1.3.0<a class="headerlink" href="#130" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Align with <a href="https://fractal-analytics-platform.github.io/fractal-server/changelog/#130">fractal-server 1.3.0</a>, by updating all relevant endpoint path/query/body parameters (#479).</li>
+<li>Add <code>fractal job stop</code> command (#485).</li>
+<li>Add <code>fractal task delete</code> command (#510).</li>
+<li>Add task ID/name/version disambiguation to <code>task edit</code> and <code>workflow add-task</code> (#499).</li>
+<li>Specific changes to existing commands:<ul>
+<li>Make <code>project_id</code> a required positional argument of <code>fractal {workflow,dataset,job}</code> commands (#479).</li>
+<li>For <code>edit</code> commands, always prepend the new arguments with <code>new</code>, e.g. as in <code>task edit ... --new-version</code> (#498).</li>
+<li>Add <code>--type</code> optional argument to <code>fractal dataset new</code> command (#479).</li>
+<li>For <code>fractal workflow apply</code>:<ul>
+<li>Transform <code>project_id</code> from option to positional argument (#479).</li>
+<li>Make <code>output_dataset_id</code> a required positional argument (#483).</li>
+</ul>
+</li>
+<li>Add <code>--username/--new-username</code> to <code>fractal user</code> subcommands (#493).</li>
+<li>Remove <code>--private</code> option for <code>fractal task collect</code> (#493).</li>
+<li>Add <code>--version</code> to <code>fractal task {new,edit}</code> subcommands (#493).</li>
+<li>Split <code>task-id-or-name</code> argument of <code>task edit</code> and <code>workflow add-task</code> into two arguments (#504).</li>
+<li>Add <code>--pinned-dependency</code> argument to <code>task collect</code> (#508).</li>
+<li>Add <code>--args-schema</code> and <code>--args-schema-version</code> arguments to <code>task new</code> command (#511).</li>
+<li>Add <code>--new-args-schema</code> and <code>--new-args-schema-version</code> arguments to <code>task edit</code> command (#511).</li>
+<li>Raise warning when importing/exporting workflows with custom tasks (#513).</li>
+</ul>
+</li>
+<li>Package and repository:<ul>
+<li>Fix a bug in tests, by starting the fractal-server FastAPI app in a more standard way (#481).</li>
+<li>Require pydantic version to be <code>&gt;=1.10.8</code> (#486, #490).</li>
+<li>Make <code>sqlmodel</code> a development depedency (#493).</li>
+<li>Improve handling of a <code>ConnectError</code> in the CI (#502).</li>
+<li>Remove arbitrary <code>kwargs</code> from internal functions (#503).</li>
+<li>Align with latest fractal-server version and update tests (#517).</li>
+</ul>
+</li>
+</ul>
+<h1 id="120">1.2.0<a class="headerlink" href="#120" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Align with <a href="https://fractal-analytics-platform.github.io/fractal-server/changelog/#120">fractal-server 1.2.0</a> (#472).</li>
+</ul>
+<h1 id="110">1.1.0<a class="headerlink" href="#110" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Align with <a href="https://fractal-analytics-platform.github.io/fractal-server/changelog/#110">fractal-server 1.1.0</a> (#446).</li>
+<li>Improve validation of API request payloads (#447).</li>
+<li>Drop support for python 3.8 (#438).</li>
+<li>Update <code>_TaskBase</code> schema from <code>fractal-common</code> (#431).</li>
+<li>Update <code>DatasetUpdate</code> schema (#461).</li>
+<li>Update <code>fractal task edit</code> command (#439 and #461).</li>
+<li>Add <code>fractal project edit</code> command (#465).</li>
+<li>Improve task-collection log formatting (#443).</li>
+<li>Disable <code>argparse</code> abbreviation for CLI commands (#441).</li>
+</ul>
+<h1 id="105">1.0.5<a class="headerlink" href="#105" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Minor updates to <code>fractal workflow export</code> (#429).</li>
+</ul>
+<h1 id="104">1.0.4<a class="headerlink" href="#104" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Add <code>fractal workflow {import,export}</code> commands (#426).</li>
+<li>Remove <code>--project-id</code> argument from <code>fractal workflow edit</code> commands (#426).</li>
+</ul>
+<h1 id="103">1.0.3<a class="headerlink" href="#103" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Add <code>fractal task new</code> command (#421).</li>
+<li>Remove obsolete <code>-j/--json</code> argument from <code>fractal</code> command (#421).</li>
+</ul>
+<h1 id="102">1.0.2<a class="headerlink" href="#102" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Remove obsolete references to SLURM user, either as a CLI argument or an environment variable (#419).</li>
+</ul>
+<h1 id="101">1.0.1<a class="headerlink" href="#101" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Make <code>FRACTAL_USER/FRACTAL_PASSWORD</code> env variables optional (#416).</li>
+</ul>
+<h1 id="100">1.0.0<a class="headerlink" href="#100" title="Permanent link">&para;</a></h1>
+<ul>
+<li>First version in this CHANGELOG.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © Copyright 2024
+University of Zurich
+(see <u><a href="https://github.com/fractal-analytics-platform/fractal/blob/main/LICENSE">
+LICENSE
+</a></u>).
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "toc.integrate", "navigation.top", "navigation.path", "content.code.annotate", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
