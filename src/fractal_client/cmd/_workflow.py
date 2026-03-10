@@ -229,6 +229,25 @@ def workflow_import(
         f"api/v2/project/{project_id}/workflow/import/",
         json=workflow,
     )
+
+    if res.status_code == 422 and res.json()["detail"] == "[HAS_ERROR_DATA]":
+        data = res.json()["data"]
+        for wftask in data:
+            if wftask["outcome"] == "fail":
+                msg = (
+                    f"Task '{wftask['task_name']}' "
+                    f"(package '{wftask['pkg_name']}', "
+                    f"version '{wftask['version']}') not available."
+                )
+                if wftask["available_tasks"]:
+                    available_versions = [
+                        available_task["version"]
+                        for available_task in wftask["available_tasks"]
+                    ]
+                    msg += f" Available versions: {available_versions}."
+                print(msg)
+        exit(1)
+
     wf_read = check_response(res, expected_status_code=201)
 
     if batch:
