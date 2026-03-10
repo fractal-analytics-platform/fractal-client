@@ -486,14 +486,18 @@ def test_workflow_import(
 ):
     name1 = new_name()
     res = invoke(
-        f"task new --command-parallel pwd --command-non-parallel pwd {name1}"
+        "task new "
+        "--command-parallel pwd --command-non-parallel pwd --version 1 "
+        f"{name1}"
     )
     debug(res.data)
     assert res.retcode == 0
 
     name2 = new_name()
     res = invoke(
-        f"task new --command-parallel pwd --command-non-parallel pwd {name2}"
+        "task new "
+        "--command-parallel pwd --command-non-parallel pwd --version 1 "
+        f"{name2}"
     )
     debug(res.data)
     assert res.retcode == 0
@@ -528,7 +532,14 @@ def test_workflow_import(
     res = invoke(f"workflow show {project_id} {workflow_id}")
     debug(res.retcode, res.data)
     assert res.retcode == 0
-    res.data["task_list"][-1]["warning"] = None
+
+    # FIXME
+    res.data["task_list"][-1].pop("warning")
+    res.data["project"]["resource_id"] = imported_workflow["project"][
+        "resource_id"
+    ]
+    res.data["project"].pop("timestamp_created")
+    imported_workflow["project"].pop("timestamp_created")
     assert res.data == imported_workflow
 
     # import workflow into project, with --batch

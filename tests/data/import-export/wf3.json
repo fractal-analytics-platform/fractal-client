@@ -4,7 +4,8 @@
         {
             "task": {
                 "name": "dummy_insert_single_image",
-                "pkg_name": "fractal-tasks-mock"
+                "pkg_name": "fractal-tasks-mock",
+                "version": "0.0.1"
             }
         },
         {
@@ -13,7 +14,8 @@
             },
             "task": {
                 "name": "dummy_insert_single_image",
-                "pkg_name": "fractal-tasks-mock"
+                "pkg_name": "fractal-tasks-mock",
+                "version": "0.0.1"
             }
         }
     ]
