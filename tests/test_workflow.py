@@ -483,6 +483,7 @@ def test_workflow_import(
     testdata_path,
     new_name,
     tmp_path,
+    capsys,
 ):
     name1 = new_name()
     res = invoke(
@@ -560,11 +561,26 @@ def test_workflow_import(
     # import workflow into project, with --workflow-name
     res = invoke(
         f"workflow import --project-id {project_id} --json-file {filename} "
-        f" --workflow-name MyWorkflow-V2-xxx"
+        " --workflow-name MyWorkflow-V2-xxx"
     )
     debug(res.data)
     assert res.retcode == 0
     assert res.data["name"] == "MyWorkflow-V2-xxx"
+
+    worfklow_to_import["task_list"][0]["task"]["version"] = "2"
+    filename = tmp_path / "workflow3"
+    with filename.open("w") as f:
+        json.dump(worfklow_to_import, f)
+    with pytest.raises(SystemExit):
+        invoke(
+            f"workflow import --project-id {project_id} --json-file {filename}"
+            " --workflow-name MyWorkflow-V2-yyy"
+        )
+    captured = capsys.readouterr()
+    assert (
+        f"Task '{name2}' (package '{name2}', version '2') not available. "
+        "Available versions: ['1']."
+    ) in captured.out
 
 
 def test_workflow_export(
