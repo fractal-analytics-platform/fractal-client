@@ -1,5 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.20.0 (unreleased)
+
+* Handle workflow import flexibility (\#879).
+
 # 2.18.2
 
 * Commands:
