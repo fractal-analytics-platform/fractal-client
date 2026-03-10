@@ -246,7 +246,7 @@ def workflow_import(
                     ]
                     msg += f" Available versions: {available_versions}."
                 print(msg)
-        exit(1)
+        sys.exit(1)
 
     wf_read = check_response(res, expected_status_code=201)
 
