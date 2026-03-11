@@ -533,14 +533,6 @@ def test_workflow_import(
     res = invoke(f"workflow show {project_id} {workflow_id}")
     debug(res.retcode, res.data)
     assert res.retcode == 0
-
-    # FIXME
-    res.data["task_list"][-1].pop("warning")
-    res.data["project"]["resource_id"] = imported_workflow["project"][
-        "resource_id"
-    ]
-    res.data["project"].pop("timestamp_created")
-    imported_workflow["project"].pop("timestamp_created")
     assert res.data == imported_workflow
 
     # import workflow into project, with --batch
