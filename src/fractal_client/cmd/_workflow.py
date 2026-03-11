@@ -239,11 +239,11 @@ def workflow_import(
                     f"(package '{wftask['pkg_name']}', "
                     f"version '{wftask['version']}') not available."
                 )
-                if wftask["available_tasks"]:
-                    available_versions = [
-                        available_task["version"]
-                        for available_task in wftask["available_tasks"]
-                    ]
+                available_versions = [
+                    available_task["version"]
+                    for available_task in wftask["available_tasks"]
+                ]
+                if available_versions:
                     msg += f" Available versions: {available_versions}."
                 print(msg)
         sys.exit(1)
