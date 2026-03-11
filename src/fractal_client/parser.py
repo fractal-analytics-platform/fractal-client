@@ -1040,3 +1040,24 @@ profile_new_parser = profile_subparsers.add_parser(
 )
 profile_new_parser.add_argument("resource_id", help="TBD")
 profile_new_parser.add_argument("json_file", help="TBD")
+
+
+# TEMPLATE GROUP
+template_parser = subparsers_main.add_parser(
+    "template",
+    description="Template commands.",
+    allow_abbrev=False,
+)
+template_subparsers = template_parser.add_subparsers(
+    title="Valid sub-commands", dest="subcmd", required=True
+)
+
+# template show
+template_show_parser = template_subparsers.add_parser(
+    "show",
+    description="Create new project.",
+    allow_abbrev=False,
+)
+template_show_parser.add_argument(
+    "template_id", help="ID of the template to show.", type=int
+)

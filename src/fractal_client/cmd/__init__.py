@@ -31,6 +31,7 @@ from ._task import post_task
 from ._task_collection import show_task_group_activity
 from ._task_collection import task_collect_custom
 from ._task_collection import task_collect_pip
+from ._template import template_show
 from ._user import user_edit
 from ._user import user_list
 from ._user import user_register
@@ -429,5 +430,18 @@ def profile(
         iface = post_profile(client, batch=batch, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'profile {subcmd}' not found")
+
+    return iface
+
+
+def template(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
+    if subcmd == "show":
+        parameters = ["template_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = template_show(client, **function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'group {subcmd}' not found")
 
     return iface
