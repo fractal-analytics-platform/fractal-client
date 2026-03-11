@@ -1055,9 +1055,41 @@ template_subparsers = template_parser.add_subparsers(
 # template show
 template_show_parser = template_subparsers.add_parser(
     "show",
-    description="Create new project.",
+    description="Show single template.",
     allow_abbrev=False,
 )
 template_show_parser.add_argument(
     "template_id", help="ID of the template to show.", type=int
+)
+
+# template new
+template_new_parser = template_subparsers.add_parser(
+    "new",
+    description="Create new template.",
+    allow_abbrev=False,
+)
+
+template_new_from_workflow_or_import = (
+    template_new_parser.add_mutually_exclusive_group(required=True)
+)
+template_new_from_workflow_or_import.add_argument(
+    "--workflow-id",
+    help="ID of the workflow on which to build the new template.",
+    type=int,
+)
+template_new_from_workflow_or_import.add_argument(
+    "--json-file",
+    help="Path to a JSON file with the template to be imported.",
+)
+
+template_new_parser.add_argument(
+    "--name", help="New template name.", required=False
+)
+template_new_parser.add_argument(
+    "--version", help="New template version.", required=False
+)
+template_new_parser.add_argument(
+    "--user-group-id",
+    help="User group  with which to share the new template.",
+    required=False,
 )
