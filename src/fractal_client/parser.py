@@ -1073,11 +1073,13 @@ template_new_from_workflow_or_import = (
     template_new_parser.add_mutually_exclusive_group(required=True)
 )
 template_new_from_workflow_or_import.add_argument(
-    "--workflow-id", help="...", type=int
+    "--workflow-id",
+    help="ID of the workflow on which to build the new template.",
+    type=int,
 )
 template_new_from_workflow_or_import.add_argument(
     "--json-file",
-    help="...",
+    help="Path to a JSON file with the template to be imported.",
 )
 
 template_new_parser.add_argument(
