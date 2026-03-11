@@ -31,6 +31,7 @@ from ._task import post_task
 from ._task_collection import show_task_group_activity
 from ._task_collection import task_collect_custom
 from ._task_collection import task_collect_pip
+from ._template import template_new
 from ._template import template_show
 from ._user import user_edit
 from ._user import user_list
@@ -441,7 +442,17 @@ def template(
         parameters = ["template_id"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = template_show(client, **function_kwargs)
+    elif subcmd == "new":
+        parameters = [
+            "workflow_id",
+            "json_file",
+            "name",
+            "version",
+            "user_group_id",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = template_new(client, batch=batch, **function_kwargs)
     else:
-        raise NoCommandError(f"Command 'group {subcmd}' not found")
+        raise NoCommandError(f"Command 'template {subcmd}' not found")
 
     return iface
