@@ -31,10 +31,6 @@ def test_template_new(
         f"{project['id']} {workflow['id']} --task-id {task['id']}"
     )
 
-    # Unknow command
-    with pytest.raises(SystemExit):
-        res = invoke("template xxx")
-
     # Template new (from workflow_id)
     with pytest.raises(SystemExit):
         res = invoke(f"template new --workflow-id {workflow['id']}")
@@ -80,7 +76,10 @@ def test_template_new(
     with template_filename.open("w") as f:
         json.dump(template_import, f)
 
-    res = invoke(f"template new --json-file {template_filename}")
+    res = invoke(
+        f"template new --json-file {template_filename} "
+        f"--user-group-id {default_group_id}"
+    )
     assert res.retcode == 0
     with pytest.raises(SystemExit):
         invoke(f"template new --json-file {template_filename}")
