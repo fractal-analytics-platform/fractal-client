@@ -51,6 +51,7 @@ from ._workflow import post_workflow
 from ._workflow import post_workflowtask
 from ._workflow import workflow_export
 from ._workflow import workflow_import
+from ._workflow import workflow_import_from_template
 
 
 class NoCommandError(ValueError):
@@ -269,6 +270,10 @@ def workflow(
         parameters = ["project_id", "workflow_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = workflow_export(client, **function_kwargs)
+    elif subcmd == "import-from-template":
+        parameters = ["project_id", "template_id", "name"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = workflow_import_from_template(client, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'workflow {subcmd}' not found")
     return iface

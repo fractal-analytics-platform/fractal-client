@@ -680,6 +680,33 @@ workflow_export_parser.add_argument(
     required=True,
 )
 
+
+# workflow import-from-template
+workflow_import_from_template_parser = workflow_subparsers.add_parser(
+    "import-from-template",
+    description="Import workflow to project from template.",
+    allow_abbrev=False,
+)
+workflow_import_from_template_parser.add_argument(
+    "project_id",
+    type=int,
+    help="ID of the project where the workflow will be imported.",
+)
+workflow_import_from_template_parser.add_argument(
+    "template_id",
+    type=int,
+    help="ID of the template from which the workflow will be imported.",
+)
+workflow_import_from_template_parser.add_argument(
+    "--name",
+    type=str,
+    help=(
+        "Name of the new workflow (if set, overrides the one in the template)."
+    ),
+    required=False,
+)
+
+
 # JOB GROUP
 
 job_parser = subparsers_main.add_parser(
