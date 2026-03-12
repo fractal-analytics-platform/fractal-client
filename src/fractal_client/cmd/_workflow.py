@@ -217,6 +217,26 @@ def patch_workflow(
     return Interface(retcode=0, data=new_workflow)
 
 
+def _check_import_flexibility_error(res):
+    if res.status_code == 422 and res.json()["detail"] == "[HAS_ERROR_DATA]":
+        data = res.json()["data"]
+        for wftask in data:
+            if wftask["outcome"] == "fail":
+                msg = (
+                    f"Task '{wftask['task_name']}' "
+                    f"(package '{wftask['pkg_name']}', "
+                    f"version '{wftask['version']}') not available."
+                )
+                available_versions = [
+                    available_task["version"]
+                    for available_task in wftask["available_tasks"]
+                ]
+                if available_versions:
+                    msg += f" Available versions: {available_versions}."
+                print(msg)
+        sys.exit(1)
+
+
 def workflow_import(
     client: AuthClient,
     *,
@@ -236,24 +256,7 @@ def workflow_import(
         json=workflow,
     )
 
-    if res.status_code == 422 and res.json()["detail"] == "[HAS_ERROR_DATA]":
-        data = res.json()["data"]
-        for wftask in data:
-            if wftask["outcome"] == "fail":
-                msg = (
-                    f"Task '{wftask['task_name']}' "
-                    f"(package '{wftask['pkg_name']}', "
-                    f"version '{wftask['version']}') not available."
-                )
-                available_versions = [
-                    available_task["version"]
-                    for available_task in wftask["available_tasks"]
-                ]
-                if available_versions:
-                    msg += f" Available versions: {available_versions}."
-                print(msg)
-        sys.exit(1)
-
+    _check_import_flexibility_error(res)
     wf_read = check_response(res, expected_status_code=201)
 
     if batch:
@@ -297,6 +300,8 @@ def workflow_import_from_template(
         f"?template_id={template_id}",
         json={"name": name},
     )
+
+    _check_import_flexibility_error(res)
     workflow = check_response(res, expected_status_code=201)
 
     if batch:
