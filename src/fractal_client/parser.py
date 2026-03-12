@@ -1093,3 +1093,29 @@ template_new_parser.add_argument(
     help="User group  with which to share the new template.",
     required=False,
 )
+
+# template delete
+template_delete_parser = template_subparsers.add_parser(
+    "delete",
+    description="Delete single template.",
+    allow_abbrev=False,
+)
+template_delete_parser.add_argument(
+    "template_id", help="ID of the template to delete.", type=int
+)
+
+
+# template export
+template_export_parser = template_subparsers.add_parser(
+    "export",
+    description="Export single template.",
+    allow_abbrev=False,
+)
+template_export_parser.add_argument(
+    "template_id",
+    help="ID of the template to export.",
+)
+template_export_parser.add_argument(
+    "json_file",
+    help="Path where to export the template.",
+)

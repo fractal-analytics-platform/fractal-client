@@ -1,5 +1,6 @@
 import json
 import sys
+from pathlib import Path
 
 from ..authclient import AuthClient
 from ..interface import Interface
@@ -54,3 +55,27 @@ def template_new(
         return Interface(retcode=0, data=template["id"])
     else:
         return Interface(retcode=0, data=template)
+
+
+def template_delete(client: AuthClient, *, template_id: int):
+    res = client.delete(f"api/v2/workflow_template/{template_id}/")
+    check_response(res, expected_status_code=204)
+    return Interface(retcode=0, data="")
+
+
+def template_export(
+    client: AuthClient,
+    *,
+    template_id: int,
+    json_file: str,
+) -> Interface:
+    res = client.get(
+        (f"api/v2/workflow_template/{template_id}/export/"),
+    )
+    template = check_response(res, expected_status_code=200)
+
+    with Path(json_file).open("w") as f:
+        json.dump(template, f, indent=2)
+    return Interface(
+        retcode=0, data=f"Template {template_id} exported at {json_file}."
+    )
