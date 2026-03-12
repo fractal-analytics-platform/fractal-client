@@ -22,7 +22,7 @@ def test_template_commands(
     res = invoke(f"project new {new_name()}")
     project = res.data
     workflow = workflow_factory(name=new_name(), project_id=project["id"])
-    task = task_factory(name=new_name(), command_parallel="pwd")
+    task = task_factory(name=new_name(), command_parallel="pwd", version="1")
 
     invoke(
         "workflow add-task "
@@ -74,12 +74,31 @@ def test_template_commands(
             f"--user-group-id {default_group_id}"
         )
     res = invoke(
+        "--batch "
         f"template new --json-file {template_filename} --name {new_name()} "
         f"--user-group-id {default_group_id}"
     )
     assert res.retcode == 0
+    template3_id = int(res.data)
     res = invoke(
+        "--batch "
         f"template new --json-file {template_filename} --version 2 "
         f"--user-group-id {default_group_id}"
     )
     assert res.retcode == 0
+
+    # Import workflow from template
+    with pytest.raises(SystemExit):
+        # Same (project_id, name) of workflow
+        invoke(f"workflow import-from-template {project['id']} {template3_id}")
+    res = invoke(f"--batch workflow list {project['id']}")
+    assert res.retcode == 0
+    assert len(res.data.split()) == 1
+    res = invoke(
+        f"workflow import-from-template {project['id']} {template3_id} "
+        f"--name {new_name()}"
+    )
+    assert res.retcode == 0
+    res = invoke(f"--batch workflow list {project['id']}")
+    assert res.retcode == 0
+    assert len(res.data.split()) == 2
