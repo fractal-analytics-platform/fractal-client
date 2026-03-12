@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 
 FRACTAL_DEFAULT_GROUP_NAME = "All"
@@ -9,7 +12,8 @@ def test_template_commands(
     new_name,
     workflow_factory,
     task_factory,
-    tmp_path,
+    tmp_path: Path,
+    capsys,
 ):
     res = invoke_as_superuser("group list --user-ids")
     default_group = next(
@@ -112,3 +116,26 @@ def test_template_commands(
     res = invoke(f"--batch workflow list {project['id']}")
     assert res.retcode == 0
     assert len(res.data.split()) == 3
+
+    # flexibility
+    with template_filename.open("r") as f:
+        template_to_import = json.load(f)
+    NEW_VERSION = "1234"
+    template_to_import["data"]["task_list"][0]["task"]["version"] = NEW_VERSION
+    template_to_import["name"] = new_name()
+    template_to_import["data"]["name"] = new_name()
+    with template_filename.open("w") as f:
+        json.dump(template_to_import, f)
+    res = invoke(f"template new --json-file {template_filename}")
+    assert res.retcode == 0
+    template4_id = res.data["id"]
+    with pytest.raises(SystemExit):
+        invoke(
+            f"workflow import-from-template {project['id']} {template4_id} "
+            f"--name {new_name()}"
+        )
+    assert (
+        f"Task '{task['name']}' "
+        f"(package '{task['name']}', version '{NEW_VERSION}') not available. "
+        f"Available versions: ['{task['version']}']."
+    ) in capsys.readouterr().out
