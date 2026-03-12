@@ -1101,7 +1101,7 @@ template_new_from_workflow_or_import = (
 )
 template_new_from_workflow_or_import.add_argument(
     "--workflow-id",
-    help="ID of the workflow on which to build the new template.",
+    help="ID of the workflow from which the new template will be built.",
     type=int,
 )
 template_new_from_workflow_or_import.add_argument(
