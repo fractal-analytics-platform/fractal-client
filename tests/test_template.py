@@ -1,11 +1,9 @@
-import json
-
 import pytest
 
 FRACTAL_DEFAULT_GROUP_NAME = "All"
 
 
-def test_template_new(
+def test_template_commands(
     invoke,
     invoke_as_superuser,
     new_name,
@@ -57,35 +55,31 @@ def test_template_new(
     assert res.retcode == 0
     assert res.data["user_group_id"] == default_group_id
 
-    # Template new (from JSON file)
-    workflow_filename = tmp_path / "workflow.json"
-    invoke(
-        "workflow export "
-        f"--json-file {workflow_filename} {project['id']} {workflow['id']}"
-    )
-    with workflow_filename.open("r") as f:
-        workflow_export = json.load(f)
-    template_filename = tmp_path / "template.json"
-    template_import = {
-        "name": new_name(),
-        "version": 1,
-        "description": new_name(),
-        "fractal_server_version": "x.y.z",
-        "data": workflow_export,
-    }
-    with template_filename.open("w") as f:
-        json.dump(template_import, f)
+    # Template delete
+    res = invoke(f"template delete {template2_id}")
+    assert res.retcode == 0
+    with pytest.raises(SystemExit):
+        invoke(f"template show {template2_id}")
 
+    # Template export
+    template_filename = tmp_path / "template.json"
+    res = invoke(f"template export {template1_id} {template_filename}")
+    assert res.retcode == 0
+
+    # Template new (from JSON file)
+    with pytest.raises(SystemExit):
+        # Same (user, name, version) of template1
+        invoke(
+            f"template new --json-file {template_filename} "
+            f"--user-group-id {default_group_id}"
+        )
     res = invoke(
-        f"template new --json-file {template_filename} "
+        f"template new --json-file {template_filename} --name {new_name()} "
         f"--user-group-id {default_group_id}"
     )
     assert res.retcode == 0
-    with pytest.raises(SystemExit):
-        invoke(f"template new --json-file {template_filename}")
     res = invoke(
-        f"template new --json-file {template_filename} --name {new_name()}"
+        f"template new --json-file {template_filename} --version 2 "
+        f"--user-group-id {default_group_id}"
     )
-    assert res.retcode == 0
-    res = invoke(f"template new --json-file {template_filename} --version 2")
     assert res.retcode == 0
