@@ -102,3 +102,13 @@ def test_template_commands(
     res = invoke(f"--batch workflow list {project['id']}")
     assert res.retcode == 0
     assert len(res.data.split()) == 2
+    res = invoke(
+        "--batch "
+        f"workflow import-from-template {project['id']} {template3_id} "
+        f"--name {new_name()}"
+    )
+    assert res.retcode == 0
+    assert len(res.data.split()) == 2
+    res = invoke(f"--batch workflow list {project['id']}")
+    assert res.retcode == 0
+    assert len(res.data.split()) == 3

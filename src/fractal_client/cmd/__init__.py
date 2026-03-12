@@ -273,7 +273,9 @@ def workflow(
     elif subcmd == "import-from-template":
         parameters = ["project_id", "template_id", "name"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_import_from_template(client, **function_kwargs)
+        iface = workflow_import_from_template(
+            client, batch=batch, **function_kwargs
+        )
     else:
         raise NoCommandError(f"Command 'workflow {subcmd}' not found")
     return iface
