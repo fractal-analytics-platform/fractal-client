@@ -2,7 +2,8 @@
 
 # 2.20.0 (unreleased)
 
-* Handle workflow import flexibility (\#879).
+* Add `template` commands (\#879).
+* Display error message for workflow import flexibility (\#879).
 
 # 2.18.2
 
