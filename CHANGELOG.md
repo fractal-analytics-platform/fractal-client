@@ -2,8 +2,11 @@
 
 # 2.20.0 (unreleased)
 
-* Add `template` commands (\#879).
-* Display error message for workflow import flexibility (\#879).
+This version is aligned with [fractal-server 2.20.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2200).
+
+Commands:
+   * Add `template` commands (\#879).
+   * Handle rich workflow-import error message (\#879).
 
 # 2.18.2
 
