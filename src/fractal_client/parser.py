@@ -1116,7 +1116,9 @@ template_new_parser.add_argument(
 )
 template_new_parser.add_argument(
     "--user-group-id",
-    help="User group  with which to share the new template.",
+    help=(
+        "ID of user group which should be granted access to the new template."
+    ),
     required=False,
 )
 
