@@ -74,7 +74,7 @@ def template_export(
     )
     template = check_response(res, expected_status_code=200)
 
-    with Path(json_file).open("w") as f:
+    with Path(json_file).open("x") as f:
         json.dump(template, f, indent=2)
     return Interface(
         retcode=0, data=f"Template {template_id} exported at {json_file}."

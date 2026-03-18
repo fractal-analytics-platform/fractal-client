@@ -280,7 +280,7 @@ def workflow_export(
     )
     workflow = check_response(res, expected_status_code=200)
 
-    with Path(json_file).open("w") as f:
+    with Path(json_file).open("x") as f:
         json.dump(workflow, f, indent=2)
     return Interface(
         retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
