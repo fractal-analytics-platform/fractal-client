@@ -8,7 +8,7 @@ from ..response import check_response
 
 
 def template_show(client: AuthClient, *, template_id: int):
-    res = client.get(f"api/v2/workflow_template/{template_id}/")
+    res = client.get(f"api/v2/workflow-template/{template_id}/")
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)
 
@@ -34,7 +34,7 @@ def template_new(
             "name": name,
             "version": version,
         }
-        url = f"api/v2/workflow_template/?workflow_id={workflow_id}"
+        url = f"api/v2/workflow-template/?workflow_id={workflow_id}"
         if user_group_id is not None:
             url += f"&user_group_id={user_group_id}"
     else:  # json_file is not None
@@ -44,7 +44,7 @@ def template_new(
             payload["name"] = name
         if version is not None:
             payload["version"] = version
-        url = "api/v2/workflow_template/import/"
+        url = "api/v2/workflow-template/import/"
         if user_group_id is not None:
             url += f"?user_group_id={user_group_id}"
 
@@ -58,7 +58,7 @@ def template_new(
 
 
 def template_delete(client: AuthClient, *, template_id: int):
-    res = client.delete(f"api/v2/workflow_template/{template_id}/")
+    res = client.delete(f"api/v2/workflow-template/{template_id}/")
     check_response(res, expected_status_code=204)
     return Interface(retcode=0, data="")
 
@@ -70,7 +70,7 @@ def template_export(
     json_file: str,
 ) -> Interface:
     res = client.get(
-        (f"api/v2/workflow_template/{template_id}/export/"),
+        (f"api/v2/workflow-template/{template_id}/export/"),
     )
     template = check_response(res, expected_status_code=200)
 
