@@ -74,7 +74,9 @@ def template_export(
     )
     template = check_response(res, expected_status_code=200)
 
-    with Path(json_file).open("x") as f:
+    # mode="x" means "open for exclusive creation, failing if the file
+    # already exists" https://docs.python.org/3/library/functions.html#open
+    with Path(json_file).open(mode="x") as f:
         json.dump(template, f, indent=2)
     return Interface(
         retcode=0, data=f"Template {template_id} exported at {json_file}."

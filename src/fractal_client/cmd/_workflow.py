@@ -280,7 +280,9 @@ def workflow_export(
     )
     workflow = check_response(res, expected_status_code=200)
 
-    with Path(json_file).open("x") as f:
+    # mode="x" means "open for exclusive creation, failing if the file
+    # already exists" https://docs.python.org/3/library/functions.html#open
+    with Path(json_file).open(mode="x") as f:
         json.dump(workflow, f, indent=2)
     return Interface(
         retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
