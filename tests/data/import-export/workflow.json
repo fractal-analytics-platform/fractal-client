@@ -14,7 +14,8 @@
             "meta_non_parallel": {"key2": "value2"},
             "task": {
                 "name": "dummy",
-                "pkg_name": "dummy"
+                "pkg_name": "dummy",
+                "version": "1"
             }
         }
     ]

@@ -31,6 +31,10 @@ from ._task import post_task
 from ._task_collection import show_task_group_activity
 from ._task_collection import task_collect_custom
 from ._task_collection import task_collect_pip
+from ._template import template_delete
+from ._template import template_export
+from ._template import template_new
+from ._template import template_show
 from ._user import user_edit
 from ._user import user_list
 from ._user import user_register
@@ -47,6 +51,7 @@ from ._workflow import post_workflow
 from ._workflow import post_workflowtask
 from ._workflow import workflow_export
 from ._workflow import workflow_import
+from ._workflow import workflow_import_from_template
 
 
 class NoCommandError(ValueError):
@@ -265,6 +270,12 @@ def workflow(
         parameters = ["project_id", "workflow_id", "json_file"]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = workflow_export(client, **function_kwargs)
+    elif subcmd == "import-from-template":
+        parameters = ["project_id", "template_id", "name"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = workflow_import_from_template(
+            client, batch=batch, **function_kwargs
+        )
     else:
         raise NoCommandError(f"Command 'workflow {subcmd}' not found")
     return iface
@@ -429,5 +440,36 @@ def profile(
         iface = post_profile(client, batch=batch, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'profile {subcmd}' not found")
+
+    return iface
+
+
+def template(
+    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
+) -> Interface:
+    if subcmd == "show":
+        parameters = ["template_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = template_show(client, **function_kwargs)
+    elif subcmd == "new":
+        parameters = [
+            "workflow_id",
+            "json_file",
+            "name",
+            "version",
+            "user_group_id",
+        ]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = template_new(client, batch=batch, **function_kwargs)
+    elif subcmd == "delete":
+        parameters = ["template_id"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = template_delete(client, **function_kwargs)
+    elif subcmd == "export":
+        parameters = ["template_id", "json_file"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = template_export(client, **function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'template {subcmd}' not found")
 
     return iface

@@ -32,7 +32,13 @@ def get_workflow_list(
 ) -> Interface:
     res = client.get(f"api/v2/project/{project_id}/workflow/")
     workflow_list = check_response(res, expected_status_code=200)
-    return Interface(retcode=0, data=workflow_list)
+    if batch:
+        return Interface(
+            retcode=0,
+            data=" ".join([str(wf["id"]) for wf in workflow_list]),
+        )
+    else:
+        return Interface(retcode=0, data=workflow_list)
 
 
 def delete_workflow(
@@ -211,6 +217,26 @@ def patch_workflow(
     return Interface(retcode=0, data=new_workflow)
 
 
+def _check_import_flexibility_error(res):
+    if res.status_code == 422 and res.json()["detail"] == "[HAS_ERROR_DATA]":
+        data = res.json()["data"]
+        for wftask in data:
+            if wftask["outcome"] == "fail":
+                msg = (
+                    f"Task '{wftask['task_name']}' "
+                    f"(package '{wftask['pkg_name']}', "
+                    f"version '{wftask['version']}') not available."
+                )
+                available_versions = [
+                    available_task["version"]
+                    for available_task in wftask["available_tasks"]
+                ]
+                if available_versions:
+                    msg += f" Available versions: {available_versions}."
+                print(msg)
+        sys.exit(1)
+
+
 def workflow_import(
     client: AuthClient,
     *,
@@ -229,6 +255,8 @@ def workflow_import(
         f"api/v2/project/{project_id}/workflow/import/",
         json=workflow,
     )
+
+    _check_import_flexibility_error(res)
     wf_read = check_response(res, expected_status_code=201)
 
     if batch:
@@ -252,8 +280,38 @@ def workflow_export(
     )
     workflow = check_response(res, expected_status_code=200)
 
-    with Path(json_file).open("w") as f:
+    # mode="x" means "open for exclusive creation, failing if the file
+    # already exists" https://docs.python.org/3/library/functions.html#open
+    with Path(json_file).open(mode="x") as f:
         json.dump(workflow, f, indent=2)
     return Interface(
         retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
     )
+
+
+def workflow_import_from_template(
+    client: AuthClient,
+    *,
+    project_id: int,
+    template_id: int,
+    name: str | None = None,
+    batch: bool = False,
+) -> Interface:
+    payload = dict(name=name) if name is not None else {}
+
+    res = client.post(
+        f"api/v2/project/{project_id}/workflow/import-from-template/"
+        f"?template_id={template_id}",
+        json=payload,
+    )
+
+    _check_import_flexibility_error(res)
+    workflow = check_response(res, expected_status_code=201)
+
+    if batch:
+        datastr = f"{workflow['id']}"
+        for wftask in workflow["task_list"]:
+            datastr += f" {wftask['id']}"
+        return Interface(retcode=0, data=datastr)
+    else:
+        return Interface(retcode=0, data=workflow)

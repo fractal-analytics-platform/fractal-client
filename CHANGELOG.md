@@ -1,5 +1,13 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.20.0 (unreleased)
+
+This version is aligned with [fractal-server 2.20.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2200).
+
+Commands:
+   * Add `template` commands (\#879).
+   * Handle rich workflow-import error message (\#879).
+
 # 2.18.2
 
 * Commands:

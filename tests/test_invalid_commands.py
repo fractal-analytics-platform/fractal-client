@@ -7,6 +7,7 @@ from fractal_client.cmd import profile
 from fractal_client.cmd import project
 from fractal_client.cmd import resource
 from fractal_client.cmd import task
+from fractal_client.cmd import template
 from fractal_client.cmd import user
 from fractal_client.cmd import workflow
 
@@ -24,6 +25,7 @@ def test_invalid_commands(invoke):
             "group",
             "resource",
             "profile",
+            "template",
         ]:
             with pytest.raises(SystemExit):
                 invoke(f"{command}{arg}")
@@ -40,6 +42,7 @@ def test_unit_invalid_subcommand():
         group,
         resource,
         profile,
+        template,
     ]:
         with pytest.raises(NoCommandError):
             _function(client=None, subcmd="invalid")
