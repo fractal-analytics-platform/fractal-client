@@ -297,10 +297,12 @@ def workflow_import_from_template(
     name: str | None = None,
     batch: bool = False,
 ) -> Interface:
+    payload = dict(name=name) if name is not None else {}
+
     res = client.post(
         f"api/v2/project/{project_id}/workflow/import-from-template/"
         f"?template_id={template_id}",
-        json={"name": name},
+        json=payload,
     )
 
     _check_import_flexibility_error(res)
