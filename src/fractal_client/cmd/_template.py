@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -25,7 +26,7 @@ def template_new(
 ):
     if workflow_id is not None:
         if name is None or version is None:
-            print(
+            logging.error(
                 "You must provide '--name' and '--version' when you create a "
                 "template from a workflow."
             )
