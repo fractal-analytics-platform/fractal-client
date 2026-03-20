@@ -8,7 +8,7 @@ from devtools import debug
 
 logging.getLogger("httpx").setLevel(logging.DEBUG)
 
-NUM_MOCK_TASKS = 17
+NUM_MOCK_TASKS = 18
 
 
 def test_task_collection_command(invoke, caplog):
