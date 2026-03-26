@@ -1,6 +1,11 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.20.0 (unreleased)
+# 2.20.1
+
+* Dependencies:
+    * Bump `packaging` version (\#883).
+
+# 2.20.0
 
 This version is aligned with [fractal-server 2.20.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2200).
 
