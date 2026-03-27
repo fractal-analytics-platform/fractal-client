@@ -122,7 +122,7 @@ def post_workflowtask(
     workflow_task["task_id"] = task_id
 
     res = client.post(
-        (f"api/v2/project/{project_id}/workflow/{workflow_id}/wftask/"),
+        f"api/v2/project/{project_id}/workflow/{workflow_id}/wftask/",
         json=[workflow_task],
     )
     workflow_tasks = check_response(res, expected_status_code=201)
