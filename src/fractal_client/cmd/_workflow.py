@@ -119,20 +119,18 @@ def post_workflowtask(
             m_p = json.load(f)
             workflow_task["meta_parallel"] = m_p
 
+    workflow_task["task_id"] = task_id
+
     res = client.post(
-        (
-            f"api/v2/project/{project_id}/"
-            f"workflow/{workflow_id}/wftask/"
-            f"?{task_id=}"
-        ),
-        json=workflow_task,
+        (f"api/v2/project/{project_id}/workflow/{workflow_id}/wftask/"),
+        json=[workflow_task],
     )
-    workflow_task = check_response(res, expected_status_code=201)
+    workflow_tasks = check_response(res, expected_status_code=201)
 
     if batch:
-        return Interface(retcode=0, data=str(workflow_task["id"]))
+        return Interface(retcode=0, data=str(workflow_tasks[0]["id"]))
     else:
-        return Interface(retcode=0, data=workflow_task)
+        return Interface(retcode=0, data=workflow_tasks)
 
 
 def patch_workflowtask(
@@ -276,7 +274,7 @@ def workflow_export(
     json_file: str,
 ) -> Interface:
     res = client.get(
-        (f"api/v2/project/{project_id}/" f"workflow/{workflow_id}/export/"),
+        f"api/v2/project/{project_id}/workflow/{workflow_id}/export/"
     )
     workflow = check_response(res, expected_status_code=200)
 
