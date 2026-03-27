@@ -26,12 +26,12 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -39,7 +39,7 @@ jobs:
         run: docker compose -f tests/fractal-server/docker-compose.yml up -d
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
         with:
           version: "0.9.7"
           enable-cache: true
@@ -57,7 +57,7 @@ jobs:
         run: docker compose -f tests/fractal-server/docker-compose.yml logs
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: coverage-data-${{ matrix.python-version }}
           path: coverage-data-${{ matrix.python-version }}*
@@ -68,16 +68,16 @@ jobs:
     needs: tests
     steps:
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
       - name: Download data
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317
         with:
           pattern: coverage-data-*
           merge-multiple: true
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
         with:
           version: "0.9.7"
           enable-cache: true
@@ -90,7 +90,7 @@ jobs:
 
       - name: Add coverage comment to Pull Requests
         id: coverage_comment
-        uses: py-cov-action/python-coverage-comment-action@v3
+        uses: py-cov-action/python-coverage-comment-action@7188638f871f721a365d644f505d1ff3df20d683
         with:
           GITHUB_TOKEN: ${{ github.token }}
           MINIMUM_GREEN: 90

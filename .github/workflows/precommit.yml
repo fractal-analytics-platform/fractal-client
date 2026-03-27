@@ -6,16 +6,18 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions: {}
+
 jobs:
   precommit:
     runs-on: ubuntu-24.04
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec
         with:
           python-version: "3.12"
           cache: "pip"
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@1b06ec171f2f6faa71ed760c4042bd969e4f8b43
