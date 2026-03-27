@@ -216,7 +216,7 @@ def test_workflow_add_task(
     debug(res.data)
     assert res.retcode == 0
 
-    workflow_task = res.data
+    workflow_task = res.data[0]
     workflow_task_id_1 = workflow_task["id"]
     debug(workflow_task)
     assert workflow_task["type_filters"] == TYPE_FILTERS
@@ -245,7 +245,7 @@ def test_workflow_add_task(
     debug(res.data)
     assert res.retcode == 0
 
-    workflow_task = res.data
+    workflow_task = res.data[0]
     workflow_task_id_3 = workflow_task["id"]
     assert workflow_task["meta_parallel"] == META_PARALLEL
     assert workflow_task["args_parallel"] == ARGS_PARALLEL
@@ -268,7 +268,7 @@ def test_workflow_add_task(
     debug(res.data)
     assert res.retcode == 0
 
-    workflow_task = res.data
+    workflow_task = res.data[0]
     workflow_task_id_4 = workflow_task["id"]
     assert workflow_task["meta_non_parallel"] == META_NON_PARALLEL
     assert workflow_task["args_non_parallel"] == ARGS_NON_PARALLEL
@@ -321,7 +321,7 @@ def test_workflow_add_task_by_name(
     res = invoke(cmd)
     assert res.retcode == 0
     debug(res.data)
-    assert res.data["task"]["id"] == task["id"]
+    assert res.data[0]["task"]["id"] == task["id"]
 
     # Fail when adding task via a wrong name
     with pytest.raises(SystemExit):
@@ -361,7 +361,7 @@ def test_workflow_rm_task(
     assert res.retcode == 0
     res = invoke(cmd)
     assert res.retcode == 0
-    workflow_task_id_1 = res.data["id"]
+    workflow_task_id_1 = res.data[0]["id"]
 
     # Remove task 1 from workflow
     cmd = f"workflow rm-task {project_id} {wf['id']} {workflow_task_id_1}"
@@ -423,7 +423,7 @@ def test_workflow_edit_task(
 
     # Edit workflow task
     debug(res.data)
-    workflow_task_id = res.data["id"]
+    workflow_task_id = res.data[0]["id"]
     cmd = (
         f"workflow edit-task {project_id} {wf['id']} {workflow_task_id} "
         f"--type-filters {type_filters_file}"
@@ -459,7 +459,7 @@ def test_workflow_edit_task(
     )
     res = invoke(cmd)
     assert res.retcode == 0
-    workflow_task_id = res.data["id"]
+    workflow_task_id = res.data[0]["id"]
 
     cmd = (
         f"workflow edit-task {project_id} {wf['id']} {workflow_task_id} "
