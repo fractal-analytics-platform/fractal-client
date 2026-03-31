@@ -79,8 +79,14 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
+
     permissions:
-      contents: read
+      # Allows the action to publish new comments directly on trusted PRs.
+      # Forked pull_request runs are downgraded to read-only by GitHub.
+      pull-requests: write
+      # Allows updating the python-coverage-comment-action branch and editing
+      # existing comments when direct publication is allowed.
+      contents: write
 
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
