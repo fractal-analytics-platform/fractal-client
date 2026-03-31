@@ -44,7 +44,7 @@ jobs:
         run: docker compose -f tests/fractal-server/docker-compose.yml up -d
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
+        uses: astral-sh/setup-uv@d7fe1a5a186096cccdd5fa2252d223b54fa53a72
         with:
           version: "0.9.7"
           enable-cache: true
@@ -90,7 +90,7 @@ jobs:
         with:
           pattern: coverage-data-*
           merge-multiple: true
-      - uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
+      - uses: astral-sh/setup-uv@d7fe1a5a186096cccdd5fa2252d223b54fa53a72
         with:
           version: "0.9.7"
           enable-cache: true

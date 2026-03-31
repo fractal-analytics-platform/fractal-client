@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec
         with:
           python-version: "3.12"
-      - uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
+      - uses: astral-sh/setup-uv@d7fe1a5a186096cccdd5fa2252d223b54fa53a72
         with:
           version: "0.9.7"
           enable-cache: true
