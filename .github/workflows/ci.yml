@@ -17,9 +17,6 @@ jobs:
     name: "Python ${{ matrix.python-version }}"
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: false
 
     strategy:
       matrix:
@@ -76,9 +73,6 @@ jobs:
     name: Coverage
     runs-on: ubuntu-24.04
     needs: tests
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: false
 
     permissions:
       # Allows the action to publish new comments directly on trusted PRs.

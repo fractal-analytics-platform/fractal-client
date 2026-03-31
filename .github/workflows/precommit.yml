@@ -11,9 +11,6 @@ permissions: {}
 jobs:
   precommit:
     runs-on: ubuntu-24.04
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: false
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98

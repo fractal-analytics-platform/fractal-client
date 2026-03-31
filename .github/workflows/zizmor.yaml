@@ -12,9 +12,6 @@ jobs:
   zizmor:
     name: zizmor
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: false
     permissions:
       security-events: write
       # contents: read # only needed for private or internal repos
