@@ -9,6 +9,8 @@ on:
     # At 07:00 on Monday
     - cron: "0 7 * * 1"
 
+permissions: {}
+
 jobs:
 
   tests:
@@ -23,6 +25,9 @@ jobs:
     env:
       FRACTAL_SERVER_PYTHON: "3.12"
       FRACTAL_SERVER_BRANCH: "main"
+
+    permissions:
+      contents: read
 
     steps:
 
@@ -62,35 +67,37 @@ jobs:
           name: coverage-data-${{ matrix.python-version }}
           path: coverage-data-${{ matrix.python-version }}*
 
+
   coverage:
+
     name: Coverage
     runs-on: ubuntu-24.04
     needs: tests
+
+    permissions:
+      # Allows the action to publish new comments directly on trusted PRs.
+      # Forked pull_request runs are downgraded to read-only by GitHub.
+      pull-requests: write
+      # Allows updating the python-coverage-comment-action branch and editing
+      # existing comments when direct publication is allowed.
+      contents: write
+
     steps:
-
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
-
-      - name: Download data
-        uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317
         with:
           pattern: coverage-data-*
           merge-multiple: true
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
+      - uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
         with:
           version: "0.9.7"
           enable-cache: true
-
-      - name: Install dev dependencies
-        run: uv sync --frozen --only-group dev
-
-      - name: Combine coverage artifacts into a single `.coverage` file
-        run: uv run --frozen coverage combine coverage-data-*
-
-      - name: Add coverage comment to Pull Requests
+      - run: uv sync --frozen --only-group dev
+      - run: uv run --frozen coverage combine coverage-data-*
+      - uses: py-cov-action/python-coverage-comment-action@7188638f871f721a365d644f505d1ff3df20d683
         id: coverage_comment
-        uses: py-cov-action/python-coverage-comment-action@7188638f871f721a365d644f505d1ff3df20d683
         with:
           GITHUB_TOKEN: ${{ github.token }}
           MINIMUM_GREEN: 90
