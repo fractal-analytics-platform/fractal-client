@@ -14,7 +14,9 @@ jobs:
     name: "Python ${{ matrix.python-version }}"
     runs-on: ubuntu-24.04
     timeout-minutes: 8
-
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
