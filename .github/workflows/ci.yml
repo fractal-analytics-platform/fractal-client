@@ -85,7 +85,10 @@ jobs:
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
-          persist-credentials: false
+          # The git operations in python-coverage-comment-action utilize the
+          # token stored by actions/checkout.
+          # https://github.com/py-cov-action/python-coverage-comment-action/issues/610
+          persist-credentials: true
       - uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317
         with:
           pattern: coverage-data-*
