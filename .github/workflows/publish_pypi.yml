@@ -9,10 +9,14 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+beta[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
 
+permissions: {}
+
 jobs:
   build_and_publish:
     runs-on: ubuntu-24.04
-    environment: pypi
+    environment:
+      name: pypi
+      url: https://pypi.org/p/fractal-client
     concurrency:
       group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
