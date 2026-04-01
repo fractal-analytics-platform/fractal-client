@@ -10,9 +10,13 @@ def debug_request(verb: str, url: str, **kwargs):
     body = kwargs.get("json")
     log = f"\nFractal Client sending HTTP request to:\n    {verb} {url}"
     if body is not None:
-        log += "\nRequest body:\n" + "\n".join(
-            [f"    {k}: {v}" for k, v in body.items()]
-        )
+        if type(body) is dict:
+            log += "\nRequest body:\n" + "\n".join(
+                [f"    {k}: {v}" for k, v in body.items()]
+            )
+        else:
+            log = f"\nRequest body:\n{body}"
+
     logging.debug(log)
 
 

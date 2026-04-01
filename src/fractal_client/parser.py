@@ -514,7 +514,7 @@ workflow_delete_parser.add_argument(
 # workflow add task
 workflow_add_task_parser = workflow_subparsers.add_parser(
     "add-task",
-    description="Add new task to specific workflow.",
+    description="Append a single task to the task list of a workflow.",
     allow_abbrev=False,
 )
 workflow_add_task_parser.add_argument(
