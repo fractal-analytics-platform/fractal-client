@@ -3,7 +3,7 @@
 # Unreleased
 
 * Testing:
-    * Partially harden GitHub Action based on `zizmor` (\#887).
+    * Harden GitHub Action based on `zizmor` (\#887, \#890).
 
 # 2.20.1
 
