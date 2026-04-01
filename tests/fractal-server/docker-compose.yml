@@ -21,7 +21,7 @@ services:
     ports:
       - "8765:8765"
     environment:
-      - FRACTAL_SERVER_BRANCH=${FRACTAL_SERVER_BRANCH:-insert-tasks-bulk}
+      - FRACTAL_SERVER_BRANCH=${FRACTAL_SERVER_BRANCH:-main}
       - FRACTAL_SERVER_PORT=8765
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432

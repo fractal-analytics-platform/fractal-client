@@ -24,7 +24,7 @@ jobs:
 
     env:
       FRACTAL_SERVER_PYTHON: "3.12"
-      FRACTAL_SERVER_BRANCH: "insert-tasks-bulk"
+      FRACTAL_SERVER_BRANCH: "main"
 
     permissions:
       contents: read
