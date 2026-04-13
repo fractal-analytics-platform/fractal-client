@@ -24,7 +24,7 @@ jobs:
         with:
           version: "0.9.24"
           enable-cache: true
-      - run: uv sync --frozen --extra docs
+      - run: uv sync --frozen --group docs
       - run: uv run --frozen mkdocs build --config-file mkdocs.yml --site-dir site --clean
 
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
