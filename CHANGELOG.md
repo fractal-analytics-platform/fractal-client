@@ -4,6 +4,7 @@
 
 * Dependencies:
     * Bump `python-dotenv` (\#899).
+    * Bump `pytest` (\#899).
 
 # 2.21.0
 
