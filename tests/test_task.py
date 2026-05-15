@@ -96,6 +96,7 @@ def test_task_edit(
     invoke,
     tmp_path,
     new_name,
+    monkeypatch,
 ):
     args_path = str(tmp_path / "args.json")
     args = {"image_dir": "/asdasd"}
@@ -217,3 +218,17 @@ def test_task_edit(
     res = invoke(f"task edit --name {NAME} --output-types {n_o_types_path}")
     assert res.data["output_types"] == new_output_types
     assert res.retcode == 0
+
+    # Test task with missing name, with a clear cache
+
+    import fractal_client.cmd._aux_task_caching
+
+    monkeypatch.setattr(
+        fractal_client.cmd._aux_task_caching,
+        "TASKS_CACHE_FILENAME",
+        "fractal-task-cache-for-testing",
+    )
+
+    cmd = f"task edit --name missing-task --output-types {n_o_types_path}"
+    with pytest.raises(SystemExit, match="There is no task"):
+        invoke(cmd)

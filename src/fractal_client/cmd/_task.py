@@ -88,8 +88,7 @@ def patch_task(
                 client=client, task_name=name, version=version
             )
         except FractalCacheError as e:
-            print(e)
-            sys.exit(1)
+            sys.exit(str(e))
 
     task_update = {}
     if command_non_parallel:
