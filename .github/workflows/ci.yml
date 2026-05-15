@@ -24,7 +24,7 @@ jobs:
 
     env:
       FRACTAL_SERVER_PYTHON: "3.12"
-      FRACTAL_SERVER_BRANCH: "main"
+      FRACTAL_SERVER_BRANCH: "3327-review-and-remove-dataset-history-endpoint"
 
     permissions:
       contents: read
