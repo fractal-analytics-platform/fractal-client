@@ -71,7 +71,6 @@ def post_workflowtask(
     task_name: str | None = None,
     task_version: str | None = None,
     batch: bool = False,
-    order: int | None = None,
 ) -> Interface:
     if task_id:
         if task_version:
@@ -89,10 +88,7 @@ def post_workflowtask(
             print(e)
             sys.exit(1)
 
-    if order is None:
-        workflow_task = dict()
-    else:
-        workflow_task = dict(order=order)
+    workflow_task = {}
 
     if type_filters is not None:
         with Path(type_filters).open("r") as f:

@@ -543,10 +543,6 @@ workflow_add_task_parser.add_argument(
     ),
 )
 workflow_add_task_parser.add_argument(
-    "--order", help="Order of this task within the workflow's task list."
-)
-
-workflow_add_task_parser.add_argument(
     "--args-non-parallel", help="Args for non parallel tasks"
 )
 

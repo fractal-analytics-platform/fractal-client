@@ -208,7 +208,7 @@ def test_workflow_add_task(
 
     cmd_args = (
         f"{cmd} --task-id {t['id']} --type-filters {type_filters_file} "
-        f"--args-parallel {args_parallel_file} "
+        f"--args-parallel {args_parallel_file}"
     )
     debug(cmd_args)
     # Test success

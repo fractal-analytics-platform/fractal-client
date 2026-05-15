@@ -236,7 +236,6 @@ def workflow(
             "task_id",
             "task_name",
             "task_version",
-            "order",
             "args_non_parallel",
             "args_parallel",
             "type_filters",
