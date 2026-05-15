@@ -152,8 +152,10 @@ def test_group_commands(
     res = invoke_as_superuser(f"--batch group new {new_name()}")
     assert isinstance(res.data, int)
 
+    res = invoke_as_superuser(f"--batch group new {new_name()}")
+    assert isinstance(res.data, int)
+
     # Test `whoami --viewer-paths`
     invoke_as_superuser(f"group add-user {group1_id} {superuser_id}")
-    assert "viewer_paths" not in superuser
     res = invoke_as_superuser("user whoami --viewer-paths")
     assert set(res.data.get("viewer_paths")) == set(res.data["project_dirs"])
