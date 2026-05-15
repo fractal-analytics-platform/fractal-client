@@ -30,16 +30,11 @@ def group_new(
     client: AuthClient,
     *,
     name: str,
-    viewer_paths: list[str] | None = None,
     batch: bool = False,
 ):
-    request_body = dict(name=name)
-    if viewer_paths is not None:
-        request_body["viewer_paths"] = viewer_paths
-
     res = client.post(
         "auth/group/",
-        json=request_body,
+        json=dict(name=name),
     )
     data = check_response(res, expected_status_code=201)
     if batch:

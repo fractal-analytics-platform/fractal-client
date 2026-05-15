@@ -36,7 +36,7 @@ def test_register_as_superuser(
         assert not res.data["is_superuser"]
     assert res.data["email"] == EMAIL_USER
 
-    # Test that new user is verified (note: for the moment we don't expose the
+    # Test that new user is verified (note: we don't expose the
     # possibility of registering a non-verified user)
     assert res.data["is_verified"]
 
