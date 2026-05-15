@@ -10,7 +10,6 @@ def user_register(
     new_password: str,
     new_project_dir: str,
     superuser: bool = False,
-    verified: bool = True,  # TODO: this is not currently exposed in the CLI
     batch: bool = False,
 ) -> Interface:
     new_user = dict(
@@ -22,14 +21,15 @@ def user_register(
     res = client.post("auth/register/", json=new_user)
     user_data = check_response(res, expected_status_code=201)
 
-    if superuser or verified:
-        patch_payload = dict(is_superuser=superuser, is_verified=verified)
-        user_id = user_data["id"]
-        res = client.patch(
-            f"auth/users/{user_id}/",
-            json=patch_payload,
-        )
-        user_data = check_response(res, expected_status_code=200)
+    # We need an additional PATCH request to set `is_verified` (always) and
+    # `is_superuser` (optionally).
+    patch_payload = dict(is_superuser=superuser, is_verified=True)
+    user_id = user_data["id"]
+    res = client.patch(
+        f"auth/users/{user_id}/",
+        json=patch_payload,
+    )
+    user_data = check_response(res, expected_status_code=200)
 
     user_id = user_data["id"]
 
