@@ -1,14 +1,14 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Unreleased
+# 2.21.2 (unreleased)
 
 * Commands:
     * Drop obsolete `--order` option for `workflow add-task` command (\#901).
+    * Drop verbose logging of request bodies (\#902).
 * Internal:
     * Print and test error message for `task edit` command (\#901).
     * Remove redundant branch for registering verified users (\#901).
     * Drop obsolete `viewer_paths` argument (\#901).
-
 
 # 2.21.1
 

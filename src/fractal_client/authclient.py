@@ -6,17 +6,8 @@ from httpx import Client
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-def debug_request(verb: str, url: str, **kwargs):
-    body = kwargs.get("json")
-    log = f"\nFractal Client sending HTTP request to:\n    {verb} {url}"
-    if body is not None:
-        if type(body) is dict:
-            log += "\nRequest body:\n" + "\n".join(
-                [f"    {k}: {v}" for k, v in body.items()]
-            )
-        else:
-            log = f"\nRequest body:\n{body}"
-
+def debug_request(verb: str, url):
+    log = f"Sending HTTP request {verb} {url}"
     logging.debug(log)
 
 
@@ -83,12 +74,12 @@ class AuthClient:
 
     def post(self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
-        debug_request("POST", relative_url, **kwargs)
+        debug_request("POST", url)
         return self.client.post(url=url, headers=self.auth_headers, **kwargs)
 
     def patch(self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
-        debug_request("PATCH", relative_url, **kwargs)
+        debug_request("PATCH", url)
         return self.client.patch(url=url, headers=self.auth_headers, **kwargs)
 
     def delete(self, relative_url: str):
