@@ -5,7 +5,7 @@
 | Name                                            |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |------------------------------------------------ | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/fractal\_client/\_\_init\_\_.py             |        1 |        0 |        0 |        0 |    100% |           |
-| src/fractal\_client/authclient.py               |       57 |        0 |        8 |        0 |    100% |           |
+| src/fractal\_client/authclient.py               |       52 |        0 |        4 |        0 |    100% |           |
 | src/fractal\_client/client.py                   |       63 |        0 |       12 |        0 |    100% |           |
 | src/fractal\_client/cmd/\_\_init\_\_.py         |      282 |        0 |       96 |        0 |    100% |           |
 | src/fractal\_client/cmd/\_aux\_task\_caching.py |       83 |        0 |       20 |        0 |    100% |           |
@@ -24,7 +24,7 @@
 | src/fractal\_client/interface.py                |       10 |        0 |        2 |        0 |    100% |           |
 | src/fractal\_client/parser.py                   |      227 |        0 |        0 |        0 |    100% |           |
 | src/fractal\_client/response.py                 |       40 |        0 |       12 |        0 |    100% |           |
-| **TOTAL**                                       | **1341** |    **1** |  **342** |    **3** | **99%** |           |
+| **TOTAL**                                       | **1336** |    **1** |  **338** |    **3** | **99%** |           |
 
 
 ## Setup coverage badge
