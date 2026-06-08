@@ -61,7 +61,7 @@ def _sort_task_list(task_list: _TaskList) -> _TaskList:
         task_list,
         key=lambda task: (
             task["name"],
-            task["version"] or "",
+            task["version"],
         ),
     )
     return new_task_list
