@@ -141,7 +141,8 @@ def test_task_collection_custom(
 
     cmd = (
         f"task collect-custom --private --package-name {package_name} "
-        f"label {python_interpreter} {manifest}"
+        f"label {python_interpreter} {manifest} "
+        "--version 0"
     )
     res = invoke_as_custom_user(cmd, **new_user)
     debug(res.data)
@@ -158,7 +159,7 @@ def test_task_collection_custom(
     # Missing manifest file
     cmd = (
         f"task collect-custom --package-name {package_name} "
-        f"label {python_interpreter} /foo/bar"
+        f"label {python_interpreter} /foo/bar --version 1"
     )
     res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 1
@@ -166,7 +167,7 @@ def test_task_collection_custom(
 
     cmd = (
         "--batch task collect-custom --private --package-root /tmp --version 2"
-        f" label2 {python_interpreter} {manifest}"
+        f" label2 {python_interpreter} {manifest} --version 2"
     )
     res = invoke_as_custom_user(cmd, **new_user)
     assert res.retcode == 0
@@ -176,7 +177,8 @@ def test_task_collection_custom(
     cmd = (
         "task collect-custom --private"
         f"--package-root /tmp --package-name {package_name} "
-        f"label3 {python_interpreter} {manifest}"
+        f"label3 {python_interpreter} {manifest} "
+        "--version 3"
     )
     with pytest.raises(SystemExit):
         res = invoke_as_custom_user(cmd, **new_user)
