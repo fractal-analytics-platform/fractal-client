@@ -304,6 +304,7 @@ task_collect_custom_parser.add_argument(
 task_collect_custom_parser.add_argument(
     "--version",
     help="Version of tasks to be collected.",
+    required=True,
 )
 tasktask_collect_custom_pkg_name_or_root = (
     task_collect_custom_parser.add_mutually_exclusive_group(required=True)
@@ -372,6 +373,7 @@ task_new_parser.add_argument(
 task_new_parser.add_argument(
     "--version",
     help="Task version.",
+    required=True,
 )
 task_new_parser.add_argument(
     "--meta-non-parallel",
