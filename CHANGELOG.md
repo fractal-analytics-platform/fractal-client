@@ -2,7 +2,7 @@
 
 # 2.23.0 (unreleased)
 
-This version is aligned with [fractal-server 2.23.0](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2230), which makes task/task-group versions required.
+This version is aligned with [fractal-server 2.23.1](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2231), which makes task/task-group versions required.
 
 * Commands:
     * Drop obsolete `--order` option for `workflow add-task` command (\#901).
