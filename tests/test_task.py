@@ -53,7 +53,7 @@ def test_task_new(
     user_factory(**new_user_credentials)
     with pytest.raises(SystemExit):
         res = invoke_as_custom_user(
-            f"task show {first_task_id} --version 0",
+            f"task show {first_task_id}",
             **new_user_credentials,
         )
 
