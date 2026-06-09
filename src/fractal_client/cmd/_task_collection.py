@@ -102,7 +102,7 @@ def task_collect_custom(
     label: str,
     python_interpreter: str,
     manifest: str,
-    version: str | None = None,
+    version: str,
     package_name: str | None = None,
     package_root: str | None = None,
     private: bool = False,
@@ -122,9 +122,8 @@ def task_collect_custom(
         label=label,
         python_interpreter=python_interpreter,
         manifest=manifest_dict,
+        version=version,
     )
-    if version:
-        task_collect["version"] = version
     if package_name:
         task_collect["package_name"] = package_name
     if package_root:

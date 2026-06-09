@@ -23,7 +23,7 @@ def post_task(
     batch: bool = False,
     command_non_parallel: str | None = None,
     command_parallel: str | None = None,
-    version: str | None = None,
+    version: str,
     meta_non_parallel: str | None = None,
     meta_parallel: str | None = None,
     args_schema_non_parallel: str | None = None,
@@ -38,8 +38,7 @@ def post_task(
         task["command_non_parallel"] = command_non_parallel
     if command_parallel:
         task["command_parallel"] = command_parallel
-    if version:
-        task["version"] = version
+    task["version"] = version
     if meta_non_parallel:
         with open(meta_non_parallel) as f:
             task["meta_non_parallel"] = json.load(f)

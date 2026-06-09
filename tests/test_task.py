@@ -31,7 +31,7 @@ def test_task_new(
     TASK_NAME = new_name()
     res = invoke(
         f"task new {TASK_NAME} --command-parallel _command "
-        f"--version _version --meta-parallel {meta_path} "
+        f"--version 0 --meta-parallel {meta_path} "
         f"--args-schema-parallel {args_path} "
         f"--args-schema-version 1.0.0 "
         "--private"
@@ -40,7 +40,7 @@ def test_task_new(
     assert res.retcode == 0
     assert res.data["name"] == TASK_NAME
     assert res.data["command_parallel"] == "_command"
-    assert res.data["version"] == "_version"
+    assert res.data["version"] == "0"
     assert res.data["meta_parallel"] == meta
     assert res.data["args_schema_version"] == "1.0.0"
     first_task_id = int(res.data["id"])
@@ -60,7 +60,8 @@ def test_task_new(
     # create a new task with batch option
     TASK_NAME_2 = new_name()
     res = invoke(
-        f"--batch task new {TASK_NAME_2} --command-parallel _command2"
+        f"--batch task new {TASK_NAME_2} "
+        "--command-parallel _command2 --version 0"
     )
     res.show()
     assert res.retcode == 0
@@ -69,12 +70,14 @@ def test_task_new(
     # create a new task with same name as before. Note that in check_response
     # we have sys.exit(1) when status code is not the expecte one
     with pytest.raises(SystemExit) as e:
-        invoke(f"task new {TASK_NAME_2} --command-parallel _command2")
+        invoke(
+            f"task new {TASK_NAME_2} --command-parallel _command2 --version 0"
+        )
     assert e.value.code == 1
 
     # create a new task passing not existing file
     res = invoke(
-        f"task new {new_name()} --command-parallel _command "
+        f"task new {new_name()} --command-parallel _command --version 1 "
         "--meta-parallel ./foo.pdf"
     )
     assert res.retcode == 1
@@ -87,6 +90,7 @@ def test_task_new(
         f"task new {new_name()} --command-non-parallel _command_np "
         f"--meta-non-parallel {metanp_path} "
         f"--args-schema-non-parallel {args_path} "
+        "--version 0"
     )
     assert res.data["args_schema_non_parallel"] == args
 

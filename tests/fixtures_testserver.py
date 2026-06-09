@@ -117,7 +117,7 @@ def task_factory(invoke):
         name: str,
         command_non_parallel: str | None = None,
         command_parallel: str | None = None,
-        version: str | None = None,
+        version: str = "0",
         meta_non_parallel: str | None = None,
         meta_parallel: str | None = None,
         args_schema_non_parallel: str | None = None,
@@ -129,8 +129,7 @@ def task_factory(invoke):
             cmd += f" --command-non-parallel {command_non_parallel}"
         if command_parallel is not None:
             cmd += f" --command-parallel {command_parallel}"
-        if version is not None:
-            cmd += f" --version {version}"
+        cmd += f" --version {version}"
         if meta_non_parallel is not None:
             cmd += f" --meta-non-parallel {meta_non_parallel}"
         if meta_parallel is not None:
