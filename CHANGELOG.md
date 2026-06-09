@@ -1,6 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.23.0 (unreleased)
+# 2.23.0
 
 This version is aligned with [fractal-server 2.23.1](https://github.com/fractal-analytics-platform/fractal-server/blob/main/CHANGELOG.md#2231), which makes task/task-group versions required.
 
