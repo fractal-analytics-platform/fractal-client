@@ -31,11 +31,10 @@ def test_task_new(
     TASK_NAME = new_name()
     res = invoke(
         f"task new {TASK_NAME} --command-parallel _command "
-        f"--version _version --meta-parallel {meta_path} "
+        f"--version 0 --meta-parallel {meta_path} "
         f"--args-schema-parallel {args_path} "
         f"--args-schema-version 1.0.0 "
-        "--private "
-        "--version 0"
+        "--private"
     )
     debug(res.data)
     assert res.retcode == 0
