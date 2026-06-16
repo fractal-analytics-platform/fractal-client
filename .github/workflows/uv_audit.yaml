@@ -1,0 +1,23 @@
+name: uv audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 06 * * 3"
+
+permissions: {}
+
+jobs:
+  uv_audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          version: "0.11.14"
+          enable-cache: false
+      - run: uv audit --no-group dev --no-group docs --verbose
+      - run: uv audit
+        continue-on-error: true
