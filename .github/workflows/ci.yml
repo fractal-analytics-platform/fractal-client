@@ -22,10 +22,6 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
 
-    env:
-      FRACTAL_SERVER_PYTHON: "3.12"
-      FRACTAL_SERVER_BRANCH: "main"
-
     permissions:
       contents: read
 
