@@ -242,8 +242,8 @@ def test_task_list(invoke, task_factory):
     res_pre = invoke("task list")
     num_tasks_pre = len(res_pre.data)
 
-    task_factory(name="t1", command_parallel="echo")
-    task_factory(name="t2", command_parallel="echo")
+    task_factory(name="t1", command_parallel="echo", version=1)
+    task_factory(name="t2", command_parallel="echo", version=2)
 
     res_post = invoke("task list")
     num_tasks_post = len(res_post.data)
