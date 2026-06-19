@@ -236,3 +236,13 @@ def test_task_edit(
     cmd = f"task edit --name missing-task --output-types {n_o_types_path}"
     with pytest.raises(SystemExit, match="There is no task"):
         invoke(cmd)
+
+
+def test_task_list(invoke, task_factory):
+    res_pre = invoke("task list")
+    num_tasks_pre = len(res_pre.data)
+    task_factory(name="t1")
+    task_factory(name="t2")
+    res_post = invoke("task list")
+    num_tasks_post = len(res_post.data)
+    assert num_tasks_post == num_tasks_pre + 2
