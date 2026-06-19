@@ -4,6 +4,7 @@
 
 * Testing:
     * Add `uv audit` GitHub Action (\#907).
+    * Expand test of `fractal task list` (\#911).
 
 # 2.23.0
 
