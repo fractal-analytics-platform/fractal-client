@@ -250,11 +250,7 @@ def test_task_list(invoke, task_factory):
     assert num_tasks_post == num_tasks_pre + 2
 
 
-def test_task_make_core(
-    invoke_as_superuser,
-    tmp_path,
-    new_name,
-):
+def test_task_make_core(invoke_as_superuser, tmp_path, new_name, caplog):
     args_path = str(tmp_path / "args.json")
     args = {"image_dir": "/asdasd"}
     with open(args_path, "w") as f:
@@ -273,18 +269,6 @@ def test_task_make_core(
     assert not task.data["is_core"]
     task_id = task.data["id"]
 
-    # with pytest.raises(
-    #     SystemExit,
-    #     match="the following arguments are required: task_ids",
-    # ):
-    #     invoke("task make-core")
-
-    # with pytest.raises(
-    #     SystemExit,
-    #     match="the following arguments are required: task_ids",
-    # ):
-    #     invoke("task make-not-core")
-
     output = invoke_as_superuser(f"task make-core {task_id}")
     assert output.retcode == 0
 
@@ -293,3 +277,15 @@ def test_task_make_core(
 
     output = invoke_as_superuser(f"task make-not-core {task_id}")
     assert output.retcode == 0
+
+    # Test missing CLI arguments
+
+    caplog.clear()
+    with pytest.raises(SystemExit):
+        invoke_as_superuser("task make-core")
+    assert "the following arguments are required: task_ids" in caplog.text
+
+    caplog.clear()
+    with pytest.raises(SystemExit):
+        invoke_as_superuser("task make-not-core")
+    assert "the following arguments are required: task_ids" in caplog.text
