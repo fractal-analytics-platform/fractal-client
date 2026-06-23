@@ -2,6 +2,8 @@
 
 # 2.23.1
 
+* Commands:
+    * Add `task make-core` and `task make-not-core` (\#913).
 * Dependencies:
     * Replace `httpx` with `httpx2` (\#912).
 * Testing:
