@@ -10,6 +10,7 @@
     * Add `uv audit` GitHub Action (\#907).
     * Expand test of `fractal task list` (\#911).
     * Avoid redundant definition of `FRACTAL_SERVER_BRANCH` and `FRACTAL_SERVER_PYTHON` (\#911).
+    * Remove `FRACTAL_SERVER_PYTHON` variable (\#913).
 
 # 2.23.0
 
