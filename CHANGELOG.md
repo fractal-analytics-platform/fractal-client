@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Testing:
+    * Use `host` network for CI docker compose (\#915).
+
 # 2.23.1
 
 * Commands:
