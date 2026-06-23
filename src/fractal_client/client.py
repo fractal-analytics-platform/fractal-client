@@ -15,7 +15,7 @@ Zurich.
 import logging
 import sys
 
-from httpx import ConnectError
+from httpx2 import ConnectError
 
 from . import cmd
 from .authclient import AuthClient

@@ -1,6 +1,6 @@
 from fractal_client import __VERSION__
-from httpx import Client
-from httpx import ConnectError
+from httpx2 import Client
+from httpx2 import ConnectError
 
 from ..authclient import AuthClient
 from ..interface import Interface

@@ -6,7 +6,7 @@ from urllib.request import urlopen
 import pytest
 from devtools import debug
 
-logging.getLogger("httpx").setLevel(logging.DEBUG)
+logging.getLogger("httpx2").setLevel(logging.DEBUG)
 
 NUM_MOCK_TASKS = 18
 
