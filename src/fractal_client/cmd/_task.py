@@ -121,6 +121,6 @@ def make_task_not_core(
     *,
     task_ids: list[int],
 ) -> Interface:
-    res = client.post("api/v2/task/make-not-core/", json=task_ids)
+    res = client.post("admin/v2/task/make-not-core/", json=task_ids)
     check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=f"Marked {len(task_ids)} as not core.")
