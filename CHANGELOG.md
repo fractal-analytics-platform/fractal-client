@@ -1,7 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Unreleased
+# 2.23.1
 
+* Dependencies:
+    * Replace `httpx` with `httpx2` (\#912).
 * Testing:
     * Add `uv audit` GitHub Action (\#907).
     * Expand test of `fractal task list` (\#911).
