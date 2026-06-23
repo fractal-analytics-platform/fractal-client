@@ -251,7 +251,7 @@ def test_task_list(invoke, task_factory):
 
 
 def test_task_make_core(
-    invoke,
+    invoke_as_superuser,
     tmp_path,
     new_name,
 ):
@@ -266,7 +266,7 @@ def test_task_make_core(
         json.dump(meta, f)
 
     NAME = new_name()
-    task = invoke(
+    task = invoke_as_superuser(
         f"task new {NAME} --command-parallel _command --version 1.2.3"
     )
     assert task.retcode == 0
@@ -285,11 +285,11 @@ def test_task_make_core(
     # ):
     #     invoke("task make-not-core")
 
-    output = invoke(f"task make-core {task_id}")
+    output = invoke_as_superuser(f"task make-core {task_id}")
     assert output.retcode == 0
 
-    output = invoke(f"task make-core {task_id}")
+    output = invoke_as_superuser(f"task make-core {task_id}")
     assert output.retcode == 0
 
-    output = invoke(f"task make-not-core {task_id}")
+    output = invoke_as_superuser(f"task make-not-core {task_id}")
     assert output.retcode == 0
