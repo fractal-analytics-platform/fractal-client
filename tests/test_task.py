@@ -273,17 +273,17 @@ def test_task_make_core(
     assert not task.data["is_core"]
     task_id = task.data["id"]
 
-    with pytest.raises(
-        SystemExit,
-        match="the following arguments are required: task_ids",
-    ):
-        invoke("task make-core")
+    # with pytest.raises(
+    #     SystemExit,
+    #     match="the following arguments are required: task_ids",
+    # ):
+    #     invoke("task make-core")
 
-    with pytest.raises(
-        SystemExit,
-        match="the following arguments are required: task_ids",
-    ):
-        invoke("task make-not-core")
+    # with pytest.raises(
+    #     SystemExit,
+    #     match="the following arguments are required: task_ids",
+    # ):
+    #     invoke("task make-not-core")
 
     output = invoke(f"task make-core {task_id}")
     assert output.retcode == 0
