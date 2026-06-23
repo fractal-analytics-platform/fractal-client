@@ -225,6 +225,32 @@ task_list_parser = task_subparsers.add_parser(
     allow_abbrev=False,
 )
 
+# task make-core
+task_make_core_parser = task_subparsers.add_parser(
+    "make-core",
+    description="Mark tasks as core.",
+    allow_abbrev=False,
+)
+task_make_core_parser.add_argument(
+    "task_ids",
+    help="List of the IDs of tasks that should be made core.",
+    type=int,
+    nargs="+",
+)
+
+
+# task make-not-core
+task_make_not_core_parser = task_subparsers.add_parser(
+    "make-not-core",
+    description="Mark tasks as non-core.",
+    allow_abbrev=False,
+)
+task_make_not_core_parser.add_argument(
+    "task_ids",
+    help="List of the IDs of tasks that should be made core.",
+    type=int,
+    nargs="+",
+)
 # task collect
 task_collect_parser = task_subparsers.add_parser(
     "collect",
