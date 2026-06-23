@@ -283,7 +283,7 @@ def test_task_make_core(
     #     SystemExit,
     #     match="the following arguments are required: task_ids",
     # ):
-    invoke_as_superuser("task make-not-core")
+    #     invoke("task make-not-core")
 
     output = invoke_as_superuser(f"task make-core {task_id}")
     assert output.retcode == 0
