@@ -248,3 +248,48 @@ def test_task_list(invoke, task_factory):
     res_post = invoke("task list")
     num_tasks_post = len(res_post.data)
     assert num_tasks_post == num_tasks_pre + 2
+
+
+def test_task_make_core(
+    invoke,
+    tmp_path,
+    new_name,
+):
+    args_path = str(tmp_path / "args.json")
+    args = {"image_dir": "/asdasd"}
+    with open(args_path, "w") as f:
+        json.dump(args, f)
+
+    meta_path = str(tmp_path / "meta.json")
+    meta = {"a": "b"}
+    with open(meta_path, "w") as f:
+        json.dump(meta, f)
+
+    NAME = new_name()
+    task = invoke(
+        f"task new {NAME} --command-parallel _command --version 1.2.3"
+    )
+    assert task.retcode == 0
+    assert not task.data["is_core"]
+    task_id = task.data["id"]
+
+    with pytest.raises(
+        SystemExit,
+        match="the following arguments are required: task_ids",
+    ):
+        invoke("task make-core")
+
+    with pytest.raises(
+        SystemExit,
+        match="the following arguments are required: task_ids",
+    ):
+        invoke("task make-not-core")
+
+    output = invoke(f"task make-core {task_id}")
+    assert output.retcode == 0
+
+    output = invoke(f"task make-core {task_id}")
+    assert output.retcode == 0
+
+    output = invoke(f"task make-not-core {task_id}")
+    assert output.retcode == 0
