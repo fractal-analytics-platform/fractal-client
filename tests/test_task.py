@@ -248,3 +248,44 @@ def test_task_list(invoke, task_factory):
     res_post = invoke("task list")
     num_tasks_post = len(res_post.data)
     assert num_tasks_post == num_tasks_pre + 2
+
+
+def test_task_make_core(invoke_as_superuser, tmp_path, new_name, capsys):
+    args_path = str(tmp_path / "args.json")
+    args = {"image_dir": "/asdasd"}
+    with open(args_path, "w") as f:
+        json.dump(args, f)
+
+    meta_path = str(tmp_path / "meta.json")
+    meta = {"a": "b"}
+    with open(meta_path, "w") as f:
+        json.dump(meta, f)
+
+    NAME = new_name()
+    task = invoke_as_superuser(
+        f"task new {NAME} --command-parallel _command --version 1.2.3"
+    )
+    assert task.retcode == 0
+    assert not task.data["is_core"]
+    task_id = task.data["id"]
+
+    output = invoke_as_superuser(f"task make-core {task_id}")
+    assert output.retcode == 0
+
+    output = invoke_as_superuser(f"task make-core {task_id}")
+    assert output.retcode == 0
+
+    output = invoke_as_superuser(f"task make-not-core {task_id}")
+    assert output.retcode == 0
+
+    # Test missing CLI arguments
+
+    with pytest.raises(SystemExit):
+        invoke_as_superuser("task make-core")
+    err = capsys.readouterr().err
+    assert "the following arguments are required: task_ids" in err
+
+    with pytest.raises(SystemExit):
+        invoke_as_superuser("task make-not-core")
+    err = capsys.readouterr().err
+    assert "the following arguments are required: task_ids" in err

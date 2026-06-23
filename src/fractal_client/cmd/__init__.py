@@ -26,6 +26,8 @@ from ._project import patch_project
 from ._project import post_project
 from ._resource import post_resource
 from ._task import get_task_list
+from ._task import make_task_core
+from ._task import make_task_not_core
 from ._task import patch_task
 from ._task import post_task
 from ._task_collection import show_task_group_activity
@@ -151,6 +153,14 @@ def task(
         ]
         function_kwargs = get_kwargs(parameters, kwargs)
         iface = task_collect_pip(client, batch=batch, **function_kwargs)
+    elif subcmd == "make-core":
+        parameters = ["task_ids"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = make_task_core(client, **function_kwargs)
+    elif subcmd == "make-not-core":
+        parameters = ["task_ids"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = make_task_not_core(client, **function_kwargs)
     elif subcmd == "collect-custom":
         parameters = [
             "label",

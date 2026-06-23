@@ -67,12 +67,10 @@ docker compose -f tests/fractal-server/docker-compose.yml up
 
 The Fractal Server service can be customized via environment variables:
 
-- `FRACTAL_SERVER_PYTHON`: Python version used to run Fractal Server (defaults to `3.12`);
 - `FRACTAL_SERVER_BRANCH`: Git branch of the Fractal Server repository to use (defaults to `main`).
 
 For example:
 ```sh
-export FRACTAL_SERVER_PYTHON=3.14
 export FRACTAL_SERVER_BRANCH=123-bug-fix
 docker compose -f tests/fractal-server/docker-compose.yml up
 ```

@@ -14,7 +14,7 @@ services:
       retries: 5
 
   fractal-server:
-    image: python:${FRACTAL_SERVER_PYTHON:-3.12}-slim
+    image: python:3.14-slim
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,7 +39,9 @@ services:
       - FRACTAL_DEFAULT_GROUP_NAME=All
     command: >
       bash -c "
-        apt-get update && apt-get install -y git && python3 -m venv venv &&
+        apt-get update &&
+        apt-get install -y git &&
+        python3 -m venv venv &&
         venv/bin/pip install git+https://github.com/fractal-analytics-platform/fractal-server.git@$${FRACTAL_SERVER_BRANCH} &&
         venv/bin/fractalctl set-db &&
         venv/bin/fractalctl init-db-data --resource default --profile default --admin-email \"$${ADMIN_EMAIL}\" --admin-pwd \"$${ADMIN_PWD}\" --admin-project-dir \"$${ADMIN_PROJECT_DIR}\" &&

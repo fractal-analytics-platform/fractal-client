@@ -104,3 +104,23 @@ def patch_task(
     res = client.patch(f"api/v2/task/{id}/", json=task_update)
     new_task = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=new_task)
+
+
+def make_task_core(
+    client: AuthClient,
+    *,
+    task_ids: list[int],
+) -> Interface:
+    res = client.post("admin/v2/task/make-core/", json=task_ids)
+    check_response(res, expected_status_code=200)
+    return Interface(retcode=0, data=f"Marked {len(task_ids)} as core.")
+
+
+def make_task_not_core(
+    client: AuthClient,
+    *,
+    task_ids: list[int],
+) -> Interface:
+    res = client.post("admin/v2/task/make-not-core/", json=task_ids)
+    check_response(res, expected_status_code=200)
+    return Interface(retcode=0, data=f"Marked {len(task_ids)} as not core.")
