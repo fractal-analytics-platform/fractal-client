@@ -1,9 +1,9 @@
 import logging
 
-from httpx import Client
+from httpx2 import Client
 
 
-logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpx2").setLevel(logging.WARNING)
 
 
 def debug_request(verb: str, url):

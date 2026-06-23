@@ -4,7 +4,7 @@ import sys
 from json.decoder import JSONDecodeError
 from typing import Any
 
-from httpx import Response
+from httpx2 import Response
 
 LONG_PAYLOAD_VALUE_LIMIT = 300
 

@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 from devtools import debug
-from httpx import Request
-from httpx import Response
+from httpx2 import Request
+from httpx2 import Response
 
 TIMEOUT = 25.0
 

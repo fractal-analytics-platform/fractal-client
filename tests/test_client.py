@@ -1,7 +1,7 @@
 import shlex
 from pathlib import Path
 
-import httpx
+import httpx2
 import pytest
 from devtools import debug
 from fractal_client import __VERSION__
@@ -38,7 +38,7 @@ def test_server_is_up():
     WHEN it gets called
     THEN it replies
     """
-    res = httpx.get("http://localhost:8765/api/alive/")
+    res = httpx2.get("http://localhost:8765/api/alive/")
     debug(res.json())
     assert res.status_code == 200
 
