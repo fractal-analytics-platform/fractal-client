@@ -25,6 +25,7 @@ jobs:
           version: "0.9.24"
           enable-cache: true
       - run: uv sync --frozen --group docs
+      - run: uv --frozen run python docs/scripts/generate_cli_ref.py
       - run: uv run --frozen mkdocs build --config-file mkdocs.yml --site-dir site --clean
 
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
