@@ -16,7 +16,6 @@ LICENSE
 nav = [
     { "Home" = "index.md" },
     { "Install" = "install.md" },
-    { "Version compatibility" = "versions.md" },
     { "CLI reference" = [
         "cli_reference/index.md",
 
