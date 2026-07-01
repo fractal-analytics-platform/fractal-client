@@ -40,3 +40,4 @@ share/python-wheels/
 
 .venv
 venv
+.vscode/settings.json

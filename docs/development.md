@@ -1,9 +1,7 @@
 # Contribute to Fractal Client development
 
-The development of Fractal Client takes place on the [fractal-client Github
-repository](https://github.com/fractal-analytics-platform/fractal-client).  To
-ask questions or to inform us of a bug or unexpected behavior, please feel free
-to [open an issue](https://github.com/fractal-analytics-platform/fractal-client/issues/new).
+The development of Fractal Client takes place on the [fractal-client Github repository](https://github.com/fractal-analytics-platform/fractal-client).
+To ask questions or to inform us of a bug or unexpected behavior, please feel free to [open an issue](https://github.com/fractal-analytics-platform/fractal-client/issues/new).
 
 
 ## Set up the development environment
@@ -55,12 +53,9 @@ and publish it to PyPI.
 
 ## Run tests
 
-Unit and integration testing of Fractal Server uses the
-[pytest](https://docs.pytest.org/en/7.1.x/) testing framework.
+Unit and integration testing of Fractal Server uses the [pytest](https://docs.pytest.org/en/7.1.x/) testing framework.
 
-Before running the test suite, a Fractal Server instance and a PostgreSQL
-database must be available. For convenience, both services can be started via
-Docker Compose using the configuration provided at `tests/fractal-server/docker-compose.yml`:
+Before running the test suite, a Fractal Server instance and a PostgreSQL database must be available. For convenience, both services can be started via Docker Compose using the configuration provided at `tests/fractal-server/docker-compose.yml`:
 ```sh
 docker compose -f tests/fractal-server/docker-compose.yml up
 ```
@@ -79,25 +74,20 @@ Then, you may run the test suite by invoking
 ```sh
 uv run pytest
 ```
-from the main directory of the `fractal-client` repository. It is sometimes
-useful to specify additional arguments, e.g.
+from the main directory of the `fractal-client` repository.
+It is sometimes useful to specify additional arguments, e.g.
 ```sh
 uv run pytest -s -vvv --log-cli-level info --full-trace
 ```
 
-Tests are also run as part of [GitHub Actions Continuous
-Integration](https://github.com/fractal-analytics-platform/fractal-client/actions/workflows/ci.yml)
-for the `fractal-client` repository.
+Tests are also run as part of [GitHub Actions Continuous Integration](https://github.com/fractal-analytics-platform/fractal-client/actions/workflows/ci.yml) for the `fractal-client` repository.
 
 
 ## Documentation
 
-The documentations is built with mkdocs, and we bundle a module from
-[sphinx-argparse plugin](https://sphinx-argparse.readthedocs.io), customized to
-our needs.
-
-To build the documentation locally, setup a development python environment (e.g. with `poetry install --with docs`) and then run one of these commands:
-```
-uv run mkdocs serve --config-file mkdocs.yml  # serves the docs at http://127.0.0.1:8000
-uv run mkdocs build --config-file mkdocs.yml  # creates a build in the `site` folder
+The documentations is built with `zensical`.
+You can preview it locally through
+```bash
+uv run python3 docs/scripts/generate_cli_ref.py
+uv run zensical serve
 ```

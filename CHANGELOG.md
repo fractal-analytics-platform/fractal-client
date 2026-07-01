@@ -2,6 +2,8 @@
 
 # Unreleased
 
+* Documentation:
+    * Move from `mkdocs` to `zensical` (\#916).
 * Testing:
     * Use `host` network for CI docker compose (\#915).
 

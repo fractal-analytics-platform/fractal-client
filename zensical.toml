@@ -1,0 +1,84 @@
+[project]
+site_name = "Fractal CLI Client"
+site_url = "https://fractal-analytics-platform.github.io/fractal-client/"
+repo_url = "https://github.com/fractal-analytics-platform/fractal-client"
+repo_name = "fractal-analytics-platform/fractal-client"
+extra_css = ["extra.css"]
+copyright = """
+Copyright 2026 © BioVisionCenter (University of Zurich) - see
+<u><a href="https://github.com/fractal-analytics-platform/fractal-client/blob/main/LICENSE">LICENSE</a></u>.
+"""
+
+nav = [
+    { "Home" = "index.md" },
+    { "Install" = "install.md" },
+    { "CLI reference" = [
+        "cli_reference/index.md",
+
+        "cli_reference/dataset.md",
+        "cli_reference/group.md",
+        "cli_reference/job.md",
+        "cli_reference/profile.md",
+        "cli_reference/project.md",
+        "cli_reference/resource.md",
+        "cli_reference/task.md",
+        "cli_reference/template.md",
+        "cli_reference/user.md",
+        "cli_reference/version.md",
+        "cli_reference/workflow.md",
+    ] },
+    { "Development" = "development.md" },
+    { "Changelog" = "changelog.md" },
+]
+
+[project.theme]
+variant = "classic"
+language = "en"
+logo = "https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_logo.png"
+favicon = "https://raw.githubusercontent.com/fractal-analytics-platform/fractal-logos/refs/heads/main/common/fractal_favicon.png"
+custom_dir = "docs/overrides"
+navigation = {"expand" = true}
+
+features = [
+    "announce.dismiss",
+    "content.code.annotate",
+    "content.code.copy",
+    "content.tabs.link",
+    "content.tooltips",
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.instant",
+    "navigation.instant.prefetch",
+    "navigation.instant.progress",
+    "navigation.path",
+    "navigation.sections",
+    "navigation.tabs",
+    "navigation.tabs.sticky",
+    "search.highlight",
+    "toc.follow",
+    "toc.integrate",
+]
+
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "blue grey"
+accent = "light blue"
+toggle.icon = "material/weather-night"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "blue grey"
+accent = "light blue"
+toggle.icon = "material/weather-sunny"
+toggle.name = "Switch to light mode"
+
+[project.plugins.search]
+
+[project.plugins.autorefs]
+resolve_closest=true
+
+[project.plugins.section-index]
