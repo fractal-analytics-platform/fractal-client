@@ -5,12 +5,8 @@ repo_url = "https://github.com/fractal-analytics-platform/fractal-client"
 repo_name = "fractal-analytics-platform/fractal-client"
 extra_css = ["extra.css"]
 copyright = """
-© Copyright 2022
-Friedrich Miescher Institute for Biomedical Research and
-University of Zurich
-(see <u><a href="https://github.com/fractal-analytics-platform/fractal-client/blob/main/LICENSE">
-LICENSE
-</a></u>).
+Copyright 2026 © BioVisionCenter (University of Zurich) - see
+<u><a href="https://github.com/fractal-analytics-platform/fractal-client/blob/main/LICENSE">LICENSE</a></u>.
 """
 
 nav = [
