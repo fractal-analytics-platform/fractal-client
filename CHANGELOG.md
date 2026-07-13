@@ -6,6 +6,7 @@
     * Move from `mkdocs` to `zensical` (\#916).
 * Testing:
     * Use `host` network for CI docker compose (\#915).
+    * Fix CI and align with Fractal Server (\#919).
 
 # 2.23.1
 
