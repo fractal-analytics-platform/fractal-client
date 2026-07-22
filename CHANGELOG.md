@@ -2,6 +2,8 @@
 
 # Unreleased
 
+* Internal:
+    * Refactor CLI parser (\#923).
 * Documentation:
     * Move from `mkdocs` to `zensical` (\#916).
 * Testing:
