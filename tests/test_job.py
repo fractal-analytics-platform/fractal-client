@@ -62,9 +62,7 @@ def test_job_submit(
         assert time.perf_counter() - starting_time < TIMEOUT
 
     wf_json = (testdata_path / "import-export/wf3.json").as_posix()
-    res = invoke(
-        f"workflow import --project-id {project_id} --json-file {wf_json}"
-    )
+    res = invoke(f"workflow import --project-id {project_id} --json-file {wf_json}")
     workflow = res.data
     workflow_id = workflow["id"]
     debug(workflow)
@@ -138,10 +136,7 @@ def test_job_submit(
 
     # Download logs / success
     log1_dir = tmp_path / "log1"
-    cmd = (
-        f"job download-logs {project_id} {job1_id} "
-        f"--output {log1_dir.as_posix()}"
-    )
+    cmd = f"job download-logs {project_id} {job1_id} --output {log1_dir.as_posix()}"
     res = invoke(cmd)
     assert res.retcode == 0
     files = log1_dir.glob("*")
@@ -149,10 +144,7 @@ def test_job_submit(
 
     # Download logs / fail because folder already exists
     log1_dir = tmp_path / "log1"
-    cmd = (
-        f"job download-logs {project_id} {job1_id} "
-        f"--output {log1_dir.as_posix()}"
-    )
+    cmd = f"job download-logs {project_id} {job1_id} --output {log1_dir.as_posix()}"
     res = invoke(cmd)
     assert res.retcode == 1
 
@@ -186,8 +178,7 @@ def test_job_stop(invoke, caplog):
     with pytest.raises(SystemExit):
         invoke("job stop 123456 1234546")
     EXPECTED_MSG = (
-        "Stopping a job execution is not implemented "
-        "for FRACTAL_RUNNER_BACKEND=local"
+        "Stopping a job execution is not implemented for FRACTAL_RUNNER_BACKEND=local"
     )
     assert EXPECTED_MSG in caplog.text
 

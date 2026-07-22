@@ -53,9 +53,7 @@ def check_response(
         # fail for non-jons requests). For this reason it is within a
         # broad-scope try/except block.
         try:
-            logging.error(
-                f"Original request: {res._request.method} {res._request.url}"
-            )
+            logging.error(f"Original request: {res._request.method} {res._request.url}")
             payload = res._request._content.decode("utf-8")
             if redact_long_payload and len(payload) > 0:
                 payload_dict = json.loads(payload)

@@ -17,9 +17,7 @@ def test_template_commands(
 ):
     res = invoke_as_superuser("group list --user-ids")
     default_group = next(
-        group
-        for group in res.data
-        if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
+        group for group in res.data if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
     )
     default_group_id = default_group["id"]
 
@@ -28,10 +26,7 @@ def test_template_commands(
     workflow = workflow_factory(name=new_name(), project_id=project["id"])
     task = task_factory(name=new_name(), command_parallel="pwd", version="1")
 
-    invoke(
-        "workflow add-task "
-        f"{project['id']} {workflow['id']} --task-id {task['id']}"
-    )
+    invoke(f"workflow add-task {project['id']} {workflow['id']} --task-id {task['id']}")
 
     # Template new (from workflow_id)
     with pytest.raises(SystemExit):
