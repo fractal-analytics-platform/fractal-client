@@ -2,9 +2,10 @@ import json
 import logging
 import sys
 
-from ..authclient import AuthClient
-from ..interface import Interface
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+from fractal_client.response import check_response
+
 from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
 from ._aux_task_caching import refresh_task_cache
@@ -77,15 +78,11 @@ def patch_task(
 ) -> Interface:
     if id:
         if version:
-            logging.error(
-                "Too many arguments: cannot provide both `id` and `version`."
-            )
+            logging.error("Too many arguments: cannot provide both `id` and `version`.")
             sys.exit(1)
     else:
         try:
-            id = get_task_id_from_cache(
-                client=client, task_name=name, version=version
-            )
+            id = get_task_id_from_cache(client=client, task_name=name, version=version)
         except FractalCacheError as e:
             sys.exit(str(e))
 

@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
-from ..authclient import AuthClient
-from ..interface import Interface
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+from fractal_client.response import check_response
 
 
 def post_profile(
@@ -18,9 +18,7 @@ def post_profile(
         payload = json.load(f)
 
     # Send API request
-    res = client.post(
-        f"admin/v2/resource/{resource_id}/profile/", json=payload
-    )
+    res = client.post(f"admin/v2/resource/{resource_id}/profile/", json=payload)
     profile = check_response(res, expected_status_code=201)
     if batch:
         return Interface(retcode=0, data=profile["id"])

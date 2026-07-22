@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 from devtools import debug
+
 from fractal_client.cmd._aux_task_caching import TASKS_CACHE_FILENAME
 from fractal_client.config import settings
-
 
 COLLECTION_TIMEOUT = 15.0
 
@@ -60,8 +60,7 @@ def test_task_new(
     # create a new task with batch option
     TASK_NAME_2 = new_name()
     res = invoke(
-        f"--batch task new {TASK_NAME_2} "
-        "--command-parallel _command2 --version 0"
+        f"--batch task new {TASK_NAME_2} --command-parallel _command2 --version 0"
     )
     res.show()
     assert res.retcode == 0
@@ -70,9 +69,7 @@ def test_task_new(
     # create a new task with same name as before. Note that in check_response
     # we have sys.exit(1) when status code is not the expecte one
     with pytest.raises(SystemExit) as e:
-        invoke(
-            f"task new {TASK_NAME_2} --command-parallel _command2 --version 0"
-        )
+        invoke(f"task new {TASK_NAME_2} --command-parallel _command2 --version 0")
     assert e.value.code == 1
 
     # create a new task passing not existing file
@@ -126,10 +123,7 @@ def test_task_edit(
 
     # Test successful edit of string attributes
     NEW_COMMAND_PARALLEL = "run_parallel"
-    res = invoke(
-        f"task edit --id {task_id} "
-        f"--command-parallel {NEW_COMMAND_PARALLEL}"
-    )
+    res = invoke(f"task edit --id {task_id} --command-parallel {NEW_COMMAND_PARALLEL}")
     assert res.data["command_parallel"] == NEW_COMMAND_PARALLEL
     assert res.retcode == 0
 
@@ -206,9 +200,7 @@ def test_task_edit(
         json.dump(fail_output_types, f)
 
     with pytest.raises(SystemExit):
-        res = invoke(
-            f"task edit --name INVALID_NAME --output-types {f_o_types_path}"
-        )
+        res = invoke(f"task edit --name INVALID_NAME --output-types {f_o_types_path}")
 
     # Test regular update by name, after creating an invalid cache
     with cache_file.open("w") as f:

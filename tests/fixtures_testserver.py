@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 import pytest
+
 from fractal_client.client import handle
 from fractal_client.interface import Interface
 
@@ -194,9 +195,7 @@ def user_factory(invoke_as_superuser, tmp_path):
             resource_name=f"resource-{user_id}",
         )
 
-        invoke_as_superuser(
-            f"user edit --new-profile-id {profile_id} {user_id}"
-        )
+        invoke_as_superuser(f"user edit --new-profile-id {profile_id} {user_id}")
 
         res = invoke_as_superuser(f"user show {user_id}")
         return res.data

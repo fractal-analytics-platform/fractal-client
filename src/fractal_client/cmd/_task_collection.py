@@ -53,16 +53,12 @@ def task_collect_pip(
     if package_extras:
         task_collect["package_extras"] = package_extras
     if pre_pinned_dependency:
-        task_collect[
-            "pinned_package_versions_pre"
-        ] = _process_pinned_dependencies(
+        task_collect["pinned_package_versions_pre"] = _process_pinned_dependencies(
             pre_pinned_dependency,
             "pre",
         )
     if post_pinned_dependency:
-        task_collect[
-            "pinned_package_versions_post"
-        ] = _process_pinned_dependencies(
+        task_collect["pinned_package_versions_post"] = _process_pinned_dependencies(
             post_pinned_dependency,
             "post",
         )
@@ -135,9 +131,7 @@ def task_collect_custom(
         json=task_collect,
     )
 
-    task_list = check_response(
-        res, expected_status_code=201, redact_long_payload=True
-    )
+    task_list = check_response(res, expected_status_code=201, redact_long_payload=True)
 
     if batch:
         task_ids = [str(task["id"]) for task in task_list]

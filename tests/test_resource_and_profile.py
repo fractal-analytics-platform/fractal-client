@@ -32,9 +32,7 @@ def test_new_resource_and_profile(tmp_path, invoke_as_superuser, new_name):
     assert res.retcode == 0
     resource_id_1 = res.data["id"]
 
-    res = invoke_as_superuser(
-        f"--batch resource new {resource_path_2.as_posix()}"
-    )
+    res = invoke_as_superuser(f"--batch resource new {resource_path_2.as_posix()}")
     assert res.retcode == 0
     resource_id_2 = int(res.data)
 

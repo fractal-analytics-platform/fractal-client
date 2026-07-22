@@ -12,6 +12,7 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+
 import logging
 import sys
 
@@ -91,9 +92,7 @@ def handle(cli_args: list[str] = sys.argv) -> Interface:
         # argument for functions called with **kwargs)
         kwargs = vars(args).copy()
         kwargs.pop("cmd")
-        fractal_server = (
-            kwargs.pop("fractal_server") or settings.FRACTAL_SERVER
-        )
+        fractal_server = kwargs.pop("fractal_server") or settings.FRACTAL_SERVER
         logging.debug(f"Fractal server URL: {fractal_server}")
         if fractal_server is None:
             return Interface(
@@ -110,9 +109,7 @@ def handle(cli_args: list[str] = sys.argv) -> Interface:
             # Extract (and remove) credentials-related variables from kwargs
             username = kwargs.pop("user") or settings.FRACTAL_USER
             password = kwargs.pop("password") or settings.FRACTAL_PASSWORD
-            token_path = (
-                kwargs.pop("token_path") or settings.FRACTAL_TOKEN_PATH
-            )
+            token_path = kwargs.pop("token_path") or settings.FRACTAL_TOKEN_PATH
             try:
                 _verify_authentication_branch(
                     username=username,

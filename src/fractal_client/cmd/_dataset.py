@@ -1,6 +1,6 @@
-from ..authclient import AuthClient
-from ..interface import Interface
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+from fractal_client.response import check_response
 
 
 def post_dataset(
@@ -45,16 +45,14 @@ def patch_dataset(
     new_name: str,
 ) -> Interface:
     res = client.patch(
-        (f"api/v2/project/{project_id}/" f"dataset/{dataset_id}/"),
+        (f"api/v2/project/{project_id}/dataset/{dataset_id}/"),
         json=dict(name=new_name),
     )
     data = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=data)
 
 
-def get_dataset(
-    client: AuthClient, *, project_id: int, dataset_id: int
-) -> Interface:
+def get_dataset(client: AuthClient, *, project_id: int, dataset_id: int) -> Interface:
     res = client.get(f"api/v2/project/{project_id}/dataset/{dataset_id}/")
     return Interface(retcode=0, data=res.json())
 
