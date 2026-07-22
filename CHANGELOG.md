@@ -1,7 +1,9 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# Unreleased
+# 2.24.0 (unreleased)
 
+* Internal:
+    * Refactor CLI parser (\#923).
 * Documentation:
     * Move from `mkdocs` to `zensical` (\#916).
 * Testing:
