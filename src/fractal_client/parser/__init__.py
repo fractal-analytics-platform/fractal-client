@@ -23,6 +23,7 @@ from ._resource import add_resource_parser
 from ._task import add_task_parser
 from ._template import add_template_parser
 from ._user import add_user_parser
+from ._usergroup import add_usergroup_parser
 from ._version import add_version_parser
 from ._workflow import add_workflow_parser
 
@@ -36,6 +37,7 @@ add_workflow_parser(subparsers_main)
 add_job_parser(subparsers_main)
 add_version_parser(subparsers_main)
 add_user_parser(subparsers_main)
+add_usergroup_parser(subparsers_main)
 add_resource_parser(subparsers_main)
 add_profile_parser(subparsers_main)
 add_template_parser(subparsers_main)
