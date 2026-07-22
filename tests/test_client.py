@@ -7,9 +7,9 @@ from devtools import debug
 
 from fractal_client import __VERSION__
 from fractal_client.authclient import AuthClient
-from fractal_client.client import _verify_authentication_branch
-from fractal_client.client import handle
 from fractal_client.cmd import version
+from fractal_client.main import _verify_authentication_branch
+from fractal_client.main import handle
 
 
 def test_debug(invoke):
@@ -147,10 +147,10 @@ def test_unit_verify_authentication_branch():
 
 
 def test_invalid_credentials(monkeypatch):
-    import fractal_client.client
+    import fractal_client.main
 
-    monkeypatch.setattr(fractal_client.client.settings, "FRACTAL_USER", "some-user")
-    monkeypatch.setattr(fractal_client.client.settings, "FRACTAL_PASSWORD", None)
+    monkeypatch.setattr(fractal_client.main.settings, "FRACTAL_USER", "some-user")
+    monkeypatch.setattr(fractal_client.main.settings, "FRACTAL_PASSWORD", None)
     interface = handle(shlex.split("fractal user whoami"))
     assert "Invalid authentication credentials" in interface.data
     assert interface.retcode == 1
@@ -179,10 +179,10 @@ def test_valid_token_path(
         debug(token_data)
     token_path = (tmp_path / "token").as_posix()
 
-    import fractal_client.client
+    import fractal_client.main
 
     monkeypatch.setattr(
-        fractal_client.client.settings,
+        fractal_client.main.settings,
         "FRACTAL_SERVER",
         "http://localhost:8765",
     )
@@ -205,10 +205,10 @@ def test_valid_token_path(
 
 
 def test_missing_fractal_server(monkeypatch):
-    import fractal_client.client
+    import fractal_client.main
 
     monkeypatch.setattr(
-        fractal_client.client.settings,
+        fractal_client.main.settings,
         "FRACTAL_SERVER",
         None,
     )

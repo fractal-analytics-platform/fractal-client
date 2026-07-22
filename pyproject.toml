@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-fractal = "fractal_client.client:main"
+fractal = "fractal_client.main:main"
 
 [project.urls]
 homepage = "https://github.com/fractal-analytics-platform/fractal-client"

@@ -26,7 +26,8 @@ class Settings:
         self.FRACTAL_PASSWORD: str | None = getenv("FRACTAL_PASSWORD")
         self.FRACTAL_TOKEN_PATH: str | None = getenv("FRACTAL_TOKEN")
 
-        self.FRACTAL_SERVER: str = getenv("FRACTAL_SERVER")
+        self.FRACTAL_SERVER: str | None = getenv("FRACTAL_SERVER")
+        self.FRACTAL_WEB: str | None = getenv("FRACTAL_WEB")
         self.FRACTAL_CACHE_PATH: str = getenv(
             "FRACTAL_CACHE_PATH", str(Path.home() / ".cache/fractal")
         )

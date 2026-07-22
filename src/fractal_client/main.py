@@ -62,7 +62,7 @@ def _verify_authentication_branch(
         raise ValueError(msg)
 
 
-def handle(cli_args: list[str] = sys.argv) -> Interface:
+def handle(cli_args: list[str]) -> Interface:
     args = parser_main.parse_args(cli_args[1:])
 
     # Set logging level
@@ -158,6 +158,6 @@ def handle(cli_args: list[str] = sys.argv) -> Interface:
 
 
 def main():
-    interface = handle()
+    interface = handle(sys.argv)
     interface.show()
     sys.exit(interface.retcode)
