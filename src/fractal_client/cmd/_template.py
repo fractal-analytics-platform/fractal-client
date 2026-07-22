@@ -3,7 +3,7 @@ import logging
 import sys
 from pathlib import Path
 
-from fractal_client.authclient import AuthClient
+from fractal_client.auth.authclient import AuthClient
 from fractal_client.interface import Interface
 from fractal_client.response import check_response
 

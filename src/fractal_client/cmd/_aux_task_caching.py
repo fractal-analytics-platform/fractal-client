@@ -4,7 +4,7 @@ from typing import Any
 
 import packaging.version
 
-from fractal_client.authclient import AuthClient
+from fractal_client.auth.authclient import AuthClient
 from fractal_client.config import settings
 from fractal_client.response import check_response
 

@@ -14,6 +14,7 @@ Zurich.
 
 from os import getenv
 from pathlib import Path
+from typing import Self
 
 from dotenv import load_dotenv
 
@@ -31,6 +32,10 @@ class Settings:
         self.FRACTAL_CACHE_PATH: str = getenv(
             "FRACTAL_CACHE_PATH", str(Path.home() / ".cache/fractal")
         )
+
+    @property
+    def default_token_path(self: Self) -> str:
+        return str(Path(self.FRACTAL_CACHE_PATH, "token.txt"))
 
 
 settings = Settings()

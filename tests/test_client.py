@@ -6,7 +6,7 @@ import pytest
 from devtools import debug
 
 from fractal_client import __VERSION__
-from fractal_client.authclient import AuthClient
+from fractal_client.auth.authclient import AuthClient
 from fractal_client.cmd import version
 from fractal_client.main import _verify_authentication_branch
 from fractal_client.main import handle

@@ -36,7 +36,7 @@ def get_main_parser() -> ap.ArgumentParser:
     parser_main.add_argument(
         "--fractal-web",
         help=(
-            "URL of Fractal web (overrides `FRACTAL_WEB` environment variable)."
+            "URL of Fractal web (overrides `FRACTAL_WEB` environment variable). "
             "Example: https://fractal.example.org"
         ),
     )
