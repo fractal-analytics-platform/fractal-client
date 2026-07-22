@@ -106,7 +106,7 @@ class AuthClient:
     client: Client
     token: str
 
-    def __init__(self, *, fractal_server: str, auth_info: AuthInfo):
+    def __init__(self: Self, *, fractal_server: str, auth_info: AuthInfo):
         self.fractal_server = fractal_server
         self.auth_info: AuthInfo = auth_info
         self.client = Client()
@@ -121,10 +121,10 @@ class AuthClient:
 
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self: Self, *args):
         self.client.close()
 
-    def get_token_from_backend(self) -> str:
+    def get_token_from_backend(self: Self) -> str:
         res = self.client.post(
             f"{self.fractal_server}/auth/token/login/",
             data=dict(
@@ -146,29 +146,29 @@ class AuthClient:
         return raw_token["access_token"]
 
     @property
-    def auth_headers(self) -> dict[str, str]:
+    def auth_headers(self: Self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self.token}"}
 
-    def _get_url(self, relative_url: str) -> str:
+    def _get_url(self: Self, relative_url: str) -> str:
         relative_url_no_leading_slash = relative_url.lstrip("/")
         return f"{self.fractal_server}/{relative_url_no_leading_slash}"
 
-    def get(self, relative_url: str):
+    def get(self: Self, relative_url: str):
         url = self._get_url(relative_url)
         debug_request("GET", url)
         return self.client.get(url=url, headers=self.auth_headers)
 
-    def post(self, relative_url: str, **kwargs):
+    def post(self: Self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
         debug_request("POST", url)
         return self.client.post(url=url, headers=self.auth_headers, **kwargs)
 
-    def patch(self, relative_url: str, **kwargs):
+    def patch(self: Self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
         debug_request("PATCH", url)
         return self.client.patch(url=url, headers=self.auth_headers, **kwargs)
 
-    def delete(self, relative_url: str):
+    def delete(self: Self, relative_url: str):
         url = self._get_url(relative_url)
         debug_request("DELETE", url)
         return self.client.delete(url=url, headers=self.auth_headers)
