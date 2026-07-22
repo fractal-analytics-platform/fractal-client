@@ -18,7 +18,7 @@ def add_project_parser(subparsers):
     project_new_parser.add_argument("name", help="Name of new project.")
 
     # project list
-    project_list_parser = project_subparsers.add_parser(
+    project_subparsers.add_parser(
         "list",
         description="List projects.",
         allow_abbrev=False,

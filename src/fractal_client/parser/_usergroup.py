@@ -23,17 +23,13 @@ def add_usergroup_parser(subparsers):
     group_get_parser = group_subparsers.add_parser(
         "get", description="Get single group.", allow_abbrev=False
     )
-    group_get_parser.add_argument(
-        "group_id", help="ID of the group to get.", type=int
-    )
+    group_get_parser.add_argument("group_id", help="ID of the group to get.", type=int)
 
     # group new
     group_new_parser = group_subparsers.add_parser(
         "new", description="Create new group.", allow_abbrev=False
     )
-    group_new_parser.add_argument(
-        "name", help="Name of the new group.", type=str
-    )
+    group_new_parser.add_argument("name", help="Name of the new group.", type=str)
 
     # group add-user
     group_add_user_parser = group_subparsers.add_parser(

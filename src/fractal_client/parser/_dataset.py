@@ -18,12 +18,8 @@ def add_dataset_parser(subparsers):
         argument_default=ap.SUPPRESS,
         allow_abbrev=False,
     )
-    dataset_edit_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
-    dataset_edit_parser.add_argument(
-        "dataset_id", type=int, help="Dataset ID."
-    )
+    dataset_edit_parser.add_argument("project_id", type=int, help="Project ID.")
+    dataset_edit_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
     dataset_edit_parser.add_argument(
         "--new-name", type=str, required=True, help="New name of dataset."
     )
@@ -35,12 +31,8 @@ def add_dataset_parser(subparsers):
         argument_default=ap.SUPPRESS,
         allow_abbrev=False,
     )
-    dataset_show_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
-    dataset_show_parser.add_argument(
-        "dataset_id", type=int, help="Dataset ID."
-    )
+    dataset_show_parser.add_argument("project_id", type=int, help="Project ID.")
+    dataset_show_parser.add_argument("dataset_id", type=int, help="Dataset ID.")
 
     # dataset delete
     dataset_delete_parser = dataset_subparsers.add_parser(
@@ -49,9 +41,5 @@ def add_dataset_parser(subparsers):
         argument_default=ap.SUPPRESS,
         allow_abbrev=False,
     )
-    dataset_delete_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
-    dataset_delete_parser.add_argument(
-        "dataset_id", type=int, help="Dataset ID."
-    )
+    dataset_delete_parser.add_argument("project_id", type=int, help="Project ID.")
+    dataset_delete_parser.add_argument("dataset_id", type=int, help="Dataset ID.")

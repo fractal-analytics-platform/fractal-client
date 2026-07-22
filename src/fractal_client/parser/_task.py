@@ -12,7 +12,7 @@ def add_task_parser(subparsers):
     )
 
     # task list
-    task_list_parser = task_subparsers.add_parser(
+    task_subparsers.add_parser(
         "list",
         description="List tasks.",
         allow_abbrev=False,
@@ -46,9 +46,7 @@ def add_task_parser(subparsers):
     # task collect
     task_collect_parser = task_subparsers.add_parser(
         "collect",
-        description=(
-            "Install and collect all tasks from a pip-installable package."
-        ),
+        description=("Install and collect all tasks from a pip-installable package."),
         allow_abbrev=False,
     )
     task_collect_parser.add_argument(
@@ -111,9 +109,7 @@ def add_task_parser(subparsers):
     )
     task_collect_custom_parser.add_argument(
         "python_interpreter",
-        help=(
-            "Absolute path to the Python interpreter to be used for running tasks."
-        ),
+        help=("Absolute path to the Python interpreter to be used for running tasks."),
     )
     task_collect_custom_parser.add_argument(
         "manifest",
@@ -174,9 +170,7 @@ def add_task_parser(subparsers):
         argument_default=ap.SUPPRESS,
         allow_abbrev=False,
     )
-    task_new_parser.add_argument(
-        "name", help="A human readable name for the task."
-    )
+    task_new_parser.add_argument("name", help="A human readable name for the task.")
     task_new_parser.add_argument(
         "--task-type",
         help="The task type (e.g. 'parallel', 'non_parallel', 'compound').",
@@ -238,15 +232,12 @@ def add_task_parser(subparsers):
     task_edit_id_or_name_group.add_argument(
         "--id", help="ID of the task to edit.", type=int
     )
-    task_edit_id_or_name_group.add_argument(
-        "--name", help="Name of the task to edit."
-    )
+    task_edit_id_or_name_group.add_argument("--name", help="Name of the task to edit.")
 
     task_edit_parser.add_argument(
         "--version",
         help=(
-            "Version of the task to edit "
-            "(only accepted in combination with `--name`)."
+            "Version of the task to edit (only accepted in combination with `--name`)."
         ),
     )
     task_edit_parser.add_argument(

@@ -13,6 +13,7 @@ This file is part of Fractal and was originally developed by eXact lab S.r.l.
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
+
 from ._dataset import add_dataset_parser
 from ._job import add_job_parser
 from ._main import get_main_parser
@@ -24,7 +25,6 @@ from ._template import add_template_parser
 from ._user import add_user_parser
 from ._version import add_version_parser
 from ._workflow import add_workflow_parser
-
 
 parser_main = get_main_parser()
 

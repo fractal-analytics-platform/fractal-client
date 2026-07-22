@@ -30,12 +30,8 @@ def add_user_parser(subparsers):
         ),
         allow_abbrev=False,
     )
-    user_register_parser.add_argument(
-        "new_email", help="Email to be used as username."
-    )
-    user_register_parser.add_argument(
-        "new_password", help="Password for the new user."
-    )
+    user_register_parser.add_argument("new_email", help="Email to be used as username.")
+    user_register_parser.add_argument("new_password", help="Password for the new user.")
     user_register_parser.add_argument(
         "new_project_dir",
         help="User-writeable base folder, used e.g. for default `zarr_dir` paths.",
@@ -49,7 +45,7 @@ def add_user_parser(subparsers):
     )
 
     # user list
-    user_list_parser = user_subparsers.add_parser(
+    user_subparsers.add_parser(
         "list",
         description="List all users.",
         allow_abbrev=False,
@@ -93,9 +89,7 @@ def add_user_parser(subparsers):
         "--new-profile-id", help="New value of `profile_id`", required=False
     )
 
-    user_edit_parser_superuser = (
-        user_edit_parser.add_mutually_exclusive_group()
-    )
+    user_edit_parser_superuser = user_edit_parser.add_mutually_exclusive_group()
     user_edit_parser_superuser.add_argument(
         "--make-superuser",
         help="Give superuser privileges to user.",
@@ -128,9 +122,7 @@ def add_user_parser(subparsers):
         description=("Reset user-group membership for an existing user."),
         allow_abbrev=False,
     )
-    user_set_groups_parser.add_argument(
-        "user_id", help="ID of the user.", type=int
-    )
+    user_set_groups_parser.add_argument("user_id", help="ID of the user.", type=int)
     user_set_groups_parser.add_argument(
         "group_ids",
         help=(

@@ -39,9 +39,7 @@ def add_job_parser(subparsers):
         description="Download full folder of workflow-execution job.",
         allow_abbrev=False,
     )
-    job_download_logs_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
+    job_download_logs_parser.add_argument("project_id", type=int, help="Project ID.")
     job_download_logs_parser.add_argument("job_id", type=int, help="Job ID.")
     job_download_logs_parser.add_argument(
         "--output",
@@ -74,20 +72,14 @@ def add_job_parser(subparsers):
         "--start",
         dest="first_task_index",
         type=int,
-        help=(
-            "Positional index of the first task to be executed"
-            " (starting from 0)."
-        ),
+        help=("Positional index of the first task to be executed (starting from 0)."),
         required=False,
     )
     job_submit_parser.add_argument(
         "--end",
         dest="last_task_index",
         type=int,
-        help=(
-            "Positional index of the last task to be executed"
-            " (starting from 0)."
-        ),
+        help=("Positional index of the last task to be executed (starting from 0)."),
         required=False,
     )
     job_submit_parser.add_argument(
@@ -97,15 +89,11 @@ def add_job_parser(subparsers):
     )
     job_submit_parser.add_argument(
         "--attribute-filters-json",
-        help=(
-            "Path to JSON file with the attribute filters for this job submission."
-        ),
+        help=("Path to JSON file with the attribute filters for this job submission."),
         required=False,
     )
     job_submit_parser.add_argument(
         "--type-filters-json",
-        help=(
-            "Path to JSON file with the type filters for this job submission."
-        ),
+        help=("Path to JSON file with the type filters for this job submission."),
         required=False,
     )

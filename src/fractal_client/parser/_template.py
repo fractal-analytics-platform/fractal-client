@@ -46,9 +46,7 @@ def add_template_parser(subparsers):
     )
     template_new_parser.add_argument(
         "--user-group-id",
-        help=(
-            "ID of user group which should be granted access to the new template."
-        ),
+        help=("ID of user group which should be granted access to the new template."),
         required=False,
     )
 

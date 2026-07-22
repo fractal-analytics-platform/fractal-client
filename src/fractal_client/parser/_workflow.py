@@ -17,9 +17,7 @@ def add_workflow_parser(subparsers):
         description="List workflows for given project.",
         allow_abbrev=False,
     )
-    workflow_list_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
+    workflow_list_parser.add_argument("project_id", type=int, help="Project ID.")
 
     # workflow new
     workflow_new_parser = workflow_subparsers.add_parser(
@@ -31,9 +29,7 @@ def add_workflow_parser(subparsers):
         "name",
         help="Workflow name (must be unique, and not only made of numbers only).",
     )
-    workflow_new_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
+    workflow_new_parser.add_argument("project_id", type=int, help="Project ID.")
 
     # workflow show
     workflow_show_parser = workflow_subparsers.add_parser(
@@ -41,12 +37,8 @@ def add_workflow_parser(subparsers):
         description="Show workflow.",
         allow_abbrev=False,
     )
-    workflow_show_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
-    workflow_show_parser.add_argument(
-        "workflow_id", type=int, help="Workflow ID."
-    )
+    workflow_show_parser.add_argument("project_id", type=int, help="Project ID.")
+    workflow_show_parser.add_argument("workflow_id", type=int, help="Workflow ID.")
 
     # workflow edit
     workflow_edit_parser = workflow_subparsers.add_parser(
@@ -55,12 +47,8 @@ def add_workflow_parser(subparsers):
         argument_default=ap.SUPPRESS,
         allow_abbrev=False,
     )
-    workflow_edit_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
-    workflow_edit_parser.add_argument(
-        "workflow_id", type=int, help="Workflow ID."
-    )
+    workflow_edit_parser.add_argument("project_id", type=int, help="Project ID.")
+    workflow_edit_parser.add_argument("workflow_id", type=int, help="Workflow ID.")
     workflow_edit_parser.add_argument(
         "--new-name",
         help="New workflow name.",
@@ -73,12 +61,8 @@ def add_workflow_parser(subparsers):
         description="Delete workflow.",
         allow_abbrev=False,
     )
-    workflow_delete_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
-    workflow_delete_parser.add_argument(
-        "workflow_id", type=int, help="Workflow ID."
-    )
+    workflow_delete_parser.add_argument("project_id", type=int, help="Project ID.")
+    workflow_delete_parser.add_argument("workflow_id", type=int, help="Workflow ID.")
 
     # workflow add task
     workflow_add_task_parser = workflow_subparsers.add_parser(
@@ -86,9 +70,7 @@ def add_workflow_parser(subparsers):
         description="Append a single task to the task list of a workflow.",
         allow_abbrev=False,
     )
-    workflow_add_task_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
+    workflow_add_task_parser.add_argument("project_id", type=int, help="Project ID.")
     workflow_add_task_parser.add_argument(
         "workflow_id",
         type=int,
@@ -107,8 +89,7 @@ def add_workflow_parser(subparsers):
     workflow_add_task_parser.add_argument(
         "--task-version",
         help=(
-            "Version of task to add "
-            "(only accepted in combination with --task-name)."
+            "Version of task to add (only accepted in combination with --task-name)."
         ),
     )
     workflow_add_task_parser.add_argument(
@@ -138,9 +119,7 @@ def add_workflow_parser(subparsers):
         description="Edit task within specific workflow.",
         allow_abbrev=False,
     )
-    workflow_edit_task_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
+    workflow_edit_task_parser.add_argument("project_id", type=int, help="Project ID.")
     workflow_edit_task_parser.add_argument(
         "workflow_id",
         type=int,
@@ -153,10 +132,7 @@ def add_workflow_parser(subparsers):
     )
     workflow_edit_task_parser.add_argument(
         "--type-filters",
-        help=(
-            "Path to JSON file containing the type filters of this "
-            "workflow task."
-        ),
+        help=("Path to JSON file containing the type filters of this workflow task."),
     )
     workflow_edit_task_parser.add_argument(
         "--args-non-parallel", help="Args for non parallel tasks"
@@ -180,9 +156,7 @@ def add_workflow_parser(subparsers):
         description="Remove task from a specific workflow.",
         allow_abbrev=False,
     )
-    workflow_remove_task_parser.add_argument(
-        "project_id", type=int, help="Project ID."
-    )
+    workflow_remove_task_parser.add_argument("project_id", type=int, help="Project ID.")
     workflow_remove_task_parser.add_argument(
         "workflow_id",
         type=int,
@@ -260,8 +234,6 @@ def add_workflow_parser(subparsers):
     workflow_import_from_template_parser.add_argument(
         "--name",
         type=str,
-        help=(
-            "Name of the new workflow (if set, overrides the one in the template)."
-        ),
+        help=("Name of the new workflow (if set, overrides the one in the template)."),
         required=False,
     )
