@@ -1,9 +1,10 @@
-from fractal_client import __VERSION__
 from httpx2 import Client
 from httpx2 import ConnectError
 
-from ..authclient import AuthClient
-from ..interface import Interface
+from fractal_client import __VERSION__
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+
 from ._dataset import delete_dataset
 from ._dataset import get_dataset
 from ._dataset import patch_dataset
@@ -282,9 +283,7 @@ def workflow(
     elif subcmd == "import-from-template":
         parameters = ["project_id", "template_id", "name"]
         function_kwargs = get_kwargs(parameters, kwargs)
-        iface = workflow_import_from_template(
-            client, batch=batch, **function_kwargs
-        )
+        iface = workflow_import_from_template(client, batch=batch, **function_kwargs)
     else:
         raise NoCommandError(f"Command 'workflow {subcmd}' not found")
     return iface
@@ -348,9 +347,7 @@ def version(fractal_server: str, **kwargs) -> Interface:
         )
 
 
-def user(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
-) -> Interface:
+def user(client: AuthClient, subcmd: str, batch: bool = False, **kwargs) -> Interface:
     if subcmd == "register":
         parameters = [
             "new_email",
@@ -398,9 +395,7 @@ def user(
     return iface
 
 
-def group(
-    client: AuthClient, subcmd: str, batch: bool = False, **kwargs
-) -> Interface:
+def group(client: AuthClient, subcmd: str, batch: bool = False, **kwargs) -> Interface:
     if subcmd == "list":
         parameters = ["user_ids"]
         function_kwargs = get_kwargs(parameters, kwargs)

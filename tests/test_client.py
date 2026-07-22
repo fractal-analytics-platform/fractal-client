@@ -4,6 +4,7 @@ from pathlib import Path
 import httpx2
 import pytest
 from devtools import debug
+
 from fractal_client import __VERSION__
 from fractal_client.authclient import AuthClient
 from fractal_client.client import _verify_authentication_branch
@@ -100,8 +101,7 @@ def test_argparse_abbreviation(invoke_as_superuser, new_name):
 
     # Successful invoke
     res = invoke_as_superuser(
-        f"user register {new_name()}@example.org secret /project-dir "
-        "--superuser"
+        f"user register {new_name()}@example.org secret /project-dir --superuser"
     )
     res.show()
     assert res.retcode == 0
@@ -109,8 +109,7 @@ def test_argparse_abbreviation(invoke_as_superuser, new_name):
     # Failed (abbreviation-based) invoke
     with pytest.raises(SystemExit):
         invoke_as_superuser(
-            f"user register {new_name()}@example.org secret2 /project-dir "
-            "--super"
+            f"user register {new_name()}@example.org secret2 /project-dir --super"
         )
 
 
@@ -150,12 +149,8 @@ def test_unit_verify_authentication_branch():
 def test_invalid_credentials(monkeypatch):
     import fractal_client.client
 
-    monkeypatch.setattr(
-        fractal_client.client.settings, "FRACTAL_USER", "some-user"
-    )
-    monkeypatch.setattr(
-        fractal_client.client.settings, "FRACTAL_PASSWORD", None
-    )
+    monkeypatch.setattr(fractal_client.client.settings, "FRACTAL_USER", "some-user")
+    monkeypatch.setattr(fractal_client.client.settings, "FRACTAL_PASSWORD", None)
     interface = handle(shlex.split("fractal user whoami"))
     assert "Invalid authentication credentials" in interface.data
     assert interface.retcode == 1

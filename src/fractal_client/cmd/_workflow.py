@@ -3,9 +3,10 @@ import logging
 import sys
 from pathlib import Path
 
-from ..authclient import AuthClient
-from ..interface import Interface
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+from fractal_client.response import check_response
+
 from ._aux_task_caching import FractalCacheError
 from ._aux_task_caching import get_task_id_from_cache
 
@@ -49,9 +50,7 @@ def delete_workflow(
     return Interface(retcode=0, data="")
 
 
-def get_workflow(
-    client: AuthClient, *, project_id: int, workflow_id: int
-) -> Interface:
+def get_workflow(client: AuthClient, *, project_id: int, workflow_id: int) -> Interface:
     res = client.get(f"api/v2/project/{project_id}/workflow/{workflow_id}/")
     workflow = check_response(res, expected_status_code=200)
     return Interface(retcode=0, data=workflow)
@@ -75,8 +74,7 @@ def post_workflowtask(
     if task_id:
         if task_version:
             logging.error(
-                "Too many arguments: cannot provide both "
-                "`task_id` and `task_version`."
+                "Too many arguments: cannot provide both `task_id` and `task_version`."
             )
             sys.exit(1)
     else:
@@ -187,8 +185,7 @@ def delete_workflowtask(
     workflow_task_id: int,
 ) -> Interface:
     res = client.delete(
-        f"api/v2/project/{project_id}/"
-        f"workflow/{workflow_id}/wftask/{workflow_task_id}/"
+        f"api/v2/project/{project_id}/workflow/{workflow_id}/wftask/{workflow_task_id}/"
     )
     check_response(res, expected_status_code=204)
     return Interface(retcode=0, data="")
@@ -269,18 +266,14 @@ def workflow_export(
     workflow_id: int,
     json_file: str,
 ) -> Interface:
-    res = client.get(
-        f"api/v2/project/{project_id}/workflow/{workflow_id}/export/"
-    )
+    res = client.get(f"api/v2/project/{project_id}/workflow/{workflow_id}/export/")
     workflow = check_response(res, expected_status_code=200)
 
     # mode="x" means "open for exclusive creation, failing if the file
     # already exists" https://docs.python.org/3/library/functions.html#open
     with Path(json_file).open(mode="x") as f:
         json.dump(workflow, f, indent=2)
-    return Interface(
-        retcode=0, data=f"Workflow {workflow_id} exported at {json_file}"
-    )
+    return Interface(retcode=0, data=f"Workflow {workflow_id} exported at {json_file}")
 
 
 def workflow_import_from_template(

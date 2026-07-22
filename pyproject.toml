@@ -72,3 +72,14 @@ omit = ["tests/*", "*/.venv/*"]
 [[tool.mypy.overrides]]
 module = ["devtools", "uvicorn", "pytest", "httpx"]
 ignore_missing_imports = true
+
+
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "TID"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"

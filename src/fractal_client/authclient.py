@@ -2,7 +2,6 @@ import logging
 
 from httpx2 import Client
 
-
 logging.getLogger("httpx2").setLevel(logging.WARNING)
 
 

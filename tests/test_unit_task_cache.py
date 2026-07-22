@@ -1,7 +1,8 @@
 import pytest
+
+from fractal_client.cmd._aux_task_caching import FractalCacheError
 from fractal_client.cmd._aux_task_caching import _get_matching_tasks
 from fractal_client.cmd._aux_task_caching import _search_in_task_list
-from fractal_client.cmd._aux_task_caching import FractalCacheError
 
 
 def test_get_matching_tasks():
@@ -55,13 +56,10 @@ def test_search_in_task_list():
 
     # case 2
     with pytest.raises(FractalCacheError) as err:
-        res = _search_in_task_list(
-            task_list=TASK_LIST, name="dummy1", version="3.1.4"
-        )
+        res = _search_in_task_list(task_list=TASK_LIST, name="dummy1", version="3.1.4")
     print(err.value.args[0])
     assert (
-        'There is no task with (name, version)=("dummy1", 3.1.4)'
-        in err.value.args[0]
+        'There is no task with (name, version)=("dummy1", 3.1.4)' in err.value.args[0]
     )  # noqa
 
     # TEST one matching
@@ -69,9 +67,7 @@ def test_search_in_task_list():
     res = _search_in_task_list(task_list=TASK_LIST, name="dummy1")
     assert res == 101
     # case 2
-    res = _search_in_task_list(
-        task_list=TASK_LIST, name="dummy1", version="1.0.1"
-    )
+    res = _search_in_task_list(task_list=TASK_LIST, name="dummy1", version="1.0.1")
     assert res == 101
 
     # TEST multiple matching
@@ -91,8 +87,6 @@ def test_search_in_task_list():
     print(err.value.args[0])
     # case 4
     with pytest.raises(FractalCacheError) as err:
-        res = _search_in_task_list(
-            task_list=TASK_LIST, name="dummy4", version="4.1.1"
-        )
+        res = _search_in_task_list(task_list=TASK_LIST, name="dummy4", version="4.1.1")
     print(err.value.args[0])
     assert "Multiple tasks with version 4.1.1" in err.value.args[0]
