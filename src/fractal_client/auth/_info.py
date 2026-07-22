@@ -27,7 +27,7 @@ class AuthInfo:
         return bool(self.user) and bool(self.password)
 
 
-def get_auth_info(*, parser: ap.ArgumentParser, args: ap.Namespace) -> AuthInfo:
+def get_auth_info(args: ap.Namespace) -> AuthInfo:
     user: str | None = args.user or settings.FRACTAL_SERVER
     password: str | None = args.password or settings.FRACTAL_PASSWORD
     token_path: str | None = args.token_path or settings.FRACTAL_TOKEN_PATH

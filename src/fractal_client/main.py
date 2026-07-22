@@ -57,13 +57,16 @@ def handle(cli_args: list[str]) -> Interface:
     logging.debug(f"\nArguments:\n{show_args}")
 
     # Get command handler function
-    cmd_handler: Callable = get_cmd_handler(args=args, parser=parser_main)
+    cmd_handler: Callable = get_cmd_handler(
+        args=args,
+        parser_help=parser_main.format_help(),
+    )
 
     try:
         if args.cmd == "version":
             interface = cmd_handler(fractal_server)
         else:
-            auth_info: AuthInfo = get_auth_info(args=args, parser=parser_main)
+            auth_info: AuthInfo = get_auth_info(args=args)
             with AuthClient(
                 fractal_server=fractal_server, auth_info=auth_info
             ) as auth_client:

@@ -18,10 +18,10 @@ def get_fractal_server(args: ap.Namespace) -> str:
         return fractal_server
 
 
-def get_cmd_handler(*, parser: ap.ArgumentParser, args: ap.Namespace) -> Callable:
+def get_cmd_handler(*, parser_help: str, args: ap.Namespace) -> Callable:
     cmd: str | None = args.cmd
     if cmd is None:
-        sys.exit(parser.format_help())
+        sys.exit(parser_help)
     elif (cmd_handler := getattr(cmd_module, cmd, None)) is not None:
         return cmd_handler
     else:
