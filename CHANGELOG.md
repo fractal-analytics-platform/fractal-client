@@ -7,6 +7,7 @@
 * Testing:
     * Use `host` network for CI docker compose (\#915).
     * Fix CI and align with Fractal Server (\#919).
+    * Adopt `ruff` for pre-commit` (\#922).
 
 # 2.23.1
 
