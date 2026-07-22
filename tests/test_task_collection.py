@@ -33,7 +33,8 @@ def test_task_collection_command(invoke, caplog):
         )
     debug(caplog.text)
     assert "Server returned 422" in caplog.text
-    assert f"input_value='{INVALID_PYTHON_VERSION}'" in caplog.text
+    assert f"'input': '{INVALID_PYTHON_VERSION}'" in caplog.text
+    assert "Input should be" in caplog.text
 
 
 def test_task_collection_invalid_pinned_dependency(invoke, caplog):

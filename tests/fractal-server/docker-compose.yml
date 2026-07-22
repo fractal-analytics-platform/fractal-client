@@ -18,8 +18,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "8765:8765"
     environment:
       - FRACTAL_SERVER_BRANCH=${FRACTAL_SERVER_BRANCH:-main}
       - FRACTAL_SERVER_PORT=8765
@@ -32,7 +30,7 @@ services:
       - ADMIN_PWD=1234
       - ADMIN_PROJECT_DIR=/tmp/projects
       - FRACTAL_RUNNER_BACKEND=local
-      - JWT_SECRET_KEY=secret_key
+      - JWT_SECRET_KEY=secret_key-very-long-secret-key-very-long
       - FRACTAL_TASKS_DIR=/tmp/tasks
       - FRACTAL_RUNNER_WORKING_BASE_DIR=/tmp/runner
       - FRACTAL_LOGGING_LEVEL=0
