@@ -19,6 +19,8 @@ from collections.abc import Callable
 
 from httpx2 import ConnectError
 
+from fractal_client.auth.info import AuthInfo
+
 from .auth.authclient import AuthClient
 from .auth.authclient import AuthenticationError
 from .auth.validation import get_auth_info
@@ -61,7 +63,7 @@ def handle(cli_args: list[str]) -> Interface:
         if args.cmd == "version":
             interface = cmd_handler(fractal_server)
         else:
-            auth_info = get_auth_info(args=args, parser=parser_main)
+            auth_info: AuthInfo = get_auth_info(args=args, parser=parser_main)
             with AuthClient(
                 fractal_server=fractal_server, auth_info=auth_info
             ) as auth_client:

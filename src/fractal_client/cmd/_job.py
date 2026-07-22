@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from zipfile import ZipFile
 
-from fractal_client.auth.authclient import AuthClient
+from fractal_client.auth import AuthClient
 from fractal_client.interface import Interface
 from fractal_client.response import check_response
 

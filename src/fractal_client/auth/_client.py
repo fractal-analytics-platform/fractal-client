@@ -10,7 +10,7 @@ from httpx2 import Client
 
 from fractal_client.config import settings
 
-from .info import AuthInfo
+from ._info import AuthInfo
 
 logging.getLogger("httpx2").setLevel(logging.WARNING)
 
