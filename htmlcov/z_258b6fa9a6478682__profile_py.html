@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_258b6fa9a6478682__project_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.14.3">coverage.py v7.14.3</a>,
-            created at 2026-07-22 12:20 +0000
+            created at 2026-07-22 12:32 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -85,9 +85,9 @@
     <p class="run"><span class="n"><a id="t1" href="#t1">1</a></span><span class="t"><span class="key">import</span> <span class="nam">json</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t2" href="#t2">2</a></span><span class="t"><span class="key">from</span> <span class="nam">pathlib</span> <span class="key">import</span> <span class="nam">Path</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t3" href="#t3">3</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t4" href="#t4">4</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="op">.</span><span class="nam">authclient</span> <span class="key">import</span> <span class="nam">AuthClient</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="op">.</span><span class="nam">interface</span> <span class="key">import</span> <span class="nam">Interface</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="op">.</span><span class="nam">response</span> <span class="key">import</span> <span class="nam">check_response</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t4" href="#t4">4</a></span><span class="t"><span class="key">from</span> <span class="nam">fractal_client</span><span class="op">.</span><span class="nam">authclient</span> <span class="key">import</span> <span class="nam">AuthClient</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">fractal_client</span><span class="op">.</span><span class="nam">interface</span> <span class="key">import</span> <span class="nam">Interface</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">fractal_client</span><span class="op">.</span><span class="nam">response</span> <span class="key">import</span> <span class="nam">check_response</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t"><span class="key">def</span> <span class="nam">post_profile</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -102,14 +102,12 @@
     <p class="run"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t">        <span class="nam">payload</span> <span class="op">=</span> <span class="nam">json</span><span class="op">.</span><span class="nam">load</span><span class="op">(</span><span class="nam">f</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t20" href="#t20">20</a></span><span class="t">    <span class="com"># Send API request</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t">    <span class="nam">res</span> <span class="op">=</span> <span class="nam">client</span><span class="op">.</span><span class="nam">post</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t">        <span class="fst">f"</span><span class="fst">admin/v2/resource/</span><span class="op">{</span><span class="nam">resource_id</span><span class="op">}</span><span class="fst">/profile/</span><span class="fst">"</span><span class="op">,</span> <span class="nam">json</span><span class="op">=</span><span class="nam">payload</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t">    <span class="nam">profile</span> <span class="op">=</span> <span class="nam">check_response</span><span class="op">(</span><span class="nam">res</span><span class="op">,</span> <span class="nam">expected_status_code</span><span class="op">=</span><span class="num">201</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t">    <span class="key">if</span> <span class="nam">batch</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t">        <span class="key">return</span> <span class="nam">Interface</span><span class="op">(</span><span class="nam">retcode</span><span class="op">=</span><span class="num">0</span><span class="op">,</span> <span class="nam">data</span><span class="op">=</span><span class="nam">profile</span><span class="op">[</span><span class="str">"id"</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t">        <span class="key">return</span> <span class="nam">Interface</span><span class="op">(</span><span class="nam">retcode</span><span class="op">=</span><span class="num">0</span><span class="op">,</span> <span class="nam">data</span><span class="op">=</span><span class="nam">profile</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t">    <span class="nam">res</span> <span class="op">=</span> <span class="nam">client</span><span class="op">.</span><span class="nam">post</span><span class="op">(</span><span class="fst">f"</span><span class="fst">admin/v2/resource/</span><span class="op">{</span><span class="nam">resource_id</span><span class="op">}</span><span class="fst">/profile/</span><span class="fst">"</span><span class="op">,</span> <span class="nam">json</span><span class="op">=</span><span class="nam">payload</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t">    <span class="nam">profile</span> <span class="op">=</span> <span class="nam">check_response</span><span class="op">(</span><span class="nam">res</span><span class="op">,</span> <span class="nam">expected_status_code</span><span class="op">=</span><span class="num">201</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t">    <span class="key">if</span> <span class="nam">batch</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t">        <span class="key">return</span> <span class="nam">Interface</span><span class="op">(</span><span class="nam">retcode</span><span class="op">=</span><span class="num">0</span><span class="op">,</span> <span class="nam">data</span><span class="op">=</span><span class="nam">profile</span><span class="op">[</span><span class="str">"id"</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t">        <span class="key">return</span> <span class="nam">Interface</span><span class="op">(</span><span class="nam">retcode</span><span class="op">=</span><span class="num">0</span><span class="op">,</span> <span class="nam">data</span><span class="op">=</span><span class="nam">profile</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -119,7 +117,7 @@
             <a class="nav" href="z_258b6fa9a6478682__project_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.14.3">coverage.py v7.14.3</a>,
-            created at 2026-07-22 12:20 +0000
+            created at 2026-07-22 12:32 +0000
         </p>
     </div>
 </footer>
