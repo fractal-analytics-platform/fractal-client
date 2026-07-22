@@ -4,9 +4,9 @@ from typing import Any
 
 import packaging.version
 
-from ..authclient import AuthClient
-from ..config import settings
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.config import settings
+from fractal_client.response import check_response
 
 TASKS_CACHE_FILENAME = "tasks"
 
@@ -115,10 +115,7 @@ def _format_task_list(task_list: _TaskList) -> str:
     """
     header = "  ID, Name, Version"
     formatted_list = "\n".join(
-        [
-            f'  {task["id"]}, "{task["name"]}", {task["version"]}'
-            for task in task_list
-        ]
+        [f'  {task["id"]}, "{task["name"]}", {task["version"]}' for task in task_list]
     )
     return f"{header}\n{formatted_list}"
 
@@ -138,9 +135,7 @@ def _search_in_task_list(
 
     If the task is not found or is not unique, raise a `FractalCacheError`.
     """
-    matching_task_list = _get_matching_tasks(
-        task_list, name=name, version=version
-    )
+    matching_task_list = _get_matching_tasks(task_list, name=name, version=version)
     formatted_matching_task_list = _format_task_list(matching_task_list)
 
     if len(matching_task_list) == 0:
@@ -171,14 +166,10 @@ def _search_in_task_list(
                     f"task list:\n{formatted_matching_task_list}\n"
                     "Please make your request more specific.\n"
                 )
-            available_versions = [
-                _task["version"] for _task in matching_task_list
-            ]
+            available_versions = [_task["version"] for _task in matching_task_list]
             max_version = max(available_versions, key=_loose_version_parse)
             max_version_tasks = [
-                _task
-                for _task in matching_task_list
-                if _task["version"] == max_version
+                _task for _task in matching_task_list if _task["version"] == max_version
             ]
             formatted_matching_task_list = _format_task_list(max_version_tasks)
             if len(max_version_tasks) == 1:

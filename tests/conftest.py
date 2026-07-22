@@ -6,6 +6,7 @@ from os import environ
 from pathlib import Path
 
 import pytest
+
 from fractal_client.interface import Interface
 
 # This variable must be defined before the first import of config.py
@@ -68,9 +69,7 @@ def tester(new_name):
 @pytest.fixture
 def invoke(tester):
     def __invoke(args: str) -> Interface:
-        new_args = (
-            f"--user {tester['email']} --password {tester['password']} {args}"
-        )
+        new_args = f"--user {tester['email']} --password {tester['password']} {args}"
         return handle(_clisplit(new_args))
 
     return __invoke
@@ -148,4 +147,4 @@ def new_name():
     return lambda: next(names)
 
 
-from .fixtures_testserver import *  # noqa: 401
+from .fixtures_testserver import *  # noqa: E402, F401, F403

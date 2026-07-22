@@ -4,9 +4,9 @@ import os
 from pathlib import Path
 from zipfile import ZipFile
 
-from ..authclient import AuthClient
-from ..interface import Interface
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+from fractal_client.response import check_response
 
 
 def get_job(
@@ -50,9 +50,7 @@ def get_job_logs(
 ) -> Interface:
     # Check that output_folder does not already exist
     if Path(output_folder).exists():
-        return Interface(
-            retcode=1, data=f"ERROR: {output_folder=} already exists"
-        )
+        return Interface(retcode=1, data=f"ERROR: {output_folder=} already exists")
 
     # Send request to server
     res = client.get(f"api/v2/project/{project_id}/job/{job_id}/download/")
@@ -61,12 +59,8 @@ def get_job_logs(
     # is binary. Therefore we check the status code by hand
     if res.status_code != 200:
         logging.error(f"Server returned {res.status_code}")
-        logging.error(
-            f"Original request: {res._request.method} {res._request.url}"
-        )
-        logging.error(
-            f"Original payload: {res._request._content.decode('utf-8')}"
-        )
+        logging.error(f"Original request: {res._request.method} {res._request.url}")
+        logging.error(f"Original payload: {res._request._content.decode('utf-8')}")
         logging.error("Terminating.\n")
         exit(1)
 
@@ -78,12 +72,8 @@ def get_job_logs(
             f"Unexpected {content_type=} in headers of server "
             f"response, instead of {expected_content_type=}"
         )
-        logging.error(
-            f"Original request: {res._request.method} {res._request.url}"
-        )
-        logging.error(
-            f"Original payload: {res._request._content.decode('utf-8')}"
-        )
+        logging.error(f"Original request: {res._request.method} {res._request.url}")
+        logging.error(f"Original payload: {res._request._content.decode('utf-8')}")
         logging.error("Terminating.\n")
         exit(1)
 
@@ -111,9 +101,7 @@ def stop_job(client: AuthClient, *, project_id: int, job_id: int) -> Interface:
 
     res = client.get(f"api/v2/project/{project_id}/job/{job_id}/stop/")
     check_response(res, expected_status_code=202)
-    return Interface(
-        retcode=0, data="Correctly called the job-stopping endpoint"
-    )
+    return Interface(retcode=0, data="Correctly called the job-stopping endpoint")
 
 
 def job_submit(
@@ -146,10 +134,10 @@ def job_submit(
             job_submit["type_filters"] = json.load(f)
 
     # Prepare query parameters
-    query_parameters = f"workflow_id={workflow_id}" f"&dataset_id={dataset_id}"
+    query_parameters = f"workflow_id={workflow_id}&dataset_id={dataset_id}"
 
     res = client.post(
-        (f"api/v2/project/{project_id}/job/" f"submit/?{query_parameters}"),
+        (f"api/v2/project/{project_id}/job/submit/?{query_parameters}"),
         json=job_submit,
     )
     job_read = check_response(res, expected_status_code=202)

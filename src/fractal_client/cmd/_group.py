@@ -1,6 +1,6 @@
-from ..authclient import AuthClient
-from ..interface import Interface
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+from fractal_client.response import check_response
 
 
 def group_list(
@@ -13,9 +13,7 @@ def group_list(
     res = client.get(f"auth/group/{query_params}")
     data = check_response(res, expected_status_code=200)
     if batch:
-        return Interface(
-            retcode=0, data=" ".join([str(d["id"]) for d in data])
-        )
+        return Interface(retcode=0, data=" ".join([str(d["id"]) for d in data]))
     else:
         return Interface(retcode=0, data=data)
 

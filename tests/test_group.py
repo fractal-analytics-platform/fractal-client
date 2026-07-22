@@ -19,17 +19,13 @@ def test_group_commands_auth(invoke, caplog):
     _assert_403(cmd="group new foo")
 
 
-def test_group_commands(
-    user_factory, invoke_as_superuser, new_name, superuser
-):
+def test_group_commands(user_factory, invoke_as_superuser, new_name, superuser):
     # get default group id and superuser id
     res = invoke_as_superuser("group list --user-ids")
     assert res.retcode == 0
     initial_number_of_groups = len(res.data)
     default_group = next(
-        group
-        for group in res.data
-        if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
+        group for group in res.data if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
     )
     initial_number_of_users = len(default_group["user_ids"])
 
@@ -78,9 +74,7 @@ def test_group_commands(
 
     with pytest.raises(SystemExit):
         # user already in group
-        invoke_as_superuser(
-            f"group add-user {default_group_id} {superuser_id}"
-        )
+        invoke_as_superuser(f"group add-user {default_group_id} {superuser_id}")
     with pytest.raises(SystemExit):
         # non existing user
         invoke_as_superuser(f"group add-user {default_group_id} 9999")
@@ -110,13 +104,9 @@ def test_group_commands(
         g["user_ids"] for g in res.data if g["id"] == default_group_id
     )
     assert len(users_default_group) == initial_number_of_users + 3
-    users_group_1 = next(
-        g["user_ids"] for g in res.data if g["id"] == group1_id
-    )
+    users_group_1 = next(g["user_ids"] for g in res.data if g["id"] == group1_id)
     assert set(users_group_1) == {user1_id, user2_id}
-    users_group_2 = next(
-        g["user_ids"] for g in res.data if g["id"] == group2_id
-    )
+    users_group_2 = next(g["user_ids"] for g in res.data if g["id"] == group2_id)
     assert set(users_group_2) == {user3_id, user2_id, superuser_id}
 
     # Remove users from group

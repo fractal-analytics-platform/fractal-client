@@ -371,9 +371,7 @@ def test_workflow_rm_task(
     debug(res.data)
 
 
-def test_workflow_edit_task(
-    invoke, task_factory, workflow_factory, tmp_path, new_name
-):
+def test_workflow_edit_task(invoke, task_factory, workflow_factory, tmp_path, new_name):
     """
     GIVEN a workflow
     WHEN the client is invoked to add a task, including custom args
@@ -448,9 +446,7 @@ def test_workflow_edit_task(
     assert res.data["args_parallel"] == ARGS_PARALLEL
 
     # Add a WorkflowTask with meta-non-parallel args
-    t_non_parallel = task_factory(
-        name=new_name(), command_non_parallel="non_parallel"
-    )
+    t_non_parallel = task_factory(name=new_name(), command_non_parallel="non_parallel")
 
     cmd = (
         f"workflow add-task {project_id} {wf['id']} "
@@ -520,9 +516,7 @@ def test_workflow_import(
     filename = tmp_path / "workflow1"
     with filename.open("w") as f:
         json.dump(worfklow_to_import, f)
-    res = invoke(
-        f"workflow import --project-id {project_id} --json-file {filename}"
-    )
+    res = invoke(f"workflow import --project-id {project_id} --json-file {filename}")
     debug(res.data)
     assert res.retcode == 0
 
@@ -544,8 +538,7 @@ def test_workflow_import(
     with filename.open("w") as f:
         json.dump(worfklow_to_import, f)
     res = invoke(
-        f"--batch workflow import --project-id {project_id} "
-        f"--json-file {filename}"
+        f"--batch workflow import --project-id {project_id} --json-file {filename}"
     )
     debug(res.retcode, res.data)
     assert res.retcode == 0

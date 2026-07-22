@@ -15,14 +15,11 @@ def test_register_as_user(invoke, caplog):
 
 
 @pytest.mark.parametrize("is_superuser", [True, False])
-def test_register_as_superuser(
-    invoke_as_superuser, is_superuser: bool, new_name
-):
+def test_register_as_superuser(invoke_as_superuser, is_superuser: bool, new_name):
     EMAIL_USER = f"{new_name()}@example.org"
     if is_superuser:
         res = invoke_as_superuser(
-            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} "
-            "--superuser"
+            f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_USER} --superuser"
         )
         debug(res.data)
         assert res.retcode == 0
@@ -112,8 +109,7 @@ def test_edit_as_user(invoke, invoke_as_superuser, caplog, new_name):
     # Call fractal user edit
     with pytest.raises(SystemExit):
         res = invoke(
-            f"user edit {user_id} "
-            "--new-email email@example.org --make-verified"
+            f"user edit {user_id} --new-email email@example.org --make-verified"
         )
     debug(caplog.text)
     assert "403" in caplog.text
@@ -138,11 +134,7 @@ def test_edit_as_superuser(
     user_id = res.data["id"]
     # Call fractal user edit
     NEW_EMAIL = f"{new_name()}@example.org"
-    cmd = (
-        f"user edit {user_id} "
-        f"--new-email {NEW_EMAIL} "
-        f"--new-password SOMETHING "
-    )
+    cmd = f"user edit {user_id} --new-email {NEW_EMAIL} --new-password SOMETHING "
     if new_is_superuser:
         cmd = f"{cmd} --make-superuser"
     if new_is_verified:
@@ -159,16 +151,13 @@ def test_edit_as_superuser(
         assert res.data["email"] == NEW_EMAIL
         assert res.data["is_superuser"] == new_is_superuser
         assert (
-            res.data["is_verified"]
-            if new_is_verified
-            else not res.data["is_verified"]
+            res.data["is_verified"] if new_is_verified else not res.data["is_verified"]
         )
     else:
         res = invoke_as_superuser(cmd)
         assert res.retcode == 1
         assert res.data == (
-            "Cannot use `--new-email` without `--make-verified` or "
-            "`--remove-verified`"
+            "Cannot use `--new-email` without `--make-verified` or `--remove-verified`"
         )
 
     # If the user was made a superuser, check that we can go back to normal
@@ -226,9 +215,7 @@ def test_user_set_groups(invoke_as_superuser, user_factory, new_name):
     # get default group
     res = invoke_as_superuser("group list --user-ids")
     default_group = next(
-        group
-        for group in res.data
-        if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
+        group for group in res.data if group["name"] == FRACTAL_DEFAULT_GROUP_NAME
     )
     default_group_id = default_group["id"]
     # create 2 new users
@@ -261,8 +248,7 @@ def test_user_set_groups(invoke_as_superuser, user_factory, new_name):
     with pytest.raises(SystemExit):
         # repeated elements in group_ids are forbidden
         invoke_as_superuser(
-            "user set-groups "
-            f"{user1_id} {default_group_id} {group1_id} {group1_id}"
+            f"user set-groups {user1_id} {default_group_id} {group1_id} {group1_id}"
         )
 
     # Add user1 to group1
@@ -275,8 +261,7 @@ def test_user_set_groups(invoke_as_superuser, user_factory, new_name):
 
     # Add user2 to group1 and group2
     res = invoke_as_superuser(
-        "user set-groups "
-        f"{user2_id} {group2_id} {group1_id} {default_group_id}"
+        f"user set-groups {user2_id} {group2_id} {group1_id} {default_group_id}"
     )
     assert len(res.data["group_ids_names"]) == 3
     group1 = invoke_as_superuser(f"group get {group1_id}")
@@ -302,16 +287,14 @@ def test_edit_project_dirs(
     # Register a new user
     EMAIL_USER = f"{new_name()}@example.org"
     PROJECT_DIR_1 = "/tmp/1"
-    res = invoke_as_superuser(
-        f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_1}"
-    )
+    res = invoke_as_superuser(f"user register {EMAIL_USER} {PWD_USER} {PROJECT_DIR_1}")
     assert res.retcode == 0
     user_id = res.data["id"]
     assert res.data["project_dirs"] == [PROJECT_DIR_1]
 
     # Add a second project dir
     PROJECT_DIR_2 = "/tmp/2"
-    cmd = f"user edit {user_id} " f"--add-project-dir {PROJECT_DIR_2}"
+    cmd = f"user edit {user_id} --add-project-dir {PROJECT_DIR_2}"
     res = invoke_as_superuser(cmd)
     assert res.retcode == 0
     assert res.data["project_dirs"] == [PROJECT_DIR_1, PROJECT_DIR_2]

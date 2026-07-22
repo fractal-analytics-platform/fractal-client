@@ -43,14 +43,10 @@ def test_task_collection_invalid_pinned_dependency(invoke, caplog):
     """
     PACKAGE = "devtools"
     with pytest.raises(SystemExit):
-        invoke(
-            f"task collect {PACKAGE} --pre-pinned-dependency invalid-string"
-        )
+        invoke(f"task collect {PACKAGE} --pre-pinned-dependency invalid-string")
     # Check that payload was prepared correctly
     error_line = next(
-        record.message
-        for record in caplog.records
-        if "Invalid pin:" in record.message
+        record.message for record in caplog.records if "Invalid pin:" in record.message
     )
     debug(error_line)
     assert error_line is not None
@@ -84,9 +80,7 @@ def test_task_collection(
     # Wait until collection is complete
     starting_time = time.perf_counter()
     while True:
-        res1 = invoke_as_custom_user(
-            f"task check-collection {activity_id}", **new_user
-        )
+        res1 = invoke_as_custom_user(f"task check-collection {activity_id}", **new_user)
         assert res1.retcode == 0
         time.sleep(0.1)
         if res1.data["status"] == "OK":
@@ -95,9 +89,7 @@ def test_task_collection(
         assert time.perf_counter() - starting_time < COLLECTION_TIMEOUT
 
     # Check successful status and no logs
-    res2 = invoke_as_custom_user(
-        f"task check-collection {activity_id}", **new_user
-    )
+    res2 = invoke_as_custom_user(f"task check-collection {activity_id}", **new_user)
     assert res2.retcode == 0
     assert res2.data["status"] == "OK"
     assert res2.data["log"] is None

@@ -3,9 +3,9 @@ import logging
 import sys
 from pathlib import Path
 
-from ..authclient import AuthClient
-from ..interface import Interface
-from ..response import check_response
+from fractal_client.authclient import AuthClient
+from fractal_client.interface import Interface
+from fractal_client.response import check_response
 
 
 def template_show(client: AuthClient, *, template_id: int):
@@ -79,6 +79,4 @@ def template_export(
     # already exists" https://docs.python.org/3/library/functions.html#open
     with Path(json_file).open(mode="x") as f:
         json.dump(template, f, indent=2)
-    return Interface(
-        retcode=0, data=f"Template {template_id} exported at {json_file}."
-    )
+    return Interface(retcode=0, data=f"Template {template_id} exported at {json_file}.")
