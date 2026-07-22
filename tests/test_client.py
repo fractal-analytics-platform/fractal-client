@@ -6,9 +6,8 @@ import pytest
 from devtools import debug
 
 from fractal_client import __VERSION__
-from fractal_client.auth.authclient import AuthClient
+from fractal_client.auth import AuthClient
 from fractal_client.cmd import version
-from fractal_client.main import _verify_authentication_branch
 from fractal_client.main import handle
 
 
@@ -111,39 +110,6 @@ def test_argparse_abbreviation(invoke_as_superuser, new_name):
         invoke_as_superuser(
             f"user register {new_name()}@example.org secret2 /project-dir --super"
         )
-
-
-def test_unit_verify_authentication_branch():
-    # Valid cases
-    _verify_authentication_branch(
-        username="xxx",
-        password="xxx",
-        token_path=None,
-    )
-    _verify_authentication_branch(
-        username=None,
-        password=None,
-        token_path="xxx",
-    )
-
-    # Invalid cases
-    for username, password, token_path in [
-        (None, None, None),
-        ("xx", None, None),
-        (None, "xx", None),
-        ("xx", "xx", "xx"),
-        ("xx", None, "xx"),
-        (None, "xx", "xx"),
-    ]:
-        with pytest.raises(
-            ValueError,
-            match="Invalid authentication credentials",
-        ):
-            _verify_authentication_branch(
-                username=username,
-                password=password,
-                token_path=token_path,
-            )
 
 
 def test_invalid_credentials(monkeypatch):
