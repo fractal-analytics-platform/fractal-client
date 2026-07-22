@@ -12,7 +12,7 @@ from fractal_client.response import check_response
 def _process_pinned_dependencies(
     pinned_dependencies: list[str],
     label: Literal["pre", "post"],
-) -> dict[str, str]:
+) -> str:
     """
     Transform `["a=1", "b=2"]` into `{"a": "1", "b": "2"}`.
     """
