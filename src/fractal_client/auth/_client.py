@@ -17,7 +17,7 @@ logging.getLogger("httpx2").setLevel(logging.WARNING)
 MIN_TOKEN_TTL = 10.0
 
 
-def debug_request(verb: str, url):
+def _debug_request(verb: str, url):
     log = f"Sending HTTP request {verb} {url}"
     logging.debug(log)
 
@@ -26,12 +26,15 @@ class AuthenticationError(ValueError):
     pass
 
 
-def get_ttl(token: str) -> int | float:
+def _get_ttl(token: str) -> int | float:
     """
     Token validity time left (in seconds).
 
     Returns a negative number when the token cannot be decoded or does
     not contain the "exp" claim.
+
+    Note that `HS256` is the default algorithm in `fastapi-users`, see
+    https://github.com/fastapi-users/fastapi-users/blob/master/fastapi_users/jwt.py
     """
     try:
         claims = jwt.decode(
@@ -54,29 +57,29 @@ def get_ttl(token: str) -> int | float:
         return -1
 
 
-def is_token_valid(token: str) -> bool:
-    return get_ttl(token) > MIN_TOKEN_TTL
+def _is_token_valid(token: str) -> bool:
+    return _get_ttl(token) > MIN_TOKEN_TTL
 
 
-def read_custom_token(path: str) -> str:
+def _read_custom_token(path: str) -> str:
     if not Path(path).exists():
-        raise  # FIXME
+        sys.exit(f"File not found ({path=}).")
     with open(path) as f:
         token = f.read().strip()
 
-    if not is_token_valid(token):
+    if not _is_token_valid(token):
         prompt_msg = (
             f"\nThe token stored at {path} is invalid or expired/expiring.\n"
             "Please get a fresh token and paste it here: "
         )
         token = input(prompt_msg)
-        if not is_token_valid(token):
+        if not _is_token_valid(token):
             sys.exit("\nThe provided token is invalid or expired/expiring. Exit.")
 
     return token
 
 
-def read_and_write_standard_token() -> str:
+def _read_and_write_standard_token() -> str:
     path: str = settings.default_token_path
     if not Path(path).exists():
         sys.exit(
@@ -86,13 +89,13 @@ def read_and_write_standard_token() -> str:
     with open(path) as f:
         token = f.read().strip()
 
-    if not is_token_valid(token):
+    if not _is_token_valid(token):
         prompt_msg = (
             f"\nThe token stored at {path} is invalid or expired/expiring.\n"
             "Please get a fresh token and paste it here: "
         )
         token = input(prompt_msg)
-        if not is_token_valid(token):
+        if not _is_token_valid(token):
             sys.exit("\nThe provided token is invalid or expired/expiring. Exit.")
     with open(path, "w") as f:
         f.write(token)
@@ -115,9 +118,9 @@ class AuthClient:
         if self.auth_info.use_basic_auth:
             self.token = self.get_token_from_backend()
         elif self.auth_info.token_path:
-            self.token: str = read_custom_token(self.auth_info.token_path)
+            self.token: str = _read_custom_token(self.auth_info.token_path)
         else:
-            self.token = read_and_write_standard_token()
+            self.token = _read_and_write_standard_token()
 
         return self
 
@@ -142,7 +145,7 @@ class AuthClient:
         try:
             raw_token = res.json()
         except JSONDecodeError:
-            raise  # FIXME
+            print("Error while parsing")  # FIXME
         return raw_token["access_token"]
 
     @property
@@ -155,20 +158,20 @@ class AuthClient:
 
     def get(self: Self, relative_url: str):
         url = self._get_url(relative_url)
-        debug_request("GET", url)
+        _debug_request("GET", url)
         return self.client.get(url=url, headers=self.auth_headers)
 
     def post(self: Self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
-        debug_request("POST", url)
+        _debug_request("POST", url)
         return self.client.post(url=url, headers=self.auth_headers, **kwargs)
 
     def patch(self: Self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
-        debug_request("PATCH", url)
+        _debug_request("PATCH", url)
         return self.client.patch(url=url, headers=self.auth_headers, **kwargs)
 
     def delete(self: Self, relative_url: str):
         url = self._get_url(relative_url)
-        debug_request("DELETE", url)
+        _debug_request("DELETE", url)
         return self.client.delete(url=url, headers=self.auth_headers)

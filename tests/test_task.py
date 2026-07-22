@@ -67,7 +67,7 @@ def test_task_new(
     assert res.data == str(first_task_id + 1)
 
     # create a new task with same name as before. Note that in check_response
-    # we have sys.exit(1) when status code is not the expecte one
+    # we have sys.exit(1) when status code is not the expected one
     with pytest.raises(SystemExit) as e:
         invoke(f"task new {TASK_NAME_2} --command-parallel _command2 --version 0")
     assert e.value.code == 1

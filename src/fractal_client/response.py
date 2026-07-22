@@ -48,9 +48,9 @@ def check_response(
         logging.error(f"Server returned {res.status_code}")
 
         # The following block relies on private methods, and it may fail for
-        # unexpected reasons (e.g. it is now aware of the difference between
+        # unexpected reasons (e.g. it is not aware of the difference between
         # 'application/json' and 'multipart/form-data' requests, and it will
-        # fail for non-jons requests). For this reason it is within a
+        # fail for non-json requests). For this reason it is within a
         # broad-scope try/except block.
         try:
             logging.error(f"Original request: {res._request.method} {res._request.url}")

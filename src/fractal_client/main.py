@@ -19,11 +19,11 @@ from collections.abc import Callable
 
 from httpx2 import ConnectError
 
-from fractal_client.auth.info import AuthInfo
+from fractal_client.auth._info import AuthInfo
 
-from .auth.authclient import AuthClient
-from .auth.authclient import AuthenticationError
-from .auth.validation import get_auth_info
+from .auth import AuthClient
+from .auth._client import AuthenticationError
+from .auth._info import get_auth_info
 from .auth.validation import get_cmd_handler
 from .auth.validation import get_fractal_server
 from .config import settings

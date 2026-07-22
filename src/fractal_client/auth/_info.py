@@ -32,13 +32,8 @@ def get_auth_info(*, parser: ap.ArgumentParser, args: ap.Namespace) -> AuthInfo:
     password: str | None = args.password or settings.FRACTAL_PASSWORD
     token_path: str | None = args.token_path or settings.FRACTAL_TOKEN_PATH
 
-    if bool(user) != bool(password):
-        print(ERROR_MSG)
-        sys.exit(1)
-
-    if bool(user) and bool(token_path):
-        print(ERROR_MSG)
-        sys.exit(1)
+    if (bool(user) != bool(password)) or (bool(user) and bool(token_path)):
+        sys.exit(ERROR_MSG)
 
     return AuthInfo(
         user=user,
