@@ -1,3 +1,7 @@
+"""
+Get a Python function based on a CLI subcommand.
+"""
+
 import argparse as ap
 import sys
 from collections.abc import Callable

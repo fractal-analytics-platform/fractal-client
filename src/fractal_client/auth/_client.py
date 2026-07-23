@@ -1,3 +1,7 @@
+"""
+`AuthClient`, a client with a valid token.
+"""
+
 import logging
 from json import JSONDecodeError
 from typing import Any

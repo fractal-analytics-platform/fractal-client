@@ -1,3 +1,7 @@
+"""
+Additional validation of CLI arguments.
+"""
+
 import argparse as ap
 import sys
 from dataclasses import dataclass
