@@ -5,7 +5,7 @@ from datetime import timedelta
 import jwt
 import pytest
 
-from fractal_client.auth._client import _get_ttl
+from fractal_client.auth._client import _get_validity_seconds
 from fractal_client.auth._client import _is_token_valid
 from fractal_client.auth._info import AuthInfo
 from fractal_client.auth._info import get_auth_info
@@ -104,18 +104,18 @@ def test_get_auth_info():
         )
 
 
-def test_get_ttl():
+def test_get_validity_seconds():
     past = (datetime.now() - timedelta(seconds=100)).timestamp()
     future = (datetime.now() + timedelta(seconds=100)).timestamp()
 
     fake_token = "asdasd"
-    assert _get_ttl(fake_token) == -1
+    assert _get_validity_seconds(fake_token) == -1
 
     token = jwt.encode({"exp": past}, key=LONG_KEY, algorithm="HS256")
-    assert _get_ttl(token) < -100
+    assert _get_validity_seconds(token) < -100
 
     token = jwt.encode({"exp": future}, key=LONG_KEY, algorithm="HS256")
-    assert _get_ttl(token) > 99
+    assert _get_validity_seconds(token) > 99
 
 
 def test_is_token_valid():

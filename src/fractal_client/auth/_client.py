@@ -26,7 +26,7 @@ class AuthenticationError(ValueError):
     pass
 
 
-def _get_ttl(token: str) -> int | float:
+def _get_validity_seconds(token: str) -> int | float:
     """
     Token validity time left (in seconds).
 
@@ -44,59 +44,47 @@ def _get_ttl(token: str) -> int | float:
         )
         expiration = datetime.fromtimestamp(claims["exp"])
         now = datetime.now()
-        ttl = expiration - now
+        validity_seconds = (expiration - now).total_seconds()
         logging.debug(
             (
-                f"Token validity time {ttl.total_seconds():.1f} "
+                f"Token validity time {validity_seconds:.1f} "
                 f"seconds (expiration: {expiration})"
             )
         )
-        return ttl.total_seconds()
+        return validity_seconds
     except Exception as e:
         logging.debug(f"An exception took place: {str(e)}")
         return -1
 
 
 def _is_token_valid(token: str) -> bool:
-    return _get_ttl(token) > MIN_TOKEN_TTL
+    return _get_validity_seconds(token) > MIN_TOKEN_TTL
 
 
-def _read_custom_token(path: str) -> str:
-    if not Path(path).exists():
-        sys.exit(f"File not found ({path=}).")
-    with open(path) as f:
-        token = f.read().strip()
+def _read_and_refresh_token(path: str) -> str:
+    if Path(path).exists():
+        with open(path) as f:
+            token: str = f.read().strip()
+        source_info = f"at {path}"
+    else:
+        prompt_msg = (
+            f"No token was found at {path}, and no other authentication method "
+            "is available.\n"
+            f"Paste a valid token here and it will be written to {path}: "
+        )
+        token: str = input(prompt_msg)
+        source_info = "provided"
 
     if not _is_token_valid(token):
         prompt_msg = (
-            f"\nThe token stored at {path} is invalid or expired/expiring.\n"
+            f"\nThe token {source_info} is invalid or expired/expiring.\n"
             "Please get a fresh token and paste it here: "
         )
         token = input(prompt_msg)
         if not _is_token_valid(token):
-            sys.exit("\nThe provided token is invalid or expired/expiring. Exit.")
+            sys.exit("\nThe token provided is invalid or expired/expiring. Exit.")
 
-    return token
-
-
-def _read_and_write_standard_token() -> str:
-    path: str = settings.default_token_path
-    if not Path(path).exists():
-        sys.exit(
-            f"No token found at {path}, and no other "
-            "authentication method is available."
-        )
-    with open(path) as f:
-        token = f.read().strip()
-
-    if not _is_token_valid(token):
-        prompt_msg = (
-            f"\nThe token stored at {path} is invalid or expired/expiring.\n"
-            "Please get a fresh token and paste it here: "
-        )
-        token = input(prompt_msg)
-        if not _is_token_valid(token):
-            sys.exit("\nThe provided token is invalid or expired/expiring. Exit.")
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
         f.write(token)
 
@@ -112,15 +100,15 @@ class AuthClient:
     def __init__(self: Self, *, fractal_server: str, auth_info: AuthInfo):
         self.fractal_server = fractal_server
         self.auth_info: AuthInfo = auth_info
-        self.client = Client()
+        self.client: Client = Client()
 
     def __enter__(self: Self):
         if self.auth_info.use_basic_auth:
             self.token = self.get_token_from_backend()
         elif self.auth_info.token_path:
-            self.token: str = _read_custom_token(self.auth_info.token_path)
+            self.token: str = _read_and_refresh_token(self.auth_info.token_path)
         else:
-            self.token = _read_and_write_standard_token()
+            self.token = _read_and_refresh_token(settings.default_token_path)
 
         return self
 
