@@ -19,13 +19,12 @@ from collections.abc import Callable
 
 from httpx2 import ConnectError
 
-from fractal_client.auth._info import AuthInfo
-
-from .auth import AuthClient
+from .auth._args import AuthInfo
+from .auth._args import get_auth_info
+from .auth._args import get_fractal_server
+from .auth._client import AuthClient
 from .auth._client import AuthenticationError
-from .auth._info import get_auth_info
-from .auth.validation import get_cmd_handler
-from .auth.validation import get_fractal_server
+from .auth._cmd_handler import get_cmd_handler
 from .config import settings
 from .interface import Interface
 from .parser import parser_main

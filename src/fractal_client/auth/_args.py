@@ -16,6 +16,18 @@ ERROR_MSG = (
 )
 
 
+def get_fractal_server(args: ap.Namespace) -> str:
+    fractal_server: str | None = args.fractal_server or settings.FRACTAL_SERVER
+    if fractal_server is None:
+        sys.exit(
+            "Missing argument: You should set the "
+            "fractal-server URL (see `fractal --help`)."
+        )
+    else:
+        fractal_server = fractal_server.rstrip("/")
+        return fractal_server
+
+
 @dataclass(frozen=True)
 class AuthInfo:
     user: str | None

@@ -1,22 +1,16 @@
 import logging
-import sys
-from datetime import datetime
 from json import JSONDecodeError
-from pathlib import Path
 from typing import Any
 from typing import Self
 
-import jwt
 from httpx2 import Client
 from httpx2 import Response
 
+from fractal_client.auth._args import AuthInfo
+from fractal_client.auth._token_utils import read_and_refresh_token
 from fractal_client.config import settings
 
-from ._info import AuthInfo
-
 logging.getLogger("httpx2").setLevel(logging.WARNING)
-
-MIN_TOKEN_TTL = 10.0
 
 
 def _debug_request(verb: str, url):
@@ -26,75 +20,6 @@ def _debug_request(verb: str, url):
 
 class AuthenticationError(ValueError):
     pass
-
-
-def _get_validity_seconds(token: str) -> int | float:
-    """
-    Token validity time left (in seconds).
-
-    Returns a negative number when the token cannot be decoded or does
-    not contain the "exp" claim.
-
-    Note that `HS256` is the default algorithm in `fastapi-users`, see
-    https://github.com/fastapi-users/fastapi-users/blob/master/fastapi_users/jwt.py
-    """
-    try:
-        claims = jwt.decode(
-            token,
-            algorithms=["HS256"],
-            options={"verify_signature": False},
-        )
-        expiration = datetime.fromtimestamp(claims["exp"])
-        now = datetime.now()
-        validity_seconds = (expiration - now).total_seconds()
-        logging.debug(
-            (
-                f"Token validity time {validity_seconds:.1f} "
-                f"seconds (expiration: {expiration})"
-            )
-        )
-        return validity_seconds
-    except Exception as e:
-        logging.debug(f"An exception took place: {str(e)}")
-        return -1
-
-
-def _is_token_valid(token: str) -> bool:
-    return _get_validity_seconds(token) > MIN_TOKEN_TTL
-
-
-def _read_and_refresh_token(path: str) -> str:
-    if Path(path).exists():
-        with open(path) as f:
-            token: str = f.read().strip()
-        source_info = f"at {path}"
-        update_token = False
-    else:
-        prompt_msg = (
-            f"No token was found at {path}, and no other authentication method "
-            "is available.\n"
-            f"Paste a valid token here and it will be written to {path}: "
-        )
-        token: str = input(prompt_msg)
-        source_info = "provided"
-        update_token = True
-
-    if not _is_token_valid(token):
-        prompt_msg = (
-            f"\nThe token {source_info} is invalid or expired/expiring.\n"
-            "Please get a fresh token and paste it here: "
-        )
-        token = input(prompt_msg)
-        if not _is_token_valid(token):
-            sys.exit("\nThe token provided is invalid or expired/expiring. Exit.")
-        update_token = True
-
-    if update_token:
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w") as f:
-            f.write(token)
-
-    return token
 
 
 class AuthClient:
@@ -112,16 +37,16 @@ class AuthClient:
         if self.auth_info.use_basic_auth:
             self.token: str = self._get_token_from_backend()
         elif self.auth_info.token_path:
-            self.token: str = _read_and_refresh_token(self.auth_info.token_path)
+            self.token: str = read_and_refresh_token(self.auth_info.token_path)
         else:
-            self.token: str = _read_and_refresh_token(settings.default_token_path)
+            self.token: str = read_and_refresh_token(settings.default_token_path)
 
         return self
 
     def __exit__(self: Self, *args):
         self.client.close()
 
-    def get_token_from_response(self: Self, response: Response) -> str:
+    def _get_token_from_response(self: Self, response: Response) -> str:
         try:
             response_data: dict[str, Any] = response.json()
             token_value: str = response_data["access_token"]
@@ -147,7 +72,7 @@ class AuthClient:
                 f"Status code: {res.status_code}.\n"
                 f"Response data: {data}.\n"
             )
-        return self.get_token_from_response(res)
+        return self._get_token_from_response(res)
 
     @property
     def _auth_headers(self: Self) -> dict[str, str]:

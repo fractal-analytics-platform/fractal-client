@@ -3,19 +3,6 @@ import sys
 from collections.abc import Callable
 
 import fractal_client.cmd as cmd_module
-from fractal_client.config import settings
-
-
-def get_fractal_server(args: ap.Namespace) -> str:
-    fractal_server: str | None = args.fractal_server or settings.FRACTAL_SERVER
-    if fractal_server is None:
-        sys.exit(
-            "Missing argument: You should set the "
-            "fractal-server URL (see `fractal --help`)."
-        )
-    else:
-        fractal_server = fractal_server.rstrip("/")
-        return fractal_server
 
 
 def get_cmd_handler(*, parser_help: str, args: ap.Namespace) -> Callable:
