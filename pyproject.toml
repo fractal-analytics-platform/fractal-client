@@ -85,3 +85,6 @@ force-single-line = true
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "parents"
+
+[tool.ty.environment]
+python = ".venv"
