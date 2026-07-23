@@ -6,7 +6,10 @@ from pathlib import Path
 
 import jwt
 import pytest
+from httpx2 import Response
 
+from fractal_client.auth._client import AuthClient
+from fractal_client.auth._client import AuthenticationError
 from fractal_client.auth._client import _get_validity_seconds
 from fractal_client.auth._client import _is_token_valid
 from fractal_client.auth._client import _read_and_refresh_token
@@ -176,3 +179,49 @@ def test_read_and_refresh_token(tmp_path: Path, monkeypatch):
         monkeypatch.setattr("sys.stdin", io.StringIO(invalid_token))
         _read_and_refresh_token(invalid_path_3)
     assert Path(invalid_path_3).read_text() == ""
+
+
+def test_response_to_token():
+    auth_client = AuthClient(
+        fractal_server="http://localhost:8765",
+        auth_info=AuthInfo(
+            user="fake",
+            password="fake",
+            token_path=None,
+        ),
+    )
+
+    with pytest.raises(
+        AuthenticationError,
+        match="JSONDecodeError",
+    ):
+        auth_client._response_to_token(Response(status_code=200, content="non-json"))
+
+    with pytest.raises(
+        AuthenticationError,
+        match="KeyError",
+    ):
+        auth_client._response_to_token(Response(status_code=200, json={}))
+
+
+def test_get_token_from_backend(tester):
+    with AuthClient(
+        fractal_server="http://localhost:8765",
+        auth_info=AuthInfo(
+            user=tester["email"],
+            password=tester["password"],
+            token_path=None,
+        ),
+    ) as client:
+        assert _is_token_valid(client.token)
+
+    with pytest.raises(AuthenticationError):
+        with AuthClient(
+            fractal_server="http://localhost:8765",
+            auth_info=AuthInfo(
+                user=tester["email"],
+                password="wrong-password",
+                token_path=None,
+            ),
+        ) as client:
+            pass

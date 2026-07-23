@@ -121,6 +121,17 @@ class AuthClient:
     def __exit__(self: Self, *args):
         self.client.close()
 
+    def _response_to_token(self: Self, response: Response) -> str:
+        try:
+            response_data: dict[str, Any] = response.json()
+            token_value: str = response_data["access_token"]
+            return token_value
+        except (JSONDecodeError, KeyError) as e:
+            raise AuthenticationError(
+                "Could not extract token from Fractal-backend response "
+                f"({type(e).__name__})."
+            ) from e
+
     def get_token_from_backend(self: Self) -> str:
         res: Response = self.client.post(
             f"{self.fractal_server}/auth/token/login/",
@@ -136,11 +147,7 @@ class AuthClient:
                 f"Status code: {res.status_code}.\n"
                 f"Response data: {data}.\n"
             )
-        try:
-            raw_token: dict[str, Any] = res.json()
-        except JSONDecodeError:
-            print("Error while parsing")  # FIXME
-        return raw_token["access_token"]
+        return self._response_to_token(res)
 
     @property
     def auth_headers(self: Self) -> dict[str, str]:
