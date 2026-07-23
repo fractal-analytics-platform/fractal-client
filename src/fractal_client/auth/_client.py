@@ -3,10 +3,12 @@ import sys
 from datetime import datetime
 from json import JSONDecodeError
 from pathlib import Path
+from typing import Any
 from typing import Self
 
 import jwt
 from httpx2 import Client
+from httpx2 import Response
 
 from fractal_client.config import settings
 
@@ -66,6 +68,7 @@ def _read_and_refresh_token(path: str) -> str:
         with open(path) as f:
             token: str = f.read().strip()
         source_info = f"at {path}"
+        update_token = False
     else:
         prompt_msg = (
             f"No token was found at {path}, and no other authentication method "
@@ -74,6 +77,7 @@ def _read_and_refresh_token(path: str) -> str:
         )
         token: str = input(prompt_msg)
         source_info = "provided"
+        update_token = True
 
     if not _is_token_valid(token):
         prompt_msg = (
@@ -83,10 +87,12 @@ def _read_and_refresh_token(path: str) -> str:
         token = input(prompt_msg)
         if not _is_token_valid(token):
             sys.exit("\nThe token provided is invalid or expired/expiring. Exit.")
+        update_token = True
 
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        f.write(token)
+    if update_token:
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w") as f:
+            f.write(token)
 
     return token
 
@@ -104,11 +110,11 @@ class AuthClient:
 
     def __enter__(self: Self):
         if self.auth_info.use_basic_auth:
-            self.token = self.get_token_from_backend()
+            self.token: str = self.get_token_from_backend()
         elif self.auth_info.token_path:
             self.token: str = _read_and_refresh_token(self.auth_info.token_path)
         else:
-            self.token = _read_and_refresh_token(settings.default_token_path)
+            self.token: str = _read_and_refresh_token(settings.default_token_path)
 
         return self
 
@@ -116,7 +122,7 @@ class AuthClient:
         self.client.close()
 
     def get_token_from_backend(self: Self) -> str:
-        res = self.client.post(
+        res: Response = self.client.post(
             f"{self.fractal_server}/auth/token/login/",
             data=dict(
                 username=self.auth_info.user,
@@ -124,14 +130,14 @@ class AuthClient:
             ),
         )
         if res.status_code != 200:
-            data = res.text
+            data: str = res.text
             raise AuthenticationError(
                 f"Error at {res.request.url}.\n"
                 f"Status code: {res.status_code}.\n"
                 f"Response data: {data}.\n"
             )
         try:
-            raw_token = res.json()
+            raw_token: dict[str, Any] = res.json()
         except JSONDecodeError:
             print("Error while parsing")  # FIXME
         return raw_token["access_token"]
