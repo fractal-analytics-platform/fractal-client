@@ -230,12 +230,12 @@ def test_task_edit(
         invoke(cmd)
 
 
-def test_task_list(invoke, task_factory):
+def test_task_list(invoke, task_factory, new_name):
     res_pre = invoke("task list")
     num_tasks_pre = len(res_pre.data)
 
-    task_factory(name="t1", command_parallel="echo", version=1)
-    task_factory(name="t2", command_parallel="echo", version=2)
+    task_factory(name=new_name(), command_parallel="echo", version=1)
+    task_factory(name=new_name(), command_parallel="echo", version=2)
 
     res_post = invoke("task list")
     num_tasks_post = len(res_post.data)
