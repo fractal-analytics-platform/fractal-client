@@ -115,16 +115,20 @@ def test_invalid_credentials(monkeypatch):
 
     monkeypatch.setattr(fractal_client.main.settings, "FRACTAL_USER", "some-user")
     monkeypatch.setattr(fractal_client.main.settings, "FRACTAL_PASSWORD", None)
-    interface = handle(shlex.split("fractal user whoami"))
-    assert "Invalid authentication credentials" in interface.data
-    assert interface.retcode == 1
+    with pytest.raises(
+        SystemExit,
+        match="Invalid authentication credentials",
+    ):
+        handle(shlex.split("fractal user whoami"))
 
 
 def test_invalid_token_path():
     cmd = "fractal --token-path missingfile user whoami"
-    interface = handle(shlex.split(cmd))
-    interface.show()
-    assert interface.retcode == 1
+    with pytest.raises(
+        SystemExit,
+        match="Invalid authentication credentials",
+    ):
+        handle(shlex.split(cmd))
 
 
 # def test_valid_token_path(
