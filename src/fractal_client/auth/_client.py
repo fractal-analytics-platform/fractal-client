@@ -104,13 +104,13 @@ class AuthClient:
     token: str
 
     def __init__(self: Self, *, fractal_server: str, auth_info: AuthInfo):
-        self.fractal_server = fractal_server
+        self.fractal_server: str = fractal_server
         self.auth_info: AuthInfo = auth_info
         self.client: Client = Client()
 
     def __enter__(self: Self):
         if self.auth_info.use_basic_auth:
-            self.token: str = self.get_token_from_backend()
+            self.token: str = self._get_token_from_backend()
         elif self.auth_info.token_path:
             self.token: str = _read_and_refresh_token(self.auth_info.token_path)
         else:
@@ -121,7 +121,7 @@ class AuthClient:
     def __exit__(self: Self, *args):
         self.client.close()
 
-    def _response_to_token(self: Self, response: Response) -> str:
+    def get_token_from_response(self: Self, response: Response) -> str:
         try:
             response_data: dict[str, Any] = response.json()
             token_value: str = response_data["access_token"]
@@ -132,7 +132,7 @@ class AuthClient:
                 f"({type(e).__name__})."
             ) from e
 
-    def get_token_from_backend(self: Self) -> str:
+    def _get_token_from_backend(self: Self) -> str:
         res: Response = self.client.post(
             f"{self.fractal_server}/auth/token/login/",
             data=dict(
@@ -147,10 +147,10 @@ class AuthClient:
                 f"Status code: {res.status_code}.\n"
                 f"Response data: {data}.\n"
             )
-        return self._response_to_token(res)
+        return self.get_token_from_response(res)
 
     @property
-    def auth_headers(self: Self) -> dict[str, str]:
+    def _auth_headers(self: Self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self.token}"}
 
     def _get_url(self: Self, relative_url: str) -> str:
@@ -160,19 +160,19 @@ class AuthClient:
     def get(self: Self, relative_url: str):
         url = self._get_url(relative_url)
         _debug_request("GET", url)
-        return self.client.get(url=url, headers=self.auth_headers)
+        return self.client.get(url=url, headers=self._auth_headers)
 
     def post(self: Self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
         _debug_request("POST", url)
-        return self.client.post(url=url, headers=self.auth_headers, **kwargs)
+        return self.client.post(url=url, headers=self._auth_headers, **kwargs)
 
     def patch(self: Self, relative_url: str, **kwargs):
         url = self._get_url(relative_url)
         _debug_request("PATCH", url)
-        return self.client.patch(url=url, headers=self.auth_headers, **kwargs)
+        return self.client.patch(url=url, headers=self._auth_headers, **kwargs)
 
     def delete(self: Self, relative_url: str):
         url = self._get_url(relative_url)
         _debug_request("DELETE", url)
-        return self.client.delete(url=url, headers=self.auth_headers)
+        return self.client.delete(url=url, headers=self._auth_headers)

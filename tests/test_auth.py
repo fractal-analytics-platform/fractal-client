@@ -196,13 +196,15 @@ def test_response_to_token():
         AuthenticationError,
         match="JSONDecodeError",
     ):
-        auth_client._response_to_token(Response(status_code=200, content="non-json"))
+        auth_client.get_token_from_response(
+            Response(status_code=200, content="non-json")
+        )
 
     with pytest.raises(
         AuthenticationError,
         match="KeyError",
     ):
-        auth_client._response_to_token(Response(status_code=200, json={}))
+        auth_client.get_token_from_response(Response(status_code=200, json={}))
 
 
 def test_AuthClient(tester, tmp_path: Path, override_settings):
