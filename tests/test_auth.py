@@ -17,6 +17,7 @@ from fractal_client.auth._info import AuthInfo
 from fractal_client.auth._info import get_auth_info
 from fractal_client.auth.validation import get_cmd_handler
 from fractal_client.auth.validation import get_fractal_server
+from fractal_client.config import settings
 
 LONG_KEY = "long-secret-very-secret-key-long"
 
@@ -204,7 +205,11 @@ def test_response_to_token():
         auth_client._response_to_token(Response(status_code=200, json={}))
 
 
-def test_get_token_from_backend(tester):
+def test_AuthClient(tester, tmp_path: Path, override_settings):
+
+    # Make sure that FRACTAL_CACHE_PATH is in a temporary folder
+    override_settings()
+
     with AuthClient(
         fractal_server="http://localhost:8765",
         auth_info=AuthInfo(
@@ -214,6 +219,7 @@ def test_get_token_from_backend(tester):
         ),
     ) as client:
         assert _is_token_valid(client.token)
+        valid_token = client.token
 
     with pytest.raises(AuthenticationError):
         with AuthClient(
@@ -225,3 +231,28 @@ def test_get_token_from_backend(tester):
             ),
         ) as client:
             pass
+
+    custom_token_path = (tmp_path / "token").as_posix()
+    Path(custom_token_path).write_text(valid_token)
+    with AuthClient(
+        fractal_server="http://localhost:8765",
+        auth_info=AuthInfo(
+            user=None,
+            password=None,
+            token_path=custom_token_path,
+        ),
+    ) as client:
+        assert _is_token_valid(client.token)
+        assert client.token == valid_token
+
+    Path(settings.default_token_path).write_text(valid_token)
+    with AuthClient(
+        fractal_server="http://localhost:8765",
+        auth_info=AuthInfo(
+            user=None,
+            password=None,
+            token_path=None,
+        ),
+    ) as client:
+        assert _is_token_valid(client.token)
+        assert client.token == valid_token
