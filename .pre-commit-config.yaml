@@ -28,4 +28,4 @@ repos:
     hooks:
       - id: codespell
         args: ["--ignore-words", ".codespellignore"]
-        files: ^(fractal_server/|docs/)
+        files: ^(src/|docs/)

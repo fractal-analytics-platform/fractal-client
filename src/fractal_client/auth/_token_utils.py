@@ -1,5 +1,5 @@
 """
-Tools for managing authenticaiton tokens.
+Tools for managing authentication tokens.
 """
 
 import logging
