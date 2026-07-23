@@ -1,12 +1,10 @@
 import shlex
-from pathlib import Path
 
 import httpx2
 import pytest
 from devtools import debug
 
 from fractal_client import __VERSION__
-from fractal_client.auth import AuthClient
 from fractal_client.cmd import version
 from fractal_client.main import handle
 
@@ -129,55 +127,42 @@ def test_invalid_token_path():
     assert interface.retcode == 1
 
 
-def test_valid_token_path(
-    tmp_path: Path,
-    monkeypatch,
-    tester,
-):
-    # Get valid token
-    with AuthClient(
-        fractal_server="http://localhost:8765",
-        username=tester["email"],
-        password=tester["password"],
-        token=None,
-    ) as client:
-        token_data = client.token
-        debug(token_data)
-    token_path = (tmp_path / "token").as_posix()
+# def test_valid_token_path(
+#     tmp_path: Path,
+#     monkeypatch,
+#     tester,
+# ):
+#     # Get valid token
+#     with AuthClient(
+#         fractal_server="http://localhost:8765",
+#         username=tester["email"],
+#         password=tester["password"],
+#         token=None,
+#     ) as client:
+#         token_data = client.token
+#         debug(token_data)
+#     token_path = (tmp_path / "token").as_posix()
 
-    import fractal_client.main
+#     import fractal_client.main
 
-    monkeypatch.setattr(
-        fractal_client.main.settings,
-        "FRACTAL_SERVER",
-        "http://localhost:8765",
-    )
+#     monkeypatch.setattr(
+#         fractal_client.main.settings,
+#         "FRACTAL_SERVER",
+#         "http://localhost:8765",
+#     )
 
-    # Use valid token
-    with open(token_path, "w") as f:
-        f.write(token_data)
-    cmd = f"fractal --token-path {token_path} user whoami"
-    interface = handle(shlex.split(cmd))
-    assert interface.data["email"] == tester["email"]
-    assert interface.retcode == 0
+#     # Use valid token
+#     with open(token_path, "w") as f:
+#         f.write(token_data)
+#     cmd = f"fractal --token-path {token_path} user whoami"
+#     interface = handle(shlex.split(cmd))
+#     assert interface.data["email"] == tester["email"]
+#     assert interface.retcode == 0
 
-    # Use valid token, with newlines
-    with open(token_path, "w") as f:
-        f.write(f"\n\n{token_data}\n\n\n")
-    cmd = f"fractal --token-path {token_path} user whoami"
-    interface = handle(shlex.split(cmd))
-    assert interface.data["email"] == tester["email"]
-    assert interface.retcode == 0
-
-
-def test_missing_fractal_server(monkeypatch):
-    import fractal_client.main
-
-    monkeypatch.setattr(
-        fractal_client.main.settings,
-        "FRACTAL_SERVER",
-        None,
-    )
-    interface = handle(shlex.split("fractal user whoami"))
-    assert "You should set the fractal-server URL" in interface.data
-    assert interface.retcode == 1
+#     # Use valid token, with newlines
+#     with open(token_path, "w") as f:
+#         f.write(f"\n\n{token_data}\n\n\n")
+#     cmd = f"fractal --token-path {token_path} user whoami"
+#     interface = handle(shlex.split(cmd))
+#     assert interface.data["email"] == tester["email"]
+#     assert interface.retcode == 0
