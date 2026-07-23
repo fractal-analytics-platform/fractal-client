@@ -21,6 +21,9 @@ ERROR_MSG = (
 
 
 def get_fractal_server(args: ap.Namespace) -> str:
+    """
+    Check that the fractal-server URL is set.
+    """
     fractal_server: str | None = args.fractal_server or settings.FRACTAL_SERVER
     if fractal_server is None:
         sys.exit(
@@ -44,6 +47,9 @@ class AuthInfo:
 
 
 def get_auth_info(args: ap.Namespace) -> AuthInfo:
+    """
+    Validate authentication-related CLI arguments.
+    """
     user: str | None = args.user or settings.FRACTAL_SERVER
     password: str | None = args.password or settings.FRACTAL_PASSWORD
     token_path: str | None = args.token_path or settings.FRACTAL_TOKEN_PATH

@@ -44,10 +44,21 @@ def _get_validity_seconds(token: str) -> int | float:
 
 
 def _is_token_valid(token: str) -> bool:
+    """
+    Is token valid (that is, not expired or almost expiring).
+    """
     return _get_validity_seconds(token) > MIN_TOKEN_TTL
 
 
 def read_and_refresh_token(path: str) -> str:
+    """
+    Read token at path, and suggest updating it if invalid.
+
+    TODO: If `settings.FRACTAL_WEB` is set, we can expose a more precise hint
+    about where to find the token - requires
+    https://github.com/fractal-analytics-platform/fractal-web/issues/1229
+    """
+
     if Path(path).exists():
         with open(path) as f:
             token: str = f.read().strip()
