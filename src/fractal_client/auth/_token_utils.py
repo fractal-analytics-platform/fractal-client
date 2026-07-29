@@ -62,10 +62,6 @@ def _get_token_hint() -> str:
 def read_and_refresh_token(path: str) -> str:
     """
     Read token at path, and suggest updating it if invalid.
-
-    TODO: If `settings.FRACTAL_WEB` is set, we can expose a more precise hint
-    about where to find the token - requires
-    https://github.com/fractal-analytics-platform/fractal-web/issues/1229
     """
 
     hint = _get_token_hint()
