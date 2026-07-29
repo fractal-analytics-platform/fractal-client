@@ -4,6 +4,8 @@
 
 * Commands:
     * Review authentication flow, including interactively prompting for a token (\#924, \#929).
+    * Support `FRACTAL_WEB` configuration variable (\#924, \#930).
+    * Include hint about where to find a valid token (\#930).
 * Internal:
     * Refactor CLI parser (\#923).
 * Documentation:
