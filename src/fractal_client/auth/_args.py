@@ -11,7 +11,8 @@ from fractal_client.config import settings
 
 ERROR_MSG = (
     "Invalid authentication credentials. "
-    "You should either set username&password or the token path.\n\n"
+    "You should either set username&password, or a custom token path, "
+    "or rely on the default token path.\n\n"
     "You can set these variables in multiple ways "
     "(see `fractal --help`):\n"
     "  1. Through command-line arguments (e.g. `-u`, `-p`, `--token-path`).\n"
@@ -50,7 +51,7 @@ def get_auth_info(args: ap.Namespace) -> AuthInfo:
     """
     Validate authentication-related CLI arguments.
     """
-    user: str | None = args.user or settings.FRACTAL_SERVER
+    user: str | None = args.user or settings.FRACTAL_USER
     password: str | None = args.password or settings.FRACTAL_PASSWORD
     token_path: str | None = args.token_path or settings.FRACTAL_TOKEN_PATH
 
