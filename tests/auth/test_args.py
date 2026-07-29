@@ -43,11 +43,10 @@ def test_AuthInfo():
 
 
 def test_get_auth_info():
-    with pytest.raises(
-        SystemExit,
-        match="Invalid authentication",
-    ):
-        get_auth_info(ap.Namespace(user=None, password=None, token_path=None))
+
+    assert not get_auth_info(
+        ap.Namespace(user=None, password=None, token_path=None)
+    ).use_basic_auth
 
     with pytest.raises(
         SystemExit,
@@ -55,8 +54,14 @@ def test_get_auth_info():
     ):
         get_auth_info(ap.Namespace(user="user", password=None, token_path=None))
 
+    with pytest.raises(
+        SystemExit,
+        match="Invalid authentication",
+    ):
+        get_auth_info(ap.Namespace(user=None, password="password", token_path=None))
+
     assert get_auth_info(
-        ap.Namespace(user=None, password="password", token_path=None)
+        ap.Namespace(user="user", password="password", token_path=None)
     ).use_basic_auth
 
     with pytest.raises(
