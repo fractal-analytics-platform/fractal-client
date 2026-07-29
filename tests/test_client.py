@@ -1,3 +1,4 @@
+import io
 import shlex
 
 import httpx2
@@ -122,10 +123,15 @@ def test_invalid_credentials(monkeypatch):
         handle(shlex.split("fractal user whoami"))
 
 
-def test_invalid_token_path():
-    cmd = "fractal --token-path missingfile user whoami"
+def test_invalid_token_path(monkeypatch):
+
+    cmd = "fractal --token-path /missing/file user whoami"
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO("invalid-token-1\ninvalid-token-2"),
+    )
     with pytest.raises(
         SystemExit,
-        match="Invalid authentication credentials",
+        match="The token provided is invalid or expired/expiring",
     ):
         handle(shlex.split(cmd))
