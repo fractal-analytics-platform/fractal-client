@@ -2,7 +2,7 @@ from httpx2 import Client
 from httpx2 import ConnectError
 
 from fractal_client import __VERSION__
-from fractal_client.authclient import AuthClient
+from fractal_client.auth._client import AuthClient
 from fractal_client.interface import Interface
 
 from ._dataset import delete_dataset
@@ -329,7 +329,7 @@ def job(
     return iface
 
 
-def version(fractal_server: str, **kwargs) -> Interface:
+def version(fractal_server: str) -> Interface:
     with Client() as client:
         try:
             res = client.get(f"{fractal_server}/api/alive/")

@@ -11,7 +11,7 @@ from fractal_client.interface import Interface
 
 # This variable must be defined before the first import of config.py
 environ["FRACTAL_SERVER"] = "http://127.0.0.1:8765"
-from fractal_client.client import handle  # noqa: E402
+from fractal_client.main import handle  # noqa: E402
 
 # set_start_method("fork") necessary to run tests on MacOS
 # https://github.com/pytest-dev/pytest-flask/issues/104#issuecomment-577908228

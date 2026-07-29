@@ -67,7 +67,7 @@ def test_task_new(
     assert res.data == str(first_task_id + 1)
 
     # create a new task with same name as before. Note that in check_response
-    # we have sys.exit(1) when status code is not the expecte one
+    # we have sys.exit(1) when status code is not the expected one
     with pytest.raises(SystemExit) as e:
         invoke(f"task new {TASK_NAME_2} --command-parallel _command2 --version 0")
     assert e.value.code == 1
@@ -230,12 +230,12 @@ def test_task_edit(
         invoke(cmd)
 
 
-def test_task_list(invoke, task_factory):
+def test_task_list(invoke, task_factory, new_name):
     res_pre = invoke("task list")
     num_tasks_pre = len(res_pre.data)
 
-    task_factory(name="t1", command_parallel="echo", version=1)
-    task_factory(name="t2", command_parallel="echo", version=2)
+    task_factory(name=new_name(), command_parallel="echo", version=1)
+    task_factory(name=new_name(), command_parallel="echo", version=2)
 
     res_post = invoke("task list")
     num_tasks_post = len(res_post.data)

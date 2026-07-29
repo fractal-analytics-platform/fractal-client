@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-fractal = "fractal_client.client:main"
+fractal = "fractal_client.main:main"
 
 [project.urls]
 homepage = "https://github.com/fractal-analytics-platform/fractal-client"
@@ -85,3 +85,6 @@ force-single-line = true
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "parents"
+
+[tool.ty.environment]
+python = ".venv"

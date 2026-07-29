@@ -2,6 +2,8 @@
 
 # 2.24.0 (unreleased)
 
+* Commands:
+    * Review authentication flow, including interactively prompting for a token (\#924).
 * Internal:
     * Refactor CLI parser (\#923).
 * Documentation:

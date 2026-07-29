@@ -2,7 +2,7 @@ import json
 import logging
 import sys
 
-from fractal_client.authclient import AuthClient
+from fractal_client.auth._client import AuthClient
 from fractal_client.interface import Interface
 from fractal_client.response import check_response
 

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Literal
 
-from fractal_client.authclient import AuthClient
+from fractal_client.auth._client import AuthClient
 from fractal_client.interface import Interface
 from fractal_client.response import check_response
 
@@ -12,7 +12,7 @@ from fractal_client.response import check_response
 def _process_pinned_dependencies(
     pinned_dependencies: list[str],
     label: Literal["pre", "post"],
-) -> dict[str, str]:
+) -> str:
     """
     Transform `["a=1", "b=2"]` into `{"a": "1", "b": "2"}`.
     """

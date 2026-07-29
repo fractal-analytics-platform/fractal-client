@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from fractal_client.client import handle
 from fractal_client.interface import Interface
+from fractal_client.main import handle
 
 DB_NAME = "pytest-fractal-client"
 FRACTAL_SERVER_PORT = 8765
