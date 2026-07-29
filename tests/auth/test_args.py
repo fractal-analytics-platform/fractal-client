@@ -44,6 +44,10 @@ def test_AuthInfo():
 
 def test_get_auth_info():
 
+    assert not get_auth_info(
+        ap.Namespace(user=None, password=None, token_path=None)
+    ).use_basic_auth
+
     with pytest.raises(
         SystemExit,
         match="Invalid authentication",
