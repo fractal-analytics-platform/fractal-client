@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           persist-credentials: false
-      - uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@447e6d02b15d65b3247cce2d6019f11957285d11
@@ -31,4 +31,4 @@ jobs:
           version: "0.9.7"
           enable-cache: false
       - run: uv build --verbose
-      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
+      - uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247
