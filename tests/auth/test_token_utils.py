@@ -6,9 +6,11 @@ from pathlib import Path
 import jwt
 import pytest
 
+from fractal_client.auth._token_utils import _get_token_hint
 from fractal_client.auth._token_utils import _get_validity_seconds
 from fractal_client.auth._token_utils import _is_token_valid
 from fractal_client.auth._token_utils import read_and_refresh_token
+from fractal_client.config import Settings
 
 LONG_KEY = "long-secret-very-secret-key-long"
 
@@ -82,3 +84,13 @@ def test_read_and_refresh_token(tmp_path: Path, monkeypatch):
         monkeypatch.setattr("sys.stdin", io.StringIO(invalid_token))
         read_and_refresh_token(invalid_path_3)
     assert Path(invalid_path_3).read_text() == ""
+
+
+def test_get_token_hint(monkeypatch):
+    assert _get_token_hint() == ""
+
+    import fractal_client.auth._token_utils
+
+    monkeypatch.setenv("FRACTAL_WEB", "https://fractal.example.org")
+    monkeypatch.setattr(fractal_client.auth._token_utils, "settings", Settings())
+    assert "https://fractal.example.org/profile/token" in _get_token_hint()

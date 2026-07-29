@@ -29,6 +29,8 @@ class Settings:
 
         self.FRACTAL_SERVER: str | None = getenv("FRACTAL_SERVER")
         self.FRACTAL_WEB: str | None = getenv("FRACTAL_WEB")
+        if self.FRACTAL_WEB is not None:
+            self.FRACTAL_WEB = self.FRACTAL_WEB.rstrip("/")
         self.FRACTAL_CACHE_PATH: str = getenv(
             "FRACTAL_CACHE_PATH", str(Path.home() / ".cache/fractal")
         )

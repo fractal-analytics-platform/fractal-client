@@ -9,6 +9,8 @@ from pathlib import Path
 
 import jwt
 
+from fractal_client.config import settings
+
 MIN_TOKEN_TTL = 10.0
 
 
@@ -50,15 +52,19 @@ def _is_token_valid(token: str) -> bool:
     return _get_validity_seconds(token) > MIN_TOKEN_TTL
 
 
+def _get_token_hint() -> str:
+    if settings.FRACTAL_WEB is None:
+        return ""
+    else:
+        return f" (you can find it at {settings.FRACTAL_WEB}/profile/token)"
+
+
 def read_and_refresh_token(path: str) -> str:
     """
     Read token at path, and suggest updating it if invalid.
-
-    TODO: If `settings.FRACTAL_WEB` is set, we can expose a more precise hint
-    about where to find the token - requires
-    https://github.com/fractal-analytics-platform/fractal-web/issues/1229
     """
 
+    hint = _get_token_hint()
     if Path(path).exists():
         with open(path) as f:
             token: str = f.read().strip()
@@ -66,9 +72,10 @@ def read_and_refresh_token(path: str) -> str:
         update_token = False
     else:
         prompt_msg = (
+            "\n"
             f"No token was found at {path}, and no other authentication method "
-            "is available.\n"
-            f"Paste a valid token here and it will be written to {path}: "
+            "is available.\n\n"
+            f"Paste a valid token here{hint}, and it will be written to {path}: "
         )
         token: str = input(prompt_msg)
         source_info = "provided"
@@ -76,8 +83,8 @@ def read_and_refresh_token(path: str) -> str:
 
     if not _is_token_valid(token):
         prompt_msg = (
-            f"\nThe token {source_info} is invalid or expired/expiring.\n"
-            "Please get a fresh token and paste it here: "
+            f"\nThe token {source_info} is invalid or expired/expiring.\n\n"
+            f"Please get a fresh token{hint} and paste it here: "
         )
         token = input(prompt_msg)
         if not _is_token_valid(token):
