@@ -50,7 +50,7 @@ def get_auth_info(args: ap.Namespace) -> AuthInfo:
     """
     Validate authentication-related CLI arguments.
     """
-    user: str | None = args.user or settings.FRACTAL_SERVER
+    user: str | None = args.user or settings.FRACTAL_USER
     password: str | None = args.password or settings.FRACTAL_PASSWORD
     token_path: str | None = args.token_path or settings.FRACTAL_TOKEN_PATH
 
