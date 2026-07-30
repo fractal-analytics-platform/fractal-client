@@ -55,8 +55,13 @@ def test_auth_commands(
         (custom_token_path, settings.default_token_path),
     ):
         assert not Path(token_path).exists()
+
         with pytest.raises(SystemExit, match="not found"):
             invoke(f"{option} auth check-token")
+
+        res = invoke(f"{option} auth clear-token")
+        assert res.retcode == 1
+        assert "not found" in res.data
 
         monkeypatch.setattr("sys.stdin", io.StringIO(invalid_token))
         res = invoke(f"{option} auth set-token")
@@ -78,17 +83,12 @@ def test_auth_commands(
         assert res.retcode == 0
         assert "Removed" in res.data
 
-        res = invoke(f"{option} auth clear-token")
-        assert res.retcode == 1
-        assert "not found" in res.data
-
         monkeypatch.setattr("sys.stdin", io.StringIO(partially_valid_token))
         res = invoke(f"{option} auth set-token")
         assert res.retcode == 0
         assert "Token written" in res.data
         assert Path(token_path).exists()
 
-        # with pytest.raises(SystemExit)
         res = invoke(f"{option} auth check-token")
         assert res.retcode == 1
         assert "Token verification failed." in res.data
