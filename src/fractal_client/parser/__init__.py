@@ -14,6 +14,7 @@ Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
 
+from ._auth import add_auth_parser
 from ._dataset import add_dataset_parser
 from ._job import add_job_parser
 from ._main import get_main_parser
@@ -41,3 +42,4 @@ add_usergroup_parser(subparsers_main)
 add_resource_parser(subparsers_main)
 add_profile_parser(subparsers_main)
 add_template_parser(subparsers_main)
+add_auth_parser(subparsers_main)

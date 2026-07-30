@@ -64,6 +64,10 @@ def handle(cli_args: list[str]) -> Interface:
     try:
         if args.cmd == "version":
             interface = cmd_handler(fractal_server)
+        elif args.cmd == "auth":
+            kwargs = vars(args).copy()
+            kwargs.pop("fractal_server")
+            interface = cmd_handler(fractal_server=fractal_server, **kwargs)
         else:
             auth_info: AuthInfo = get_auth_info(args=args)
             with AuthClient(
