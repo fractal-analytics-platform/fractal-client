@@ -46,12 +46,12 @@ def auth_set_token(*, token_path: str | None) -> Interface:
         path.write_text(token)
         return Interface(
             retcode=0,
-            data=f"Token written to {path}",
+            data=f"Token written to {path}.",
         )
     else:
         return Interface(
             retcode=1,
-            data="The token provided is invalid or expired/expiring.",
+            data="The token provided is invalid or expired/expiring. Exit.",
         )
 
 
