@@ -12,9 +12,9 @@ def log_help(cmd: list[str]) -> str:
     return out.strip()
 
 
-def get_subcommends_from_help_message(help_msg: str) -> list[str]:
+def get_subcommands_from_help_message(help_msg: str) -> list[str]:
     try:
-        return help_msg.split("{")[1].split("}")[0].split(",")
+        return sorted(help_msg.split("{")[1].split("}")[0].split(","))
     except IndexError:
         return []
 
@@ -35,7 +35,7 @@ with (output_dir / "index.md").open("w") as f:
     f.write(main_help)
     f.write("\n```\n\n")
 
-for cmd1 in get_subcommends_from_help_message(main_help):
+for cmd1 in get_subcommands_from_help_message(main_help):
     with (output_dir / f"{cmd1}.md").open("w") as f:
         print(cmd1)
 
@@ -45,7 +45,7 @@ for cmd1 in get_subcommends_from_help_message(main_help):
         f.write(help_text)
         f.write("\n```\n\n")
 
-        for cmd2 in get_subcommends_from_help_message(help_text):
+        for cmd2 in get_subcommands_from_help_message(help_text):
             f.write(f"## `{CMD0} {cmd1} {cmd2}`\n\n")
             help_text = log_help([CMD0, cmd1, cmd2])
             f.write("```\n")

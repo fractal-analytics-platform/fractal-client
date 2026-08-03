@@ -7,10 +7,12 @@
     * Introduce `fractal auth {check-token,set-token,clear-token}` commands (\#931).
     * Support `FRACTAL_WEB` configuration variable (\#924, \#930).
     * Include hint about where to find a valid token (\#930).
+    * Sort top-level commands (\#XXX).
 * Internal:
     * Refactor CLI parser (\#923).
 * Documentation:
     * Move from `mkdocs` to `zensical` (\#916).
+    * Sort commands and subcommands in CLI reference (\#XXX).
 * Testing:
     * Use `host` network for CI docker compose (\#915).
     * Fix CI and align with Fractal Server (\#919).
