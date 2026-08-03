@@ -1,6 +1,7 @@
 import pytest
 
 from fractal_client.cmd import NoCommandError
+from fractal_client.cmd import auth
 from fractal_client.cmd import dataset
 from fractal_client.cmd import group
 from fractal_client.cmd import job
@@ -27,6 +28,7 @@ def test_invalid_commands(invoke):
             "resource",
             "profile",
             "template",
+            "auth",
         ]:
             with pytest.raises(SystemExit):
                 invoke(f"{command}{arg}")
@@ -44,6 +46,7 @@ def test_unit_invalid_subcommand():
         resource,
         profile,
         template,
+        auth,
     ]:
         with pytest.raises(NoCommandError):
             _function(client=None, subcmd="invalid")

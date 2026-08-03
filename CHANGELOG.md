@@ -3,7 +3,8 @@
 # 2.24.0 (unreleased)
 
 * Commands:
-    * Review authentication flow, including interactively prompting for a token (\#924, \#929).
+    * Review authentication flow for standard `fractal` commands, including interactively prompting for a token (\#924, \#929).
+    * Introduce `fractal auth {check-token,set-token,clear-token}` commands (\#931).
     * Support `FRACTAL_WEB` configuration variable (\#924, \#930).
     * Include hint about where to find a valid token (\#930).
 * Internal:

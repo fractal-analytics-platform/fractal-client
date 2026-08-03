@@ -103,7 +103,7 @@ def override_settings(monkeypatch, tmp_path):
     import fractal_client.config
 
     def _override_settings(
-        FRACTAL_CACHE_PATH=str(tmp_path),
+        FRACTAL_CACHE_PATH=str(tmp_path / "cache"),
         FRACTAL_USER=None,
         FRACTAL_PASSWORD=None,
         FRACTAL_SERVER=None,
@@ -113,6 +113,7 @@ def override_settings(monkeypatch, tmp_path):
             "FRACTAL_CACHE_PATH",
             FRACTAL_CACHE_PATH,
         )
+        Path(FRACTAL_CACHE_PATH).mkdir(exist_ok=True, parents=True)
         monkeypatch.setattr(
             fractal_client.config.settings,
             "FRACTAL_USER",

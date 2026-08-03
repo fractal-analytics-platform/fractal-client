@@ -5,6 +5,9 @@ from fractal_client import __VERSION__
 from fractal_client.auth._client import AuthClient
 from fractal_client.interface import Interface
 
+from ._auth import auth_check_token
+from ._auth import auth_clear_token
+from ._auth import auth_set_token
 from ._dataset import delete_dataset
 from ._dataset import get_dataset
 from ._dataset import patch_dataset
@@ -476,4 +479,22 @@ def template(
     else:
         raise NoCommandError(f"Command 'template {subcmd}' not found")
 
+    return iface
+
+
+def auth(*, subcmd: str, **kwargs) -> Interface:
+    if subcmd == "check-token":
+        parameters = ["fractal_server", "token_path"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = auth_check_token(**function_kwargs)
+    elif subcmd == "set-token":
+        parameters = ["token_path"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = auth_set_token(**function_kwargs)
+    elif subcmd == "clear-token":
+        parameters = ["token_path"]
+        function_kwargs = get_kwargs(parameters, kwargs)
+        iface = auth_clear_token(**function_kwargs)
+    else:
+        raise NoCommandError(f"Command 'auth {subcmd}' not found")
     return iface
