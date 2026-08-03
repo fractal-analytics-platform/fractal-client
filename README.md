@@ -10,7 +10,8 @@
 | src/fractal\_client/auth/\_client.py            |       64 |        0 |        6 |        0 |    100% |           |
 | src/fractal\_client/auth/\_cmd\_handler.py      |       11 |        0 |        4 |        0 |    100% |           |
 | src/fractal\_client/auth/\_token\_utils.py      |       46 |        0 |       10 |        0 |    100% |           |
-| src/fractal\_client/cmd/\_\_init\_\_.py         |      292 |        0 |      100 |        0 |    100% |           |
+| src/fractal\_client/cmd/\_\_init\_\_.py         |      310 |        0 |      106 |        0 |    100% |           |
+| src/fractal\_client/cmd/\_auth.py               |       40 |        0 |        8 |        0 |    100% |           |
 | src/fractal\_client/cmd/\_aux\_task\_caching.py |       83 |        0 |       20 |        0 |    100% |           |
 | src/fractal\_client/cmd/\_dataset.py            |       25 |        0 |        6 |        0 |    100% |           |
 | src/fractal\_client/cmd/\_group.py              |       28 |        0 |        4 |        0 |    100% |           |
@@ -25,8 +26,9 @@
 | src/fractal\_client/cmd/\_workflow.py           |      143 |        0 |       48 |        2 |     99% |215-\>214, 225-\>227 |
 | src/fractal\_client/config.py                   |       19 |        0 |        2 |        0 |    100% |           |
 | src/fractal\_client/interface.py                |       10 |        0 |        2 |        0 |    100% |           |
-| src/fractal\_client/main.py                     |       43 |        0 |        6 |        0 |    100% |           |
-| src/fractal\_client/parser/\_\_init\_\_.py      |       25 |        0 |        0 |        0 |    100% |           |
+| src/fractal\_client/main.py                     |       47 |        0 |        8 |        0 |    100% |           |
+| src/fractal\_client/parser/\_\_init\_\_.py      |       27 |        0 |        0 |        0 |    100% |           |
+| src/fractal\_client/parser/\_auth.py            |        6 |        0 |        0 |        0 |    100% |           |
 | src/fractal\_client/parser/\_dataset.py         |       14 |        0 |        0 |        0 |    100% |           |
 | src/fractal\_client/parser/\_job.py             |       25 |        0 |        0 |        0 |    100% |           |
 | src/fractal\_client/parser/\_main.py            |       11 |        0 |        0 |        0 |    100% |           |
@@ -40,7 +42,7 @@
 | src/fractal\_client/parser/\_version.py         |        2 |        0 |        0 |        0 |    100% |           |
 | src/fractal\_client/parser/\_workflow.py        |       56 |        0 |        0 |        0 |    100% |           |
 | src/fractal\_client/response.py                 |       40 |        0 |       12 |        0 |    100% |           |
-| **TOTAL**                                       | **1477** |    **1** |  **354** |    **3** | **99%** |           |
+| **TOTAL**                                       | **1547** |    **1** |  **370** |    **3** | **99%** |           |
 
 
 ## Setup coverage badge
