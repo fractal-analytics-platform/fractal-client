@@ -1,6 +1,6 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
-# 2.24.0 (unreleased)
+# 2.24.0
 
 * Commands:
     * Review authentication flow for standard `fractal` commands, including interactively prompting for a token (\#924, \#929).
