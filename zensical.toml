@@ -14,7 +14,7 @@ nav = [
     { "Install" = "install.md" },
     { "CLI reference" = [
         "cli_reference/index.md",
-
+        "cli_reference/auth.md",
         "cli_reference/dataset.md",
         "cli_reference/group.md",
         "cli_reference/job.md",
