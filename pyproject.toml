@@ -41,7 +41,7 @@ dev = [
     "coverage[toml]>=7.12.0,<7.13.0",
 ]
 docs = [
-    "zensical==0.0.47",
+    "zensical==0.0.57",
 ]
 
 [tool.bumpver]
