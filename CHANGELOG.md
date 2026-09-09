@@ -1,5 +1,10 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# 2.24.1 (unreleased)
+
+* Dependencies:
+    * Bump `httpx2`-related dependencies (\#937).
+
 # 2.24.0
 
 * Commands:
