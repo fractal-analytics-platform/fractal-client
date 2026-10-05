@@ -4,6 +4,7 @@
 
 * Dependencies:
     * Bump `httpx2`-related dependencies (\#937).
+    * Bump minimum PyJWT version to 2.15.0 (08f1e164).
 
 # 2.24.0
 
