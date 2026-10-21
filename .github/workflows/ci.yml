@@ -54,7 +54,7 @@ jobs:
         run: docker compose -f tests/fractal-server/docker-compose.yml logs
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: coverage-data-${{ matrix.python-version }}
           path: coverage-data-${{ matrix.python-version }}*
@@ -81,7 +81,7 @@ jobs:
           # token stored by actions/checkout.
           # https://github.com/py-cov-action/python-coverage-comment-action/issues/610
           persist-credentials: true
-      - uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: coverage-data-*
           merge-multiple: true
@@ -91,7 +91,7 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --only-group dev
       - run: uv run --frozen coverage combine coverage-data-*
-      - uses: py-cov-action/python-coverage-comment-action@54b4ecbc0fcf4c22e54be4dd59d4c08db9953ce9
+      - uses: py-cov-action/python-coverage-comment-action@e5fb2218463c3377f3504b0c5b5646ed53da7a2f
         id: coverage_comment
         with:
           GITHUB_TOKEN: ${{ github.token }}
