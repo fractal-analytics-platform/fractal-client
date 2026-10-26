@@ -19,7 +19,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - FRACTAL_SERVER_BRANCH=${FRACTAL_SERVER_BRANCH:-main}
+      - FRACTAL_SERVER_BRANCH=${FRACTAL_SERVER_BRANCH:-fastapi}
       - FRACTAL_SERVER_PORT=8765
       - POSTGRES_HOST=localhost
       - POSTGRES_PORT=5433
