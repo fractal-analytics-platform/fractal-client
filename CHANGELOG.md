@@ -1,5 +1,11 @@
 **Note**: Numbers like (\#123) point to closed Pull Requests on the fractal repository.
 
+# Unreleased
+
+* Documentation:
+    * Bump zensical (\#940).
+    * Enable privacy plugin (\#940).
+
 # 2.24.1
 
 * Dependencies:
